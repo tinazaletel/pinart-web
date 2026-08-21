@@ -210,9 +210,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       <div style={{ flex: 'none', display: 'inline-flex', gap: '.5rem' }}>
         <button type="button" onClick={() => izvoziDokument(izvozNaslov)} title={L('Natisni / shrani kot PDF', 'Print / save as PDF')} style={izvozGumb}><FileArrowDown size={15} weight="bold" /> PDF</button>
         <button type="button" onClick={onExcel} title={L('Izvozi kot Excel (CSV)', 'Export as Excel (CSV)')} style={izvozGumb}><FileArrowDown size={15} weight="bold" /> Excel</button>
-        {/* Zapiranje sodi v glavo, ob ostala dejanja — plavajoc gumb cez vsebino
-            se je izgubil in prekrival naslov. */}
-        <button type="button" className="arh-det-x" onClick={zapriDetajl} aria-label={L('Zapri', 'Close')}>✕</button>
       </div>
     </div>
   );
@@ -706,6 +703,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       {detajl && (
         <div className={styles.detailBackdrop + (izvazamPdf ? ' arh-zajem' : '')} role="presentation" onMouseDown={zapriDetajl}>
           <aside className={`${styles.detailPanel} arh-detajl`} role="dialog" aria-modal="true" aria-labelledby="arh-detajl-naslov" onMouseDown={e => e.stopPropagation()}>
+            {/* lepljivi X ostane v kotu tudi med drsenjem (vzorec .pg-det-x) */}
+            <button className="arh-det-x" onClick={zapriDetajl} aria-label={L('Zapri', 'Close')}>✕</button>
+
             {detajl.vrsta === 'ponudba' && (() => {
               const o = detajl.zapis;
               return <>
@@ -1048,12 +1048,12 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-znacka-predracun{background:oklch(92% .05 300);color:oklch(42% .13 300)}
 
         /* ── detajl panel (vzorec ContractWorkspace) ── */
-        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem;padding-top:4.6rem;padding-bottom:6rem}
+        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem;padding-bottom:6rem}
         .arh-detajl h2{margin:.4rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
         .arh-det-statusvrsta{margin:0 0 1.1rem}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
         /* × FIKSEN v desnem kotu panela, POD topbarom (fixed z-100) in NAD njim po z-indexu — vedno viden, ne odscrolla (panel je overflow-y:auto, absoluten × bi odscrollal) */
-        .arh-det-x{display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;flex:none}
+        .arh-det-x{position:fixed;top:3.85rem;right:1.4rem;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
         .arh-det-x:hover{background:var(--ink);color:var(--paper)}
         .arh-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0;margin-bottom:.6rem}
         .arh-det-meta span{display:grid;gap:.25rem;padding:.7rem;border-radius:.7rem;background:oklch(94% .025 87);min-width:0}
@@ -1150,7 +1150,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         @media (max-width:640px){
           .arh-det-meta{grid-template-columns:1fr}
           /* × je fiksen v kotu (top:3.85rem, sega do ~6rem); spusti vsebino, da naslov pride POD × in se ne prekrivata */
-          .arh-detajl.arh-detajl{padding-top:5.4rem}
+          .arh-detajl.arh-detajl{padding-top:6.4rem}
         }
       `}</style>
     </div>
