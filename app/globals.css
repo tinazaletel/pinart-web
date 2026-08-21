@@ -14,7 +14,10 @@
 }
 
 /* Enoten, vedno viden fokus tudi v starejših modulih, ki so odstranili outline. */
-:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus-visible {
+/* Vnosna polja so IZVZETA namenoma: pravokoten obris z odmikom je pri njih
+   sirsi in bolj oglat od polja samega, kar je videti kot napaka. Polja dobijo
+   senco, ki sledi njihovemu border-radius — pravilo nize v tej datoteki. */
+:where(a, button, summary, [role="button"], [tabindex]):focus-visible {
   outline: 3px solid #6E4FA6 !important;
   outline-offset: 3px !important;
   box-shadow: 0 0 0 2px var(--paper, #F5F2EA) !important;
@@ -254,7 +257,10 @@ select:focus-visible,
 textarea:focus-visible,
 [contenteditable="true"]:focus-visible {
   outline: 2px solid transparent;
-  box-shadow: 0 0 0 2.5px color-mix(in oklch, var(--purple, oklch(66% 0.2 297)) 42%, transparent);
+  outline-offset: 0;
+  /* Sledi obliki polja: enako sirok in enako zaobljen kot polje samo. */
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--purple, oklch(66% 0.2 297)) 34%, transparent);
+  border-color: color-mix(in oklch, var(--purple, oklch(66% 0.2 297)) 60%, transparent);
 }
 .logoloop--fade::before,
 .logoloop--fade::after {
