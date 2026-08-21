@@ -19,10 +19,13 @@ const poenoti = (s: string) =>
 
 export async function GET(request: Request) {
   const supabase = createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: 'Prijava je potekla.' }, { status: 401 });
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const omejitev = await omejiApi(request, 'podjetja-isci', 120, user.id);
+  /* Register je JAVEN (AJPES, FURS), zato ga sme brati tudi neprijavljen
+     obiskovalec brezplacnega kalkulatorja — brez tega iskalnik tam vrne prazno.
+     Lastne stranke uporabnice NISO v tej tabeli in skozi to pot ne gredo.
+     Neprijavljenim damo nizjo mejo, da pobiranje registra ni prakticno. */
+  const omejitev = await omejiApi(request, 'podjetja-isci', user ? 120 : 30, user?.id);
   if (omejitev) return omejitev;
 
   const q = poenoti(String(new URL(request.url).searchParams.get('q') || '').trim());
