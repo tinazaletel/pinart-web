@@ -67,7 +67,19 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 7.5 4.5 4.5 4.5-4.5" /></svg>
           </button>
           <div className="flnav-menu">
-            <a href={`${flow}#orodja`} onClick={close}><strong>Pinart Flow</strong><span>{isEn ? 'Every tool a creative business needs' : 'Vsa orodja za poslovanje kreativca'}</span></a>
+            {/* Ime je bilo »Pinart Flow« — krozno, ker si ze na strani Pinart Flow.
+                Klik tudi ni naredil nicesar, ker je naslov ze bil /flow#orodja in
+                brskalnik iste povezave ne odpre znova. Zdaj pove, KAM pelje, in
+                se premakne tudi, ce si ze tam. */}
+            <a href={`${flow}#orodja`} onClick={e => {
+              const cilj = typeof document !== 'undefined' ? document.getElementById('orodja') : null;
+              if (cilj) {
+                e.preventDefault();
+                cilj.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (typeof history !== 'undefined') history.replaceState(null, '', `${flow}#orodja`);
+              }
+              close();
+            }}><strong>{isEn ? 'All tools' : 'Vsa orodja'}</strong><span>{isEn ? 'Every tool a creative business needs' : 'Vse za poslovanje kreativca na enem mestu'}</span></a>
             <a href={kalk} onClick={close}><strong>{isEn ? 'Free calculator' : 'Brezplačni kalkulator'}</strong><span>{isEn ? 'A fair project price, no account required' : 'Poštena cena projekta, brez prijave'}</span></a>
           </div>
         </div>
