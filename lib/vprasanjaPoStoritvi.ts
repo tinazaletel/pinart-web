@@ -15,7 +15,7 @@ export const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'stil', label: 'Če že veš, kakšen slog želiš, označi.', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true, svoje: 'ali dopiši slog / reference ...' },
     { id: 'omejitve', label: 'Ali obstajajo barve, tipografije ali ideje, ki jih je treba upoštevati?', izbire: ['Barvna paleta', 'Tipografija (kupljena pisava)', 'Simbol / znak', 'Moodboard ali smernice', 'Nič, začnemo sveže'], vec: true, svoje: 'dopiši, če še kaj manjka ...' },
     { id: 'obseg', label: 'Katere aplikacije naj pripravim?', izbire: ['Vizitke in dopisi', 'Predloge za družbena omrežja', 'Predstavitvena predloga', 'Embalaža', 'Tabla / označevanje', 'Vozila', 'Oblačila / merch'], vec: true, vse: true, svoje: 'dopiši svoje ...' },
-    { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 2.500 €', '2.500 do 5.000 €', 'Nad 5.000 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
+    { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 800 €', '800 do 2.000 €', '2.000 do 4.000 €', 'Nad 4.000 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   web: [
