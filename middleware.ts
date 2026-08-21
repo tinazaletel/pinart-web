@@ -97,6 +97,7 @@ export default async function middleware(request: NextRequest) {
   const jeJavnaPot =
     pot === '/'
     || pot === '/kalkulator'
+    || pot === '/kalkulator/orodje'
     || pot === '/kalkulator/pogoji'
     || pot === '/zasebnost'
     || pot === '/dostopnost'
