@@ -1075,7 +1075,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-znacka-predracun{background:oklch(92% .05 300);color:oklch(42% .13 300)}
 
         /* ── detajl panel (vzorec ContractWorkspace) ── */
-        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem;padding-bottom:6rem}
+        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem;padding-top:4.4rem;padding-bottom:6rem}
         .arh-detajl h2{margin:.4rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
         .arh-det-statusvrsta{margin:0 0 1.1rem}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
@@ -1085,6 +1085,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-det-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:.55rem;background:oklch(95% .012 300);color:var(--ink);flex:none}
         .arh-det-pod{margin:0;font-size:.82rem;color:var(--muted)}
         .arh-det-noga{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem;padding-top:1.2rem;border-top:1px solid var(--line)}
+        @media (max-width:640px){.arh-det-naslov{flex-wrap:wrap}.arh-det-x{order:-1;width:100%;height:auto;border:0;background:none;display:flex;justify-content:flex-end}.arh-det-x::before{content:'\2715';display:grid;place-items:center;width:2.2rem;height:2.2rem;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper)}}
         .arh-det-x{margin-left:auto;flex:none;position:relative;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
         .arh-det-x:hover{background:var(--ink);color:var(--paper)}
         .arh-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0;margin-bottom:.6rem}
@@ -1182,7 +1183,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         @media (max-width:640px){
           .arh-det-meta{grid-template-columns:1fr}
           /* × je fiksen v kotu (top:3.85rem, sega do ~6rem); spusti vsebino, da naslov pride POD × in se ne prekrivata */
-          .arh-detajl.arh-detajl{padding-top:6.4rem}
+          .arh-detajl.arh-detajl{padding-top:4.4rem}
         }
       `}</style>
     </div>
