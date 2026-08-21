@@ -1048,12 +1048,12 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-znacka-predracun{background:oklch(92% .05 300);color:oklch(42% .13 300)}
 
         /* ── detajl panel (vzorec ContractWorkspace) ── */
-        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem;padding-bottom:6rem}
+        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem;padding-top:.9rem;padding-bottom:6rem}
         .arh-detajl h2{margin:.4rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
         .arh-det-statusvrsta{margin:0 0 1.1rem}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
         /* × FIKSEN v desnem kotu panela, POD topbarom (fixed z-100) in NAD njim po z-indexu — vedno viden, ne odscrolla (panel je overflow-y:auto, absoluten × bi odscrollal) */
-        .arh-det-x{position:fixed;top:3.85rem;right:1.4rem;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+        .arh-det-x{position:sticky;top:0;align-self:flex-end;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;margin-bottom:.4rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
         .arh-det-x:hover{background:var(--ink);color:var(--paper)}
         .arh-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0;margin-bottom:.6rem}
         .arh-det-meta span{display:grid;gap:.25rem;padding:.7rem;border-radius:.7rem;background:oklch(94% .025 87);min-width:0}
@@ -1150,7 +1150,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         @media (max-width:640px){
           .arh-det-meta{grid-template-columns:1fr}
           /* × je fiksen v kotu (top:3.85rem, sega do ~6rem); spusti vsebino, da naslov pride POD × in se ne prekrivata */
-          .arh-detajl.arh-detajl{padding-top:6.4rem}
+          .arh-detajl.arh-detajl{padding-top:.9rem}
         }
       `}</style>
     </div>
