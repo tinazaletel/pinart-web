@@ -90,7 +90,7 @@ export default function ProjectDetailModern({
   crmVnosi?: CrmVnos[];
   onOdpriKomunikacije?: () => void;
   onOdpriVse?: (tip: 'pogodbe' | 'racuni' | 'stroski') => void;
-  onOdpriDokument?: (tip: 'pogodbe' | 'racuni' | 'stroski', item: FlowContract | FlowInvoice | FlowExpense) => void;
+  onOdpriDokument?: (tip: 'ponudbe' | 'pogodbe' | 'racuni' | 'stroski', item: FlowOffer | FlowContract | FlowInvoice | FlowExpense) => void;
   onOdpriDokumentacija?: () => void;
   naloge?: NalogaLite[];
   onOdpriMail?: (v: PostaVnos) => void;
@@ -479,11 +479,14 @@ export default function ProjectDetailModern({
             <header><h3>{L('PONUDBE IN POGODBE', 'OFFERS & CONTRACTS')}</h3><Link className="pm-iconbtn" href={`${base}/kalkulator/pogodbe`} aria-label={L('Dodaj pogodbo', 'Add contract')}>+</Link></header>
             <ul className="pm-list">
               <li>
-                <Link className="pm-li pm-li-btn" href={`${base}/kalkulator/orodje?od=pregled`}>
+                {/* Klik na ponudbo odpre PREDOGLED v desnem panelu, kot pri pogodbah.
+                    Prej je vodil naravnost v generator — kar je bilo neprijetno
+                    presenecenje: pogledati in urejati nista isto dejanje. */}
+                <button type="button" className="pm-li pm-li-btn" onClick={() => onOdpriDokument?.('ponudbe', offer)}>
                   <span className="pm-li-tip" data-tip="ponudba">{L('Ponudba', 'Offer')}</span>
                   <span className="pm-li-n">{offer.number || offer.title}{offer.scope?.length ? ` · ${offer.scope.length} ${L('postavk', 'items')}` : ''}</span>
                   <span className="pm-li-a">{data.agreed ? money(data.agreed) : '—'}</span>
-                </Link>
+                </button>
               </li>
               {pogodbeSort.slice(0, NAJVEC).map(c => (
                 <li key={c.id}>
