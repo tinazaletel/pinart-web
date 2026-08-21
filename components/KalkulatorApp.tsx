@@ -6986,6 +6986,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Moderne kartice odgovorov v detajlnem panelu (ne pilule) */
         .cw .detajl-oder .choicegrid { display: grid; grid-template-columns: 1fr; gap: .8rem; max-width: 24rem; margin: .2rem 0 .1rem; }
         .cw .detajl-oder .checkgrid { display: grid; grid-template-columns: 1fr; gap: .8rem; max-width: 24rem; }
+        .cw .detajl-oder .checkgrid label { justify-content: flex-start; text-align: left; }
+        .cw .detajl-oder .checkgrid label > span { text-align: left; }
         .cw .detajl-oder .choicegrid button { width: 100%; justify-content: flex-start; text-align: left; gap: .8rem; min-height: 3.5rem; padding: .95rem 1.05rem; border-radius: 16px; border: 1.5px solid oklch(24% .02 285 / .14); background: #fff; color: var(--ink); font-size: .96rem; font-weight: 600; line-height: 1.3; box-shadow: 0 1px 2px oklch(24% .02 285 / .04); transition: border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease; }
         .cw .detajl-oder .choicegrid button:hover { border-color: oklch(24% .02 285 / .32); box-shadow: 0 6px 18px oklch(24% .02 285 / .08); transform: translateY(-1px); }
         .cw .detajl-oder .choicegrid button:active { transform: translateY(0); }
