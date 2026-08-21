@@ -586,7 +586,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
           .km-noga b{position:absolute;top:.05rem;left:calc(50% + .5rem);min-width:1.05rem;height:1.05rem;padding:0 .25rem;border-radius:999px;background:var(--k-purple);color:#fff;font-size:.58rem;display:grid;place-items:center;line-height:1}
         }
         @media (max-width:760px){ body.km-noga-on .pupa-fab{ display:none !important } }
-        .km-posta{display:flex;flex-direction:column;gap:.4rem;max-width:52rem}
+        .km-posta{display:flex;flex-direction:column;gap:.4rem;max-width:none}
         .km-posta .km-mail-vrsta{display:flex;align-items:center;gap:.75rem;width:100%;text-align:left;background:rgba(255,255,255,.5);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);border:1px solid rgba(255,255,255,.5);border-radius:.85rem;padding:.7rem .9rem;cursor:pointer;transition:background .16s ease,box-shadow .16s ease,transform .16s ease}
         .km-posta .km-mail-vrsta:hover{background:#fff;box-shadow:0 8px 22px oklch(20% .03 55/.1);transform:translateY(-1px)}
         .km-posta .km-mail-vrsta:hover{background:color-mix(in oklch,var(--k-purple) 5%,transparent);border-color:color-mix(in oklch,var(--k-purple) 25%,transparent)}
