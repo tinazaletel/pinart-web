@@ -1,3 +1,40 @@
+import { PRICING_SERVICES } from '@/lib/pricingCatalog';
+
+/* BUDGETNI RAZPONI SE IZPELJEJO IZ CENIKA, ne vpisujejo rocno.
+ *
+ * Tina, 21. 8. 2026: »logo tudi previsoko, halo. Trzne raziskave se drzi.«
+ * Imela je prav dvakrat: rocno vpisani razponi so bili previsoki, predvsem pa
+ * so se lahko kadarkoli razsli s cenikom, ki je rezultat raziskave. Rocni
+ * seznam je treba popravljati na 24 mestih; izpeljan se popravi sam.
+ *
+ * Pravilo: 0,6x / 1,5x / 3x izhodiscne cene storitve.
+ *  - pod 0,6x  = narocnik ne dosega niti vstopne cene -> jasen signal neujemanja
+ *  - 0,6-1,5x  = okoli vstopne cene
+ *  - 1,5-3x    = udoben obseg
+ *  - nad 3x    = velik projekt
+ *
+ * Preverjeno na CGP: izhodisce 1350 -> 800 / 2.000 / 4.000, kar se ujema s
+ * tem, kar sva s Tino izbrala rocno, preden je pravilo obstajalo.
+ */
+const zaokrozeno = (v: number): number =>
+  v < 1000 ? Math.round(v / 50) * 50
+    : v < 5000 ? Math.round(v / 100) * 100
+      : Math.round(v / 500) * 500;
+
+const evro = (v: number, en: boolean) =>
+  en ? `€${v.toLocaleString('en-US')}` : `${v.toLocaleString('sl-SI')} €`;
+
+export const budgetIzbire = (sid: string, en = false): string[] | undefined => {
+  const osnova = PRICING_SERVICES.find(s => s.id === sid)?.osnova || 0;
+  if (osnova <= 0) return undefined; /* npr. 'drugo' brez cene — pustimo prosto polje */
+  const a = zaokrozeno(osnova * 0.6);
+  const b = zaokrozeno(osnova * 1.5);
+  const c = zaokrozeno(osnova * 3);
+  return en
+    ? [`Up to ${evro(a, true)}`, `${evro(a, true)} to ${evro(b, true)}`, `${evro(b, true)} to ${evro(c, true)}`, `Over ${evro(c, true)}`, 'Not sure yet']
+    : [`Do ${evro(a, false)}`, `${evro(a, false)} do ${evro(b, false)}`, `${evro(b, false)} do ${evro(c, false)}`, `Nad ${evro(c, false)}`, 'Še ne vem'];
+};
+
 export type ProjektnoVprasanje = { id: string; label: string; placeholder?: string; izbire?: string[]; vec?: boolean; svoje?: string; vse?: boolean };
 
 export const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {

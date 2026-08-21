@@ -18,7 +18,7 @@ import IskalnikPodjetij from '@/components/IskalnikPodjetij';
 import IzbirnikDrzave from '@/components/IzbirnikDrzave';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import { ugotoviPaket, zabeleziSPaketom } from '@/lib/analitika';
-import { VPRASANJA_PO_STORITVI, type ProjektnoVprasanje } from '@/lib/vprasanjaPoStoritvi';
+import { VPRASANJA_PO_STORITVI, budgetIzbire, type ProjektnoVprasanje } from '@/lib/vprasanjaPoStoritvi';
 import { izracunajLicencoDo } from '@/lib/licencePotek';
 
 import {
@@ -628,6 +628,12 @@ const VPRASANJA_EN: Record<string, Record<string, VprasanjeEn>> = {
 /* Vrne vprasanje z EN prevodom, ce je locale 'en' in prevod obstaja; sicer original.
    Vsako polje pade nazaj na slovenscino posebej. */
 const lokalizirajVpr = (v: ProjektnoVprasanje, sid: string, locale: string): ProjektnoVprasanje => {
+  /* Budgetni razponi se VEDNO izpeljejo iz cenika (glej budgetIzbire), tudi v
+     slovenscini — rocno vpisani so se lahko razsli s ceno storitve. */
+  if (v.id === 'budget') {
+    const izp = budgetIzbire(sid, locale === 'en');
+    if (izp) v = { ...v, izbire: izp };
+  }
   if (locale !== 'en') return v;
   const en = VPRASANJA_EN[sid]?.[v.id];
   if (!en) return v;
