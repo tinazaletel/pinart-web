@@ -171,6 +171,11 @@ export default async function middleware(request: NextRequest) {
      odvetnik, AJPES in prvi obiskovalci morajo do njih brez gesla.
      Aplikacija (projekti, stranke, racuni, Pupa, nastavitve) ostane zaklenjena.
      Seznam je NAMENOMA popoln in ozek: kar ni tu, je zaprto. */
+  /* STIKALO: ko je false, je pinartflow.com spet cel za geslom. Seznam poti
+     spodaj ostane, da je ponovno odprtje ena beseda in ne nova presoja.
+     Zaprto 21. 8. 2026 na Tinino zahtevo — cenovni izracun se ni pravilen in
+     obiskovalec ne sme videti napacnih stevilk. */
+  const ODPRT_JAVNI_DEL = false;
   const pot = request.nextUrl.pathname.replace(/^\/(?:sl|en)(?=\/|$)/, '') || '/';
   const jeJavnaPot =
     pot === '/'
@@ -188,7 +193,7 @@ export default async function middleware(request: NextRequest) {
        - druge domene (pinart.si ...): SAMO Flow poti (/flow, /kalkulator); portfolio ostane odprt.
      Brez SITE_GESLO se pinartflow pokaze kot "Kmalu"; Flow poti drugod (dev/localhost brez
      gesla) pa NE blokiramo, da razvoj tece normalno. */
-  if ((jePinartflow || jeFlowPot) && !jeJavnaPot) {
+  if ((jePinartflow || jeFlowPot) && !(ODPRT_JAVNI_DEL && jeJavnaPot)) {
     const geslo = process.env.SITE_GESLO;
     if (!geslo) {
       if (jePinartflow) {
