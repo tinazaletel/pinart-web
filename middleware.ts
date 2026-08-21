@@ -47,30 +47,108 @@ const ZAKLENJENO_HTML = `<!doctype html>
 <html lang="sl"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Pinart Flow — zaprta beta</title>
+<title>Pinart Flow — v testiranju</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  body{min-height:100svh;position:relative;overflow:hidden;background:#f4f4f3;color:#26211f;
+  body{min-height:100svh;position:relative;overflow-x:hidden;background:#f4f4f3;color:#26211f;
     font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
   .slika{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:74% 62%;z-index:0}
-  .scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(100deg,#f4f4f3 26%,rgba(244,244,243,.72) 44%,rgba(244,244,243,0) 62%)}
+  .scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(100deg,#f4f4f3 30%,rgba(244,244,243,.8) 50%,rgba(244,244,243,0) 68%)}
   .w{position:relative;z-index:2;max-width:1180px;margin:0 auto;min-height:100svh;display:flex;flex-direction:column;
-    justify-content:center;align-items:flex-start;padding:2.5rem clamp(1.5rem,5vw,5rem)}
+    justify-content:center;align-items:flex-start;padding:3rem clamp(1.5rem,5vw,5rem)}
   .ey{display:inline-flex;align-items:center;gap:.55rem;font-size:.76rem;font-weight:800;letter-spacing:.22em;
-    text-transform:uppercase;color:#7c3aed;margin-bottom:1.2rem}
-  .dot{width:8px;height:8px;border-radius:50%;background:#7c3aed;box-shadow:0 0 0 6px rgba(124,58,237,.14)}
-  h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:clamp(2.2rem,6.5vw,3.6rem);
-    line-height:1.04;letter-spacing:-.01em;margin-bottom:.85rem}
+    text-transform:uppercase;color:#7c3aed;margin-bottom:1.1rem}
+  .pika{width:8px;height:8px;border-radius:50%;background:#7c3aed;box-shadow:0 0 0 6px rgba(124,58,237,.14)}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:clamp(2.1rem,6vw,3.4rem);
+    line-height:1.05;letter-spacing:-.01em;margin-bottom:.8rem}
   h1 em{font-style:italic;color:#7c3aed}
-  p{font-size:1.02rem;line-height:1.55;color:#5c5650;max-width:32ch}
+  .uvod{font-size:1.02rem;line-height:1.6;color:#5c5650;max-width:38ch;margin-bottom:1.6rem}
+  .kalk{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 1.4rem;border-radius:999px;
+    background:#26211f;color:#faf7f2;font-weight:700;font-size:.9rem;text-decoration:none;margin-bottom:2.2rem}
+  .kalk:hover{transform:translateY(-1px)}
+  .kartica{width:100%;max-width:26rem;background:rgba(255,255,255,.72);backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.7);border-radius:1.1rem;padding:1.2rem 1.25rem;
+    box-shadow:0 10px 30px rgba(40,30,60,.08)}
+  .kartica h2{font-size:.98rem;font-weight:750;margin-bottom:.3rem}
+  .kartica p{font-size:.86rem;line-height:1.5;color:#5c5650;margin-bottom:.85rem}
+  label{display:block;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:#6b655d;margin-bottom:.25rem}
+  input{width:100%;padding:.7rem .85rem;border:1px solid rgba(17,17,17,.14);border-radius:.7rem;
+    background:#fff;font:500 .92rem inherit;color:#26211f;margin-bottom:.7rem}
+  input:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.18)}
+  button{width:100%;padding:.75rem 1rem;border:0;border-radius:999px;background:#7c3aed;color:#fff;
+    font:800 .86rem inherit;cursor:pointer}
+  button:disabled{opacity:.55;cursor:default}
+  .sporocilo{margin-top:.6rem;font-size:.84rem;font-weight:600;line-height:1.45}
+  .ok{color:#2F5D50}.napaka{color:#a4342a}
+  .geslo{margin-top:1rem;padding-top:.9rem;border-top:1px solid rgba(17,17,17,.09)}
+  .geslo summary{font-size:.82rem;font-weight:700;color:#6b655d;cursor:pointer}
+  .geslo form{margin-top:.7rem}
+  .geslo button{background:#26211f}
+  @media (max-width:640px){ .scrim{background:linear-gradient(180deg,#f4f4f3 42%,rgba(244,244,243,.86) 100%)} }
 </style></head><body>
 <img class="slika" src="/flow/jorki-404.png" alt="" aria-hidden="true">
 <div class="scrim"></div>
 <div class="w">
-  <div class="ey"><span class="dot"></span>Pinart Flow</div>
-  <h1>Zaprta <em>beta.</em></h1>
-  <p>Flow je za zdaj na povabilo. Vpiši geslo v okno brskalnika za vstop — ali nam piši na tina@pinart.si za dostop.</p>
+  <div class="ey"><span class="pika"></span>Pinart Flow</div>
+  <h1>Še <em>zadnje teste</em> delamo.</h1>
+  <p class="uvod">Flow je v zaključnem testiranju in pride na trg predvidoma v začetku septembra. Do takrat je brezplačni kalkulator odprt za vse — brez računa in brez prijave.</p>
+  <a class="kalk" href="/kalkulator/orodje">Preizkusi brezplačni kalkulator &rarr;</a>
+
+  <div class="kartica">
+    <h2>Bi testiral(a) pred zagonom?</h2>
+    <p>Pusti ime in e-naslov. Javimo se ti z dostopom — in ko odpremo, boš med prvimi.</p>
+    <form id="prijava">
+      <label for="ime">Ime</label>
+      <input id="ime" name="ime" autocomplete="name" required maxlength="200">
+      <label for="email">E-naslov</label>
+      <input id="email" name="email" type="email" autocomplete="email" required maxlength="200">
+      <button type="submit">Prijavi me</button>
+      <p class="sporocilo" id="odziv" role="status"></p>
+    </form>
+
+    <details class="geslo">
+      <summary>Imam geslo za beto</summary>
+      <form id="vstop">
+        <label for="geslo">Geslo</label>
+        <input id="geslo" name="geslo" type="password" autocomplete="current-password" required maxlength="200">
+        <button type="submit">Vstopi</button>
+        <p class="sporocilo" id="odzivGeslo" role="status"></p>
+      </form>
+    </details>
+  </div>
 </div>
+<script>
+(function(){
+  function poslji(url, telo){
+    return fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(telo)})
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); });
+  }
+  var pf = document.getElementById('prijava'), po = document.getElementById('odziv');
+  pf.addEventListener('submit', function(e){
+    e.preventDefault();
+    var g = pf.querySelector('button'); g.disabled = true; po.textContent = ''; po.className = 'sporocilo';
+    poslji('/api/beta', {dejanje:'prijava', ime: pf.ime.value, email: pf.email.value})
+      .then(function(r){
+        if(r.ok){ pf.reset(); po.className='sporocilo ok'; po.textContent='Hvala! Javimo se ti na ta naslov.'; }
+        else { po.className='sporocilo napaka'; po.textContent = (r.d && r.d.napaka) || 'Prijava ni uspela.'; }
+      })
+      .catch(function(){ po.className='sporocilo napaka'; po.textContent='Ni povezave. Poskusi znova.'; })
+      .then(function(){ g.disabled = false; });
+  });
+  var vf = document.getElementById('vstop'), vo = document.getElementById('odzivGeslo');
+  vf.addEventListener('submit', function(e){
+    e.preventDefault();
+    var g = vf.querySelector('button'); g.disabled = true; vo.textContent = ''; vo.className='sporocilo';
+    poslji('/api/beta', {dejanje:'geslo', geslo: vf.geslo.value})
+      .then(function(r){
+        if(r.ok){ location.reload(); }
+        else { vo.className='sporocilo napaka'; vo.textContent='Geslo ni pravilno.'; g.disabled = false; }
+      })
+      .catch(function(){ vo.className='sporocilo napaka'; vo.textContent='Ni povezave.'; g.disabled = false; });
+  });
+})();
+</script>
 </body></html>`;
 
 function gesloVeljavno(auth: string, geslo: string): boolean {
@@ -130,7 +208,6 @@ export default async function middleware(request: NextRequest) {
         return new NextResponse(ZAKLENJENO_HTML, {
           status: 401,
           headers: {
-            'WWW-Authenticate': 'Basic realm="Pinart Flow (zaprta beta)"',
             'content-type': 'text/html; charset=utf-8',
             'cache-control': 'no-store, max-age=0',
           },
