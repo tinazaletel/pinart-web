@@ -12,7 +12,7 @@ import { getActiveOrganizationId, listUserOrganizations, setActiveOrganization, 
 import { usePredogled } from '@/lib/predogled';
 import { useLocale } from 'next-intl';
 import styles from './BusinessCanvasWorkspace.module.css';
-import { preberiProjekti, type Projekt } from '@/lib/projekti';
+import { preberiProjekti, shraniProjekt, type Projekt } from '@/lib/projekti';
 
 const BLOCKS: Array<{ key: keyof BusinessCanvas; number: string; title: string; hint: string; example: string }> = [
   { key: 'partners', number: '01', title: 'Ključni partnerji', hint: 'Kdo ti pomaga ustvariti ali dostaviti vrednost?', example: 'zunanji sodelavci, računovodstvo, tiskarne …' },
@@ -73,6 +73,11 @@ export default function BusinessCanvasWorkspace() {
   const [storageScope, setStorageScope] = useState('anonymous');
   const [companyName, setCompanyName] = useState('');
   const [brandName, setBrandName] = useState('');
+  /* VEZ S PROJEKTOM (Tina, 21. 8. 2026): »canvas in katero koli zadevo moraš
+     imeti opcijo linkanja s projektom.« Brez tega canvasa s projekta ni bilo
+     mogoce najti. Vez je NEOBVEZNA — canvas o podjetju ne sodi pod noben
+     projekt in mora smeti ostati sam. */
+  const [projektVez, setProjektVez] = useState('');
   const [saveState, setSaveState] = useState<'idle' | 'dirty' | 'saving' | 'cloud' | 'local'>('idle');
   const [savedAt, setSavedAt] = useState('');
   const [notice, setNotice] = useState('');
@@ -104,7 +109,7 @@ export default function BusinessCanvasWorkspace() {
       setDocuments(initial);
       if (selected) {
         setActiveId(selected.id); setCanvas(selected.blocks);
-        setCompanyName(selected.companyName); setBrandName(selected.brandName);
+        setCompanyName(selected.companyName); setBrandName(selected.brandName); setProjektVez(selected.projektExternalId || '');
       }
 
       try {
@@ -112,7 +117,7 @@ export default function BusinessCanvasWorkspace() {
         if (!active || !cloud.length) return;
         selected = cloud.find(document => document.id === storedId) || cloud[0];
         setDocuments(cloud); setActiveId(selected.id); setCanvas(selected.blocks);
-        setCompanyName(selected.companyName); setBrandName(selected.brandName);
+        setCompanyName(selected.companyName); setBrandName(selected.brandName); setProjektVez(selected.projektExternalId || '');
         saveLocalCanvasDocuments(cloud, scope); saveActiveCanvasId(selected.id, scope);
       } catch { /* lokalni Canvas ostane na voljo */ }
     })();
@@ -153,8 +158,8 @@ export default function BusinessCanvasWorkspace() {
     }
     const current = documents.find(document => document.id === activeId);
     const updated: BusinessCanvasDocument = current
-      ? { ...current, name: brandName.trim() || companyName.trim(), companyName: companyName.trim(), brandName: brandName.trim(), blocks: canvas, updatedAt: new Date().toISOString() }
-      : { ...createCanvasDocument(companyName.trim(), brandName.trim()), blocks: canvas, updatedAt: new Date().toISOString() };
+      ? { ...current, name: brandName.trim() || companyName.trim(), companyName: companyName.trim(), brandName: brandName.trim(), blocks: canvas, projektExternalId: projektVez || undefined, updatedAt: new Date().toISOString() }
+      : { ...createCanvasDocument(companyName.trim(), brandName.trim()), blocks: canvas, projektExternalId: projektVez || undefined, updatedAt: new Date().toISOString() };
     const nextDocuments = current
       ? documents.map(document => document.id === activeId ? updated : document)
       : [...documents, updated];
@@ -278,6 +283,33 @@ export default function BusinessCanvasWorkspace() {
         {organizations.length > 1 && <label><span>Podjetje</span><select value={activeOrganizationId} onChange={event => { setActiveOrganization(event.target.value); window.location.reload(); }}>{organizations.map(organization => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select></label>}
         <label><span>Podjetje ali organizacija</span><input value={shownCompanyName} readOnly={preview !== 'mine'} onChange={event => { setCompanyName(event.target.value); setSaveState('dirty'); }} placeholder="Npr. Rdeča kapica d.o.o." /></label>
         <label><span>Znamka, projekt ali poslovna ideja</span><input value={shownBrandName} readOnly={preview !== 'mine'} onChange={event => { setBrandName(event.target.value); setSaveState('dirty'); }} placeholder="Npr. Ribbon Lips (neobvezno)" /></label>
+        <label><span>Vezan na projekt</span>
+          <select value={projektVez} disabled={preview !== 'mine'}
+            onChange={event => {
+              const v = event.target.value;
+              if (v === '__nov') {
+                /* Nov projekt dobi ime po canvasu — to je edino, kar o njem ze
+                   vemo. Uporabnica ga bo preimenovala, ce bo hotela. */
+                const projekt: Projekt = {
+                  id: crypto.randomUUID(),
+                  naslov: brandName.trim() || companyName.trim() || 'Nov projekt',
+                  strankaIme: companyName.trim() || undefined,
+                  status: 'aktiven',
+                  created: new Date().toISOString(),
+                };
+                shraniProjekt(projekt);
+                setProjekti(preberiProjekti());
+                setProjektVez(projekt.id);
+              } else {
+                setProjektVez(v);
+              }
+              setSaveState('dirty');
+            }}>
+            <option value="">Ni vezan (neobvezno)</option>
+            {projekti.map(projekt => <option key={projekt.id} value={projekt.id}>{projekt.naslov}</option>)}
+            <option value="__nov">+ Ustvari nov projekt</option>
+          </select>
+        </label>
       </section>
 
       <section className={styles.canvas} aria-label="Business Model Canvas">
