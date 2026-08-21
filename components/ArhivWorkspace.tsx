@@ -1048,7 +1048,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-znacka-predracun{background:oklch(92% .05 300);color:oklch(42% .13 300)}
 
         /* ── detajl panel (vzorec ContractWorkspace) ── */
-        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem;padding-top:.9rem;padding-bottom:6rem}
+        .arh-detajl{width:min(42rem,94vw);display:flex;flex-direction:column;gap:.2rem;padding-top:4.6rem;padding-bottom:6rem}
         .arh-detajl h2{margin:.4rem 0 .5rem;font-family:var(--font-serif),Didot,serif;font-weight:500;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.05;color:var(--ink)}
         .arh-det-statusvrsta{margin:0 0 1.1rem}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
@@ -1150,7 +1150,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         @media (max-width:640px){
           .arh-det-meta{grid-template-columns:1fr}
           /* × je fiksen v kotu (top:3.85rem, sega do ~6rem); spusti vsebino, da naslov pride POD × in se ne prekrivata */
-          .arh-detajl.arh-detajl{padding-top:.9rem}
+          .arh-detajl.arh-detajl{padding-top:5.4rem}
         }
       `}</style>
     </div>
