@@ -202,13 +202,13 @@ export default function ArhivWorkspace({ base }: { base: string }) {
      Izvozni gumbi so v NOGI panela, ne tu. */
   const DetajlGlava = ({ ikona, naslov, podnaslov, status }: { ikona: ReactNode; naslov: string; podnaslov?: string; status: ReactNode }) => (
     <div className="arh-det-glava">
-      <div className="arh-det-zapri">
-        <button type="button" className="arh-det-x" onClick={zapriDetajl} aria-label={L('Zapri', 'Close')}>✕</button>
-      </div>
+      {/* X je V VRSTICI z naslovom, desno. Svoja vrstica nad naslovom se je
+          odrezala ob zgornjem robu panela in gumba ni bilo videti. */}
       <div className="arh-det-naslov">
         <span className="arh-det-ikona" aria-hidden>{ikona}</span>
         <span id="arh-detajl-naslov">{naslov}</span>
         {status}
+        <button type="button" className="arh-det-x" onClick={zapriDetajl} aria-label={L('Zapri', 'Close')}>✕</button>
       </div>
       {podnaslov && <p className="arh-det-pod">{podnaslov}</p>}
     </div>
@@ -1081,12 +1081,11 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
         /* × FIKSEN v desnem kotu panela, POD topbarom (fixed z-100) in NAD njim po z-indexu — vedno viden, ne odscrolla (panel je overflow-y:auto, absoluten × bi odscrollal) */
         .arh-det-glava{display:flex;flex-direction:column;gap:.5rem;margin:0 0 1.4rem}
-        .arh-det-zapri{display:flex;justify-content:flex-end}
         .arh-det-naslov{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;font:600 1.15rem var(--font-sans),system-ui,sans-serif;color:var(--ink)}
         .arh-det-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:.55rem;background:oklch(95% .012 300);color:var(--ink);flex:none}
         .arh-det-pod{margin:0;font-size:.82rem;color:var(--muted)}
         .arh-det-noga{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem;padding-top:1.2rem;border-top:1px solid var(--line)}
-        .arh-det-x{position:relative;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+        .arh-det-x{margin-left:auto;flex:none;position:relative;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
         .arh-det-x:hover{background:var(--ink);color:var(--paper)}
         .arh-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0;margin-bottom:.6rem}
         .arh-det-meta span{display:grid;gap:.25rem;padding:.7rem;border-radius:.7rem;background:oklch(94% .025 87);min-width:0}
