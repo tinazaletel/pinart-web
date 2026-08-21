@@ -151,7 +151,7 @@
 .canvasCardPlan:hover { background: color-mix(in oklch, oklch(58% .2 297) 22%, transparent); }
 
 /* Urejevalnik: vrh z »nazaj« + napredkom */
-.editorHead { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.editorHead { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; background: color-mix(in oklch, var(--paper, #F5F2EA) 82%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 .editorBack { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.6); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: var(--ink); font: 700 .82rem var(--font-sans), sans-serif; cursor: pointer; transition: border-color .16s ease, background .16s ease; }
 .editorBack:hover { border-color: var(--ink); background: rgba(255,255,255,.82); }
 .editorHead .progressWrap { grid-auto-flow: column; align-items: center; gap: .7rem; }
