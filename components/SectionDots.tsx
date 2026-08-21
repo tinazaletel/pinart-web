@@ -18,6 +18,11 @@ export default function SectionDots() {
   const pathname = usePathname();
   const [active, setActive] = useState(0);
   const [isDark, setIsDark] = useState(false);
+  /* Ali razdelki, ki jim ta indikator sledi, na tej strani sploh obstajajo.
+     Na pinartflow.com se koren prepise v Flow landing, zato je pathname '/'
+     in komponenta je mislila, da je na domaci strani portfolia — pikice so se
+     izrisale, sledile pa niso nicemur in so obticale na 01. */
+  const [imaSekcije, setImaSekcije] = useState(true);
 
   // The dots map to sections on the home page. On subpages (more-work,
   // work/<slug>, etc.) those sections don't exist — hide the indicator.
@@ -51,6 +56,11 @@ export default function SectionDots() {
       setActive(bestIndex);
     };
 
+    /* Merilo je stran sama, ne naslov: indikator se pokaze le, kjer ima cemu
+       slediti. Tako se sam ugasne na vsaki strani brez teh razdelkov in ga ni
+       treba vzdrzevati ob vsaki novi strani. */
+    setImaSekcije(SECTIONS.filter(s => document.getElementById(s.id)).length >= 2);
+
     const raf = requestAnimationFrame(updateActive);
     const interval = window.setInterval(updateActive, 350);
     updateActive();
@@ -79,8 +89,8 @@ export default function SectionDots() {
     return () => window.removeEventListener('pinart-dark', handler);
   }, []);
 
-  // hide on subpages (after hooks have run)
-  if (!isHome) return null;
+  // hide on subpages, and wherever these sections do not exist (Flow landing)
+  if (!isHome || !imaSekcije) return null;
 
   const num = String(active + 1).padStart(2, '0');
 
