@@ -88,6 +88,7 @@ export interface Projekt {
   pitch?: {
     naslov?: string; problem?: string; resitev?: string; zakajMi?: string;
     obseg?: string; okvirnaCena?: string; naslednjiKorak?: string;
+    createdAt?: string;
   };
   /* SWOT je poslovni dokument projekta; v oblak gre z ostalim data jsonb. */
   swot?: {
@@ -95,6 +96,23 @@ export interface Projekt {
     slabosti: string;
     priloznosti: string;
     nevarnosti: string;
+    createdAt?: string;
+  };
+  /* Priprava pred sestankom in pregled trga sta dokumenta projekta. Ker se
+     Projekt že shranjuje v data jsonb, zanju ni potrebna nova tabela. */
+  raziskavaStranke?: {
+    kajDela: string;
+    njihoveStranke: string;
+    predstavitev: string;
+    kajPonuditi: string;
+    vprasanja: string[];
+    createdAt?: string;
+  };
+  pregledKonkurence?: {
+    panoga: string;
+    konkurenti: Array<{ ime: string; pozicioniranje: string; poudarki: string }>;
+    vrzel: string;
+    createdAt?: string;
   };
   /* cas zadnje spremembe (ISO) — nujen za sinhronizacijo z oblakom
      (lib/projektiOblak): ob srecanju lokalne in oblacne razlicice zmaga

@@ -12,6 +12,7 @@ import { getActiveOrganizationId, listUserOrganizations, setActiveOrganization, 
 import { usePredogled } from '@/lib/predogled';
 import { useLocale } from 'next-intl';
 import styles from './BusinessCanvasWorkspace.module.css';
+import { preberiProjekti, type Projekt } from '@/lib/projekti';
 
 const BLOCKS: Array<{ key: keyof BusinessCanvas; number: string; title: string; hint: string; example: string }> = [
   { key: 'partners', number: '01', title: 'Ključni partnerji', hint: 'Kdo ti pomaga ustvariti ali dostaviti vrednost?', example: 'zunanji sodelavci, računovodstvo, tiskarne …' },
@@ -79,8 +80,10 @@ export default function BusinessCanvasWorkspace() {
   const [planOpen, setPlanOpen] = useState(false);
   /* Dokumentni model: privzeto SEZNAM (kartice shranjenih), klik/»Nov« odpre UREJEVALNIK. */
   const [view, setView] = useState<'list' | 'editor'>('list');
+  const [projekti, setProjekti] = useState<Projekt[]>([]);
 
   useEffect(() => {
+    setProjekti(preberiProjekti());
     let active = true;
     void (async () => {
       let userOrganizations: UserOrganization[] = [];
@@ -226,7 +229,7 @@ export default function BusinessCanvasWorkspace() {
               {BLOCKS.map(block => <span key={block.key} data-on={document.blocks[block.key].trim() ? 'true' : 'false'} />)}
             </div>
             <div className={styles.canvasCardFoot}>
-              <span className={styles.canvasCardDate}>Shranjeno {new Date(document.updatedAt).toLocaleDateString('sl-SI')}</span>
+              <span className={styles.canvasCardDate}>Shranjeno {new Date(document.updatedAt).toLocaleDateString('sl-SI')}{document.projektExternalId ? ` · Projekt: ${projekti.find(p => p.id === document.projektExternalId)?.naslov || document.projektExternalId}` : ''}</span>
               <button type="button" className={styles.canvasCardPlan} onClick={event => { event.stopPropagation(); expandDocument(document); }} aria-label={`Razširi ${document.name} v poslovni načrt`}>Razširi v načrt →</button>
             </div>
           </article>;
