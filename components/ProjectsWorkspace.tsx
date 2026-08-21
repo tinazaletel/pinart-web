@@ -215,7 +215,7 @@ const pwStyles = `
    06 Komunikacije/07 Zapiski) — svoj pw- razdelek v duhu .projectNarrative
    kartic (isti border/radius/ozadje odtenek), da se lepo vklopi. */
 .pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
-.pw-kom-panel{flex:0 1 680px;min-width:0;max-width:680px}
+.pw-kom-panel{flex:0 1 1040px;min-width:0;max-width:min(1040px,92vw)}
 /* okno Nova naloga iz maila */
 .pw-naloga-panel{width:min(560px,94vw);padding:2.4rem 2rem}
 .pw-naloga-obr{display:flex;flex-direction:column;gap:.9rem;margin-top:.6rem}
