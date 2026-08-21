@@ -1072,7 +1072,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const openVsi = (tip: 'pogodbe' | 'racuni' | 'stroski') => { setVsiOdprt(tip); setVsiIskanje(''); setVsiIskanjeOdprto(false); setVsiStran(1); setVsiNacin('strani'); };
   const closeVsi = () => { setVsiOdprt(null); setVsiIskanje(''); setVsiIskanjeOdprto(false); setVsiStran(1); setVsiNacin('strani'); };
   /* klik na vrstico (na kartici ALI v slideu) -> predogled dokumenta v panelu z desne */
-  const [vrsticaDetajl, setVrsticaDetajl] = useState<null | { tip: 'pogodbe' | 'racuni' | 'stroski'; item: FlowContract | FlowInvoice | FlowExpense }>(null);
+  const [vrsticaDetajl, setVrsticaDetajl] = useState<null | { tip: 'ponudbe' | 'pogodbe' | 'racuni' | 'stroski'; item: FlowOffer | FlowContract | FlowInvoice | FlowExpense }>(null);
   /* Zaklep ozadja: ko je odprt kateri koli desni panel/letev, se STRAN v ozadju NE skrola
      (skrola se le vsebina panela). */
   useEffect(() => {
@@ -2044,6 +2044,30 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
         <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={zapri}>
           <aside className={`${styles.detailPanel} pw-det-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-det-naslov" onMouseDown={e => e.stopPropagation()}>
             <button type="button" className="pw-vsi-x" onClick={zapri} aria-label={L('Zapri', 'Close')}>✕</button>
+            {tip === 'ponudbe' && (() => {
+              const o = item as FlowOffer;
+              return <>
+                <p className={styles.eyebrow}>{L('PONUDBA', 'OFFER')}{o.number ? ` · ${o.number}` : ''}</p>
+                <h2 id="pw-det-naslov">{o.title || L('Ponudba', 'Offer')}</h2>
+                <p className="pw-vsi-projekt">{o.client}</p>
+                <div className="pw-det-meta">
+                  <span><small>{L('Stranka', 'Client')}</small><strong>{o.client || '—'}</strong></span>
+                  <span><small>{L('Datum', 'Date')}</small><strong>{o.date ? new Date(o.date).toLocaleDateString('sl-SI') : '—'}</strong></span>
+                </div>
+                {!!o.scope?.length && (
+                  <div className="pw-det-tabela-ovoj"><table className="pw-det-tabela">
+                    <thead><tr><th>{L('Obseg', 'Scope')}</th></tr></thead>
+                    <tbody>{o.scope.map((v, i) => <tr key={`${v}-${i}`}><td>{v}</td></tr>)}</tbody>
+                  </table></div>
+                )}
+                <div className="pw-det-vsote"><div className="pw-det-skupaj">
+                  <span>{L('Dogovorjena vrednost', 'Agreed value')}</span>
+                  <strong>{selected.agreed ? money(selected.agreed) : '—'}</strong>
+                </div></div>
+                {/* Urejanje je LOCENO dejanje in mora biti izbrano zavestno. */}
+                <a className="pw-det-odpri" href={`${base}/kalkulator/orodje?od=pregled`}>{L('Odpri ponudbo v urejevalniku', 'Open the offer in the editor')} ↗</a>
+              </>;
+            })()}
             {tip === 'racuni' && (() => {
               const r = item as FlowInvoice;
               const its = r.items || [];
