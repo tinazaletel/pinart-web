@@ -170,3 +170,7 @@
   .progress span { max-width: 6rem; margin-top: .25rem; font-size: .66rem; line-height: 1.25; }
   .intro::after { display: none; }
 }
+
+/* Tisk: gumb ob merilcu izpolnjenosti v glavi urejevalnika. */
+.editorPrint { margin-left: auto; padding: .5rem 1rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: 700 .8rem var(--font-sans), sans-serif; color: var(--ink); cursor: pointer; }
+.editorPrint:hover { border-color: color-mix(in oklch, oklch(58% .2 297) 45%, transparent); color: color-mix(in oklch, oklch(46% .2 297) 92%, var(--ink)); }

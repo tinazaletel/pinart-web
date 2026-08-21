@@ -13,6 +13,7 @@ import { usePredogled } from '@/lib/predogled';
 import { useLocale } from 'next-intl';
 import styles from './BusinessCanvasWorkspace.module.css';
 import { preberiProjekti, shraniProjekt, type Projekt } from '@/lib/projekti';
+import { natisniElement } from '@/lib/natisni';
 
 const BLOCKS: Array<{ key: keyof BusinessCanvas; number: string; title: string; hint: string; example: string }> = [
   { key: 'partners', number: '01', title: 'Ključni partnerji', hint: 'Kdo ti pomaga ustvariti ali dostaviti vrednost?', example: 'zunanji sodelavci, računovodstvo, tiskarne …' },
@@ -278,6 +279,10 @@ export default function BusinessCanvasWorkspace() {
           <div className={styles.progress} style={{ background: `conic-gradient(from -90deg, oklch(72% .18 300), oklch(82% .13 288) ${(completed / 9) * 100}%, oklch(95% .02 300) 0)` }} aria-label={`${completed} od 9 področij izpolnjenih`}><strong>{completed}<small>/9</small></strong></div>
           <span className={styles.progressLabel}>izpolnjenih področij</span>
         </div>
+        <button type="button" className={styles.editorPrint}
+          onClick={() => natisniElement('canvas-tisk', `Business Canvas — ${brandName || companyName || 'Pinart'}`, { lezece: true, robMm: 12 })}>
+          Natisni
+        </button>
       </section>
       <section className={styles.canvasToolbar} aria-label="Podatki Business Canvasa">
         {organizations.length > 1 && <label><span>Podjetje</span><select value={activeOrganizationId} onChange={event => { setActiveOrganization(event.target.value); window.location.reload(); }}>{organizations.map(organization => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select></label>}
@@ -311,6 +316,30 @@ export default function BusinessCanvasWorkspace() {
           </select>
         </label>
       </section>
+
+      {/* TISKLJIVA RAZLICICA — skrita na zaslonu, natisne se prek lib/natisni.
+          Namenoma svoja postavitev: natisnjen vmesnik bi imel gumbe, okvirje
+          in drsnike, natisnjen dokument pa mora biti stran, ki jo lahko das
+          nekomu v roke na sestanku. */}
+      <div id="canvas-tisk" aria-hidden="true" style={{ position: 'absolute', left: '-99999px', top: 0, width: '277mm' }}>
+        <p style={{ margin: 0, font: '800 9pt sans-serif', letterSpacing: '.18em', color: '#6E4FA6' }}>BUSINESS MODEL CANVAS</p>
+        <h1 style={{ margin: '.2rem 0 .1rem', font: '500 24pt Georgia, serif', color: '#111' }}>{shownBrandName || shownCompanyName || 'Business Canvas'}</h1>
+        <p style={{ margin: '0 0 14pt', font: '400 10pt sans-serif', color: '#555' }}>
+          {shownCompanyName}{shownCompanyName ? ' · ' : ''}{new Date().toLocaleDateString('sl-SI')}
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8pt' }}>
+          {BLOCKS.map(block => (
+            <div key={block.key} style={{ border: '1px solid #ddd', borderRadius: '6pt', padding: '8pt', breakInside: 'avoid' }}>
+              <p style={{ margin: '0 0 4pt', font: '700 8pt sans-serif', letterSpacing: '.08em', color: '#6E4FA6' }}>
+                {block.number} · {block.title.toUpperCase()}
+              </p>
+              <p style={{ margin: 0, font: '400 9.5pt sans-serif', lineHeight: 1.45, color: '#111', whiteSpace: 'pre-wrap' }}>
+                {shownCanvas[block.key]?.trim() || '—'}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <section className={styles.canvas} aria-label="Business Model Canvas">
         {BLOCKS.map(block => <article key={block.key} data-block={block.key}>
