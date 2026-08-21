@@ -197,22 +197,55 @@ export default function ArhivWorkspace({ base }: { base: string }) {
      srednji naslov (TIP + št., BREZ podvojenega imena) + status pilula v vrsti +
      podnaslov (stranka · datum) + gumb Izvozi desno. Velik H2 je odstranjen. */
   const izvozGumb = { display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.5rem .8rem', border: '1px solid var(--line)', borderRadius: '999px', background: 'oklch(98% .008 87 / .92)', color: 'var(--ink)', font: '600 .78rem var(--font-sans), sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' } as const;
-  const DetajlGlava = ({ ikona, naslov, podnaslov, status, izvozNaslov, onExcel }: { ikona: ReactNode; naslov: string; podnaslov?: string; status: ReactNode; izvozNaslov: string; onExcel: () => void }) => (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', margin: '0 0 1.4rem', flexWrap: 'wrap' }}>
-      <div style={{ flex: '1 1 12rem', minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
-          <span style={{ display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '.55rem', background: 'oklch(95% .012 300)', color: 'var(--ink)', flex: 'none' }} aria-hidden>{ikona}</span>
-          <span id="arh-detajl-naslov" style={{ font: '600 1.15rem var(--font-sans), system-ui, sans-serif', color: 'var(--ink)' }}>{naslov}</span>
-          {status}
-        </div>
-        {podnaslov && <p style={{ margin: '.4rem 0 0', fontSize: '.82rem', color: 'var(--muted)' }}>{podnaslov}</p>}
+  /* Glava je ENAKA pri ponudbi, pogodbi in racunu — zato je ena komponenta.
+     Vrstni red je povsod isti, tudi na telefonu: X, naslov, podnaslov.
+     Izvozni gumbi so v NOGI panela, ne tu. */
+  const DetajlGlava = ({ ikona, naslov, podnaslov, status }: { ikona: ReactNode; naslov: string; podnaslov?: string; status: ReactNode }) => (
+    <div className="arh-det-glava">
+      <div className="arh-det-zapri">
+        <button type="button" className="arh-det-x" onClick={zapriDetajl} aria-label={L('Zapri', 'Close')}>✕</button>
       </div>
-      <div style={{ flex: 'none', display: 'inline-flex', gap: '.5rem' }}>
-        <button type="button" onClick={() => izvoziDokument(izvozNaslov)} title={L('Natisni / shrani kot PDF', 'Print / save as PDF')} style={izvozGumb}><FileArrowDown size={15} weight="bold" /> PDF</button>
-        <button type="button" onClick={onExcel} title={L('Izvozi kot Excel (CSV)', 'Export as Excel (CSV)')} style={izvozGumb}><FileArrowDown size={15} weight="bold" /> Excel</button>
+      <div className="arh-det-naslov">
+        <span className="arh-det-ikona" aria-hidden>{ikona}</span>
+        <span id="arh-detajl-naslov">{naslov}</span>
+        {status}
       </div>
+      {podnaslov && <p className="arh-det-pod">{podnaslov}</p>}
     </div>
   );
+
+  /* Izvoz je odvisen od vrste zapisa, noga panela pa je ena — zato konfiguracijo
+     sestavimo tu, na enem mestu, namesto da bi jo vsak razdelek nosil s sabo. */
+  const izvozKonfig = (): { naslov: string; onExcel: () => void } | null => {
+    if (!detajl) return null;
+    if (detajl.vrsta === 'ponudba') {
+      const o = detajl.zapis;
+      return { naslov: `Ponudba ${o.number || o.title}`, onExcel: () => izvoziCsv(`Ponudba ${o.number || o.title}`, [
+        ['Ponudba', o.number || ''], ['Naziv', o.title], ['Stranka', o.client], ['Datum', datStr(o.date)], [],
+        ['Obseg'], ...o.scope.map(s => [s]), [],
+        ['Dogovorjena vrednost', o.agreedAmount || ''],
+      ]) };
+    }
+    if (detajl.vrsta === 'pogodba') {
+      const c = detajl.zapis;
+      return { naslov: `Pogodba — ${c.title}`, onExcel: () => izvoziCsv(`Pogodba ${c.title}`, [
+        ['Pogodba', c.title], ['Stranka', c.client], ['Datum', datStr(c.date)], ['Status', c.status], [],
+        ['Besedilo'], [(c.body || '').replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim()],
+      ]) };
+    }
+    const r = detajl.zapis;
+    const its = r.items || [];
+    return { naslov: `${r.predracun ? 'Predracun' : 'Racun'} ${r.number || ''}`.trim(), onExcel: () => izvoziCsv(`${r.predracun ? 'Predracun' : 'Racun'} ${r.number || ''}`, [
+      [r.predracun ? 'Predračun' : 'Račun', r.number || ''],
+      ['Stranka', r.client], ['Datum', datStr(r.date)], ['Status', r.paid ? 'Plačan' : 'Odprt'], [],
+      ['Opis', 'Količina', 'Cena', 'Popust %', 'DDV %', 'Skupaj'],
+      ...its.map(it => [it.opis, it.kolicina, it.cena, it.popust || 0, it.ddv || 0, Math.round(it.kolicina * it.cena * (1 - (it.popust || 0) / 100) * 100) / 100]),
+      [],
+      ...(typeof r.net === 'number' ? [['Neto', r.net]] : []),
+      ...(typeof r.vatAmount === 'number' && r.vatAmount > 0 ? [['DDV', r.vatAmount]] : []),
+      ['Za plačilo', r.amount],
+    ]) };
+  };
 
   /* NAKNADNO pošiljanje ob pregledu (arhiv): mailto s prednapolnjeno zadevo/besedilom;
      prejemnik iz imenika strank po imenu (če ima e-pošto). Do postavitve Resend (mail
@@ -341,6 +374,11 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const pocistiFiltre = () => { setObdobjeOd(''); setObdobjeDo(''); setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); setStatusProjekt('vse'); };
 
   const zapriDetajl = () => { setDetajl(null); setDetObsegOdprt(false); };
+  /* Panel se je odpiral ze zdrsnjen: fokus je pristal na gumbu pod glavo in
+     brskalnik ga je potegnil v pogled, naslov pa je ostal nad vidnim delom.
+     Zato ob vsakem odprtju postavimo drsnik nazaj na vrh. */
+  const panelRef = useRef<HTMLElement | null>(null);
+  useEffect(() => { if (detajl && panelRef.current) panelRef.current.scrollTop = 0; }, [detajl]);
 
   /* orodna vrstica (ArhivFilter) — ENA instanca ob zavihkih, izbrana glede na
      aktivni zavihek (vsi stirje, tudi projekti, da je vrstica z zavihki v
@@ -702,10 +740,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       {/* ── DETAJL PANEL Z DESNE (vzorec ContractWorkspace: detailBackdrop + detailPanel + lepljivi X) ── */}
       {detajl && (
         <div className={styles.detailBackdrop + (izvazamPdf ? ' arh-zajem' : '')} role="presentation" onMouseDown={zapriDetajl}>
-          <aside className={`${styles.detailPanel} arh-detajl`} role="dialog" aria-modal="true" aria-labelledby="arh-detajl-naslov" onMouseDown={e => e.stopPropagation()}>
-            {/* lepljivi X ostane v kotu tudi med drsenjem (vzorec .pg-det-x) */}
-            <button className="arh-det-x" onClick={zapriDetajl} aria-label={L('Zapri', 'Close')}>✕</button>
-
+          <aside ref={panelRef} className={`${styles.detailPanel} arh-detajl`} role="dialog" aria-modal="true" aria-labelledby="arh-detajl-naslov" onMouseDown={e => e.stopPropagation()}>
             {detajl.vrsta === 'ponudba' && (() => {
               const o = detajl.zapis;
               return <>
@@ -714,12 +749,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   naslov={`${L('Ponudba', 'Offer')}${o.number ? ' ' + o.number : ''}`}
                   podnaslov={`${o.client}${o.date ? ' · ' + datStr(o.date) : ''}`}
                   status={<StatusUredi tip="offer" id={o.id} vrednost={statusVred('offer', o.id, o.status)} opcije={offerOpcije} />}
-                  izvozNaslov={`Ponudba ${o.number || o.title}`}
-                  onExcel={() => izvoziCsv(`Ponudba ${o.number || o.title}`, [
-                    ['Ponudba', o.number || ''], ['Naziv', o.title], ['Stranka', o.client], ['Datum', datStr(o.date)], [],
-                    ['Obseg'], ...o.scope.map(s => [s]), [],
-                    ['Dogovorjena vrednost', o.agreedAmount || ''],
-                  ])}
                 />
 
                 {/* ponudba kot DOKUMENT (mini letterhead: kremni list, senca, Bodoni
@@ -767,11 +796,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   naslov={L('Pogodba', 'Contract')}
                   podnaslov={`${c.client}${c.date ? ' · ' + datStr(c.date) : ''}`}
                   status={<StatusUredi tip="contract" id={c.id} vrednost={statusVred('contract', c.id, c.status)} opcije={contractOpcije} />}
-                  izvozNaslov={`Pogodba — ${c.title}`}
-                  onExcel={() => izvoziCsv(`Pogodba ${c.title}`, [
-                    ['Pogodba', c.title], ['Stranka', c.client], ['Datum', datStr(c.date)], ['Status', c.status], [],
-                    ['Besedilo'], [(c.body || '').replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim()],
-                  ])}
                 />
                 {/* povezana ponudba (ce obstaja) — klik razpre povzetek obsega */}
                 {(() => {
@@ -817,17 +841,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                       naslov={`${r.predracun ? L('Predračun', 'Proforma') : L('Račun', 'Invoice')}${r.number ? ' ' + r.number : ''}`}
                       podnaslov={`${r.client}${r.date ? ' · ' + datStr(r.date) : ''}`}
                       status={<StatusUredi tip="invoice" id={r.id} vrednost={statusVred('invoice', r.id, String(r.paid))} opcije={invoiceOpcije} />}
-                      izvozNaslov={`${r.predracun ? 'Predracun' : 'Racun'} ${r.number || ''}`.trim()}
-                      onExcel={() => izvoziCsv(`${r.predracun ? 'Predracun' : 'Racun'} ${r.number || ''}`, [
-                        [r.predracun ? 'Predračun' : 'Račun', r.number || ''],
-                        ['Stranka', r.client], ['Datum', datStr(r.date)], ['Status', r.paid ? 'Plačan' : 'Odprt'], [],
-                        ['Opis', 'Količina', 'Cena', 'Popust %', 'DDV %', 'Skupaj'],
-                        ...items.map(it => [it.opis, it.kolicina, it.cena, it.popust || 0, it.ddv || 0, Math.round(it.kolicina * it.cena * (1 - (it.popust || 0) / 100) * 100) / 100]),
-                        [],
-                        ...(typeof r.net === 'number' ? [['Neto', r.net]] : []),
-                        ...(typeof r.vatAmount === 'number' && r.vatAmount > 0 ? [['DDV', r.vatAmount]] : []),
-                        ['Za plačilo', r.amount],
-                      ])}
                     />
 
                     {/* cel racun/predracun v panelu (kot pogodba/ponudba): letterhead + postavke + vsote */}
@@ -882,6 +895,20 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   </>;
                 })()}
               </>;
+            })()}
+            {(() => {
+              const izv = izvozKonfig();
+              if (!izv) return null;
+              return (
+                <div className="arh-det-noga">
+                  <button type="button" onClick={() => izvoziDokument(izv.naslov)} style={izvozGumb}>
+                    <FileArrowDown size={15} weight="bold" /> {L('Natisni / PDF', 'Print / PDF')}
+                  </button>
+                  <button type="button" onClick={izv.onExcel} style={izvozGumb}>
+                    <FileArrowDown size={15} weight="bold" /> Excel
+                  </button>
+                </div>
+              );
             })()}
           </aside>
         </div>
@@ -1053,7 +1080,13 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-det-statusvrsta{margin:0 0 1.1rem}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
         /* × FIKSEN v desnem kotu panela, POD topbarom (fixed z-100) in NAD njim po z-indexu — vedno viden, ne odscrolla (panel je overflow-y:auto, absoluten × bi odscrollal) */
-        .arh-det-x{position:fixed;top:3.85rem;right:1.4rem;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+        .arh-det-glava{display:flex;flex-direction:column;gap:.5rem;margin:0 0 1.4rem}
+        .arh-det-zapri{display:flex;justify-content:flex-end}
+        .arh-det-naslov{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;font:600 1.15rem var(--font-sans),system-ui,sans-serif;color:var(--ink)}
+        .arh-det-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:.55rem;background:oklch(95% .012 300);color:var(--ink);flex:none}
+        .arh-det-pod{margin:0;font-size:.82rem;color:var(--muted)}
+        .arh-det-noga{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem;padding-top:1.2rem;border-top:1px solid var(--line)}
+        .arh-det-x{position:relative;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
         .arh-det-x:hover{background:var(--ink);color:var(--paper)}
         .arh-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0;margin-bottom:.6rem}
         .arh-det-meta span{display:grid;gap:.25rem;padding:.7rem;border-radius:.7rem;background:oklch(94% .025 87);min-width:0}
