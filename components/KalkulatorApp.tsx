@@ -8749,6 +8749,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <span>redna {val(r.paketi[1].redna)}</span>
                         </div>
                       )}
+                      {/* OD KOD CENA: postavke zgoraj so IZHODISCNE cene storitev,
+                          koncni znesek pa je delo x mnozitelj paketa + pravice
+                          (glej izracun paketov). Brez teh dveh vrstic uporabnik
+                          sesteje postavki, dobi drugo stevilko in ne more vedeti,
+                          zakaj — enako bo storila njegova stranka. */}
+                      <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                        <span>{L('Izvedba (zahtevnost, izkušnje, trg)', 'Execution (complexity, experience, market)')}</span>
+                        <span>{val(r.paketi[1].redna - r.pravice)}</span>
+                      </div>
+                      {r.pravice > 0 && (
+                        <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                          <span>{L('+ Prenos avtorskih pravic', '+ Rights transfer')}</span>
+                          <span>{val(r.pravice)}</span>
+                        </div>
+                      )}
                       <div className="ponudba0-vsota-vrsta">
                         <span>Priporočena cena{ddvZavezanec ? ' (brez DDV)' : ''}</span>
                         <b>{val(r.paketi[1].skupaj)}</b>
