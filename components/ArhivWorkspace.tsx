@@ -1085,7 +1085,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-det-ikona{display:grid;place-items:center;width:2rem;height:2rem;border-radius:.55rem;background:oklch(95% .012 300);color:var(--ink);flex:none}
         .arh-det-pod{margin:0;font-size:.82rem;color:var(--muted)}
         .arh-det-noga{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem;padding-top:1.2rem;border-top:1px solid var(--line)}
-        @media (max-width:640px){.arh-det-naslov{flex-wrap:wrap}.arh-det-x{order:-1;width:100%;height:auto;border:0;background:none;display:flex;justify-content:flex-end}.arh-det-x::before{content:'\2715';display:grid;place-items:center;width:2.2rem;height:2.2rem;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper)}}
+        @media (max-width:640px){.arh-det-naslov{flex-wrap:wrap}.arh-det-x{order:-1;margin-left:auto}#arh-detajl-naslov{flex-basis:100%}}
         .arh-det-x{margin-left:auto;flex:none;position:relative;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
         .arh-det-x:hover{background:var(--ink);color:var(--paper)}
         .arh-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0;margin-bottom:.6rem}
