@@ -210,6 +210,9 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       <div style={{ flex: 'none', display: 'inline-flex', gap: '.5rem' }}>
         <button type="button" onClick={() => izvoziDokument(izvozNaslov)} title={L('Natisni / shrani kot PDF', 'Print / save as PDF')} style={izvozGumb}><FileArrowDown size={15} weight="bold" /> PDF</button>
         <button type="button" onClick={onExcel} title={L('Izvozi kot Excel (CSV)', 'Export as Excel (CSV)')} style={izvozGumb}><FileArrowDown size={15} weight="bold" /> Excel</button>
+        {/* Zapiranje sodi v glavo, ob ostala dejanja — plavajoc gumb cez vsebino
+            se je izgubil in prekrival naslov. */}
+        <button type="button" className="arh-det-x" onClick={zapriDetajl} aria-label={L('Zapri', 'Close')}>✕</button>
       </div>
     </div>
   );
@@ -703,9 +706,6 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       {detajl && (
         <div className={styles.detailBackdrop + (izvazamPdf ? ' arh-zajem' : '')} role="presentation" onMouseDown={zapriDetajl}>
           <aside className={`${styles.detailPanel} arh-detajl`} role="dialog" aria-modal="true" aria-labelledby="arh-detajl-naslov" onMouseDown={e => e.stopPropagation()}>
-            {/* lepljivi X ostane v kotu tudi med drsenjem (vzorec .pg-det-x) */}
-            <button className="arh-det-x" onClick={zapriDetajl} aria-label={L('Zapri', 'Close')}>✕</button>
-
             {detajl.vrsta === 'ponudba' && (() => {
               const o = detajl.zapis;
               return <>
@@ -1053,7 +1053,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-det-statusvrsta{margin:0 0 1.1rem}
         /* lepljivi X ostane v kotu med drsenjem (kopija .pg-det-x) */
         /* × FIKSEN v desnem kotu panela, POD topbarom (fixed z-100) in NAD njim po z-indexu — vedno viden, ne odscrolla (panel je overflow-y:auto, absoluten × bi odscrollal) */
-        .arh-det-x{position:sticky;top:0;align-self:flex-end;z-index:101;display:grid;place-items:center;width:2.2rem;height:2.2rem;margin-bottom:.4rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+        .arh-det-x{display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1rem;line-height:1;cursor:pointer;flex:none}
         .arh-det-x:hover{background:var(--ink);color:var(--paper)}
         .arh-det-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;min-width:0;margin-bottom:.6rem}
         .arh-det-meta span{display:grid;gap:.25rem;padding:.7rem;border-radius:.7rem;background:oklch(94% .025 87);min-width:0}
