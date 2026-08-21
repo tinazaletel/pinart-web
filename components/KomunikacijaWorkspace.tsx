@@ -641,7 +641,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-nova:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
         .km-nova:disabled{opacity:.4;cursor:default;transform:none}
         .km-mail-telo{padding:.2rem 1rem 1rem 3.6rem;font:500 .84rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 80%,transparent);line-height:1.55;white-space:pre-wrap}
-        .km-posta-ovoj{max-width:62rem}
+        .km-posta-ovoj{max-width:none}
         .km-iskalnik{display:flex;align-items:center;gap:.5rem;background:#fff;border:1px solid var(--k-line);border-radius:999px;padding:.38rem .9rem;margin-bottom:1rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
         .km-iskalnik input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 .85rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-posta-body{display:flex;gap:1.3rem;align-items:flex-start}
