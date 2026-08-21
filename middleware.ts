@@ -88,12 +88,28 @@ export default async function middleware(request: NextRequest) {
   const jePinartflow = /(^|\.)pinartflow\.com$/i.test(host);
   const jeFlowPot = /^\/(?:sl\/|en\/)?(?:flow|kalkulator)(?:\/|$)/.test(request.nextUrl.pathname);
 
+  /* JAVNI DEL (21. 8. 2026): pred zagonom odpremo predstavitev, brezplacni
+     kalkulator, pravne strani, vgradljiv obrazec in portal za stranko —
+     odvetnik, AJPES in prvi obiskovalci morajo do njih brez gesla.
+     Aplikacija (projekti, stranke, racuni, Pupa, nastavitve) ostane zaklenjena.
+     Seznam je NAMENOMA popoln in ozek: kar ni tu, je zaprto. */
+  const pot = request.nextUrl.pathname.replace(/^\/(?:sl|en)(?=\/|$)/, '') || '/';
+  const jeJavnaPot =
+    pot === '/'
+    || pot === '/kalkulator'
+    || pot === '/kalkulator/pogoji'
+    || pot === '/zasebnost'
+    || pot === '/dostopnost'
+    || pot === '/ai-politika'
+    || /^\/povprasevanje(?:\/|$)/.test(pot)
+    || /^\/p\//.test(pot);
+
   /* Pred-launch geslo-zid — skrijemo VES Flow do launcha:
        - pinartflow.com: cela domena;
        - druge domene (pinart.si ...): SAMO Flow poti (/flow, /kalkulator); portfolio ostane odprt.
      Brez SITE_GESLO se pinartflow pokaze kot "Kmalu"; Flow poti drugod (dev/localhost brez
      gesla) pa NE blokiramo, da razvoj tece normalno. */
-  if (jePinartflow || jeFlowPot) {
+  if ((jePinartflow || jeFlowPot) && !jeJavnaPot) {
     const geslo = process.env.SITE_GESLO;
     if (!geslo) {
       if (jePinartflow) {
