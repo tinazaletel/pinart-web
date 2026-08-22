@@ -18,7 +18,7 @@ export const PRICING_SERVICES: PricingService[] = [
   { id: 'razstava', ime: 'Razstavni / scenski dizajn', imeEn: 'Exhibition / set design', osnova: 1300 },
   { id: 'produktni', ime: 'Produktni / pohištveni dizajn', imeEn: 'Product / furniture design', osnova: 1600 },
   { id: 'uxui', ime: 'UX/UI dizajn', imeEn: 'UX/UI design', osnova: 1100 },
-  { id: 'aplikacija', ime: 'Mobilna aplikacija', imeEn: 'Mobile app', osnova: 2400 },
+  { id: 'aplikacija', ime: 'Razvoj aplikacije', imeEn: 'App development', osnova: 2400 },
   { id: 'dizajnsistem', ime: 'Dizajn sistem', imeEn: 'Design system', osnova: 1600 },
   { id: 'smm', ime: 'Social media vodenje', imeEn: 'Social media management', osnova: 650 },
   { id: 'seo', ime: 'SEO', imeEn: 'SEO', osnova: 550 },

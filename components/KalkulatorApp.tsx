@@ -8760,20 +8760,52 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           (glej izracun paketov). Brez teh dveh vrstic uporabnik
                           sesteje postavki, dobi drugo stevilko in ne more vedeti,
                           zakaj — enako bo storila njegova stranka. */}
-                      <div className="ponudba0-vsota-vrsta ponudba0-mini">
-                        <span>{L('Izvedba (zahtevnost, izkušnje, trg)', 'Execution (complexity, experience, market)')}</span>
-                        <span>{val(r.paketi[1].redna - r.pravice)}</span>
-                      </div>
+                      {(() => {
+                        /* RAZLIKA, ne skupek. Postavke zgoraj so izhodiscne cene;
+                           koncna cena je delo x mnozitelj paketa + pravice. Ce tu
+                           izpisemo skupno izvedbo, uporabnik spet vidi stevilko, ki
+                           se s postavkami ne izide. Izpisemo torej PRIRASTEK, da
+                           velja: postavke + prilagoditev + pravice = skupaj.
+
+                           Prirastka NE delimo na "zahtevnost" in "izkusnje" posebej:
+                           mnozitelji se mnozijo med sabo in razdelitev na evre bi
+                           bila navidezno natancna, v resnici pa dogovorjena. Ena
+                           postena vrstica je boljsa od dveh izmisljenih. */
+                        const osnove = vrstice.reduce((a, l) => {
+                          const s = vseStoritve.find(x => x.id === l.sid);
+                          return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
+                        }, 0);
+                        const prilagoditev = (r.paketi[1].redna - r.pravice) - osnove;
+                        /* Ce je cena paketa ROCNO prepisana, razclenitev ne velja —
+                           vsota delov se s prepisanim zneskom ne izide in bi lagala.
+                           Takrat rajsi ne pokazemo nicesar. */
+                        if (r.paketi[1].rocna) return null;
+                        return (
+                          <>
+                            <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                              <span>{L('Osnovno delo', 'Base work')}</span>
+                              <span>{val(osnove)}</span>
+                            </div>
+                            {Math.abs(prilagoditev) >= 1 && (
+                              <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                                <span>{L('Prilagoditev glede na zahtevnost, izkušnje in trg', 'Adjustment for complexity, experience and market')}</span>
+                                <span>{prilagoditev > 0 ? '+' : ''}{val(prilagoditev)}</span>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                       {r.pravice > 0 && (
                         <div className="ponudba0-vsota-vrsta ponudba0-mini">
-                          <span>{L('+ Prenos avtorskih pravic', '+ Rights transfer')}</span>
+                          <span>{L('Licenca in pravice uporabe', 'Licence and usage rights')}</span>
                           <span>{val(r.pravice)}</span>
                         </div>
                       )}
                       <div className="ponudba0-vsota-vrsta">
-                        <span>Priporočena cena{ddvZavezanec ? ' (brez DDV)' : ''}</span>
+                        <span>Predlagana cena projekta{ddvZavezanec ? ' (brez DDV)' : ''}</span>
                         <b>{val(r.paketi[1].skupaj)}</b>
                       </div>
+                      <div className="ponudba0-opomba">{L('Izračun po paketu Priporočeni.', 'Calculated with the Recommended package.')}</div>
                       <div className="ponudba0-razpon" role="group" aria-label={L('Ocena tržnega razpona cene', 'Estimated market price range')}>
                         <div className="ponudba0-razpon-glava">
                           <span>{L('Ocena tržnega razpona', 'Estimated market range')}</span>
