@@ -3614,7 +3614,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           const osn = osnovaStoritve(s.id);
           const pril = cenaStoritve(s.id) * m - osn;
           if (osn <= 0 || Math.abs(pril) < 1) return '';
-          return `  · ${L('izhodišče iz cenika', 'price list base')} ${val(osn)}, ${pril > 0 ? L('prilagoditev', 'adjustment') : L('znižanje', 'reduction')} ${pril > 0 ? '+' : '−'}${val(Math.abs(pril))}`;
+          return `  · ${L('osnovno delo', 'base work')} ${val(osn)}, ${pril > 0 ? L('prilagoditev', 'adjustment') : L('znižanje', 'reduction')} ${pril > 0 ? '+' : '−'}${val(Math.abs(pril))}`;
         };
         const razcl = razclenitev();
         /* obseg: kaj cena pokriva (faza, m2, kaj ni vkljuceno) */
@@ -8900,7 +8900,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     return (
                       <>
                         <div className="ponudba0-vsota-vrsta">
-                          <span>Izvedba · okvirno{ddvZavezanec ? ' (brez DDV)' : ''}</span>
+                          {/* ISTO IME kot v razclenitvi spodaj in v besedilu ponudbe.
+                              Trije razlicni nazivi za isto stevilko so bili glavni
+                              razlog, da uporabnik ni znal slediti, od kod cena. */}
+                          <span>{L('Osnovno delo', 'Base work')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
                           <b><CenaCountUp value={okvirno} format={val} /></b>
                         </div>
                         {ddvZavezanec && (
@@ -8909,7 +8912,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             <span>z DDV {val(okvirno * (1 + ddvSt / 100))}</span>
                           </div>
                         )}
-                        <div className="ponudba0-opomba">{L('↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)', '↳ the final price is sharpened by the next steps (experience, market, rights)')}</div>
+                        {/* Pove FORMULO, ne le da se bo cena spremenila. Uporabnik
+                            je prej sestel postavke, dobil drugo koncno stevilko in
+                            ni imel kako priti od ene do druge. */}
+                        <div className="ponudba0-opomba">{L('↳ končna cena = osnovno delo + prilagoditev (zahtevnost, izkušnje, trg) + pravice', '↳ final price = base work + adjustment (complexity, experience, market) + rights')}</div>
                       </>
                     );
                   })()}
