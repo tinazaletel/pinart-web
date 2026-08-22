@@ -204,7 +204,7 @@ spremembah. **[PRAVNIK]**
 
 | podobdelovalec | namen | država | podlaga za prenos | DPA podpisan |
 |---|---|---|---|---|
-| Supabase | baza in shramba | **[POTRDI regijo — mora biti EU]** | — oziroma SCC | ☐ |
+| Supabase | baza in shramba | **EU — eu-north-1, Stockholm** (potrjeno 23. 8. 2026) | prenosa v tretjo državo ni | ☐ |
 | Vercel | gostovanje aplikacije | ZDA | SCC / DPF | ☐ |
 | Resend | pošiljanje e-pošte | ZDA | SCC / DPF | ☐ |
 | Cloudflare | domena, prejem e-pošte | ZDA | SCC / DPF | ☐ |
@@ -242,7 +242,12 @@ ta evidenca formalno nepopolna, tudi če je tehnično vse urejeno.
 **Prenos in hramba**
 
 - Ves promet po HTTPS; podatki v mirovanju šifrirani pri ponudniku.
-- Varnostne kopije baze — **[DOPOLNI: kateri paket, koliko dni nazaj]**.
+- Baza stoji v EU (Supabase, eu-north-1 Stockholm) — potrjeno 23. 8. 2026.
+- **Varnostnih kopij baze trenutno NI.** Projekt je na paketu Free, ki
+  samodejnih kopij ne vključuje; nadzorna plošča kaže »No backups«. To je
+  odprto neskladje s členom 32(1)(c) GDPR, ki zahteva zmožnost pravočasne
+  povrnitve podatkov ob incidentu. **Odpraviti pred prvimi plačljivimi
+  uporabniki.** Stanje na dan 23. 8. 2026.
 
 **Organizacijsko**
 
@@ -256,7 +261,8 @@ ta evidenca formalno nepopolna, tudi če je tehnično vse urejeno.
 
 | # | naloga | kdo |
 |---|---|---|
-| 1 | preveriti regijo Supabase projekta (mora biti EU) | upravljavec, **nujno** |
+| 1 | ~~preveriti regijo Supabase~~ — **opravljeno 23. 8. 2026: EU, Stockholm** | ✔ |
+| 1b | **vzpostaviti varnostne kopije baze** (Free paket jih nima) | upravljavec, **nujno** |
 | 2 | podpisati DPA z vsemi podobdelovalci | upravljavec |
 | 3 | dodati pogodbo o obdelavi v splošne pogoje (naša vloga obdelovalca) | pravnik |
 | 4 | določiti roke hrambe, označene z [DOPOLNI] | upravljavec |
