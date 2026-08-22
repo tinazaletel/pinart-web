@@ -694,7 +694,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
         .pd-plava { position: absolute; inset: 0; z-index: 1; pointer-events: none; display: none; }
         /* gumb za preklop razporeda (zberi v kot / razprši) */
-        .pd-razpored { position: absolute; top: .75rem; right: .5rem; z-index: 30; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+        .pd-razpored { position: fixed; top: 4.3rem; right: 4.6rem; z-index: 63; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; }
         .pd-razpored:hover { background: #fff; color: var(--ink, #1a1a1a); }
         /* wrap nosi PLAVANJE (position + bob); kartica se POVEČA ob hoveru (brez konflikta transformov) */
         .pd-kartica-wrap { position: absolute; pointer-events: none; animation: pdBob 9s ease-in-out infinite; }
