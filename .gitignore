@@ -44,3 +44,7 @@ skills-lock.json
 /playwright/.cache/
 /tests/screenshots/
 .claude/worktrees/
+
+# Varnostne kopije baze (osebni podatki — nikoli v git)
+varnostne-kopije/
+*.dump
