@@ -667,8 +667,15 @@ export default function ProjectDetailModern({
         .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-dokumenti ul { list-style:none; margin:0; padding:0; }
         .pm-dokumenti li + li { border-top:1px solid var(--pm-line); }
-        .pm-dokumenti button { width:100%; display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:.7rem; padding:.72rem 0; border:0; background:transparent; color:var(--pm-ink); text-align:left; cursor:pointer; font:700 .88rem var(--font-sans),sans-serif; }
-        .pm-canvas-link { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:.7rem; padding:.72rem 0; color:var(--pm-ink); text-decoration:none; font:700 .88rem var(--font-sans),sans-serif; }
+        /* Klikljiva vrstica se obnasa kot vse druge v tej kartici (.pm-naloga,
+           .pm-rok, .pm-li): ozadje sezje cez rob kartice, zato negativen margin
+           in sirina za oba robova. */
+        .pm-dokumenti button, .pm-canvas-link { width:calc(100% + 1.2rem); box-sizing:border-box; display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:.7rem; padding:.72rem .6rem; margin:0 -.6rem; border:0; border-radius:10px; background:transparent; color:var(--pm-ink); text-align:left; text-decoration:none; cursor:pointer; font:700 .88rem var(--font-sans),sans-serif; transition:background .15s ease; }
+        .pm-dokumenti button:hover, .pm-canvas-link:hover { background:var(--pm-paper); }
+        .pm-dokumenti button:hover .pm-arr, .pm-canvas-link:hover .pm-arr { color:var(--pm-acc); }
+        /* Ob hoverju izgine crta nad in pod vrstico, sicer reze zaobljeno ozadje. */
+        .pm-dokumenti li:has(button:hover), .pm-dokumenti li:has(button:hover) + li,
+        .pm-dokumenti li:has(.pm-canvas-link:hover), .pm-dokumenti li:has(.pm-canvas-link:hover) + li { border-top-color:transparent; }
         .pm-dokumenti time { color:var(--pm-muted); font-size:.72rem; font-weight:500; }
         .pm-dok-vsebina section + section { margin-top:1.5rem; }
         .pm-dok-vsebina h2 { margin:0 0 .35rem; font:800 .68rem var(--font-sans),sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#655f58; }

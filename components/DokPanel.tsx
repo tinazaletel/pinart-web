@@ -99,7 +99,10 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
         .dp-papir { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0 1rem; padding: 2.4rem clamp(1.4rem, 4vw, 3rem) 3rem;
                     background: #fff; border-radius: 1rem 1rem 0 0; box-shadow: 0 -2px 24px oklch(40% .08 300 / .08); }
         .dp-nad { margin: 0 0 .3rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .18em; text-transform: uppercase; color: var(--purple, oklch(60% .2 297)); }
-        .dp-naslov { margin: 0; font: 500 clamp(1.5rem, 3.4vw, 2.1rem)/1.12 var(--font-serif), Georgia, serif; font-synthesis: none; letter-spacing: -.01em; color: var(--ink, #1a1a1a); text-wrap: balance; }
+        /* --font-serif-flow (DM Serif), NE --font-serif. Panel visi v portalu na
+           <body>, torej zunaj .shell, kjer je --font-serif preslikan v Flow serif.
+           Zunaj tega je --font-serif portfeljev Bodoni in ta v Flow ne sodi. */
+        .dp-naslov { margin: 0; font: 500 clamp(1.5rem, 3.4vw, 2.1rem)/1.12 var(--font-serif-flow), Georgia, serif; font-synthesis: none; letter-spacing: -.01em; color: var(--ink, #1a1a1a); text-wrap: balance; }
         .dp-pod { margin: .5rem 0 0; font: 500 .92rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 58%, transparent); }
         .dp-vsebina { margin-top: 1.8rem; }
 
