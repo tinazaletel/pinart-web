@@ -24,46 +24,75 @@ manjkajoča točka »cene storitev v tujini po posameznih storitvah«. Doslej sm
 imeli le nemško urno postavko (≈ 120 €/h) in grobo razmerje ZDA ≈ 1,5–2 × SLO
 iz Tininega starega cenika. Ta dokument to vrzel zapre.
 
-**Kako brati stolpce:**
-- **Value / Standard / High** — trije regijski razredi ZDA (glej razdelek 2).
-- **Freelance / Boutique / Agency** — tip ponudnika pri istem obsegu.
-- **Start Price** — realna vstopna cena, pod katero se posel praviloma ne dela.
-- **Conf.** — kakovost dokazov: A vsaj trije neposredni viri, B dva uporabna,
-  C signal obstaja, a ni dovolj za mediano.
+**Stolpci so preimenovani nalašč.** V izvoru so se imenovali kot izmerjene
+vrednosti, kar niso. Tu so:
+
+- **Načrtovalna cena · Value / Standard / High** — orientacijska cena za
+  regijski razred, ne mediana opazovanj.
+- **Sidro · samostojni / butični / agencijski** — tipična izhodiščna cena za
+  tip ponudnika, ne izmerjeno povprečje.
+- **Vstopna** — cena, pod katero se posel praviloma ne dela. Matematične
+  izpeljave iz preostalih stolpcev ni.
+- **Vir** — zanesljivost VIRA, ne prepričljivost številke. Ker neposrednih
+  povezav ni, je pri vseh vrsticah **N** (ni preverjeno). Ocene A/B/C iz
+  izvora so odstranjene, da jih kdo ne prebere kot naše.
 
 ---
 
 ## 1 · Preglednica 25 storitev
 
-| # | storitev | enota | Value | Standard | High | Freelance | Boutique | Agency | Start | Conf. |
+| # | storitev | enota | načrt. Value | načrt. Standard | načrt. High | sidro samost. | sidro butik | sidro agencija | vstopna | vir |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|:--:|
-| 1 | Logo + basic identity | project | $1.500 | $3.500 | $8.500 | $1.800 | $4.500 | $12.000 | $2.500 | A |
-| 2 | Full visual identity | project | $4.500 | $12.000 | $35.000 | $5.000 | $15.000 | $45.000 | $8.500 | A |
-| 3 | Website design & build (10 str.) | project | $3.500 | $8.500 | $22.000 | $4.000 | $10.000 | $30.000 | $6.000 | A |
-| 4 | Campaign concept / visuals | project | $2.500 | $6.000 | $18.000 | $3.000 | $7.500 | $25.000 | $4.500 | B |
-| 5 | Publication / brochure | project | $1.200 | $2.800 | $7.500 | $1.500 | $3.500 | $10.000 | $2.000 | B |
-| 6 | Packaging design (SKU) | deliverable | $2.000 | $5.500 | $15.000 | $2.500 | $7.000 | $22.000 | $4.000 | B |
-| 7 | Illustration / visual world | project | $1.000 | $3.000 | $9.000 | $1.500 | $4.000 | $12.000 | $2.000 | B |
-| 8 | Creative direction | hour | $85 | $150 | $275 | $110 | $165 | $250 | $125 | A |
-| 9 | Commercial photo (pol dneva) | day | $1.200 | $2.800 | $6.500 | $1.500 | $3.200 | $8.000 | $2.000 | B |
-| 10 | Copywriting | hour | $65 | $110 | $200 | $85 | $130 | $210 | $95 | A |
-| 11 | Interior design | sq ft | $4 | $10 | $25 | $75/h | $140/h | $220/h | $8 | B |
-| 12 | Architectural design | sq ft | $5 | $12 | $30 | $85/h | $160/h | $260/h | $10 | C |
-| 13 | Trade-show / set design | project | $3.000 | $7.500 | $20.000 | $3.500 | $8.500 | $25.000 | $5.000 | C |
-| 14 | Product / furniture design | project | $2.500 | $6.500 | $18.000 | $3.000 | $8.000 | $22.000 | $4.500 | C |
-| 15 | UX/UI design (web app) | project | $3.000 | $7.000 | $18.000 | $3.500 | $8.000 | $24.000 | $5.000 | A |
-| 16 | Mobile app UX/UI design | project | $3.500 | $8.500 | $22.000 | $4.500 | $10.000 | $28.000 | $6.000 | A |
-| 17 | Design system | deliverable | $4.000 | $12.000 | $35.000 | $5.000 | $15.000 | $45.000 | $8.500 | B |
-| 18 | Social media management | month | $1.200 | $3.000 | $7.500 | $1.500 | $3.500 | $9.000 | $2.200 | A |
-| 19 | SEO retainer | month | $1.000 | $2.500 | $6.500 | $1.200 | $3.000 | $8.000 | $1.800 | A |
-| 20 | Email marketing setup | project | $1.200 | $3.200 | $8.000 | $1.500 | $3.800 | $10.000 | $2.200 | B |
-| 21 | PR / public relations | month | $2.500 | $6.000 | $15.000 | $3.000 | $7.000 | $18.000 | $4.500 | B |
-| 22 | Video production (60 s) | deliverable | $2.500 | $7.000 | $20.000 | $3.000 | $8.500 | $25.000 | $5.000 | B |
-| 23 | Motion graphics (30 s) | deliverable | $1.800 | $4.500 | $12.000 | $2.200 | $5.500 | $15.000 | $3.200 | B |
-| 24 | 3D visualization (render) | deliverable | $600 | $1.500 | $4.000 | $750 | $1.800 | $5.000 | $1.000 | B |
-| 25 | Brand strategy | project | $3.500 | $10.000 | $30.000 | $4.000 | $12.000 | $40.000 | $7.000 | B |
+| 1 | Logo + basic identity | project | $1.500 | $3.500 | $8.500 | $1.800 | $4.500 | $12.000 | $2.500 | N |
+| 2 | Full visual identity | project | $4.500 | $12.000 | $35.000 | $5.000 | $15.000 | $45.000 | $8.500 | N |
+| 3 | Website design & build (10 str.) | project | $3.500 | $8.500 | $22.000 | $4.000 | $10.000 | $30.000 | $6.000 | N |
+| 4 | Campaign concept / visuals | project | $2.500 | $6.000 | $18.000 | $3.000 | $7.500 | $25.000 | $4.500 | N |
+| 5 | Publication / brochure | project | $1.200 | $2.800 | $7.500 | $1.500 | $3.500 | $10.000 | $2.000 | N |
+| 6 | Packaging design (SKU) | deliverable | $2.000 | $5.500 | $15.000 | $2.500 | $7.000 | $22.000 | $4.000 | N |
+| 7 | Illustration / visual world | project | $1.000 | $3.000 | $9.000 | $1.500 | $4.000 | $12.000 | $2.000 | N |
+| 8 | Creative direction | hour | $85 | $150 | $275 | $110 | $165 | $250 | $125 | N |
+| 9 | Commercial photo (pol dneva) | day | $1.200 | $2.800 | $6.500 | $1.500 | $3.200 | $8.000 | $2.000 | N |
+| 10 | Copywriting | hour | $65 | $110 | $200 | $85 | $130 | $210 | $95 | N |
+| 11 | Interior design | sq ft | $4 | $10 | $25 | $75/h | $140/h | $220/h | $8 | N |
+| 12 | Architectural design | sq ft | $5 | $12 | $30 | $85/h | $160/h | $260/h | $10 | N |
+| 13 | Trade-show / set design | project | $3.000 | $7.500 | $20.000 | $3.500 | $8.500 | $25.000 | $5.000 | N |
+| 14 | Product / furniture design | project | $2.500 | $6.500 | $18.000 | $3.000 | $8.000 | $22.000 | $4.500 | N |
+| 15 | UX/UI design (web app) | project | $3.000 | $7.000 | $18.000 | $3.500 | $8.000 | $24.000 | $5.000 | N |
+| 16 | Mobile app UX/UI design | project | $3.500 | $8.500 | $22.000 | $4.500 | $10.000 | $28.000 | $6.000 | N |
+| 17 | Design system | deliverable | $4.000 | $12.000 | $35.000 | $5.000 | $15.000 | $45.000 | $8.500 | N |
+| 18 | Social media management | month | $1.200 | $3.000 | $7.500 | $1.500 | $3.500 | $9.000 | $2.200 | N |
+| 19 | SEO retainer | month | $1.000 | $2.500 | $6.500 | $1.200 | $3.000 | $8.000 | $1.800 | N |
+| 20 | Email marketing setup | project | $1.200 | $3.200 | $8.000 | $1.500 | $3.800 | $10.000 | $2.200 | N |
+| 21 | PR / public relations | month | $2.500 | $6.000 | $15.000 | $3.000 | $7.000 | $18.000 | $4.500 | N |
+| 22 | Video production (60 s) | deliverable | $2.500 | $7.000 | $20.000 | $3.000 | $8.500 | $25.000 | $5.000 | N |
+| 23 | Motion graphics (30 s) | deliverable | $1.800 | $4.500 | $12.000 | $2.200 | $5.500 | $15.000 | $3.200 | N |
+| 24 | 3D visualization (render) | deliverable | $600 | $1.500 | $4.000 | $750 | $1.800 | $5.000 | $1.000 | N |
+| 25 | Brand strategy | project | $3.500 | $10.000 | $30.000 | $4.000 | $12.000 | $40.000 | $7.000 | N |
 
-Viri agregatov: AIGA, Clutch, Credo, ASMP.
+Izvor navaja AIGA, Clutch, Credo in ASMP kot agregate, brez povezav.
+
+### Opozorilni znaki, ki jih je treba poznati
+
+Tabela je verjetno **sestavljen cenovni model**, ne izračun iz surovih zapisov:
+
+- Skoraj vse vrednosti so lepo zaokrožene.
+- Razmerja med Value, Standard in High so sumljivo enakomerna.
+- Ni števila opazovanj, minimuma, maksimuma ali datuma zajema.
+- Regijska in ponudniška lestvica sta prikazani kot neodvisni, čeprav se
+  prekrivata — newyorška agencija je štet v obeh.
+- **Enote se ponekod ne ujemajo:** pri fotografiji piše »pol dneva«, enota pa je
+  dan; pri interierju in arhitekturi se regijska cena na kvadratni čevelj
+  primerja z urno postavko ponudnika.
+- Več postavk združuje različne izdelke: »illustration / visual world« meša
+  posamezno ilustracijo in sistem; »trade-show design« verjetno meša oblikovanje
+  z izdelavo stojnice; pri videu ni jasno, ali so vključeni snemanje, ekipa,
+  lokacija, glasba in pravice; »email setup« ne loči ene predloge od več
+  avtomatizacijskih tokov.
+
+**Posamezne številke so kljub temu verjetne** — brand strategija pri $10.000
+Standard, UX/UI pri $7.000 za omejen projekt, SEO pri $2.500 na mesec in 3D
+render pri $1.500 so vsi znotraj objavljenih ameriških razponov. »Možno« pa ni
+isto kot »izmerjeno«.
 
 ## 2 · Regijski razredi
 
