@@ -3497,6 +3497,24 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
     if (narocnikKontakt) v.push(narocnikKontakt);
     v.push('');
+    /* POVZETEK — tri stevilke, ki jih stranka isce prva: koliko, kdaj, do kdaj
+       velja. Brez tega mora prebrati cel dokument, da izve ceno. Rok se izracuna
+       enako kot v razdelku PREDVIDEN CAS IZVEDBE nize (isti vir TRAJANJE_TEDNOV);
+       tam ostane daljsa razlaga, tukaj je samo razpon. */
+    {
+      const tt = r.sez.map(s => TRAJANJE_TEDNOV[s.id]).filter((x): x is [number, number] => Boolean(x));
+      const rokOpis = tt.length
+        ? `${Math.max(...tt.map(x => x[0]))}–${tt.length === 1 ? tt[0][1] : Math.ceil(tt.reduce((a, x) => a + x[1], 0) * 0.8)} ${L('tednov', 'weeks')}`
+        : '';
+      const znesekPovzetek = dolgorocno && ret
+        ? `${val(ret.mesNeto)} / ${L('mesec', 'month')}`
+        : val(r.paketi[1].skupaj);
+      v.push(L('POVZETEK', 'SUMMARY'));
+      v.push(`· ${L('Vrednost', 'Value')}${ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}: ${znesekPovzetek}`);
+      if (rokOpis) v.push(`· ${L('Predviden rok izvedbe', 'Estimated timeline')}: ${rokOpis}`);
+      v.push(`· ${L('Ponudba velja do', 'Offer valid until')}: ${dat(velja)}`);
+      v.push('');
+    }
     /* OBSEG (nastevanje storitev) le v razsirjeni; v kratki so storitve v "Vključuje" pri paketu */
     if (obsegPonudbe === 'razsirjena') {
       v.push(L('OBSEG', 'SCOPE'));
@@ -3552,6 +3570,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* cena posamezne storitve (za priporoceni paket) — vsota priceanih vrstic te storitve */
     const cenaStoritve = (sid: string) => r.linije.reduce((a, l, j) =>
       l.sid === sid ? a + (r.vrsticeIzvedbe[j]?.cena || 0) * (r.vrsticeIzvedbe[j]?.kolicina || 1) : a, 0);
+    /* IZHODISCNA cena storitve iz cenika, brez mnoziteljev. Razlika do cene
+       zgoraj je prilagoditev (zahtevnost, izkusnje, trg, velikost narocnika).
+       Mnozitelji se mnozijo med sabo, zato jih NE delimo na posamezne evrske
+       postavke — ena postena vrstica je boljsa od stirih izmisljenih. */
+    const osnovaStoritve = (sid: string) => {
+      const st = vseStoritve.find(x => x.id === sid);
+      if (!st) return 0;
+      return r.linije.reduce((a, l) =>
+        l.sid === sid ? a + osnovaZa(st) * Math.max(1, Math.round(l.kolicina)) : a, 0);
+    };
     /* ena cena: izpisemo samo Priporoceni obseg kot koncno ceno (brez izbire paketov) */
     (enaCena ? [r.paketi[1]] : r.paketi).forEach((p, idx) => {
       const i = enaCena ? 1 : idx;
@@ -3579,8 +3607,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         const alineje = [...jedro, ...(i >= 1 ? nadgradnja : []), ...(i >= 2 ? vrh : [])];
         const cenaPripis = kaziCene ? `  —  ${val(cenaStoritve(s.id) * m)}` : '';
         const sNaziv = storIme(s);
-        if (!alineje.length) { v.push(`  · ${sNaziv}${cenaPripis}: ${L('izvedba po dogovorjenem obsegu', 'production to the agreed scope')}`); return; }
+        /* OD KOD TA CENA: izhodisce iz cenika + prilagoditev. Brez tega stranka
+           vidi samo koncno stevilko in je ne more preveriti. */
+        const razclenitev = (): string => {
+          if (!kaziCene) return '';
+          const osn = osnovaStoritve(s.id);
+          const pril = cenaStoritve(s.id) * m - osn;
+          if (osn <= 0 || Math.abs(pril) < 1) return '';
+          return `  · ${L('izhodišče iz cenika', 'price list base')} ${val(osn)}, ${pril > 0 ? L('prilagoditev', 'adjustment') : L('znižanje', 'reduction')} ${pril > 0 ? '+' : '−'}${val(Math.abs(pril))}`;
+        };
+        const razcl = razclenitev();
+        /* obseg: kaj cena pokriva (faza, m2, kaj ni vkljuceno) */
+        const obs = storObseg(s);
+        if (!alineje.length) {
+          v.push(`  · ${sNaziv}${cenaPripis}: ${L('izvedba po dogovorjenem obsegu', 'production to the agreed scope')}`);
+          if (obs) v.push(`  · ${obs}`);
+          if (razcl) v.push(razcl);
+          return;
+        }
         if (vecStoritev || kaziCene) v.push(`  ${sNaziv}${cenaPripis}`);
+        if (obs) v.push(`  · ${obs}`);
+        if (razcl) v.push(razcl);
         alineje.forEach(a => v.push(`  · ${a}`));
       });
       postavke.forEach((x, xi) => {
