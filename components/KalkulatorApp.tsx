@@ -39,7 +39,9 @@ import {
    Trije paketi (osnovni / priporoceni / premium), profili cen, regije,
    zajem kontakta (ime+email) ob shranjevanju/prenosu -> /api/inquiry. */
 
-type Storitev = { id: string; ime: string; osnova: number };
+/* obseg = kaj osnovna cena pokriva (m2, faza, kaj ni vkljuceno). Lastne
+   storitve ga nimajo, zato je neobvezen — glej lib/pricingCatalog.ts. */
+type Storitev = { id: string; ime: string; osnova: number; obseg?: string; obsegEn?: string };
 
 /* Orbi na koraku 0: barvni par (jedro → rob), krozi po indeksu storitve. */
 const ORB_BARVE: [string, string][] = [
@@ -1899,6 +1901,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const storIme = (s: { id?: string; ime: string; imeEn?: string }) => (locale === 'en' && s.imeEn ? s.imeEn : s.ime);
   const kratkoIme = (s: { id: string; ime: string; imeEn?: string }) =>
     locale === 'en' ? (KRATKO_EN[s.id] || storIme(s)) : (KRATKO[s.id] || s.ime);
+  /* KAJ osnovna cena pokriva. Nastavljeno le pri storitvah, kjer trg racuna po
+     m2 ali po fazi in bi pavsal zavajal (glej obseg v lib/pricingCatalog.ts).
+     Lastne storitve tega polja nimajo -> undefined, vrstica se ne izpise. */
+  const storObseg = (s: { obseg?: string; obsegEn?: string }) => (locale === 'en' && s.obsegEn ? s.obsegEn : s.obseg);
   /* Vstopno soglasje (kot Paperform): pogoji pred prvo uporabo orodja.
      Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
   const [pogojiOk, setPogojiOk] = useState<boolean | null>(null);
@@ -6218,6 +6224,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .vrst0-ime:hover { color: var(--accent); }
         .cw .vrst0-ime small { display: block; font-weight: 500; color: rgba(17,17,17,.72); font-size: .72rem; margin-top: .12rem; }
         .cw .vrst0-ime small.odg { color: var(--accent); }
+        /* Obseg: kaj cena pokriva. Mora biti citljiv (kontrast >= 4,5:1), zato
+           ista teza kot ostali small in ne svetlejsa siva. */
+        .cw .vrst0-ime small.vrst0-obseg { color: rgba(17,17,17,.66); font-weight: 500; font-size: .7rem; margin-top: .2rem; line-height: 1.35; }
         /* OCITNA oznaka "Uredi podrobnosti": vijolicna pilula z ikono, ne siva
            drobna vrstica — da uporabnik takoj vidi, da mora urediti. */
         .cw .vrst0-ime small.treba-urediti { display: inline-flex; align-items: center; gap: .3rem; margin-top: .28rem; padding: .22rem .6rem; border-radius: 999px; background: color-mix(in oklch, var(--purple) 14%, transparent); color: oklch(46% .19 297); font-weight: 700; font-size: .72rem; }
@@ -8680,6 +8689,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             {trebaUrediti
                               ? <small className="treba-urediti"><PencilSimple size={12} weight="bold" /> {L('Uredi podrobnosti', 'Edit details')}</small>
                               : <small className={odgovorjenih ? 'odg' : ''}>{q > 1 ? `${KOLICINSKE[l.sid] ? `${q} ${KOLICINSKE[l.sid]}` : `× ${q}`} · ` : ''}{status}</small>}
+                            {/* Kaj cena pokriva. Brez tega stranka pri arhitekturi
+                                misli, da dobi dokumentacijo za dovoljenje, dobi pa
+                                idejni projekt — in cena izpade prenizka ali previsoka. */}
+                            {storObseg(s) && <small className="vrst0-obseg">{storObseg(s)}</small>}
                           </button>
                           <span className="stepper0">
                             <button type="button" aria-label={L('Ena manj: ', 'One less: ') + storIme(s)} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
