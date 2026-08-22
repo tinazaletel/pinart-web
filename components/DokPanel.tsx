@@ -15,7 +15,8 @@
  * skozenj. Če bi ga vsak imel svojega, bi se videzi spet razšli.
  */
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 export type DokPanelProps = {
   odprt: boolean;
@@ -33,6 +34,8 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const panelRef = useRef<HTMLDivElement>(null);
   const vrniFokus = useRef<HTMLElement | null>(null);
+  const [montiran, setMontiran] = useState(false);
+  useEffect(() => setMontiran(true), []);
 
   /* Esc zapre, fokus gre v panel in se ob zaprtju vrne tja, od koder je prišel.
      Brez tega je panel za tipkovnico past — glej docs/DOSTOPNOST-pregled.md. */
@@ -48,9 +51,13 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
     };
   }, [odprt, onZapri]);
 
-  if (!odprt) return null;
+  if (!odprt || !montiran) return null;
 
-  return (
+  /* Panel gre v portal na <body>. Brez tega ga ujame prvi prednik s
+     transform/filter/overflow-clip -- takrat position:fixed ni vec glede na
+     zaslon, ampak glede na tega prednika, in panel obvisi sredi strani z
+     ozadjem ob sebi. Sosednja panela v ProjectDetailModern portal ze imata. */
+  return createPortal(
     <>
       <div className="dp-back" onClick={onZapri} aria-hidden />
       <aside className="dp" role="dialog" aria-modal="true" aria-label={naslov} tabIndex={-1} ref={panelRef}>
@@ -106,6 +113,7 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
           .dp-papir { margin: 0; padding: 0; overflow: visible; box-shadow: none; border-radius: 0; }
         }
       `}</style>
-    </>
+    </>,
+    document.body,
   );
 }
