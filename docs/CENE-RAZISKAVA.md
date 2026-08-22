@@ -1,5 +1,8 @@
 # Cene — od kod so
 
+Posamezni javni ceniki, normalizirane enote in mediane za celoten Flowov
+katalog so v [CENE-TRZNA-RAZISKAVA-2026.md](CENE-TRZNA-RAZISKAVA-2026.md).
+
 **Zakaj ta dokument.** 21. 8. 2026 sva s Tino ugotovila, da izhodiščne cene v
 `lib/pricingCatalog.ts` (CGP 1350 €, logotip 650 €) nimajo zapisanega izvora.
 Raziskava je bila narejena, a je živela le v spominu pogovorov — zato sva
