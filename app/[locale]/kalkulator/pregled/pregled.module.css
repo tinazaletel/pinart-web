@@ -894,6 +894,15 @@
 .expenseItemTags::-webkit-scrollbar { display: none; }
 .expenseItemTag { flex: none; display: inline-flex; align-items: center; padding: .22rem .55rem; border: 0; border-radius: 999px; background: oklch(94% .05 var(--tag-h, 280)); color: oklch(42% .12 var(--tag-h, 280)); font-size: .68rem; font-weight: 700; white-space: nowrap; }
 /* ── Filter po znacki: enak jezik kot .invoiceFilters, a lomi v vec vrstic ── */
+/* Krmilna vrstica pod naslovom: preklop, znacke in iskalnik v ENI vrstici.
+   flex-wrap: nowrap je bistvo -- z wrap so se znacke prelomile v svojo vrstico,
+   takoj ko jih je bilo vec kot par. Stisne se samo blok znack (flex: 1 + min-width
+   0 + vodoravni scroll); preklop in iskalnik obdrzita svojo sirino. */
+.expenseHeadRow { display: flex; flex-wrap: nowrap; align-items: center; gap: .5rem; width: 100%; min-width: 0; position: relative; }
+.expenseHeadRow > .invoiceFilters:not(.tagFilterRow) { flex: none; }
+.expenseHeadRow > .tagFilterRow { flex: 1 1 auto; min-width: 0; }
+.expenseHeadRow > :last-child { flex: none; margin-left: auto; }
+
 /* Znacke so zdaj clan krmilne vrstice: ne raztezajo se cez vso sirino in ne
    potiskajo iskalnika v novo vrstico. Prevec znack se odrine v vodoravni scroll. */
 .tagFilterRow { flex-wrap: nowrap; min-width: 0; overflow-x: auto; scrollbar-width: none; }
@@ -1535,6 +1544,9 @@
   .expenseEditor form { grid-template-columns: 1fr; }
   .expenseEditorActions { grid-column: 1; }
   .expenseArchive > header { align-items: flex-start; flex-direction: column; }
+  /* Na ozkem zaslonu ena vrstica ne gre -- tam so MobTabs in se smejo prelomiti. */
+  .expenseHeadRow { flex-wrap: wrap; }
+  .expenseHeadRow > .tagFilterRow { flex: 1 1 100%; }
   .expenseEditor, .expenseArchive, .recurringCosts { padding-left: .6rem; padding-right: .6rem; }
   .expenseList .expenseActions { justify-self: end; }
   .expenseList article { grid-template-columns: auto 1fr auto; }
