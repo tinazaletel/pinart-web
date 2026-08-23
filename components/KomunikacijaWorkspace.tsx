@@ -576,9 +576,9 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         /* --km-levi je sirina levega stolpca: preklop Posta/Klepet in stolpec map sta
    enako siroka, zato se seznam mailov zacne na isti crti in se lahko
    "Oznaci vse" poravna s kljukicami v njem. */
-        .km-posta-ovoj,.km-zavihki{--km-levi:12rem}
+        .km-posta-ovoj,.km-zavihki{--km-levi:15.2rem}
         .km-zavihki{display:flex;width:var(--km-levi);box-sizing:border-box;gap:.3rem;margin:0 0 1.1rem;padding:.25rem;background:#fff;border:1px solid var(--k-line);border-radius:999px}
-        .km-zavihki > *{flex:1;justify-content:center}
+        .km-zavihki > *{flex:1;justify-content:center;white-space:nowrap}
         .km-zavihki button{display:inline-flex;align-items:center;gap:.4rem;border:0;background:none;border-radius:999px;padding:.5rem 1.1rem;font:700 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 60%,transparent);cursor:pointer}
         .km-zavihki button.on{background:var(--k-ink,#2a2620);color:#fff}
         .km-noga{display:none}
