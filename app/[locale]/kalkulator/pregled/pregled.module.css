@@ -904,7 +904,13 @@
 .expenseTagChip { display: inline-flex; align-items: center; gap: .3rem; padding: .3rem .65rem; border: 1px solid var(--line); border-radius: 999px; background: oklch(95% .01 87); color: var(--ink); font-size: .75rem; font-weight: 700; white-space: nowrap; }
 .expenseTagChip button { display: grid; place-items: center; width: 1rem; height: 1rem; padding: 0; border: 0; background: none; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .7rem; line-height: 1; cursor: pointer; }
 .expenseTagChip button:hover { color: var(--ink); }
-.expenseTagSuggestions { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
+/* Izbrana datoteka in tipka za preklic izbora stojita v isti vrsti; tipka se
+   pojavi sele, ko je datoteka izbrana, in pordeci ob prehodu z misko. */
+.expenseDatoteka { display: flex; align-items: center; gap: .4rem; min-width: 0; }
+.expenseDatoteka input { flex: 1; min-width: 0; }
+.expenseDatotekaX { flex: none; display: grid; place-items: center; width: 1.7rem; height: 1.7rem; padding: 0; border: 1px solid color-mix(in oklch, var(--ink) 14%, transparent); border-radius: 50%; background: transparent; font-size: 1.05rem; line-height: 1; color: color-mix(in oklch, var(--ink) 55%, transparent); cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.expenseDatotekaX:hover { border-color: oklch(58% .17 25); background: oklch(96% .04 25); color: oklch(48% .17 25); }
+.expenseTagSuggestions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .3rem; margin: -.35rem 0 .2rem; }
 .expenseTagSuggestions button { padding: .3rem .65rem; border: 1px dashed var(--line); border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink) 72%, transparent); font: 700 .75rem var(--font-sans), sans-serif; cursor: pointer; }
 .expenseTagSuggestions button:hover { border-style: solid; color: var(--ink); background: oklch(95% .01 87); }
 /* ── Znacke stroska: majhni cipi pod opisom v seznamu ── */
