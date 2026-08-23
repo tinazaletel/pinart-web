@@ -5906,7 +5906,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <style dangerouslySetInnerHTML={{ __html: `
         /* zgornji rob (overscroll / varno obmocje pod URL vrstico) = barva papirja, ne prosojno (da se ne vidi obrazec skozi) */
         html, body { background-color: var(--paper, oklch(97% 0.012 87)); }
-        .cw { --font-serif: var(--font-serif-flow); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 400; overflow-x: clip; }
+        /* overflow-x: hidden, NE clip: clip ustvari obmocje obrezovanja, ki v Safariju
+           ujame tudi position:fixed potomce -- panel ponudbe se je zato odmaknil od
+           roba in mu je odrezalo rob z gumbom za zapiranje. */
+        .cw { --font-serif: var(--font-serif-flow); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 400; overflow-x: hidden; }
         /* Ovoj portala na <body>: obstaja SAMO zato, da veljajo pravila ".cw ..." za predala.
            Brez tega bi podedoval min-height:100dvh + z-index:1 in kot prazna ploskev prekril
            celo aplikacijo (bela stran). Predala sta position:fixed, zato ovoja ne potrebujeta. */
@@ -6536,6 +6539,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           /* platno mehurckov poravnano s (centriranim) chatom — ne cisto ob levem robu */
           .cw .oder0 { display: block; width: auto; max-width: 800px; margin-left: auto; margin-right: auto; }
           .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(480px, 40vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; transition: width .34s cubic-bezier(.2,.8,.3,1); }
+          .cw .ponudba0 { background: rgba(255,255,255,.97); box-shadow: -18px 0 50px oklch(40% .08 300 / .18); }
           .cw .detajl-modal .choicegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
           .cw .detajl-modal .choicegrid > button { width: 100%; justify-content: flex-start; }
           .cw .detajl-modal .choicegrid .svoje-vrsta { grid-column: 1 / -1; }
