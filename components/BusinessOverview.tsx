@@ -189,8 +189,12 @@ export default function BusinessOverview({ base }: { base: string }) {
       posta: dashPosta.map((v, i) => ({ id: String(i), smer: v.smer, prejemniki: [v.kdo], zadeva: v.zadeva, datum: v.datum || '' })),
       racuni: activeInvoices.map(r => ({ id: r.id, client: r.client, paid: r.paid, date: r.date })),
       ponudbe: activeOffers.map(o => ({ id: o.id, title: o.title, client: o.client, date: o.date, status: o.status })),
-    }, danes, locale === 'en'), DANES_VRSTIC);
-  }, [danes, dashNaloge, dashPosta, activeInvoices, activeOffers, locale]);
+      licence: offers.filter(o => o.licencaDo).map(o => ({ id: o.id, client: o.client, title: o.title, licencaDo: o.licencaDo })),
+    }, danes, locale === 'en')
+      /* Naloga brez roka ni "danes" — to je seznam opozoril, ne seznam nalog.
+         Pri projektu s petdesetimi nalogami bi sicer opozorila utonila. */
+      .filter(v => v.vrsta !== 'mojaNaloga'), DANES_VRSTIC);
+  }, [danes, dashNaloge, dashPosta, activeInvoices, activeOffers, offers, locale]);
   const recurringTotal = recurringCosts.reduce((sum, item) => sum + (Number(item.znesek) || 0), 0);
   const currentMonthExpenses = expenses.filter(item => {
     const date = new Date(`${item.date}T00:00:00`); const now = new Date();
@@ -506,19 +510,10 @@ export default function BusinessOverview({ base }: { base: string }) {
       </div>
 
       <div className={styles.detailRow}>
-        <section className={styles.historyBand} aria-labelledby="licence-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · PRILOŽNOSTI', '05 · OPPORTUNITIES')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}>{L('Koledar', 'Calendar')}</Link></div>
-          <div className={styles.bandBody}>
-            <h2 id="licence-title" className={styles.bandNaslov}>{L('Licence, ki potečejo', 'Licences expiring')}</h2>
-            {licence.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0 }}>{licence.map(o => {
-              const potekla = jeLicencaPotekla(o.licencaDo);
-              const datum = new Date(`${o.licencaDo}T00:00:00`).toLocaleDateString(dl);
-              return <li key={o.id} style={{ color: potekla ? '#a4342a' : '#8a8177', padding: '.55rem 0' }}><strong>{potekla ? L(`Licenca pri stranki ${o.client} je potekla ${datum}. Predlagaj podaljšanje.`, `The licence for ${o.client} expired on ${datum}. Suggest a renewal.`) : L(`Licenca pri stranki ${o.client} poteče ${datum}. Pripravi predlog podaljšanja.`, `The licence for ${o.client} expires on ${datum}. Prepare a renewal proposal.`)}</strong></li>;
-            })}</ul> : <p className={styles.tipText}>{L('V naslednjih 60 dneh ne poteče nobena licenca.', 'No licences expire in the next 60 days.')}</p>}
-          </div>
-        </section>
-        <section className={styles.historyBand} aria-labelledby="comm-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJA', '06 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        {/* V tej vrstici je ostal en sam pas, zato tece cez oba stolpca —
+            licence so se preselile v seznam DANES. */}
+        <section className={`${styles.historyBand} ${styles.bandFull}`} aria-labelledby="comm-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · KOMUNIKACIJA', '05 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
           {dashPosta.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
@@ -530,7 +525,7 @@ export default function BusinessOverview({ base }: { base: string }) {
 
       <div className={styles.detailRow}>
         <section className={styles.historyBand} id="accounting">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · ZGODOVINA', '07 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · ZGODOVINA', '06 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
         <h2 className={styles.bandNaslov}>{L('Zadnji dokumenti', 'Recent documents')}</h2>
         {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable} ${styles.accTable}`}><table><thead><tr><th>{L('Dokument', 'Document')}</th><th>{L('Stranka', 'Client')}</th><th>{L('Datum', 'Date')}</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={L(`Odpri ${item.title}`, `Open ${item.title}`)} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString(dl)}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? L('To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.', 'This is demo data — the status cannot be changed. Switch to »My data«.') : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še nimaš dokumentov.', 'You have no documents yet.')}</strong><p>{L('Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.', 'Offers, contracts, invoices and costs will appear here.')}</p></div></div>}
@@ -538,7 +533,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>
 
         <section className={styles.eventsBand} aria-labelledby="rev-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('08 · PRIHODKI', '08 · REVENUE')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsa poročila', 'All reports')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · PRIHODKI', '07 · REVENUE')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsa poročila', 'All reports')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="rev-title" className={styles.bandNaslov}>{L('Prihodki po mesecih', 'Revenue by month')}</h2>
           {(() => {

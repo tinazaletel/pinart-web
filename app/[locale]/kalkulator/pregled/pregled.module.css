@@ -478,6 +478,7 @@
 @media (max-width: 620px) { .detailsGrid { grid-template-columns: 1fr; } }
 /* Zadnji projekti + Prihodki po mesecih (2 panela) */
 .detailRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
+.bandFull { grid-column: 1 / -1; }
 @media (max-width: 1000px) { .detailRow { grid-template-columns: 1fr; } }
 /* Prihodki po mesecih — stolpcni graf */
 /* Prihodki po mesecih — graf z Y-osjo (crte + stevilke levo) */

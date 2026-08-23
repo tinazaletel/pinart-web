@@ -17,6 +17,7 @@ export type DanesVrsta =
   | 'zamujeno'        /* rok je mimo */
   | 'strankaCaka'     /* nekdo čaka na naš odgovor */
   | 'rokDanes'        /* zapade danes */
+  | 'licenca'         /* licenca pri stranki poteka ali je potekla */
   | 'dokumentCaka'    /* dokument čaka na našo potezo */
   | 'rokKmalu'        /* zapade v nekaj dneh */
   | 'mojaNaloga'      /* lastno delo brez roka */
@@ -27,10 +28,11 @@ const TEZA: Record<DanesVrsta, number> = {
   zamujeno: 1,
   strankaCaka: 2,
   rokDanes: 3,
-  dokumentCaka: 4,
-  rokKmalu: 5,
-  mojaNaloga: 6,
-  priloznost: 7,
+  licenca: 4,
+  dokumentCaka: 5,
+  rokKmalu: 6,
+  mojaNaloga: 7,
+  priloznost: 8,
 };
 
 export type DanesVrstica = {
@@ -52,9 +54,17 @@ export type DanesVrstica = {
 
 export const NAJVEC_VRSTIC = 8;
 
-/* Koliko vrstic iste vrste sme priti na vrh seznama, preden pridejo na vrsto
-   druge. Brez tega ena sama vrsta poje cel seznam. */
+/* Koliko vrstic istega VIRA (naloge, računi, pošta, licence …) sme priti na vrh
+   seznama, preden pridejo na vrsto drugi. Omejitev je po viru a ne po vrsti
+   namenoma: pri projektu s štiridesetimi nalogami bi naloge sicer pojedle ves
+   seznam in opozorila — zapadel račun, potekla licenca — se ne bi videla. */
 export const NAJVEC_ENAKIH = 2;
+
+/* Vir je predpona id-ja: "racun-12" -> "racun". */
+const vir = (id: string): string => id.slice(0, id.indexOf('-') + 1) || id;
+
+/* Koliko dni vnaprej licenca ze steje kot nekaj, kar te caka. */
+export const LICENCA_DNI = 60;
 
 /* ── čas ─────────────────────────────────────────────────────────────────── */
 
@@ -102,17 +112,17 @@ export function urediDanes(vrstice: DanesVrstica[], najvec = NAJVEC_VRSTIC): Dan
     return ar - br;
   });
 
-  /* Brez omejitve po vrsti seznam poje ena sama vrsta: sest zapadlih racunov
-     istega narocnika je zasedlo vseh osem mest in seznam je bil videti, kot da
-     kaze vedno isto. Najprej vzamemo najvec NAJVEC_ENAKIH od vsake vrste, sele
-     ce mest se ostane, jih dopolnimo po prvotnem vrstnem redu. */
+  /* Brez omejitve seznam poje en sam vir: sest zapadlih racunov istega
+     narocnika je zasedlo vseh osem mest. Najprej vzamemo najvec NAJVEC_ENAKIH
+     od vsakega vira, sele ce mesta se ostanejo, jih dopolnimo po vrstnem redu. */
   const izbrane: DanesVrstica[] = [];
-  const steviloPoVrsti = new Map<DanesVrsta, number>();
+  const steviloPoViru = new Map<string, number>();
   for (const v of urejene) {
     if (izbrane.length >= najvec) break;
-    const doslej = steviloPoVrsti.get(v.vrsta) || 0;
+    const k = vir(v.id);
+    const doslej = steviloPoViru.get(k) || 0;
     if (doslej >= NAJVEC_ENAKIH) continue;
-    steviloPoVrsti.set(v.vrsta, doslej + 1);
+    steviloPoViru.set(k, doslej + 1);
     izbrane.push(v);
   }
   if (izbrane.length < najvec) {
@@ -133,6 +143,8 @@ export type DanesViri = {
   naloge?: Array<{ id?: string; naslov: string; stolpec: string; rok?: string }>;
   posta?: Array<{ id: string; smer: 'poslano' | 'prejeto'; prejemniki: string[]; zadeva: string; datum: string; osnutek?: boolean; izbrisano?: string }>;
   racuni?: Array<{ id: string; number?: string; client: string; paid: boolean; date: string; dueDays?: number }>;
+  /* licence: ponudba z datumom, do katerega velja licenca za uporabo dela */
+  licence?: Array<{ id: string; client: string; title?: string; licencaDo?: string }>;
   ponudbe?: Array<{ id: string; title: string; client: string; date: string; status: string }>;
 };
 
@@ -225,6 +237,28 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       pripis: pripisRoka(dni, jeEn),
       datum: rok.toISOString().slice(0, 10),
       kam: '/kalkulator/racuni',
+      dniDoRoka: dni,
+    });
+  }
+
+  /* Licence: potekla licenca je izgubljen prihodek, ki ga stranka ponavadi
+     rada podaljša — zato sodi mednje, kar te danes čaka, ne v svoj pas. */
+  for (const l of viri.licence || []) {
+    if (!l.licencaDo) continue;
+    const dni = dniMed(danes, l.licencaDo);
+    if (dni == null || dni > LICENCA_DNI) continue;
+    ven.push({
+      id: `licenca-${l.id}`,
+      vrsta: 'licenca',
+      dejanje: dni < 0
+        ? `${L('Predlagaj podaljšanje licence', 'Suggest renewing the licence')}${l.title ? ` — ${l.title}` : ''}`
+        : `${L('Pripravi podaljšanje licence', 'Prepare the licence renewal')}${l.title ? ` — ${l.title}` : ''}`,
+      podnaslov: l.client,
+      pripis: dni < 0
+        ? L(`potekla pred ${Math.abs(dni)} dni`, `expired ${Math.abs(dni)} days ago`)
+        : pripisRoka(dni, jeEn),
+      datum: l.licencaDo,
+      kam: '/kalkulator/projekti',
       dniDoRoka: dni,
     });
   }
