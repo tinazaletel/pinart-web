@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '@/lib/pinartFlowStore';
-import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
@@ -2306,6 +2306,25 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [valuta, setValuta] = useState('eur');
   const [valutaRocna, setValutaRocna] = useState(false);
   const [ponudnik, setPonudnik] = useState({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
+  /* Kalkulator je profil podjetja doslej samo SHRANJEVAL, nikoli bral -- zato je
+     uporabnica svoje ime in davcno vpisovala znova ob vsaki ponudbi, cetudi sta
+     bila v profilu. Predizpolnimo samo PRAZNA polja, da ne povozimo tega, kar je
+     ze vpisala v tej ponudbi. */
+  useEffect(() => {
+    let ziv = true;
+    void loadOrganizationProfile().then(profil => {
+      if (!ziv || !profil) return;
+      setPonudnik(prej => ({
+        ime: prej.ime || profil.name || '',
+        davcna: prej.davcna || profil.tax || '',
+        email: prej.email || profil.email || '',
+        telefon: prej.telefon || profil.phone || '',
+        naslov: prej.naslov || profil.address || '',
+        trr: prej.trr || profil.bankAccount || '',
+      }));
+    }).catch(() => undefined);
+    return () => { ziv = false; };
+  }, []);
   const [predklic, setPredklic] = useState('+386');
   /* Videz dokumentov (barva poudarka + pisava naslovov) — velja cez celotno
      dokumentacijo (ponudba, racun, pogodba, retainer). Shranjeno v K_NAST. */
