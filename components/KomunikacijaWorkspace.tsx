@@ -729,7 +729,10 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-mail-btn{width:100%;text-align:left;border:1px solid var(--k-line);cursor:pointer}
         .km-mail-btn:hover{background:color-mix(in oklch,var(--k-purple) 5%,transparent)}
         .km-mail-kazalec{margin-left:.5rem;opacity:.4}
-        .km-branje{max-width:52rem;background:rgba(255,255,255,.5);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.55);border-radius:1rem;padding:1.2rem 1.3rem}
+        /* Brez max-width: odprt mail je sirok tocno toliko kot seznam, iz katerega si
+   ga odprla -- torej do desnega roba gumba "Nova posta". Prej se je pri 52rem
+   ustavil in je desno ostal prazen pas. */
+        .km-branje{width:100%;box-sizing:border-box;background:rgba(255,255,255,.5);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.55);border-radius:1rem;padding:1.2rem 1.3rem}
         .km-nazaj{display:inline-flex;align-items:center;border:1px solid var(--k-line);background:#fff;border-radius:999px;padding:.4rem .9rem;font:700 .74rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer;margin-bottom:.8rem}
         .km-nazaj:hover{background:var(--k-ink,#2a2620);color:#fff;border-color:transparent}
         .km-branje-glava b{display:block;font:700 1rem var(--font-sans),sans-serif;color:var(--k-ink)}
