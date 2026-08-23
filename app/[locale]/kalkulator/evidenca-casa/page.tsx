@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import NazajLink from '@/components/NazajLink';
 import EvidencaCasa from '@/components/EvidencaCasa';
 import styles from '../pregled/pregled.module.css';
 
@@ -17,8 +18,9 @@ export default async function EvidencaCasaPage({ params }: { params: Promise<{ l
 
   return (
     <main className={styles.shell}>
-      <DashboardSidebar base={base} active="evidenca" />
+      <DashboardSidebar base={base} active="profile" />
       <section className={styles.workspace}>
+        <NazajLink rezerva="/kalkulator/profil" label={jeEn ? 'Back to profile' : 'Nazaj na profil'} />
         <header className={styles.topbar}>
           <div>
             <p className={styles.eyebrow}>{jeEn ? 'WORKING TIME RECORDS' : 'EVIDENCA DELOVNEGA ČASA'}</p>

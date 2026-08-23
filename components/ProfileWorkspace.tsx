@@ -57,6 +57,13 @@ export default function ProfileWorkspace({ base }: { base: string }) {
       <header><p>03 · VIDEZ DOKUMENTOV</p><h2>Barva in pisava dokumentov.</h2><span>Skupni videz vseh dokumentov — ponudb, pogodb in računov. Enako lahko urediš tudi ob generiranem dokumentu.</span></header>
       <div className={styles.actions}><Link href={`${base}/kalkulator/nastavitve`}>Uredi videz dokumentov</Link></div>
     </section>
+    {/* Delovna prisotnost je zapis o OSEBI (kdaj je bila na delu), ne o projektu,
+        zato zivi pri profilu in ne v meniju Nacrt. Isti vzorec kot Videz
+        dokumentov zgoraj: kartica pojasni, urejanje pa je na svoji strani. */}
+    <section className={styles.card}>
+      <header><p>04 · DELOVNA PRISOTNOST</p><h2>Kdaj je delo potekalo.</h2><span>Prihod, odmor in odhod po ZEPDSV. Zapis je vezan nate, ne na projekt — koliko je delo na projektu stalo, meri Štoparica.</span></header>
+      <div className={styles.actions}><Link href={`${base}/kalkulator/evidenca-casa`}>Odpri delovno prisotnost</Link></div>
+    </section>
     {/* Nevarno obmocje — preneseno iz Nastavitev (Dizajn). Na dnu profila. */}
     <section className={`${styles.card} ${styles.nevarno}`}>
       <h2>Izbriši vse podatke</h2>
