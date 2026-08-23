@@ -464,8 +464,8 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 /* paneli = BELO ozadje (ne bez) */
 /* Kot DokPanel: panel je steklen ovoj, vsebina pa bel papir z zaobljenim vrhom.
    Ploscato belo polje je bilo videti kot druga vrsta okna. */
-.pw-vsi-panel,.pw-det-panel{background:rgba(255,255,255,.86) !important;backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-left:1px solid rgba(255,255,255,.7)}
-.pw-det-panel{padding:.9rem 1rem 0;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
+.pw-vsi-panel.pw-vsi-panel,.pw-det-panel.pw-det-panel{background:rgba(255,255,255,.86) !important;backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-left:1px solid rgba(255,255,255,.7)}
+.pw-det-panel.pw-det-panel{padding:.9rem 1rem 0;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;height:100%}
 .pw-det-papir{flex:1 1 auto;min-height:0;overflow-y:auto;padding:2.2rem clamp(1.4rem,4vw,2.6rem) 3rem;background:#fff;border-radius:1rem 1rem 0 0;box-shadow:0 -2px 24px oklch(40% .08 300 / .08)}
 @media print{.pw-det-papir{padding:0;border-radius:0;box-shadow:none;overflow:visible}}
 /* dejanski dokument pogodbe v panelu (PDF videz) */
