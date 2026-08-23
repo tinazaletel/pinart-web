@@ -742,7 +742,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         /* 88% je bilo pisano za ozek stolpec; odkar je odprt mail sirok kot seznam,
    je ob strani ostajal prazen pas. Zdaj sega do iste crte kot vrstica ikon
    nad njim, torej do desnega roba kosa. */
-        .km-nit-sporocilo{max-width:100%;padding:.8rem .9rem;border:1px solid var(--k-line);border-radius:.9rem;background:#fff;color:var(--k-ink);font:500 .86rem/1.55 var(--font-sans),sans-serif;white-space:pre-wrap}
+        .km-nit-sporocilo{width:100%;box-sizing:border-box;max-width:100%;padding:.8rem .9rem;border:1px solid var(--k-line);border-radius:.9rem;background:#fff;color:var(--k-ink);font:500 .86rem/1.55 var(--font-sans),sans-serif;white-space:pre-wrap}
         .km-nit-sporocilo.poslano{align-self:flex-end;background:color-mix(in oklch,var(--k-purple) 9%,#fff);border-color:color-mix(in oklch,var(--k-purple) 24%,transparent)}
         .km-nit-sporocilo header{display:flex;justify-content:space-between;gap:1rem;margin-bottom:.4rem;white-space:normal}
         .km-nit-sporocilo header b{font-size:.72rem;color:var(--k-ink)}
