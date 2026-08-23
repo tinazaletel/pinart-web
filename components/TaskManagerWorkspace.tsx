@@ -1581,7 +1581,7 @@ export default function TaskManagerWorkspace() {
         </div>
       )}
 
-      {prikaziAnalitiko && jeVodjaAliAdmin && (
+      {prikaziAnalitiko && jeVodjaAliAdmin && montiran && typeof document !== 'undefined' && createPortal(
         <div className="tm-analitika-podlaga" onClick={() => setPrikaziAnalitiko(false)}>
           <aside className="tm-analitika-panel" onClick={(e) => e.stopPropagation()}>
             <div className="tm-forma-glava">
@@ -1610,7 +1610,7 @@ export default function TaskManagerWorkspace() {
             </ul>
           </aside>
         </div>
-      )}
+      , document.body)}
 
       {odprtaNaloga && (() => {
         const podopravila = odprtaNaloga.podopravila || [];
