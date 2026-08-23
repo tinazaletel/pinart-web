@@ -780,7 +780,9 @@
 .invoiceHint { margin: 0; color: var(--muted); font-size: .6rem; text-align: center; }
 .invoiceHint a { color: var(--ink); font-weight: 800; }
 .expensePage { display: grid; gap: 1rem; }
-.expenseSummary { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+/* Tri metrike + gumb Dodaj = STIRJE stolpci, isto kot .invoiceSummary na
+   Racunih. S tremi stolpci je gumb padel v svojo vrstico pod prvo kartico. */
+.expenseSummary { display: grid; grid-template-columns: repeat(3, 1fr) minmax(11rem, .9fr); gap: .7rem; }
 .expenseSummary > * { position: relative; overflow: hidden; min-height: 8rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem; border: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); border-radius: 1rem; background: oklch(98% .008 87 / .92); }
 .expenseSummary article:nth-child(1) { background: linear-gradient(140deg, oklch(96% .04 60), oklch(89% .075 52)); }
 .expenseSummary article:nth-child(2) { background: linear-gradient(140deg, oklch(96% .025 165), oklch(88% .065 165)); }
@@ -815,8 +817,14 @@
 /* Koš = izbris stroška, potisnjen levo (Prekliči + Shrani ostaneta desno) */
 .expenseEditorActions .expenseEditorDelete { margin-right: auto; width: 2.6rem; height: 2.6rem; min-height: 0; aspect-ratio: 1; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border-color: color-mix(in oklch, oklch(52% .16 25) 45%, var(--line)); background: transparent; color: oklch(52% .16 25); }
 .expenseEditorActions .expenseEditorDelete:hover { border-color: oklch(52% .16 25); background: oklch(95% .04 25); }
-.expenseArchive > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-.expenseList article { position: relative; display: grid; grid-template-columns: auto auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 3.4rem; padding: .5rem .8rem; border-top: 1px solid rgba(17,17,17,.05); background: transparent; transition: background-color .18s ease; }
+/* Naslov dobi svojo vrstico, da se ne lomi na dvoje, pod njim pa gredo preklop,
+   znacke in iskalnik v ENO vrstico. Prej sta si naslov in krmilje delila
+   vrstico, znacke pa so visele se eno vrstico nizje. */
+.expenseArchive > header { display: flex; flex-direction: column; align-items: stretch; gap: .7rem; margin-bottom: 1rem; }
+/* column-gap in row-gap locena: stolpci potrebujejo zracnost, vrstice ne --
+   z enotnim gap .8rem so znacke odplavale od besedila, ki ga opisujejo, in
+   je bil spodnji del vrstice videti visji od zgornjega. */
+.expenseList article { position: relative; display: grid; grid-template-columns: auto auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; column-gap: .8rem; row-gap: .15rem; min-height: 3.4rem; padding: .55rem .8rem; border-top: 1px solid rgba(17,17,17,.05); background: transparent; transition: background-color .18s ease; }
 .expenseList .expenseSwipe:first-child article { border-top: none; }
 /* Swipe-left akcije (iOS slog): vrstica + skrita Uredi/Izbriši za njo, razkrijeta s potegom */
 .expenseSwipe { display: block; }
@@ -883,11 +891,25 @@
 .expenseTagSuggestions button:hover { border-style: solid; color: var(--ink); background: oklch(95% .01 87); }
 /* ── Znacke stroska: majhni cipi pod opisom v seznamu ── */
 /* značke = svoja vrsta ČEZ CELO širino (sicer kot 6. grid-otrok razširijo 1. stolpec in premaknejo kovanec/naziv desno) */
-.expenseItemTags { grid-column: 1 / -1; min-width: 0; display: flex; flex-wrap: nowrap; gap: .3rem; margin-top: .3rem; overflow-x: auto; scrollbar-width: none; }
+/* Znacke se zacnejo pri NASLOVU (3. stolpec), ne pri kljukici. Prej so tekle
+   cez cel grid in so visele pod checkboxom, izven besedila, ki ga opisujejo. */
+.expenseItemTags { grid-column: 3 / -1; min-width: 0; display: flex; flex-wrap: nowrap; gap: .3rem; overflow-x: auto; scrollbar-width: none; }
 .expenseItemTags::-webkit-scrollbar { display: none; }
 .expenseItemTag { flex: none; display: inline-flex; align-items: center; padding: .22rem .55rem; border: 0; border-radius: 999px; background: oklch(94% .05 var(--tag-h, 280)); color: oklch(42% .12 var(--tag-h, 280)); font-size: .68rem; font-weight: 700; white-space: nowrap; }
 /* ── Filter po znacki: enak jezik kot .invoiceFilters, a lomi v vec vrstic ── */
-.tagFilterRow { flex-wrap: wrap; row-gap: .3rem; margin-top: .6rem; width: 100%; }
+/* Krmilna vrstica pod naslovom: preklop, znacke in iskalnik v ENI vrstici.
+   flex-wrap: nowrap je bistvo -- z wrap so se znacke prelomile v svojo vrstico,
+   takoj ko jih je bilo vec kot par. Stisne se samo blok znack (flex: 1 + min-width
+   0 + vodoravni scroll); preklop in iskalnik obdrzita svojo sirino. */
+.expenseHeadRow { display: flex; flex-wrap: nowrap; align-items: center; gap: .5rem; width: 100%; min-width: 0; position: relative; }
+.expenseHeadRow > .invoiceFilters:not(.tagFilterRow) { flex: none; }
+.expenseHeadRow > .tagFilterRow { flex: 1 1 auto; min-width: 0; }
+.expenseHeadRow > :last-child { flex: none; margin-left: auto; }
+
+/* Znacke so zdaj clan krmilne vrstice: ne raztezajo se cez vso sirino in ne
+   potiskajo iskalnika v novo vrstico. Prevec znack se odrine v vodoravni scroll. */
+.tagFilterRow { flex-wrap: nowrap; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.tagFilterRow::-webkit-scrollbar { display: none; }
 /* levi stolpec dovolj sirok, da se naslov ne lomi; desni omejen, sicer se
    ena vrstica stroska raztegne cez 1000 px praznine */
 .recurringCosts { display: grid; grid-template-columns: minmax(19rem, .4fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
@@ -951,6 +973,11 @@
 /* svinčnik = poln temni krogec, potisnjen DESNO (brez sivega outlina); višja specifičnost povozi .shell */
 .shell .clientProfileTop .clientEditPen { display: inline-flex; align-items: center; justify-content: center; margin-left: auto; width: 2.4rem; height: 2.4rem; flex: none; padding: 0; border: 0; border-radius: 50%; background: var(--ink); color: var(--paper); cursor: pointer; transition: opacity .15s; }
 .shell .clientProfileTop .clientEditPen:hover { opacity: .9; }
+/* Brisanje profila je bilo velik gumb na DNU kartice, sredi vsebine -- nevarno
+   dejanje na mestu, kjer ga clovek zadene med branjem. Zdaj je tiha ikona ob
+   svincniku, obarva se sele ob prehodu z misko. Potrditev je ze v remove(). */
+.shell .clientProfileTop .clientDeleteIcon { display: inline-flex; align-items: center; justify-content: center; width: 2.4rem; height: 2.4rem; flex: none; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink) 55%, transparent); cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.shell .clientProfileTop .clientDeleteIcon:hover { border-color: oklch(58% .17 25); background: oklch(96% .04 25); color: oklch(48% .17 25); }
 /* kontakt vrstica = tap za urejanje (ime + subtilni svinčnik); brez ločenih ✎/× */
 .clientKontaktEdit { display: flex; align-items: center; justify-content: space-between; gap: .6rem; width: 100%; padding: .15rem 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .clientKontaktEdit:disabled { cursor: default; opacity: .6; }
@@ -1042,24 +1069,47 @@
 }
 .clientContacts, .clientFinance { display: grid; gap: .5rem; margin-top: 1rem; }
 .clientContacts { grid-template-columns: repeat(2, 1fr); }
-.clientFinance { grid-template-columns: repeat(3, 1fr); }
+/* Pet metrik v ENI vrstici. Prej so bile tri tu in se stiri v locenem bloku pod
+   okvirjem stranke -- Placano in Odprti racuni sta se zato izpisala dvakrat. */
+.clientFinance { grid-template-columns: repeat(5, 1fr); }
 .clientContacts span, .clientFinance span { display: grid; gap: .3rem; padding: .8rem; border-radius: .8rem; }
+/* prostor za ikono v ozadju, isto kot .expenseSummary na Stroskih */
+.clientFinance span { position: relative; overflow: hidden; min-height: 5.6rem; align-content: start; }
 .clientContacts span { background: #fff; transition: background-color .16s ease; }
 .clientContacts span:hover { background: oklch(96.5% .018 87); }
 .clientFinance span { background: oklch(95% .018 87); }
 .clientContacts small, .clientFinance small { color: var(--muted); font-size: .54rem; }
 .clientContacts strong { font-size: .64rem; overflow-wrap: anywhere; }
 /* spletna stran izpostavljena: prvo mesto, čez celo širino, akcent link + globus */
-.clientSplet { grid-column: 1 / -1; }
+/* Spletna stran deli vrstico z davcno; cez celo gre samo naslov, ki je dvovrsticni.
+   Dolg URL se odreze s tremi pikami, namesto da bi raztegoval stolpec. */
+.clientSplet { min-width: 0; }
+.clientSplet a { max-width: 100%; }
+.clientSplet a strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .clientSplet small { font-size: .68rem; }
 .clientSplet a { display: inline-flex; align-items: center; gap: .4rem; color: oklch(52% .17 300); text-decoration: none; }
 .clientSplet a:hover { text-decoration: underline; }
 .clientSplet a svg { flex: none; }
 .clientSplet a strong { font-size: .82rem; color: inherit; }
+/* Naslov je edino polje, ki gre cez celo vrstico: ulica in posta s krajem sta
+   dve vrstici, v polovicnem stolpcu pa bi se lomil na tri ali stiri. */
+.clientContacts .clientNaslov { grid-column: 1 / -1; }
+.clientContacts .clientNaslov strong { line-height: 1.35; }
 .clientFinance strong { font: 500 1.25rem var(--font-sans), Georgia, serif; }
-.clientFinance span:nth-child(1) { background: oklch(93% .045 160); }
-.clientFinance span:nth-child(2) { background: oklch(94% .05 65); }
-.clientFinance span:nth-child(3) { background: oklch(94% .04 295); }
+/* Gradienti in ikone kot pri karticah drugod (.expenseSummary, .invoiceSummary). */
+.clientFinance span:nth-child(1) { background: linear-gradient(140deg, oklch(96% .025 165), oklch(88% .065 165)); }
+.clientFinance span:nth-child(2) { background: linear-gradient(140deg, oklch(96% .04 60), oklch(89% .075 52)); }
+.clientFinance span:nth-child(3) { background: linear-gradient(140deg, oklch(95% .025 295), oklch(89% .06 295)); }
+.clientFinance span:nth-child(4) { background: linear-gradient(140deg, oklch(96% .03 235), oklch(89% .06 235)); }
+.clientFinance span:nth-child(5) { background: linear-gradient(140deg, oklch(96% .018 87), oklch(90% .035 82)); }
+.clientFinance span:nth-child(1) .subpageMetricIcon { color: oklch(52% .14 165); }
+.clientFinance span:nth-child(2) .subpageMetricIcon { color: oklch(66% .18 52); }
+.clientFinance span:nth-child(3) .subpageMetricIcon { color: oklch(58% .18 295); }
+.clientFinance span:nth-child(4) .subpageMetricIcon { color: oklch(56% .15 235); }
+.clientFinance span:nth-child(5) .subpageMetricIcon { color: oklch(55% .08 82); }
+.clientFinance .subpageMetricIcon { right: .5rem; bottom: .4rem; width: 3.6rem; }
+.clientFinance .subpageMetricIcon svg { width: 3.4rem !important; height: 3.2rem !important; }
+.clientFinance span > small, .clientFinance span > strong { position: relative; z-index: 1; }
 /* "Projekti stranke" — stranka je STARŠ (seznam projektov), klik na vrstico
    odpre otroka (ProjectsWorkspace detajl) prek ${base}/kalkulator/projekti?projekt=<id>.
    Fonti >=.8rem (Tina: "ne sme bit tok mini font" — prejšnji ploščati seznam je bil .53-.6rem). */
@@ -1409,6 +1459,8 @@
   .expenseEditor, .recurringCosts { grid-template-columns: 1fr; }
   .expenseList article { grid-template-columns: auto 1fr auto; }
   .expenseList article > div:nth-child(3) { grid-column: 2 / -1; }
+  /* mobilni grid ima samo tri stolpce -- znacke ostanejo cez celo sirino */
+  .expenseItemTags { grid-column: 1 / -1; }
   .clientLayout { grid-template-columns: 1fr; padding-left: .5rem; padding-right: .5rem; box-sizing: border-box; }
   /* Mobilni master-detail: profil = samostojna stran z »nazaj«.
      Ko je izbrana stranka -> skrij imenik, pokaži profil. Sicer obratno. */
@@ -1523,6 +1575,9 @@
   .expenseEditor form { grid-template-columns: 1fr; }
   .expenseEditorActions { grid-column: 1; }
   .expenseArchive > header { align-items: flex-start; flex-direction: column; }
+  /* Na ozkem zaslonu ena vrstica ne gre -- tam so MobTabs in se smejo prelomiti. */
+  .expenseHeadRow { flex-wrap: wrap; }
+  .expenseHeadRow > .tagFilterRow { flex: 1 1 100%; }
   .expenseEditor, .expenseArchive, .recurringCosts { padding-left: .6rem; padding-right: .6rem; }
   .expenseList .expenseActions { justify-self: end; }
   .expenseList article { grid-template-columns: auto 1fr auto; }

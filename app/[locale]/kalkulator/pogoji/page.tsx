@@ -563,6 +563,119 @@ export default async function KalkulatorPogojiPage({
           </p>
         </section>
 
+        {/* POGODBA O OBDELAVI (28. clen GDPR). Nujna, ker uporabnik v platformo
+            vnasa osebne podatke SVOJIH strank: takrat je on upravljavec, mi pa
+            obdelovalec. Politika zasebnosti pokriva le podatke o uporabniku
+            samem in te vloge ne uredi. Glej docs/EVIDENCA-OBDELAVE.md, tocka 2. */}
+        <section style={S}>
+          <h2 style={H}>{en ? '4g. Processing personal data on your behalf (data processing agreement)' : '4g. Obdelava osebnih podatkov v tvojem imenu (pogodba o obdelavi)'}</h2>
+          <p style={P}>
+            {en ? (
+              <>
+                When you enter into the platform personal data of <strong>other people</strong> — your
+                clients, their contact persons, recipients of your email, or your collaborators — then in
+                respect of that data <strong>you are the controller and the provider is the processor</strong>.
+                This section constitutes the data processing agreement required by Article 28 GDPR and forms
+                an integral part of these terms.
+              </>
+            ) : (
+              <>
+                Kadar v platformo vneseš osebne podatke <strong>drugih ljudi</strong> — svojih strank,
+                njihovih kontaktnih oseb, prejemnikov tvoje pošte ali sodelavcev — si glede teh podatkov
+                <strong> upravljavec ti, ponudnik pa je obdelovalec</strong>. Ta točka je pogodba o obdelavi
+                osebnih podatkov, ki jo zahteva 28. člen GDPR, in je sestavni del teh pogojev.
+              </>
+            )}
+          </p>
+          <p style={P}>
+            {en ? (
+              <>
+                <strong>Subject and duration.</strong> The provider processes this data solely to operate the
+                platform for you, for as long as your account exists. <strong>Nature and purpose:</strong> storage,
+                organisation, display, export and sending of the documents and messages you create.
+                <strong> Categories of data subjects:</strong> your clients, their contact persons and your
+                collaborators. <strong>Categories of data:</strong> names, email addresses, telephone numbers,
+                addresses, tax numbers and the content you enter yourself.
+              </>
+            ) : (
+              <>
+                <strong>Predmet in trajanje.</strong> Ponudnik te podatke obdeluje izključno za delovanje
+                platforme zate, dokler obstaja tvoj račun. <strong>Narava in namen:</strong> shranjevanje,
+                urejanje, prikaz, izvoz in pošiljanje dokumentov ter sporočil, ki jih ustvariš.
+                <strong> Kategorije posameznikov:</strong> tvoje stranke, njihove kontaktne osebe in tvoji
+                sodelavci. <strong>Kategorije podatkov:</strong> imena, e-naslovi, telefonske številke,
+                naslovi, davčne številke in vsebina, ki jo vneseš sam.
+              </>
+            )}
+          </p>
+          <p style={P}>
+            {en ? (
+              <>
+                <strong>The provider undertakes to:</strong> process the data only on your documented
+                instructions (your use of the platform constitutes such instructions) and never for its own
+                purposes; bind to confidentiality every person with access to the data; apply appropriate
+                technical and organisational measures (row-level security in the database, encryption in
+                transit and at rest, access controls); assist you in responding to requests from data subjects
+                and to your obligations regarding security, breach notification and impact assessments; on
+                termination of the contract delete or return the data at your choice; and make available the
+                information needed to demonstrate compliance with this section.
+              </>
+            ) : (
+              <>
+                <strong>Ponudnik se zavezuje, da bo:</strong> podatke obdeloval le po tvojih dokumentiranih
+                navodilih (tvoja uporaba platforme šteje za takšna navodila) in nikoli za lastne namene; k
+                zaupnosti zavezal vsakogar, ki ima do podatkov dostop; izvajal ustrezne tehnične in
+                organizacijske ukrepe (varnost na ravni vrstice v bazi, šifriranje med prenosom in v
+                mirovanju, nadzor dostopa); ti pomagal pri odzivu na zahteve posameznikov ter pri tvojih
+                obveznostih glede varnosti, obveščanja o kršitvah in ocen učinka; po prenehanju pogodbe
+                podatke po tvoji izbiri izbrisal ali vrnil; in ti dal na voljo podatke, potrebne za dokaz
+                skladnosti s to točko.
+              </>
+            )}
+          </p>
+          <p style={P}>
+            {en ? (
+              <>
+                <strong>Subprocessors.</strong> You give general authorisation for the provider to engage the
+                subprocessors listed in the <a href="/zasebnost" style={{ color: 'inherit' }}>privacy policy</a>.
+                The provider will inform you of any intended addition or replacement of a subprocessor at
+                least 30 days in advance, and you may object; if you object, you may terminate the
+                subscription and receive a refund for the unused period. Subprocessors are bound by the same
+                obligations as apply to the provider under this section.
+              </>
+            ) : (
+              <>
+                <strong>Podobdelovalci.</strong> Ponudniku daješ splošno pooblastilo, da vključi
+                podobdelovalce, naštete v <a href="/zasebnost" style={{ color: 'inherit' }}>politiki zasebnosti</a>.
+                O nameravani vključitvi novega ali zamenjavi obstoječega podobdelovalca te ponudnik obvesti
+                najmanj 30 dni vnaprej, ti pa lahko ugovarjaš; če ugovarjaš, lahko naročnino prekineš in
+                dobiš vrnjeno plačilo za neizrabljeno obdobje. Podobdelovalce zavezujejo enake obveznosti,
+                kot po tej točki veljajo za ponudnika.
+              </>
+            )}
+          </p>
+          <p style={P}>
+            {en ? (
+              <>
+                <strong>Transfers outside the EU.</strong> Some subprocessors are established in the United
+                States. Such transfers take place on the basis of the European Commission&apos;s standard
+                contractual clauses or another valid safeguard. <strong>Your responsibility:</strong> you warrant
+                that you have a lawful basis for entering the data of other people into the platform, that you
+                have informed those people as required, and that your instructions do not breach data
+                protection law.
+              </>
+            ) : (
+              <>
+                <strong>Prenosi izven EU.</strong> Nekateri podobdelovalci imajo sedež v Združenih državah.
+                Takšni prenosi potekajo na podlagi standardnih pogodbenih klavzul Evropske komisije ali
+                drugega veljavnega jamstva. <strong>Tvoja odgovornost:</strong> jamčiš, da imaš zakonito
+                podlago za vnos podatkov drugih ljudi v platformo, da si te ljudi ustrezno obvestil in da
+                tvoja navodila niso v nasprotju s predpisi o varstvu osebnih podatkov.
+              </>
+            )}
+          </p>
+        </section>
+
         <section style={S}>
           <h2 style={H}>{en ? '5. Anonymous pricing statistics' : '5. Anonimna statistika cen'}</h2>
           <p style={P}>

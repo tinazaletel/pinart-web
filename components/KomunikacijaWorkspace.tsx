@@ -218,6 +218,12 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
   const izbranaNit = niti.find(n => n.threadId === izbrana) || null;
   const postaNiti = zdruziPostoVNiti(vidnaPosta.filter(v => !v.izbrisano && !v.osnutek));
   const odprtaPostaNit = beriMail ? postaNiti.find(n => n.sporocila.some(v => v.id === beriMail.id)) : undefined;
+  /* Seznam trenutne mape in izbor sta izracunana TU, ne v JSX: potrebuje ju tudi
+     glavna orodna vrstica, da sta "Oznaci vse" in brisanje v njej. Prej sta bili
+     dve orodni vrstici -- glavna in se ena samo za izbor nad seznamom. */
+  const postaQ = postaIsk.trim().toLowerCase();
+  const seznamMape = (mapa === 'pogovori' ? postaNiti.map(n => n.sporocila.at(-1)!).filter(Boolean) : mapa === 'popravki' ? vidnaPosta.filter(v => v.popravek && !v.popravekResenAt && !v.izbrisano) : vidnaPosta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa)).filter(v => !postaOseba || v.prejemniki.includes(postaOseba)).filter(v => !postaQ || `${v.zadeva} ${v.prejemniki.join(' ')} ${projIme(v.projectId)}`.toLowerCase().includes(postaQ));
+  const izbraniVMapi = seznamMape.filter(v => izbraniMaili.has(v.id));
 
   /* ── funkcije na branju pošte (uporabijo skupne knjižnice) ── */
   const posodobiMail = (id: string, sprem: Partial<PostaVnos>) => { setPosta(prev => prev.map(v => v.id === id ? { ...v, ...sprem } : v)); setBeriMail(m => m && m.id === id ? { ...m, ...sprem } : m); };
@@ -331,6 +337,12 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
       {zavihek === 'posta' ? (
         <div className={'km-posta-ovoj' + (beriMail ? ' km-bere' : '')}>
           <div className="km-posta-vrh">
+            {seznamMape.length > 0 && <label className="km-vsi-check km-vsi-vrh">
+              <input type="checkbox" checked={izbraniVMapi.length === seznamMape.length && seznamMape.length > 0} ref={el => { if (el) el.indeterminate = izbraniVMapi.length > 0 && izbraniVMapi.length < seznamMape.length; }} onChange={e => setIzbraniMaili(e.target.checked ? new Set(seznamMape.map(v => v.id)) : new Set())} aria-label={L('Označi vse', 'Select all')} />
+              <span>{izbraniVMapi.length > 0 ? `${izbraniVMapi.length} ${L('izbranih', 'selected')}` : L('Označi vse', 'Select all')}</span>
+            </label>}
+            {izbraniVMapi.length > 0 && <button type="button" className="km-akc-brisi" onClick={() => { const ids = izbraniVMapi.map(v => v.id); if (mapa === 'kos') { if (!window.confirm(L('Dokončno izbrišem izbrano? Tega ni mogoče razveljaviti.', 'Permanently delete the selected items? This cannot be undone.'))) return; izbrisiTrajnoIzbrane(ids); } else vKosIzbrane(ids); }} title={mapa === 'kos' ? L('Zbriši dokončno', 'Delete permanently') : L('Izbriši izbrano', 'Delete selected')} aria-label={mapa === 'kos' ? L('Zbriši dokončno', 'Delete permanently') : L('Izbriši izbrano', 'Delete selected')}><Trash size={15} weight="bold" /></button>}
+            {mapa === 'kos' && izbraniVMapi.length > 0 && <button type="button" className="km-akc-obnovi" onClick={() => obnoviIzbrane(izbraniVMapi.map(v => v.id))} title={L('Obnovi', 'Restore')} aria-label={L('Obnovi', 'Restore')}><ArrowBendUpLeft size={15} weight="bold" /></button>}
             <button type="button" className="km-mape-trig" onClick={() => setMapeOdprt(true)} aria-label={L('Mape', 'Folders')} aria-expanded={mapeOdprt}><List size={16} weight="bold" /> <span>{mapa === 'pogovori' ? L('Pogovori', 'Threads') : mapa === 'prejeto' ? L('Prejeto', 'Inbox') : mapa === 'poslano' ? L('Poslano', 'Sent') : mapa === 'osnutki' ? L('Osnutki', 'Drafts') : L('Koš', 'Trash')}</span></button>
             <button type="button" className="km-isk-krog" onClick={() => setIskOdprt(true)} aria-label={L('Išči', 'Search')}><MagnifyingGlass size={16} weight="bold" /></button>
             <div className={'km-iskalnik' + (iskOdprt ? ' odprt' : '')}><MagnifyingGlass size={15} weight="bold" /><input value={postaIsk} onChange={e => { setPostaIsk(e.target.value); setPostaStran(1); }} placeholder={L('Išči po pošti …', 'Search mail …')} aria-label={L('Išči', 'Search')} /><button type="button" className="km-isk-zapri" onClick={() => { setPostaIsk(''); setIskOdprt(false); }} aria-label={L('Zapri iskanje', 'Close search')}>✕</button></div>
@@ -451,21 +463,9 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
               )}
             </div>
           ) : (() => {
-            const q = postaIsk.trim().toLowerCase();
-            const seznam = (mapa === 'pogovori' ? postaNiti.map(n => n.sporocila.at(-1)!).filter(Boolean) : mapa === 'popravki' ? vidnaPosta.filter(v => v.popravek && !v.popravekResenAt && !v.izbrisano) : vidnaPosta.filter(v => (v.izbrisano ? 'kos' : v.osnutek ? 'osnutki' : v.smer === 'poslano' ? 'poslano' : 'prejeto') === mapa)).filter(v => !postaOseba || v.prejemniki.includes(postaOseba)).filter(v => !q || `${v.zadeva} ${v.prejemniki.join(' ')} ${projIme(v.projectId)}`.toLowerCase().includes(q));
-            const izbraniVMapi = seznam.filter(v => izbraniMaili.has(v.id));
+            const seznam = seznamMape;
             const NA = 12; const strani = Math.max(1, Math.ceil(seznam.length / NA)); const stran = Math.min(Math.max(1, postaStran), strani); const prikaz = seznam.slice((stran - 1) * NA, stran * NA);
             return seznam.length ? (<>
-              <div className="km-posta-top">
-                <label className="km-vsi-check">
-                  <input type="checkbox" checked={izbraniVMapi.length === seznam.length} ref={el => { if (el) el.indeterminate = izbraniVMapi.length > 0 && izbraniVMapi.length < seznam.length; }} onChange={e => setIzbraniMaili(e.target.checked ? new Set(seznam.map(v => v.id)) : new Set())} aria-label={L('Označi vse', 'Select all')} />
-                  <span>{izbraniVMapi.length > 0 ? `${izbraniVMapi.length} ${L('izbranih', 'selected')}` : L('Označi vse', 'Select all')}</span>
-                </label>
-                <div className="km-posta-top-akc">
-                  {mapa === 'kos' && <button type="button" className="km-akc-obnovi" disabled={izbraniVMapi.length === 0} onClick={() => obnoviIzbrane(izbraniVMapi.map(v => v.id))}><ArrowBendUpLeft size={14} weight="bold" /> {L('Obnovi', 'Restore')}</button>}
-                  <button type="button" className="km-akc-brisi" disabled={izbraniVMapi.length === 0} onClick={() => { const ids = izbraniVMapi.map(v => v.id); if (mapa === 'kos') { if (!window.confirm(L('Dokončno izbrišem izbrano? Tega ni mogoče razveljaviti.', 'Permanently delete the selected items? This cannot be undone.'))) return; izbrisiTrajnoIzbrane(ids); } else vKosIzbrane(ids); }}><Trash size={14} weight="bold" /> {mapa === 'kos' ? L('Zbriši dokončno', 'Delete permanently') : L('Izbriši', 'Delete')}</button>
-                </div>
-              </div>
               <div className="km-posta">
                 {prikaz.map(v => (
                   <div key={v.id} role="button" tabIndex={0} className={`km-mail-vrsta km-mail-btn${v.smer === 'prejeto' && !v.prebrano ? ' neprebran' : ''}${izbraniMaili.has(v.id) ? ' izbran' : ''}`} onClick={() => { setBeriMail(v); if (!v.prebrano) { if (!demo) oznaciPostoPrebrano(v.id); posodobiMail(v.id, { prebrano: true }); javiSpremembo(); } }} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setBeriMail(v); if (!v.prebrano) { if (!demo) oznaciPostoPrebrano(v.id); posodobiMail(v.id, { prebrano: true }); javiSpremembo(); } } }}>
@@ -573,7 +573,12 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-nit-txt small{font:500 .7rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 48%,transparent)}
         .km-av{flex:none;width:2.1rem;height:2.1rem;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,oklch(72% .13 297),oklch(62% .2 297));color:#fff;font:700 .82rem var(--font-sans),sans-serif}
         .km-av.sm{width:1.9rem;height:1.9rem;font-size:.76rem}
-        .km-zavihki{display:inline-flex;gap:.3rem;margin:0 0 1.1rem;padding:.25rem;background:#fff;border:1px solid var(--k-line);border-radius:999px}
+        /* --km-levi je sirina levega stolpca: preklop Posta/Klepet in stolpec map sta
+   enako siroka, zato se seznam mailov zacne na isti crti in se lahko
+   "Oznaci vse" poravna s kljukicami v njem. */
+        .km-posta-ovoj,.km-zavihki{--km-levi:15.2rem}
+        .km-zavihki{display:flex;width:var(--km-levi);box-sizing:border-box;gap:.3rem;margin:0 0 1.1rem;padding:.25rem;background:#fff;border:1px solid var(--k-line);border-radius:999px}
+        .km-zavihki > *{flex:1;justify-content:center;white-space:nowrap}
         .km-zavihki button{display:inline-flex;align-items:center;gap:.4rem;border:0;background:none;border-radius:999px;padding:.5rem 1.1rem;font:700 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 60%,transparent);cursor:pointer}
         .km-zavihki button.on{background:var(--k-ink,#2a2620);color:#fff}
         .km-noga{display:none}
@@ -619,6 +624,12 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-mail-proj{display:inline-flex;align-items:center;gap:.3rem;align-self:flex-start;margin-top:.1rem;max-width:100%;font:700 .64rem var(--font-sans),sans-serif;padding:.12rem .5rem .12rem .38rem;border-radius:999px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .km-mail-proj i{flex:none;width:.4rem;height:.4rem;border-radius:50%}
         .km-posta-vrh{position:relative;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem}
+        /* Izbor je zdaj v glavni orodni vrstici; prej je imel svojo vrstico nad
+           seznamom in sta bili orodni vrstici dve. Potisne iskalnik in gumbe desno. */
+        .km-posta-vrh .km-vsi-vrh{flex:none;white-space:nowrap;margin:0}
+        .km-posta-vrh .km-akc-brisi,.km-posta-vrh .km-akc-obnovi{flex:none;width:2.55rem;height:2.55rem;padding:0;justify-content:center;border-radius:50%}
+        .km-posta-vrh .km-akc-brisi{background:transparent;border:1px solid color-mix(in oklch,oklch(52% .16 25) 40%,var(--k-line));color:oklch(52% .16 25)}
+        .km-posta-vrh .km-akc-brisi:hover{background:oklch(55% .18 25);color:#fff;border-color:transparent}
         .km-isk-krog{display:none}
         .km-isk-zapri{display:none}
         .km-nova-plus{display:none}
@@ -645,7 +656,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-iskalnik{display:flex;align-items:center;gap:.5rem;background:#fff;border:1px solid var(--k-line);border-radius:999px;padding:.38rem .9rem;margin-bottom:1rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
         .km-iskalnik input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 .85rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-posta-body{display:flex;gap:1.3rem;align-items:flex-start}
-        .km-mape{flex:none;width:11rem;display:flex;flex-direction:column;gap:.15rem}
+        .km-mape{flex:none;width:var(--km-levi,12rem);display:flex;flex-direction:column;gap:.15rem}
         .km-mape button{display:flex;align-items:center;gap:.55rem;width:100%;text-align:left;border:0;background:none;border-radius:.6rem;padding:.6rem .7rem;font:700 .82rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 62%,transparent);cursor:pointer}
         .km-mape button:hover{background:color-mix(in oklch,var(--k-purple) 6%,transparent)}
         .km-mape button.on{background:color-mix(in oklch,var(--k-purple) 12%,transparent);color:var(--k-ink)}
@@ -659,10 +670,29 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
           .km-zavihki{margin-bottom:0}
           .km-posta-vrh{flex-wrap:nowrap;justify-content:flex-end;gap:.5rem;margin-top:-2.65rem;pointer-events:none}
           .km-posta-vrh > *{pointer-events:auto}
+          /* izbor ostane v desni skupini: vrstica je dvignjena cez zavihke in poravnana desno */
+          /* Kljukica in kos sta ena poteza -- oznacis in zbrises -- zato stojita skupaj,
+             levo od iskalnika, in se kos pojavi sele ko je kaj oznaceno. */
+          .km-posta-vrh .km-vsi-vrh{order:-2;margin-left:calc(var(--km-levi,12rem) + 1.3rem + .9rem);margin-right:.15rem;padding:0;background:transparent}
+          .km-posta-vrh .km-akc-brisi,.km-posta-vrh .km-akc-obnovi{order:-1;margin-right:.15rem}
+          /* Prazen prostor gre MED izbor in iskalnik, ne za kos -- kos se pojavlja in
+             izginja, zato bi se izbor ob vsakem izboru premaknil s svoje crte. */
+          .km-posta-vrh .km-isk-krog,.km-posta-vrh .km-iskalnik{margin-left:auto}
           .km-isk-krog{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.55rem;height:2.55rem;border-radius:50%;border:1px solid var(--k-line);background:#fff;color:var(--k-ink);cursor:pointer}
           .km-isk-krog:hover{background:var(--k-ink);color:#fff}
+          /* Ali gumb ali polje, nikoli oboje: odkar polje ni vec absoluten overlay,
+             gumb ni vec skrit pod njim, zato ga umaknemo, ko je polje odprto. */
+          .km-posta-vrh:has(.km-iskalnik.odprt) .km-isk-krog{display:none}
+          /* Polje zraste iz kroga, kjer je stal gumb -- ista poteza, ne dva elementa. */
+          @keyframes kmIskRaste{from{flex-basis:2.55rem;opacity:.55}to{flex-basis:16rem;opacity:1}}
+          .km-posta-vrh .km-iskalnik.odprt{animation:kmIskRaste .22s cubic-bezier(.2,.8,.3,1)}
+          @media (prefers-reduced-motion:reduce){.km-posta-vrh .km-iskalnik.odprt{animation:none}}
           .km-posta-vrh .km-iskalnik{display:none;flex:none;margin-bottom:0}
-          .km-posta-vrh .km-iskalnik.odprt{display:flex;position:absolute;top:-4px;bottom:-4px;left:0;right:0;z-index:6;margin:0;background:#fff;border:1px solid color-mix(in oklch,var(--k-ink) 45%,transparent);border-radius:999px}
+                    /* Na namizju odprt iskalnik NE prekriva nicesar: ostane clan vrstice in
+             samo zasede prostor med izborom in gumbi. Prej je bil absoluten cez
+             celo vrstico in je skril »Vsi prejemniki« ter »Nova posta«.
+             Cez celo sirino gre samo na telefonu (glej max-width:760px). */
+          .km-posta-vrh .km-iskalnik.odprt{display:flex;position:static;flex:1 1 16rem;max-width:26rem;min-height:2.55rem;margin:0;background:#fff;border:1px solid color-mix(in oklch,var(--k-ink) 45%,transparent);border-radius:999px}
           .km-posta-vrh .km-iskalnik.odprt input:focus,.km-posta-vrh .km-iskalnik.odprt input:focus-visible{outline:none;box-shadow:none}
           .km-isk-zapri{display:inline-flex;align-items:center;justify-content:center;flex:none;border:0;background:none;color:var(--k-ink);font-size:1rem;line-height:1;cursor:pointer;padding:.2rem .4rem}
         }
@@ -699,14 +729,20 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-mail-btn{width:100%;text-align:left;border:1px solid var(--k-line);cursor:pointer}
         .km-mail-btn:hover{background:color-mix(in oklch,var(--k-purple) 5%,transparent)}
         .km-mail-kazalec{margin-left:.5rem;opacity:.4}
-        .km-branje{max-width:52rem;background:rgba(255,255,255,.5);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.55);border-radius:1rem;padding:1.2rem 1.3rem}
+        /* Brez max-width: odprt mail je sirok tocno toliko kot seznam, iz katerega si
+   ga odprla -- torej do desnega roba gumba "Nova posta". Prej se je pri 52rem
+   ustavil in je desno ostal prazen pas. */
+        .km-branje{width:100%;box-sizing:border-box;background:rgba(255,255,255,.5);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.55);border-radius:1rem;padding:1.2rem 1.3rem}
         .km-nazaj{display:inline-flex;align-items:center;border:1px solid var(--k-line);background:#fff;border-radius:999px;padding:.4rem .9rem;font:700 .74rem var(--font-sans),sans-serif;color:var(--k-ink);cursor:pointer;margin-bottom:.8rem}
         .km-nazaj:hover{background:var(--k-ink,#2a2620);color:#fff;border-color:transparent}
         .km-branje-glava b{display:block;font:700 1rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-branje-glava small{display:block;margin-top:.2rem;font:500 .74rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 50%,transparent)}
         .km-branje-telo{margin-top:.8rem;font:500 .88rem var(--font-sans),sans-serif;color:var(--k-ink);line-height:1.6;white-space:pre-wrap}
         .km-nit-tok{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
-        .km-nit-sporocilo{max-width:88%;padding:.8rem .9rem;border:1px solid var(--k-line);border-radius:.9rem;background:#fff;color:var(--k-ink);font:500 .86rem/1.55 var(--font-sans),sans-serif;white-space:pre-wrap}
+        /* 88% je bilo pisano za ozek stolpec; odkar je odprt mail sirok kot seznam,
+   je ob strani ostajal prazen pas. Zdaj sega do iste crte kot vrstica ikon
+   nad njim, torej do desnega roba kosa. */
+        .km-nit-sporocilo{width:100%;box-sizing:border-box;max-width:100%;padding:.8rem .9rem;border:1px solid var(--k-line);border-radius:.9rem;background:#fff;color:var(--k-ink);font:500 .86rem/1.55 var(--font-sans),sans-serif;white-space:pre-wrap}
         .km-nit-sporocilo.poslano{align-self:flex-end;background:color-mix(in oklch,var(--k-purple) 9%,#fff);border-color:color-mix(in oklch,var(--k-purple) 24%,transparent)}
         .km-nit-sporocilo header{display:flex;justify-content:space-between;gap:1rem;margin-bottom:.4rem;white-space:normal}
         .km-nit-sporocilo header b{font-size:.72rem;color:var(--k-ink)}

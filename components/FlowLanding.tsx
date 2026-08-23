@@ -4,7 +4,7 @@ import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, CaretLeft, CaretRight,
   ShieldCheck, Scales, ChatCircle, Sparkle, Plus, ChartLineUp, Robot, Plugs,
-  CalendarBlank, ListChecks, FolderOpen, Megaphone, PenNib, Fingerprint,
+  CalendarBlank, ListChecks, FolderOpen, Megaphone, PenNib, Fingerprint, ClipboardText,
 } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -383,6 +383,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: Tag, kat: 'ponudbe', h: 135, ime: t('Ceniki', 'Price lists'), opis: t('Tvoji cenovni profili: shraniš, urediš in znova uporabiš.', 'Save, edit and reuse your own pricing profiles.'), href: localePath(locale, '/kalkulator/ceniki') },
     { Ikona: Wallet, kat: 'finance', h: 205, ime: t('Stroški', 'Expenses'), opis: t('Odhodki in ponavljajoči se stroški, zbrani na enem mestu.', 'Keep one-off and recurring business expenses in one place.'), href: localePath(locale, '/kalkulator/stroski') },
     { Ikona: Clock, kat: 'finance', h: 85, ime: t('Merjenje časa', 'Time tracking'), opis: t('Štoparica po projektu: izmeriš porabljen čas in vidiš, ali se ti je delo pri tej ceni res splačalo.', 'Track time by project and see whether the agreed price was profitable.'), href: localePath(locale, '/kalkulator/cas') },
+    /* Evidenca delovnega časa je nekaj DRUGEGA kot štoparica: štoparica meri ure
+       na projektu (koliko je delo stalo), evidenca beleži prihod in odhod osebe
+       (zakonska obveznost po ZEPDSV). Landing je do zdaj poznal samo štoparico. */
+    { Ikona: ClipboardText, kat: 'finance', h: 135, ime: t('Delovna prisotnost', 'Attendance'), opis: t('Prihod, odmor in odhod po ZEPDSV — mesečna tabela in izvoz za kadrovsko.', 'Arrival, break and departure as Slovenian law requires — monthly table and HR export.'), href: localePath(locale, '/kalkulator/evidenca-casa') },
     { Ikona: Suitcase, kat: 'finance', h: 200, ime: t('Poslovni okvir', 'Business framework'), opis: t('Širša slika: rezerva, davki in spodnja meja poštene cene.', 'Understand reserves, taxes and the minimum sustainable price.'), href: localePath(locale, '/kalkulator/poslovni-nacrt') },
     { Ikona: CalendarBlank, kat: 'stranke', h: 200, ime: t('Koledar', 'Calendar'), opis: t('Sestanki, klici in roki projektov na enem koledarju.', 'Meetings, calls and project deadlines in one calendar.'), href: localePath(locale, '/kalkulator/koledar') },
   ];

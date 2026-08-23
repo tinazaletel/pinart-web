@@ -39,7 +39,9 @@ import {
    Trije paketi (osnovni / priporoceni / premium), profili cen, regije,
    zajem kontakta (ime+email) ob shranjevanju/prenosu -> /api/inquiry. */
 
-type Storitev = { id: string; ime: string; osnova: number };
+/* obseg = kaj osnovna cena pokriva (m2, faza, kaj ni vkljuceno). Lastne
+   storitve ga nimajo, zato je neobvezen — glej lib/pricingCatalog.ts. */
+type Storitev = { id: string; ime: string; osnova: number; obseg?: string; obsegEn?: string };
 
 /* Orbi na koraku 0: barvni par (jedro → rob), krozi po indeksu storitve. */
 const ORB_BARVE: [string, string][] = [
@@ -1899,6 +1901,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const storIme = (s: { id?: string; ime: string; imeEn?: string }) => (locale === 'en' && s.imeEn ? s.imeEn : s.ime);
   const kratkoIme = (s: { id: string; ime: string; imeEn?: string }) =>
     locale === 'en' ? (KRATKO_EN[s.id] || storIme(s)) : (KRATKO[s.id] || s.ime);
+  /* KAJ osnovna cena pokriva. Nastavljeno le pri storitvah, kjer trg racuna po
+     m2 ali po fazi in bi pavsal zavajal (glej obseg v lib/pricingCatalog.ts).
+     Lastne storitve tega polja nimajo -> undefined, vrstica se ne izpise. */
+  const storObseg = (s: { obseg?: string; obsegEn?: string }) => (locale === 'en' && s.obsegEn ? s.obsegEn : s.obseg);
   /* Vstopno soglasje (kot Paperform): pogoji pred prvo uporabo orodja.
      Sprejem se shrani lokalno; ob naslednjih obiskih se ne prikaze vec. */
   const [pogojiOk, setPogojiOk] = useState<boolean | null>(null);
@@ -3491,6 +3497,24 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
     if (narocnikKontakt) v.push(narocnikKontakt);
     v.push('');
+    /* POVZETEK — tri stevilke, ki jih stranka isce prva: koliko, kdaj, do kdaj
+       velja. Brez tega mora prebrati cel dokument, da izve ceno. Rok se izracuna
+       enako kot v razdelku PREDVIDEN CAS IZVEDBE nize (isti vir TRAJANJE_TEDNOV);
+       tam ostane daljsa razlaga, tukaj je samo razpon. */
+    {
+      const tt = r.sez.map(s => TRAJANJE_TEDNOV[s.id]).filter((x): x is [number, number] => Boolean(x));
+      const rokOpis = tt.length
+        ? `${Math.max(...tt.map(x => x[0]))}–${tt.length === 1 ? tt[0][1] : Math.ceil(tt.reduce((a, x) => a + x[1], 0) * 0.8)} ${L('tednov', 'weeks')}`
+        : '';
+      const znesekPovzetek = dolgorocno && ret
+        ? `${val(ret.mesNeto)} / ${L('mesec', 'month')}`
+        : val(r.paketi[1].skupaj);
+      v.push(L('POVZETEK', 'SUMMARY'));
+      v.push(`· ${L('Vrednost', 'Value')}${ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}: ${znesekPovzetek}`);
+      if (rokOpis) v.push(`· ${L('Predviden rok izvedbe', 'Estimated timeline')}: ${rokOpis}`);
+      v.push(`· ${L('Ponudba velja do', 'Offer valid until')}: ${dat(velja)}`);
+      v.push('');
+    }
     /* OBSEG (nastevanje storitev) le v razsirjeni; v kratki so storitve v "Vključuje" pri paketu */
     if (obsegPonudbe === 'razsirjena') {
       v.push(L('OBSEG', 'SCOPE'));
@@ -3546,6 +3570,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* cena posamezne storitve (za priporoceni paket) — vsota priceanih vrstic te storitve */
     const cenaStoritve = (sid: string) => r.linije.reduce((a, l, j) =>
       l.sid === sid ? a + (r.vrsticeIzvedbe[j]?.cena || 0) * (r.vrsticeIzvedbe[j]?.kolicina || 1) : a, 0);
+    /* IZHODISCNA cena storitve iz cenika, brez mnoziteljev. Razlika do cene
+       zgoraj je prilagoditev (zahtevnost, izkusnje, trg, velikost narocnika).
+       Mnozitelji se mnozijo med sabo, zato jih NE delimo na posamezne evrske
+       postavke — ena postena vrstica je boljsa od stirih izmisljenih. */
+    const osnovaStoritve = (sid: string) => {
+      const st = vseStoritve.find(x => x.id === sid);
+      if (!st) return 0;
+      return r.linije.reduce((a, l) =>
+        l.sid === sid ? a + osnovaZa(st) * Math.max(1, Math.round(l.kolicina)) : a, 0);
+    };
     /* ena cena: izpisemo samo Priporoceni obseg kot koncno ceno (brez izbire paketov) */
     (enaCena ? [r.paketi[1]] : r.paketi).forEach((p, idx) => {
       const i = enaCena ? 1 : idx;
@@ -3573,8 +3607,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         const alineje = [...jedro, ...(i >= 1 ? nadgradnja : []), ...(i >= 2 ? vrh : [])];
         const cenaPripis = kaziCene ? `  —  ${val(cenaStoritve(s.id) * m)}` : '';
         const sNaziv = storIme(s);
-        if (!alineje.length) { v.push(`  · ${sNaziv}${cenaPripis}: ${L('izvedba po dogovorjenem obsegu', 'production to the agreed scope')}`); return; }
+        /* OD KOD TA CENA: izhodisce iz cenika + prilagoditev. Brez tega stranka
+           vidi samo koncno stevilko in je ne more preveriti. */
+        const razclenitev = (): string => {
+          if (!kaziCene) return '';
+          const osn = osnovaStoritve(s.id);
+          const pril = cenaStoritve(s.id) * m - osn;
+          if (osn <= 0 || Math.abs(pril) < 1) return '';
+          return `  · ${L('osnovno delo', 'base work')} ${val(osn)}, ${pril > 0 ? L('prilagoditev', 'adjustment') : L('znižanje', 'reduction')} ${pril > 0 ? '+' : '−'}${val(Math.abs(pril))}`;
+        };
+        const razcl = razclenitev();
+        /* obseg: kaj cena pokriva (faza, m2, kaj ni vkljuceno) */
+        const obs = storObseg(s);
+        if (!alineje.length) {
+          v.push(`  · ${sNaziv}${cenaPripis}: ${L('izvedba po dogovorjenem obsegu', 'production to the agreed scope')}`);
+          if (obs) v.push(`  · ${obs}`);
+          if (razcl) v.push(razcl);
+          return;
+        }
         if (vecStoritev || kaziCene) v.push(`  ${sNaziv}${cenaPripis}`);
+        if (obs) v.push(`  · ${obs}`);
+        if (razcl) v.push(razcl);
         alineje.forEach(a => v.push(`  · ${a}`));
       });
       postavke.forEach((x, xi) => {
@@ -6218,6 +6271,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .vrst0-ime:hover { color: var(--accent); }
         .cw .vrst0-ime small { display: block; font-weight: 500; color: rgba(17,17,17,.72); font-size: .72rem; margin-top: .12rem; }
         .cw .vrst0-ime small.odg { color: var(--accent); }
+        /* Obseg: kaj cena pokriva. Mora biti citljiv (kontrast >= 4,5:1), zato
+           ista teza kot ostali small in ne svetlejsa siva. */
+        .cw .vrst0-ime small.vrst0-obseg { color: rgba(17,17,17,.66); font-weight: 500; font-size: .7rem; margin-top: .2rem; line-height: 1.35; }
         /* OCITNA oznaka "Uredi podrobnosti": vijolicna pilula z ikono, ne siva
            drobna vrstica — da uporabnik takoj vidi, da mora urediti. */
         .cw .vrst0-ime small.treba-urediti { display: inline-flex; align-items: center; gap: .3rem; margin-top: .28rem; padding: .22rem .6rem; border-radius: 999px; background: color-mix(in oklch, var(--purple) 14%, transparent); color: oklch(46% .19 297); font-weight: 700; font-size: .72rem; }
@@ -8680,6 +8736,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             {trebaUrediti
                               ? <small className="treba-urediti"><PencilSimple size={12} weight="bold" /> {L('Uredi podrobnosti', 'Edit details')}</small>
                               : <small className={odgovorjenih ? 'odg' : ''}>{q > 1 ? `${KOLICINSKE[l.sid] ? `${q} ${KOLICINSKE[l.sid]}` : `× ${q}`} · ` : ''}{status}</small>}
+                            {/* Kaj cena pokriva. Brez tega stranka pri arhitekturi
+                                misli, da dobi dokumentacijo za dovoljenje, dobi pa
+                                idejni projekt — in cena izpade prenizka ali previsoka. */}
+                            {storObseg(s) && <small className="vrst0-obseg">{storObseg(s)}</small>}
                           </button>
                           <span className="stepper0">
                             <button type="button" aria-label={L('Ena manj: ', 'One less: ') + storIme(s)} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
@@ -8760,20 +8820,52 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           (glej izracun paketov). Brez teh dveh vrstic uporabnik
                           sesteje postavki, dobi drugo stevilko in ne more vedeti,
                           zakaj — enako bo storila njegova stranka. */}
-                      <div className="ponudba0-vsota-vrsta ponudba0-mini">
-                        <span>{L('Izvedba (zahtevnost, izkušnje, trg)', 'Execution (complexity, experience, market)')}</span>
-                        <span>{val(r.paketi[1].redna - r.pravice)}</span>
-                      </div>
+                      {(() => {
+                        /* RAZLIKA, ne skupek. Postavke zgoraj so izhodiscne cene;
+                           koncna cena je delo x mnozitelj paketa + pravice. Ce tu
+                           izpisemo skupno izvedbo, uporabnik spet vidi stevilko, ki
+                           se s postavkami ne izide. Izpisemo torej PRIRASTEK, da
+                           velja: postavke + prilagoditev + pravice = skupaj.
+
+                           Prirastka NE delimo na "zahtevnost" in "izkusnje" posebej:
+                           mnozitelji se mnozijo med sabo in razdelitev na evre bi
+                           bila navidezno natancna, v resnici pa dogovorjena. Ena
+                           postena vrstica je boljsa od dveh izmisljenih. */
+                        const osnove = vrstice.reduce((a, l) => {
+                          const s = vseStoritve.find(x => x.id === l.sid);
+                          return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
+                        }, 0);
+                        const prilagoditev = (r.paketi[1].redna - r.pravice) - osnove;
+                        /* Ce je cena paketa ROCNO prepisana, razclenitev ne velja —
+                           vsota delov se s prepisanim zneskom ne izide in bi lagala.
+                           Takrat rajsi ne pokazemo nicesar. */
+                        if (r.paketi[1].rocna) return null;
+                        return (
+                          <>
+                            <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                              <span>{L('Osnovno delo', 'Base work')}</span>
+                              <span>{val(osnove)}</span>
+                            </div>
+                            {Math.abs(prilagoditev) >= 1 && (
+                              <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                                <span>{L('Prilagoditev glede na zahtevnost, izkušnje in trg', 'Adjustment for complexity, experience and market')}</span>
+                                <span>{prilagoditev > 0 ? '+' : ''}{val(prilagoditev)}</span>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                       {r.pravice > 0 && (
                         <div className="ponudba0-vsota-vrsta ponudba0-mini">
-                          <span>{L('+ Prenos avtorskih pravic', '+ Rights transfer')}</span>
+                          <span>{L('Licenca in pravice uporabe', 'Licence and usage rights')}</span>
                           <span>{val(r.pravice)}</span>
                         </div>
                       )}
                       <div className="ponudba0-vsota-vrsta">
-                        <span>Priporočena cena{ddvZavezanec ? ' (brez DDV)' : ''}</span>
+                        <span>Predlagana cena projekta{ddvZavezanec ? ' (brez DDV)' : ''}</span>
                         <b>{val(r.paketi[1].skupaj)}</b>
                       </div>
+                      <div className="ponudba0-opomba">{L('Izračun po paketu Priporočeni.', 'Calculated with the Recommended package.')}</div>
                       <div className="ponudba0-razpon" role="group" aria-label={L('Ocena tržnega razpona cene', 'Estimated market price range')}>
                         <div className="ponudba0-razpon-glava">
                           <span>{L('Ocena tržnega razpona', 'Estimated market range')}</span>
@@ -8808,7 +8900,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     return (
                       <>
                         <div className="ponudba0-vsota-vrsta">
-                          <span>Izvedba · okvirno{ddvZavezanec ? ' (brez DDV)' : ''}</span>
+                          {/* ISTO IME kot v razclenitvi spodaj in v besedilu ponudbe.
+                              Trije razlicni nazivi za isto stevilko so bili glavni
+                              razlog, da uporabnik ni znal slediti, od kod cena. */}
+                          <span>{L('Osnovno delo', 'Base work')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
                           <b><CenaCountUp value={okvirno} format={val} /></b>
                         </div>
                         {ddvZavezanec && (
@@ -8817,7 +8912,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             <span>z DDV {val(okvirno * (1 + ddvSt / 100))}</span>
                           </div>
                         )}
-                        <div className="ponudba0-opomba">{L('↳ končno ceno izostrijo naslednji koraki (izkušnje, trg, pravice)', '↳ the final price is sharpened by the next steps (experience, market, rights)')}</div>
+                        {/* Pove FORMULO, ne le da se bo cena spremenila. Uporabnik
+                            je prej sestel postavke, dobil drugo koncno stevilko in
+                            ni imel kako priti od ene do druge. */}
+                        <div className="ponudba0-opomba">{L('↳ končna cena = osnovno delo + prilagoditev (zahtevnost, izkušnje, trg) + pravice', '↳ final price = base work + adjustment (complexity, experience, market) + rights')}</div>
                       </>
                     );
                   })()}

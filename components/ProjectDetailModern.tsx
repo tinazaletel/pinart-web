@@ -21,7 +21,7 @@ import DeliSStranko from '@/components/DeliSStranko';
 import DokPanel from '@/components/DokPanel';
 import { loadCloudTimeEntries, loadLocalTimeEntries, type PrivateTimeEntry } from '@/lib/pinartPlanning';
 import { PROJEKTNI_DOKUMENTI, type ProjektDokumentKljuc } from '@/lib/projektDokumenti';
-import { createCanvasDocument, loadCloudCanvasDocuments, loadLocalCanvasDocuments, saveActiveCanvasId, saveCloudCanvasDocument, saveLocalCanvasDocuments, type BusinessCanvasDocument } from '@/lib/pinartCanvas';
+import { loadCloudCanvasDocuments, loadLocalCanvasDocuments, saveActiveCanvasId, saveLocalCanvasDocuments, type BusinessCanvasDocument } from '@/lib/pinartCanvas';
 import { getOrganizationContext } from '@/lib/pinartFlowCloud';
 
 export type ModernProject = {
@@ -101,12 +101,23 @@ export default function ProjectDetailModern({
   const [briefOdprt, setBriefOdprt] = useState(false);
   const [dokumentOdprt, setDokumentOdprt] = useState<ProjektDokumentKljuc | null>(null);
   const [canvasi, setCanvasi] = useState<BusinessCanvasDocument[]>([]);
-  const [canvasIzbira, setCanvasIzbira] = useState('');
   const [canvasScope, setCanvasScope] = useState('anonymous');
   const [ciljiUrejam, setCiljiUrejam] = useState(false);
   const [taskOdprt, setTaskOdprt] = useState<NalogaLite | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
+  /* Stran za panelom obmiruje -- enako kot v DokPanelu. Brez tega se ob drsenju
+     nad odprtim panelom pomika se stran spodaj in vidita se dva drsnika. */
+  useEffect(() => {
+    if (typeof document === 'undefined' || !(briefOdprt || taskOdprt !== null || dokumentOdprt !== null)) return;
+    const prejOverflow = document.body.style.overflow;
+    const prejPadding = document.body.style.paddingRight;
+    const sirinaDrsnika = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (sirinaDrsnika > 0) document.body.style.paddingRight = `${sirinaDrsnika}px`;
+    return () => { document.body.style.overflow = prejOverflow; document.body.style.paddingRight = prejPadding; };
+  }, [briefOdprt, taskOdprt, dokumentOdprt]);
+
   const dodeljeniIds = real?.dodeljeni || [];
   const ekipa = dodeljeniIds.map(id => sodelavci.find(s => s.id === id)).filter(Boolean) as Sodelavec[];
   const naVoljo = sodelavci.filter(s => s.aktiven && !dodeljeniIds.includes(s.id));
@@ -174,9 +185,8 @@ export default function ProjectDetailModern({
     const d = new Date(datum || real?.updatedAt || real?.created || offer.date);
     return isNaN(d.getTime()) ? '' : d.toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI');
   };
-  const dokumenti = real ? PROJEKTNI_DOKUMENTI.filter(v => v.jeNaVoljo(real, imaBrief)).map(v => ({ id: v.kljuc, ime: v.ime, datum: datumDokumenta(v.datum(real)) })) : [];
+  const dokumenti = real ? PROJEKTNI_DOKUMENTI.filter(v => v.jeNaVoljo(real)).map(v => ({ id: v.kljuc, ime: v.ime, datum: datumDokumenta(v.datum(real)) })) : [];
   const vezaniCanvasi = real ? canvasi.filter(c => c.projektExternalId === real.id) : [];
-  const prostiCanvasi = canvasi.filter(c => !c.projektExternalId);
   useEffect(() => {
     let ziv = true;
     void (async () => {
@@ -190,19 +200,6 @@ export default function ProjectDetailModern({
     })();
     return () => { ziv = false; };
   }, []);
-  const shraniCanvasVez = async (canvas: BusinessCanvasDocument) => {
-    const naslednji = { ...canvas, projektExternalId: real?.id, updatedAt: new Date().toISOString() };
-    const vsi = canvasi.map(c => c.id === naslednji.id ? naslednji : c);
-    setCanvasi(vsi); saveLocalCanvasDocuments(vsi, canvasScope); saveActiveCanvasId(naslednji.id, canvasScope);
-    await saveCloudCanvasDocument(naslednji).catch(() => false);
-  };
-  const ustvariCanvas = async () => {
-    if (!real) return;
-    const canvas = { ...createCanvasDocument(real.strankaIme || '', real.naslov), projektExternalId: real.id };
-    const vsi = [...canvasi, canvas]; setCanvasi(vsi); saveLocalCanvasDocuments(vsi, canvasScope); saveActiveCanvasId(canvas.id, canvasScope);
-    await saveCloudCanvasDocument(canvas).catch(() => false);
-    window.location.href = `${base}/kalkulator/poslovni-nacrt`;
-  };
 
   return (
     <div className="pm">
@@ -332,7 +329,12 @@ export default function ProjectDetailModern({
             ) : <p className="pm-muted">{L('Naloge tega projekta vodiš v Task managerju. Povezava naloga↔projekt pride s kolaboracijo.', 'You manage this project’s tasks in the Task manager. Task-to-project linking comes with collaboration.')}</p>}
           </section>
 
-          <section className="pm-card pm-dokumenti">
+          {/* Samo to, kar na projektu RES je: dokumenti, ki jih je kdo naredil,
+              in canvasi, ki so nanj povezani. Kartica se ne prikaze prazna --
+              prazna je govorila, da projekt nekaj ima, ceprav ni imel nicesar.
+              Povezovanje je odslo v Poslovni okvir, kamor dokumenti spadajo;
+              tam se izbere projekt in tam se vidi, kaj je kam povezano. */}
+          {(dokumenti.length > 0 || vezaniCanvasi.length > 0) && <section className="pm-card pm-dokumenti">
             <header><h3>{L('DOKUMENTI', 'DOCUMENTS')}</h3></header>
             {dokumenti.length > 0 && <ul>
               {dokumenti.map(d => <li key={d.id}>
@@ -342,12 +344,7 @@ export default function ProjectDetailModern({
               </li>)}
             </ul>}
             {vezaniCanvasi.length > 0 && <ul>{vezaniCanvasi.map(c => <li key={c.id}><Link className="pm-canvas-link" href={`${base}/kalkulator/poslovni-nacrt`} onClick={() => saveActiveCanvasId(c.id, canvasScope)}><span>Canvas · {c.name}</span><time>{datumDokumenta(c.updatedAt)}</time><Puscica /></Link></li>)}</ul>}
-            {!imaBrief && <p className="pm-dok-manjka">{L('Brief še ni napisan.', 'The brief has not been written yet.')} <Link href={`${base}/kalkulator/dom?orodje=brief`}>{L('Napiši brief', 'Write a brief')}</Link></p>}
-            {real && !vezaniCanvasi.length && <div className="pm-canvas-povezi">
-              {prostiCanvasi.length > 0 && <><select aria-label={L('Izberi obstoječi Canvas', 'Choose an existing Canvas')} value={canvasIzbira} onChange={e => setCanvasIzbira(e.target.value)}><option value="">{L('Poveži obstoječi canvas', 'Link an existing canvas')}</option>{prostiCanvasi.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select><button type="button" disabled={!canvasIzbira} onClick={() => { const c = prostiCanvasi.find(x => x.id === canvasIzbira); if (c) void shraniCanvasVez(c); }}>{L('Poveži', 'Link')}</button></>}
-              <button type="button" className="pm-canvas-nov" onClick={() => void ustvariCanvas()}>{L('Ustvari novega', 'Create new')}</button>
-            </div>}
-          </section>
+          </section>}
 
           {/* BRIEF */}
           <section className="pm-card pm-brief">
@@ -544,18 +541,13 @@ export default function ProjectDetailModern({
 
       <DokPanel
         odprt={dokumentOdprt !== null}
-        naslov={dokumentOdprt === 'brief' ? 'Brief' : dokumentOdprt === 'pitch' ? (real?.pitch?.naslov || 'Pitch') : dokumentOdprt === 'swot' ? 'SWOT' : dokumentOdprt === 'raziskava' ? L('Raziskava stranke', 'Client research') : L('Pregled konkurence', 'Competitor review')}
+        naslov={dokumentOdprt === 'pitch' ? (real?.pitch?.naslov || 'Pitch') : dokumentOdprt === 'swot' ? 'SWOT' : dokumentOdprt === 'raziskava' ? L('Raziskava stranke', 'Client research') : L('Pregled konkurence', 'Competitor review')}
         nadnaslov={naslovProjekta}
         podnaslov={real?.strankaIme}
         onZapri={() => setDokumentOdprt(null)}
         jeEn={jeEn}
       >
         <div className="pm-dok-vsebina">
-          {dokumentOdprt === 'brief' && <>
-            {briefPolja.map(([k, v]) => <section key={k}><h2>{k}</h2><p>{v}</p></section>)}
-            {cilji.length > 0 && <section><h2>{L('Cilji', 'Goals')}</h2><ul>{cilji.map(c => <li key={c.id}>{c.besedilo}{(c.metrika || c.tarca) && <small>{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</small>}</li>)}</ul></section>}
-            {dodatna.map(v => <section key={v.id}><h2>{v.vprasanje}</h2><p>{v.odgovor}</p></section>)}
-          </>}
           {dokumentOdprt === 'pitch' && real?.pitch && Object.entries(real.pitch).filter(([k]) => k !== 'createdAt').map(([k, v]) => <section key={k}><h2>{({ problem: L('Problem stranke', 'Client problem'), resitev: L('Predlagana rešitev', 'Proposed solution'), zakajMi: L('Zakaj mi', 'Why us'), obseg: L('Obseg', 'Scope'), okvirnaCena: L('Okvirna cena', 'Indicative price'), naslednjiKorak: L('Naslednji korak', 'Next step'), naslov: L('Naslov', 'Title') } as Record<string, string>)[k] || k}</h2><p>{v}</p></section>)}
           {dokumentOdprt === 'swot' && real?.swot && Object.entries(real.swot).filter(([k]) => k !== 'createdAt').map(([k, v]) => <section key={k}><h2>{({ prednosti: L('Prednosti', 'Strengths'), slabosti: L('Slabosti', 'Weaknesses'), priloznosti: L('Priložnosti', 'Opportunities'), nevarnosti: L('Nevarnosti', 'Threats') } as Record<string, string>)[k]}</h2><p>{v}</p></section>)}
           {dokumentOdprt === 'raziskava' && real?.raziskavaStranke && <>
@@ -687,16 +679,16 @@ export default function ProjectDetailModern({
         .pm-card h3 { margin:0; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pm-muted); font-weight:700; }
         .pm-dokumenti ul { list-style:none; margin:0; padding:0; }
         .pm-dokumenti li + li { border-top:1px solid var(--pm-line); }
-        .pm-dokumenti button { width:100%; display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:.7rem; padding:.72rem 0; border:0; background:transparent; color:var(--pm-ink); text-align:left; cursor:pointer; font:700 .88rem var(--font-sans),sans-serif; }
-        .pm-canvas-link { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:.7rem; padding:.72rem 0; color:var(--pm-ink); text-decoration:none; font:700 .88rem var(--font-sans),sans-serif; }
-        .pm-canvas-povezi { display:flex; flex-wrap:wrap; gap:.45rem; margin-top:.75rem; }
-        .pm-canvas-povezi select { flex:1 1 13rem; min-width:0; padding:.5rem .6rem; border:1px solid var(--pm-line); border-radius:.55rem; background:#fff; color:var(--pm-ink); }
-        .pm-canvas-povezi button { width:auto; display:inline-flex; grid-template-columns:none; padding:.5rem .75rem; border:1px solid var(--pm-line); border-radius:.55rem; font-size:.75rem; }
-        .pm-canvas-povezi button:disabled { opacity:.55; cursor:default; }
-        .pm-canvas-povezi .pm-canvas-nov { color:#6E4FA6; }
+        /* Klikljiva vrstica se obnasa kot vse druge v tej kartici (.pm-naloga,
+           .pm-rok, .pm-li): ozadje sezje cez rob kartice, zato negativen margin
+           in sirina za oba robova. */
+        .pm-dokumenti button, .pm-canvas-link { width:calc(100% + 1.2rem); box-sizing:border-box; display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:.7rem; padding:.72rem .6rem; margin:0 -.6rem; border:0; border-radius:10px; background:transparent; color:var(--pm-ink); text-align:left; text-decoration:none; cursor:pointer; font:700 .88rem var(--font-sans),sans-serif; transition:background .15s ease; }
+        .pm-dokumenti button:hover, .pm-canvas-link:hover { background:var(--pm-paper); }
+        .pm-dokumenti button:hover .pm-arr, .pm-canvas-link:hover .pm-arr { color:var(--pm-acc); }
+        /* Ob hoverju izgine crta nad in pod vrstico, sicer reze zaobljeno ozadje. */
+        .pm-dokumenti li:has(button:hover), .pm-dokumenti li:has(button:hover) + li,
+        .pm-dokumenti li:has(.pm-canvas-link:hover), .pm-dokumenti li:has(.pm-canvas-link:hover) + li { border-top-color:transparent; }
         .pm-dokumenti time { color:var(--pm-muted); font-size:.72rem; font-weight:500; }
-        .pm-dok-manjka { margin:.7rem 0 0; color:var(--pm-muted); font-size:.82rem; }
-        .pm-dok-manjka a { color:#6E4FA6; font-weight:700; }
         .pm-dok-vsebina section + section { margin-top:1.5rem; }
         .pm-dok-vsebina h2 { margin:0 0 .35rem; font:800 .68rem var(--font-sans),sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#655f58; }
         .pm-dok-vsebina p { margin:0; white-space:pre-wrap; line-height:1.65; }

@@ -400,13 +400,16 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 /* backdrop: panel poravnan DESNO (kot pogodba/dokument) + blur zatemnitev strani zadaj */
 .pw-vsi-backdrop{justify-content:flex-end;background:oklch(97% .006 87 / .4);backdrop-filter:blur(9px) saturate(1.05);-webkit-backdrop-filter:blur(9px) saturate(1.05)}
 /* panel: čist predal z DESNE (kot pogodba — seže do roba), flex-stolpec — glava fiksna, seznam drsi, paginacija lepljiva noga */
-.pw-vsi-panel{width:min(46rem,100vw);height:100%;overflow:hidden;display:flex;flex-direction:column;box-shadow:-1.6rem 0 4rem oklch(20% .03 55 / .2);animation:pwVsiIn .52s cubic-bezier(.16,1,.3,1) both}
-@keyframes pwVsiIn{from{transform:translateX(100%);opacity:.4}to{transform:translateX(0);opacity:1}}
+/* Iste mere kot DokPanel (components/DokPanel.tsx): sirina, senca, hitrost in
+   krivulja. Prej so imeli paneli tri razlicne sirine, tri sence in tri hitrosti,
+   zato je bil vsak videti kot svoj izdelek. */
+.pw-vsi-panel{width:min(46rem,94vw);height:100%;overflow:hidden;display:flex;flex-direction:column;box-shadow:-18px 0 50px oklch(40% .08 300 / .18);animation:pwVsiIn .3s cubic-bezier(.2,.85,.25,1) both}
+@keyframes pwVsiIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
 @media (prefers-reduced-motion:reduce){.pw-vsi-panel{animation:none}}
 .pw-vsi-panel h2{margin:.4rem 0 .2rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.05;color:var(--ink)}
 .pw-vsi-projekt{margin:0 0 1.1rem;color:var(--muted);font-size:.72rem}
 /* × zapri = na višini nadnaslova (eyebrow), enako v vseh panelih (slide + predogled računa/pogodbe/stroška) */
-.pw-vsi-x{position:absolute;top:1.6rem;right:1.6rem;z-index:8;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid rgba(17,17,17,.18);border-radius:50%;background:var(--paper,#faf7f2);color:var(--ink,#2a2620);font-size:1rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(17,17,17,.12)}
+.pw-vsi-x{position:absolute;top:1.6rem;right:1.6rem;z-index:8;display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid color-mix(in oklch,var(--ink,#1a1a1a) 12%,transparent);border-radius:50%;background:rgba(255,255,255,.8);color:color-mix(in oklch,var(--ink,#1a1a1a) 60%,transparent);font-size:1.3rem;line-height:1;cursor:pointer}
 /* status v predogledu: plačan zelen, odprt jantarni; znesek »za plačilo« z outline (kot Bodoni številke) */
 .pw-det-status.placan{color:oklch(55% .15 150)}
 .pw-det-status.odprt{color:oklch(58% .15 65)}
@@ -448,10 +451,23 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-vrstica-klik:hover{background:#fff}
 .pw-vrstica-klik:focus-visible{outline:2px solid var(--akcent,#6E4FA6);outline-offset:2px}
 /* PREDOGLED dokumenta (panel z desne) */
-.pw-det-panel{width:min(42rem,100vw);animation:pwVsiIn .5s cubic-bezier(.16,1,.3,1) both}
+.pw-det-panel{width:min(46rem,94vw);animation:pwVsiIn .3s cubic-bezier(.2,.85,.25,1) both}
+/* Glava dokumentnega panela je enaka kot v DokPanelu: natisni levo kot povezava
+   z ikono, zapri desno kot krog. Prej je bil samo krog, ki je visel nad vsebino. */
+.pw-det-glava{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin:-.6rem 0 .9rem}
+.pw-det-tisk{display:inline-flex;align-items:center;gap:.4rem;padding:0;border:0;background:none;font:700 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 62%,transparent);cursor:pointer;transition:color .15s}
+.pw-det-tisk:hover{color:oklch(52% .2 297);text-decoration:underline;text-underline-offset:3px}
+.pw-det-x{display:grid;place-items:center;width:2.2rem;height:2.2rem;padding:0;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:50%;background:rgba(255,255,255,.8);color:color-mix(in oklch,var(--ink) 60%,transparent);font-size:1.3rem;line-height:1;cursor:pointer}
+.pw-det-x:hover{background:var(--ink);color:#fff;border-color:transparent}
+@media print{.pw-det-glava{display:none}}
 .pw-det-panel h2{margin:.3rem 0 .1rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.05;color:var(--ink)}
 /* paneli = BELO ozadje (ne bez) */
-.pw-vsi-panel,.pw-det-panel{background:#fff !important}
+/* Kot DokPanel: panel je steklen ovoj, vsebina pa bel papir z zaobljenim vrhom.
+   Ploscato belo polje je bilo videti kot druga vrsta okna. */
+.pw-vsi-panel,.pw-det-panel{background:rgba(255,255,255,.86) !important;backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-left:1px solid rgba(255,255,255,.7)}
+.pw-det-panel{padding:.9rem 1rem 0;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
+.pw-det-papir{flex:1 1 auto;min-height:0;overflow-y:auto;padding:2.2rem clamp(1.4rem,4vw,2.6rem) 3rem;background:#fff;border-radius:1rem 1rem 0 0;box-shadow:0 -2px 24px oklch(40% .08 300 / .08)}
+@media print{.pw-det-papir{padding:0;border-radius:0;box-shadow:none;overflow:visible}}
 /* dejanski dokument pogodbe v panelu (PDF videz) */
 .pw-det-doktelo{margin-top:1.3rem;font-family:var(--font-sans),system-ui,sans-serif;color:var(--ink);font-size:.86rem;line-height:1.6}
 .pw-det-doktelo .kick{font-size:.6rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent);margin:0 0 .4rem}
@@ -1073,6 +1089,17 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const closeVsi = () => { setVsiOdprt(null); setVsiIskanje(''); setVsiIskanjeOdprto(false); setVsiStran(1); setVsiNacin('strani'); };
   /* klik na vrstico (na kartici ALI v slideu) -> predogled dokumenta v panelu z desne */
   const [vrsticaDetajl, setVrsticaDetajl] = useState<null | { tip: 'ponudbe' | 'pogodbe' | 'racuni' | 'stroski'; item: FlowOffer | FlowContract | FlowInvoice | FlowExpense }>(null);
+  /* Stran za panelom obmiruje -- enako kot v DokPanelu. Brez tega se ob drsenju
+     nad odprtim panelom pomika se stran spodaj in vidita se dva drsnika. */
+  useEffect(() => {
+    if (typeof document === 'undefined' || !(komOdprt || dokOdprt || nalogaOdprt || vsiOdprt || vrsticaDetajl !== null)) return;
+    const prejOverflow = document.body.style.overflow;
+    const prejPadding = document.body.style.paddingRight;
+    const sirinaDrsnika = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (sirinaDrsnika > 0) document.body.style.paddingRight = `${sirinaDrsnika}px`;
+    return () => { document.body.style.overflow = prejOverflow; document.body.style.paddingRight = prejPadding; };
+  }, [komOdprt, dokOdprt, nalogaOdprt, vsiOdprt, vrsticaDetajl]);
   /* Zaklep ozadja: ko je odprt kateri koli desni panel/letev, se STRAN v ozadju NE skrola
      (skrola se le vsebina panela). */
   useEffect(() => {
@@ -2043,7 +2070,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
       return (
         <div className={`${styles.detailBackdrop} pw-vsi-backdrop`} role="presentation" onMouseDown={zapri}>
           <aside className={`${styles.detailPanel} pw-det-panel`} role="dialog" aria-modal="true" aria-labelledby="pw-det-naslov" onMouseDown={e => e.stopPropagation()}>
-            <button type="button" className="pw-vsi-x" onClick={zapri} aria-label={L('Zapri', 'Close')}>✕</button>
+            {/* Ista glava kot v DokPanelu: natisni levo z ikono, zapri desno. */}
+            <header className="pw-det-glava">
+              <button type="button" className="pw-det-tisk" onClick={() => { if (typeof window !== 'undefined') window.print(); }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" /></svg>
+                {L('Natisni', 'Print')}
+              </button>
+              <button type="button" className="pw-det-x" onClick={zapri} aria-label={L('Zapri', 'Close')}>×</button>
+            </header>
+            <div className="pw-det-papir">
             {tip === 'ponudbe' && (() => {
               const o = item as FlowOffer;
               return <>
@@ -2127,6 +2162,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <Link href={`${base}/kalkulator/stroski`} className="pw-det-uredi">{L('Uredi v Stroških', 'Edit in Expenses')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
               </>;
             })()}
+            </div>
           </aside>
         </div>
       );

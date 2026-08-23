@@ -349,6 +349,50 @@ const DEMO_REAL: Record<string, Projekt> = {
     faza: 'delo',
     created: new Date('2022-01-08T00:00:00').toISOString(),
     dodeljeni: ['demo-sod-tina', 'demo-sod-luka', 'demo-sod-eva'],
+    /* Edini demo projekt, ki ima VSE dokumente. Nekje mora biti videti, kako
+       polna kartica DOKUMENTI izgleda; ostali projekti so namenoma prazni,
+       ker je prazno stanje pogostejše in ga je treba prav tako videti. */
+    pitch: {
+      naslov: 'Portal, ki učiteljico pripelje do gradiva v treh klikih',
+      problem: 'Učitelji iščejo e-gradiva po zastarelem portalu, kjer je pot do datoteke dolga in nepredvidljiva. Del jih odneha in gradivo poišče drugje, šole pa se obračajo na podporo založbe.',
+      resitev: 'Prenova okrog ene same naloge: najti gradivo in ga odpreti. Nova informacijska arhitektura, iskalnik s predlogami, hitro nalaganje in vnos vsebine, ki ga urednik obvlada brez razvijalca.',
+      zakajMi: 'Delamo z založniki in vemo, da vsebina nastaja v uredništvu, ne v CMS-u. Prevzamemo celoto — od raziskave in prototipa do dostopnosti po WCAG AA in predaje ekipi.',
+      obseg: 'Raziskava in informacijska arhitektura, wireframi ključnih strani, prototip navigacije in iskalnika, oblikovni sistem, uskladitev s CGP, testiranje dostopnosti, predaja.',
+      okvirnaCena: '60.000 € za prvo fazo; nadaljnje faze po aneksu.',
+      naslednjiKorak: 'Uskladimo obseg prve faze in potrdimo termin delavnice z uredništvom.',
+      createdAt: new Date('2022-01-12T00:00:00').toISOString(),
+    },
+    swot: {
+      prednosti: 'Uveljavljena znamka z zaupanjem učiteljev, obsežna knjižnica gradiv in interno uredništvo, ki vsebino pozna do potankosti.',
+      slabosti: 'Zastarel portal in počasno nalaganje, dolga pot do datoteke, vnos vsebine odvisen od razvijalca.',
+      priloznosti: 'Šole prehajajo na digitalna gradiva; kdor prvi ponudi pregleden dostop, postane privzeta izbira učiteljice. Dostopnost po WCAG odpira javne razpise.',
+      nevarnosti: 'Druge založbe vlagajo v svoje portale, brezplačna gradiva na spletu pa odvračajo del učiteljev.',
+      createdAt: new Date('2022-01-14T00:00:00').toISOString(),
+    },
+    raziskavaStranke: {
+      kajDela: 'Založba učbenikov in izobraževalnih gradiv za osnovne in srednje šole. Poleg tiskanih učbenikov ponuja e-gradiva prek spletnega portala.',
+      njihoveStranke: 'Šole kot ustanove, učitelji kot vsakodnevni uporabniki in starši, ki gradivo iščejo za otroka. Odločitev o nakupu sprejme šola, uporablja pa jo učiteljica.',
+      predstavitev: 'Zanesljiv in strokoven partner šole. Ton je umirjen, poudarek na kakovosti gradiv in dolgi tradiciji.',
+      kajPonuditi: 'Prenovo portala okrog učiteljeve naloge, oblikovni sistem za nadaljnjo rast in dostopnost po WCAG AA, ki jo javni sektor vse pogosteje zahteva.',
+      vprasanja: [
+        'Koliko učiteljev portal uporablja tedensko in koliko jih odneha pred prenosom?',
+        'Kdo v uredništvu vnaša vsebino in koliko časa mu vzame ena enota?',
+        'Katera gradiva se največ prenašajo in katerih nihče ne najde?',
+        'Ali dostopnost zahtevajo razpisi ali šole same?',
+        'Kje se portal sreča s šolskimi informacijskimi sistemi?',
+      ],
+      createdAt: new Date('2022-01-11T00:00:00').toISOString(),
+    },
+    pregledKonkurence: {
+      panoga: 'Založništvo in izobraževalna gradiva, Slovenija',
+      konkurenti: [
+        { ime: 'Velike založbe učbenikov', pozicioniranje: 'Široka ponudba in tradicija; portali so obsežni, a razdrobljeni.', poudarki: 'Širina kataloga, prepoznavnost, mreža šol.' },
+        { ime: 'Obstoječi portal založbe', pozicioniranje: 'Točka, ki jo prenavljamo — uporabniki so že tu, pot do gradiva pa je predolga.', poudarki: 'Obstoječa baza uporabnikov, gradiva že v sistemu.' },
+        { ime: 'Brezplačna gradiva učiteljev', pozicioniranje: 'Skupnostne zbirke in osebne strani učiteljev.', poudarki: 'Zastonj, hitro najdljivo prek iskalnika, brez prijave.' },
+      ],
+      vrzel: 'Nihče ne reši učiteljeve naloge do konca: portali kažejo katalog, ne poti do gradiva. Kdor skrajša pot na tri klike in doda dostopnost, prevzame vsakodnevno rabo.',
+      createdAt: new Date('2022-01-13T00:00:00').toISOString(),
+    },
   },
   'demo-o-1': {
     id: 'demo-o-1',

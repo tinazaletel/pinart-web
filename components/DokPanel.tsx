@@ -15,7 +15,8 @@
  * skozenj. Če bi ga vsak imel svojega, bi se videzi spet razšli.
  */
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 export type DokPanelProps = {
   odprt: boolean;
@@ -33,6 +34,24 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const panelRef = useRef<HTMLDivElement>(null);
   const vrniFokus = useRef<HTMLElement | null>(null);
+  const [montiran, setMontiran] = useState(false);
+  useEffect(() => setMontiran(true), []);
+
+  /* Stran za panelom obmiruje: ko je panel odprt, se premika samo panel. Sicer se
+     ob drsenju nad njim pomika stran spodaj, kar je videti kot dva drsnika hkrati.
+     Padding nadomesti sirino drsnika, da vsebina ob zaklepu ne poskoci. */
+  useEffect(() => {
+    if (!odprt || typeof document === 'undefined') return;
+    const prejsnjiOverflow = document.body.style.overflow;
+    const prejsnjiPadding = document.body.style.paddingRight;
+    const sirinaDrsnika = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (sirinaDrsnika > 0) document.body.style.paddingRight = `${sirinaDrsnika}px`;
+    return () => {
+      document.body.style.overflow = prejsnjiOverflow;
+      document.body.style.paddingRight = prejsnjiPadding;
+    };
+  }, [odprt]);
 
   /* Esc zapre, fokus gre v panel in se ob zaprtju vrne tja, od koder je prišel.
      Brez tega je panel za tipkovnico past — glej docs/DOSTOPNOST-pregled.md. */
@@ -48,15 +67,24 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
     };
   }, [odprt, onZapri]);
 
-  if (!odprt) return null;
+  if (!odprt || !montiran) return null;
 
-  return (
+  /* Panel gre v portal na <body>. Brez tega ga ujame prvi prednik s
+     transform/filter/overflow-clip -- takrat position:fixed ni vec glede na
+     zaslon, ampak glede na tega prednika, in panel obvisi sredi strani z
+     ozadjem ob sebi. Sosednja panela v ProjectDetailModern portal ze imata. */
+  return createPortal(
     <>
       <div className="dp-back" onClick={onZapri} aria-hidden />
       <aside className="dp" role="dialog" aria-modal="true" aria-label={naslov} tabIndex={-1} ref={panelRef}>
         <header className="dp-glava">
+          {/* Natisni levo kot povezava z ikono, zapri desno -- zapiranje je vedno
+              v desnem kotu, dejanje nad dokumentom pa ob njegovem zacetku. */}
+          <button type="button" className="dp-tisk" onClick={() => window.print()}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" /></svg>
+            {L('Natisni', 'Print')}
+          </button>
           <button type="button" className="dp-x" onClick={onZapri} aria-label={L('Zapri', 'Close')}>×</button>
-          <button type="button" className="dp-tisk" onClick={() => window.print()}>{L('Natisni', 'Print')}</button>
         </header>
 
         {/* Papir: isti občutek kot natisnjen dokument, zato bela stran s tihimi robovi. */}
@@ -84,15 +112,18 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
         .dp-x { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent);
                 border-radius: 50%; background: rgba(255,255,255,.8); font-size: 1.3rem; line-height: 1; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; }
         .dp-x:hover { background: #fff; color: var(--ink, #1a1a1a); }
-        .dp-tisk { padding: .45rem .9rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 999px;
-                   background: rgba(255,255,255,.8); font: 700 .76rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 70%, transparent); cursor: pointer; }
-        .dp-tisk:hover { background: #fff; color: var(--ink, #1a1a1a); }
+        .dp-tisk { display: inline-flex; align-items: center; gap: .4rem; padding: 0; border: 0; background: none;
+                   font: 700 .78rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 62%, transparent); cursor: pointer; transition: color .15s; }
+        .dp-tisk:hover { color: var(--purple, oklch(52% .2 297)); text-decoration: underline; text-underline-offset: 3px; }
 
         /* Stran, ne okno: bel papir z velikodušnimi robovi, kot v tisku. */
         .dp-papir { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0 1rem; padding: 2.4rem clamp(1.4rem, 4vw, 3rem) 3rem;
                     background: #fff; border-radius: 1rem 1rem 0 0; box-shadow: 0 -2px 24px oklch(40% .08 300 / .08); }
         .dp-nad { margin: 0 0 .3rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .18em; text-transform: uppercase; color: var(--purple, oklch(60% .2 297)); }
-        .dp-naslov { margin: 0; font: 500 clamp(1.5rem, 3.4vw, 2.1rem)/1.12 var(--font-serif), Georgia, serif; font-synthesis: none; letter-spacing: -.01em; color: var(--ink, #1a1a1a); text-wrap: balance; }
+        /* --font-serif-flow (DM Serif), NE --font-serif. Panel visi v portalu na
+           <body>, torej zunaj .shell, kjer je --font-serif preslikan v Flow serif.
+           Zunaj tega je --font-serif portfeljev Bodoni in ta v Flow ne sodi. */
+        .dp-naslov { margin: 0; font: 500 clamp(1.5rem, 3.4vw, 2.1rem)/1.12 var(--font-serif-flow), Georgia, serif; font-synthesis: none; letter-spacing: -.01em; color: var(--ink, #1a1a1a); text-wrap: balance; }
         .dp-pod { margin: .5rem 0 0; font: 500 .92rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 58%, transparent); }
         .dp-vsebina { margin-top: 1.8rem; }
 
@@ -106,6 +137,7 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
           .dp-papir { margin: 0; padding: 0; overflow: visible; box-shadow: none; border-radius: 0; }
         }
       `}</style>
-    </>
+    </>,
+    document.body,
   );
 }

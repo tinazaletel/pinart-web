@@ -192,7 +192,7 @@ export const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   aplikacija: [
     { id: 'platforma', label: 'Za katere platforme?', izbire: ['iOS', 'Android', 'Oboje', 'Spletna (PWA)'], vec: true },
     { id: 'obseg', label: 'Koliko ključnih funkcij ali ekranov?', izbire: ['Do 5', '6 do 15', 'Nad 15'], svoje: 'ali vpiši ...' },
-    { id: 'storitve', label: 'Kaj prevzameš?', izbire: ['UX/UI dizajn', 'Prototip', 'Razvoj', 'Samo dizajn'], vec: true },
+    { id: 'storitve', label: 'Kaj prevzameš?', izbire: ['Razvoj sprednjega dela', 'Razvoj zaledja', 'Povezave z zunanjimi sistemi', 'Objava v trgovine', 'Vzdrževanje po predaji'], vec: true, svoje: 'dopiši ...' },
     { id: 'backend', label: 'Ali rabi backend ali bazo?', izbire: ['Da', 'Ne', 'Ne vem še'] },
     { id: 'fonti', label: 'Pisave: je licenca za vgradnjo v aplikacijo urejena?', izbire: ['Da, urejena za app', 'Uporabimo odprtokodne (npr. Google Fonts)', 'Treba jo bo urediti', 'Ne vem še'] },
     { id: 'budget', label: 'Okvirni budget naročnika?', izbire: ['Do 3.000 €', '3.000 do 8.000 €', 'Nad 8.000 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
