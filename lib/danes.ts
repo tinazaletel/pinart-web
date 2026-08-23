@@ -38,6 +38,9 @@ export type DanesVrstica = {
   vrsta: DanesVrsta;
   /* besedilo se ZAČNE z glagolom: »Odgovori …«, »Pošlji …«, »Preglej …« */
   dejanje: string;
+  /* druga vrstica: čigavo je — stranka, naslovnik, projekt. Brez nje so vrstice
+     videti vse enake, ker se razlikujejo samo po imenu v oklepaju. */
+  podnaslov?: string;
   /* desni pripis: »zapadel 3 dni«, »danes«, »čez 5 dni« */
   pripis: string;
   kam: string;
@@ -49,7 +52,7 @@ export const NAJVEC_VRSTIC = 8;
 
 /* Koliko vrstic iste vrste sme priti na vrh seznama, preden pridejo na vrsto
    druge. Brez tega ena sama vrsta poje cel seznam. */
-export const NAJVEC_ENAKIH = 3;
+export const NAJVEC_ENAKIH = 2;
 
 /* ── čas ─────────────────────────────────────────────────────────────────── */
 
@@ -192,6 +195,7 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       id: `posta-${v.id}`,
       vrsta: 'strankaCaka',
       dejanje: `${L('Odgovori', 'Reply to')} ${kdo || v.zadeva}`,
+      podnaslov: kdo && v.zadeva ? v.zadeva : undefined,
       pripis: L(`čaka ${cakaDni} dni`, `waiting ${cakaDni} days`),
       kam: '/kalkulator/komunikacija',
       dniDoRoka: dni,
@@ -211,8 +215,9 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       id: `racun-${r.id}`,
       vrsta: dni < 0 ? 'zamujeno' : dni === 0 ? 'rokDanes' : 'rokKmalu',
       dejanje: dni < 0
-        ? `${L('Pošlji opomnik za', 'Send a reminder for')} ${oznaka} (${r.client})`
-        : `${L('Spremljaj', 'Watch')} ${oznaka} (${r.client})`,
+        ? `${L('Pošlji opomnik za', 'Send a reminder for')} ${oznaka}`
+        : `${L('Spremljaj', 'Watch')} ${oznaka}`,
+      podnaslov: r.client,
       pripis: pripisRoka(dni, jeEn),
       kam: '/kalkulator/racuni',
       dniDoRoka: dni,
@@ -227,7 +232,8 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
     ven.push({
       id: `ponudba-${p.id}`,
       vrsta: 'dokumentCaka',
-      dejanje: `${L('Preveri ponudbo', 'Follow up on the offer')} ${p.title} (${p.client})`,
+      dejanje: `${L('Preveri ponudbo', 'Follow up on the offer')} ${p.title}`,
+      podnaslov: p.client,
       pripis: L(`poslana pred ${Math.abs(dni)} dni`, `sent ${Math.abs(dni)} days ago`),
       kam: '/kalkulator/projekti',
       dniDoRoka: dni,

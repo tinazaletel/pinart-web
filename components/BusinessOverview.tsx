@@ -20,6 +20,30 @@ const DASH_DEMO_NALOGE: { naslov: string; stolpec: string; oseba?: string }[] = 
   { naslov: 'Uskladitev tipografije s CGP', stolpec: 'in_progress', oseba: 'Marko Zupan' },
   { naslov: 'Testiranje dostopnosti (WCAG AA)', stolpec: 'todo', oseba: 'Luka Beg' },
 ];
+/* Videz vrstice v seznamu DANES posnema "Zadnji dokumenti": krog z ikono,
+   naslov, podnaslov in znacka desno. Tako se vrstice med seboj razlikujejo,
+   namesto da so vse ena siva crta. */
+/* Pet vrstic, ne osem: vrstica je zdaj dvovrsticna (naslov + stranka), zato je
+   osem vrstic stolpec raztegnilo visje od sosedov. */
+const DANES_VRSTIC = 5;
+
+const DANES_TON: Record<string, 'danger' | 'waiting' | 'info' | 'neutral' | 'success'> = {
+  zamujeno: 'danger',
+  strankaCaka: 'waiting',
+  rokDanes: 'info',
+  dokumentCaka: 'info',
+  rokKmalu: 'neutral',
+  mojaNaloga: 'neutral',
+  priloznost: 'success',
+};
+
+/* Ikona pove, IZ CESA vrstica izhaja — id se zacne z virom (racun-, posta- ...). */
+const danesIkona = (id: string) =>
+  id.startsWith('racun-') ? Receipt
+  : id.startsWith('posta-') ? EnvelopeSimple
+  : id.startsWith('ponudba-') ? FileText
+  : CheckCircle;
+
 const DASH_DEMO_POSTA: { smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string }[] = [
   { smer: 'prejeto', kdo: 'info@rokusklett.si', zadeva: 'Re: Prenova portala — potrditev obsega' },
   { smer: 'poslano', kdo: 'info@rokusklett.si', zadeva: 'Prenova portala — osnutek za pregled' },
@@ -165,7 +189,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       posta: dashPosta.map((v, i) => ({ id: String(i), smer: v.smer, prejemniki: [v.kdo], zadeva: v.zadeva, datum: v.datum || '' })),
       racuni: activeInvoices.map(r => ({ id: r.id, client: r.client, paid: r.paid, date: r.date })),
       ponudbe: activeOffers.map(o => ({ id: o.id, title: o.title, client: o.client, date: o.date, status: o.status })),
-    }, danes, locale === 'en'));
+    }, danes, locale === 'en'), DANES_VRSTIC);
   }, [danes, dashNaloge, dashPosta, activeInvoices, activeOffers, locale]);
   const recurringTotal = recurringCosts.reduce((sum, item) => sum + (Number(item.znesek) || 0), 0);
   const currentMonthExpenses = expenses.filter(item => {
@@ -426,13 +450,17 @@ export default function BusinessOverview({ base }: { base: string }) {
         <div className={styles.bandBody}>
         <h2 id="events-title" className={styles.bandNaslov}>{L('Kaj čaka nate', 'What needs you')}</h2>
         {danesVrstice.length ? (
-          <ul className={styles.eventList}>
+          <ul className={`${styles.eventList} ${styles.danesSeznam}`}>
             {danesVrstice.map(v => (
               <li key={v.id}>
-                <Link className={styles.danesVrstica} href={`${base}${v.kam}`}>
-                  <span className={styles.danesPika} data-vrsta={v.vrsta} aria-hidden />
-                  <span className={styles.danesTekst}>{v.dejanje}</span>
-                  <time className={styles.danesPripis} data-nujno={v.vrsta === 'zamujeno' ? '1' : undefined}>{v.pripis}</time>
+                <Link className={styles.dashRow} href={`${base}${v.kam}`}>
+                  <span className={styles[`status_${DANES_TON[v.vrsta]}`]} aria-hidden style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', background: 'var(--pill-bg)', color: 'var(--pill-ink)' }}>{(() => { const I = danesIkona(v.id); return <I size={17} weight="regular" />; })()}</span>
+                  <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                    <b style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.dejanje}</b>
+                    {v.podnaslov && <small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.podnaslov}</small>}
+                  </span>
+                  <span className={`${styles.statusPill} ${styles[`status_${DANES_TON[v.vrsta]}`]}`}>{v.pripis}</span>
+                  <span className={styles.dashRowArrow} aria-hidden>›</span>
                 </Link>
               </li>
             ))}
