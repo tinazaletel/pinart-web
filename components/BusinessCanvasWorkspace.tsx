@@ -285,11 +285,6 @@ export default function BusinessCanvasWorkspace() {
         <div>
           <p className={shell.eyebrow}>BUSINESS CANVAS</p>
           <h1>{locale === 'en' ? 'Your business on one page.' : 'Posel na eni strani.'}</h1>
-          {/* Napredek stoji pod naslovom kot podnaslov, ne ob njem: pove, kako dalec
-              je dokument, kar je opis stanja, ne dejanje. */}
-          <span className={styles.editorNapredek} aria-label={`${completed} od 9 področij izpolnjenih`}>
-            <b>{completed}</b><i>/9</i> {locale === 'en' ? 'areas filled' : 'izpolnjenih področij'}
-          </span>
         </div>
         <div className={styles.editorMeta}>
           <button type="button" className={styles.editorPrint}
@@ -299,6 +294,11 @@ export default function BusinessCanvasWorkspace() {
           </button>
         </div>
       </header>
+      {/* Napredek stoji v vrzeli med naslovom in podatki: pove, kako dalec je
+          dokument -- opis stanja, ne dejanje, zato ni v glavi in ni gumb. */}
+      <span className={styles.editorNapredek} aria-label={`${completed} od 9 področij izpolnjenih`}>
+        <b>{completed}</b><i>/9</i> {locale === 'en' ? 'areas filled' : 'izpolnjenih področij'}
+      </span>
       <section className={styles.canvasToolbar} aria-label="Podatki Business Canvasa">
         {organizations.length > 1 && <label><span>Podjetje</span><select value={activeOrganizationId} onChange={event => { setActiveOrganization(event.target.value); window.location.reload(); }}>{organizations.map(organization => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select></label>}
         <label><span>Podjetje ali organizacija</span><input value={shownCompanyName} readOnly={preview !== 'mine'} onChange={event => { setCompanyName(event.target.value); setSaveState('dirty'); }} placeholder="Npr. Rdeča kapica d.o.o." /></label>
