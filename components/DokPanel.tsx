@@ -62,8 +62,13 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
       <div className="dp-back" onClick={onZapri} aria-hidden />
       <aside className="dp" role="dialog" aria-modal="true" aria-label={naslov} tabIndex={-1} ref={panelRef}>
         <header className="dp-glava">
+          {/* Natisni levo kot povezava z ikono, zapri desno -- zapiranje je vedno
+              v desnem kotu, dejanje nad dokumentom pa ob njegovem zacetku. */}
+          <button type="button" className="dp-tisk" onClick={() => window.print()}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" /></svg>
+            {L('Natisni', 'Print')}
+          </button>
           <button type="button" className="dp-x" onClick={onZapri} aria-label={L('Zapri', 'Close')}>×</button>
-          <button type="button" className="dp-tisk" onClick={() => window.print()}>{L('Natisni', 'Print')}</button>
         </header>
 
         {/* Papir: isti občutek kot natisnjen dokument, zato bela stran s tihimi robovi. */}
@@ -91,9 +96,9 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
         .dp-x { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent);
                 border-radius: 50%; background: rgba(255,255,255,.8); font-size: 1.3rem; line-height: 1; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; }
         .dp-x:hover { background: #fff; color: var(--ink, #1a1a1a); }
-        .dp-tisk { padding: .45rem .9rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 999px;
-                   background: rgba(255,255,255,.8); font: 700 .76rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 70%, transparent); cursor: pointer; }
-        .dp-tisk:hover { background: #fff; color: var(--ink, #1a1a1a); }
+        .dp-tisk { display: inline-flex; align-items: center; gap: .4rem; padding: 0; border: 0; background: none;
+                   font: 700 .78rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 62%, transparent); cursor: pointer; transition: color .15s; }
+        .dp-tisk:hover { color: var(--purple, oklch(52% .2 297)); text-decoration: underline; text-underline-offset: 3px; }
 
         /* Stran, ne okno: bel papir z velikodušnimi robovi, kot v tisku. */
         .dp-papir { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0 1rem; padding: 2.4rem clamp(1.4rem, 4vw, 3rem) 3rem;
