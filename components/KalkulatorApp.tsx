@@ -8378,8 +8378,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pime">{L('Ime / podjetje', 'Name / company')} <span className="uv-neobvezno">{L('obvezno', 'required')}</span></label>
-                    <input id="uv-pime" ref={uvodVnosRef} type="text" placeholder={L('Rdeča kapica d.o.o. ali tvoje ime', 'Little Red Riding Hood Ltd. or your name')}
-                      value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
+                    <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
+                      naVrednost={v => setPonudnik(prej => ({ ...prej, ime: v }))}
+                      naIzbiro={pod => {
+                        const naslov = [pod.naslov, [pod.posta_st, pod.posta].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+                        setPonudnik(prej => ({
+                          ...prej,
+                          ime: pod.ime || prej.ime,
+                          davcna: pod.davcna || prej.davcna,
+                          naslov: naslov || prej.naslov,
+                          email: pod.email || prej.email,
+                        }));
+                      }}
+                      obvezno ime="uv-pime" jeEn={L('sl', 'en') === 'en'} />
                   </div>
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pdrzava">{L('Država', 'Country')} <span className="uv-neobvezno">{L('določi privzet trg / raven cen', 'sets the default market / price level')}</span></label>
