@@ -6468,6 +6468,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; }
         .cw .uredi-plosca .chip-podrocje b { white-space: nowrap; }
         .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; grid-template-columns: minmax(0, 1fr); }
+        .cw .profil-predal :is(input, select, textarea) { padding-left: .6rem; padding-right: .6rem; }
+        .cw .profil-predal .chip-podrocje { padding: .5rem .7rem .5rem .5rem; }
+        .cw .profil-predal .cenik-vrsta, .cw .profil-predal .cenik-skupina { padding-left: .6rem; padding-right: .6rem; }
         .cw .profil-predal .chip-podrocje { width: 100%; }
         .cw .profil-predal .chip-podrocje .chip-kljuk { margin-left: auto; }
         @media (max-width: 560px) {
