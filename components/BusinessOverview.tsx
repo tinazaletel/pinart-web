@@ -9,7 +9,6 @@ import { loadFlowData, saveFlowCollection, saveOfferAmount, saveOfferStatus } fr
 import { recordAccountingExport, saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
 import { demoPodatki, usePredogled } from '@/lib/predogled';
 import { preberiNaloge } from '@/lib/naloge';
-import { preberiEvidenco, minuteDela } from '@/lib/evidencaCasa';
 import { preberiVsePoste, type PostaVnos } from '@/lib/postaDnevnik';
 import { jeLicencaKmalu, jeLicencaPotekla } from '@/lib/licencePotek';
 import { sestaviDanes, urediDanes } from '@/lib/danes';
@@ -27,27 +26,6 @@ const DASH_DEMO_NALOGE: { naslov: string; stolpec: string; oseba?: string }[] = 
 /* Pet vrstic, ne osem: vrstica je zdaj dvovrsticna (naslov + stranka), zato je
    osem vrstic stolpec raztegnilo visje od sosedov. */
 const DANES_VRSTIC = 5;
-
-/* Demo stevilke za Stoparico — da predogled ne kaze praznega pasu. */
-const DEMO_STOPARICA_MIN = 17 * 60 + 25;
-const DEMO_STOPARICA_NALOG = 6;
-const DEMO_TEDEN_MIN = 31 * 60 + 40;
-
-/* Ponedeljek tekocega tedna kot YYYY-MM-DD. Datum vstopa kot parameter, da
-   funkcija ostane cista in ne klice new Date() med renderjem. */
-const zacetekTedna = (d: Date): string => {
-  const p = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  p.setDate(p.getDate() - ((p.getDay() + 6) % 7));
-  return `${p.getFullYear()}-${String(p.getMonth() + 1).padStart(2, '0')}-${String(p.getDate()).padStart(2, '0')}`;
-};
-
-/* "7 h 25 min" iz minut. */
-const ureMin = (m: number, jeEn: boolean): string => {
-  const u = Math.floor(m / 60);
-  const min = m % 60;
-  if (!u) return `${min} min`;
-  return min ? `${u} h ${min} min` : `${u} ${jeEn ? 'h' : 'h'}`;
-};
 
 const DANES_TON: Record<string, 'danger' | 'waiting' | 'info' | 'neutral' | 'success'> = {
   zamujeno: 'danger',
@@ -130,23 +108,11 @@ export default function BusinessOverview({ base }: { base: string }) {
   const [preview, setPreview] = usePredogled();
   const [dashNaloge, setDashNaloge] = useState<{ naslov: string; stolpec: string; oseba?: string; rok?: string }[]>([]);
   const [dashPosta, setDashPosta] = useState<{ smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string; datum?: string }[]>([]);
-  /* Stoparica: minute, namerjene na nalogah, in ure prisotnosti v tem tednu.
-     Oboje se bere sele po montazi — branje shrambe med renderjem razbije
-     hidracijo (glej DESIGN.md, tocka 10). */
-  const [stoparicaMin, setStoparicaMin] = useState(0);
-  const [stoparicaNalog, setStoparicaNalog] = useState(0);
-  const [tedenMin, setTedenMin] = useState(0);
   useEffect(() => {
-    if (preview === 'empty') { setDashNaloge([]); setDashPosta([]); setStoparicaMin(0); setStoparicaNalog(0); setTedenMin(0); return; }
-    if (preview !== 'mine') { setDashNaloge(DASH_DEMO_NALOGE); setDashPosta(DASH_DEMO_POSTA); setStoparicaMin(DEMO_STOPARICA_MIN); setStoparicaNalog(DEMO_STOPARICA_NALOG); setTedenMin(DEMO_TEDEN_MIN); return; }
+    if (preview === 'empty') { setDashNaloge([]); setDashPosta([]); return; }
+    if (preview !== 'mine') { setDashNaloge(DASH_DEMO_NALOGE); setDashPosta(DASH_DEMO_POSTA); return; }
     try {
-      const vse = preberiNaloge();
-      setDashNaloge(vse.filter(n => n.stolpec !== 'done').sort((a, b) => (a.stolpec === 'waiting' ? -1 : 0) - (b.stolpec === 'waiting' ? -1 : 0)).slice(0, 12).map(n => ({ rok: n.rok, naslov: n.naslov, stolpec: n.stolpec, oseba: n.dodeljenoOsebaIme })));
-      const zMerjenim = vse.filter(n => (n.porabljeniCasMinute || 0) > 0);
-      setStoparicaMin(zMerjenim.reduce((v, n) => v + (n.porabljeniCasMinute || 0), 0));
-      setStoparicaNalog(zMerjenim.length);
-      const od = zacetekTedna(new Date());
-      setTedenMin(preberiEvidenco().filter(d => d.datum >= od).reduce((v, d) => v + minuteDela(d), 0));
+      setDashNaloge(preberiNaloge().filter(n => n.stolpec !== 'done').sort((a, b) => (a.stolpec === 'waiting' ? -1 : 0) - (b.stolpec === 'waiting' ? -1 : 0)).slice(0, 12).map(n => ({ rok: n.rok, naslov: n.naslov, stolpec: n.stolpec, oseba: n.dodeljenoOsebaIme })));
       setDashPosta(preberiVsePoste().slice(0, 12).map((v: PostaVnos) => ({ smer: v.smer, kdo: v.prejemniki[0] || '—', zadeva: v.zadeva || '—', datum: v.datum })));
     } catch { setDashNaloge([]); setDashPosta([]); }
   }, [preview]);
@@ -561,21 +527,9 @@ export default function BusinessOverview({ base }: { base: string }) {
           </div>
         </section>
 
-        <section className={styles.historyBand} aria-labelledby="cas-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · ŠTOPARICA', '06 · TIMER')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/cas`}><span className={styles.abTxt}>{L('Odpri štoparico', 'Open the timer')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
-          <div className={styles.bandBody}>
-          <h2 id="cas-title" className={styles.bandNaslov}>{L('Koliko si delala', 'How much you worked')}</h2>
-          <div className={styles.kpiGrid} style={{ gridTemplateRows: '1fr' }}>
-            <div className={styles.kpi}><span>{L('Ta teden', 'This week')}</span><strong>{tedenMin ? ureMin(tedenMin, locale === 'en') : '—'}</strong><small>{L('iz delovne prisotnosti', 'from your work record')}</small></div>
-            <div className={styles.kpi}><span>{L('Na nalogah', 'On tasks')}</span><strong>{stoparicaMin ? ureMin(stoparicaMin, locale === 'en') : '—'}</strong><small>{stoparicaNalog ? L(`${stoparicaNalog} nalog z merjenim časom`, `${stoparicaNalog} tasks with tracked time`) : L('štoparica še ni tekla', 'the timer has not run yet')}</small></div>
-          </div>
-          </div>
-        </section>
 
-        {/* V vrstici so trije pasovi, stolpca pa dva: Naloge in Stoparica
-            zasedeta prvo vrsto, Komunikacija tece cez oba stolpca. */}
-        <section className={`${styles.historyBand} ${styles.bandFull}`} aria-labelledby="comm-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · KOMUNIKACIJA', '07 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <section className={styles.historyBand} aria-labelledby="comm-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJA', '06 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
           {dashPosta.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
@@ -587,7 +541,7 @@ export default function BusinessOverview({ base }: { base: string }) {
 
       <div className={styles.detailRow}>
         <section className={styles.historyBand} id="accounting">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('08 · ZGODOVINA', '08 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · ZGODOVINA', '07 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
         <h2 className={styles.bandNaslov}>{L('Zadnji dokumenti', 'Recent documents')}</h2>
         {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable} ${styles.accTable}`}><table><thead><tr><th>{L('Dokument', 'Document')}</th><th>{L('Stranka', 'Client')}</th><th>{L('Datum', 'Date')}</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={L(`Odpri ${item.title}`, `Open ${item.title}`)} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString(dl)}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? L('To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.', 'This is demo data — the status cannot be changed. Switch to »My data«.') : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še nimaš dokumentov.', 'You have no documents yet.')}</strong><p>{L('Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.', 'Offers, contracts, invoices and costs will appear here.')}</p></div></div>}
@@ -595,7 +549,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>
 
         <section className={styles.eventsBand} aria-labelledby="rev-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('09 · PRIHODKI', '09 · REVENUE')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsa poročila', 'All reports')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('08 · PRIHODKI', '08 · REVENUE')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsa poročila', 'All reports')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="rev-title" className={styles.bandNaslov}>{L('Prihodki po mesecih', 'Revenue by month')}</h2>
           {(() => {
