@@ -1087,6 +1087,10 @@
 .clientSplet a:hover { text-decoration: underline; }
 .clientSplet a svg { flex: none; }
 .clientSplet a strong { font-size: .82rem; color: inherit; }
+/* Naslov je edino polje, ki gre cez celo vrstico: ulica in posta s krajem sta
+   dve vrstici, v polovicnem stolpcu pa bi se lomil na tri ali stiri. */
+.clientContacts .clientNaslov { grid-column: 1 / -1; }
+.clientContacts .clientNaslov strong { line-height: 1.35; }
 .clientFinance strong { font: 500 1.25rem var(--font-sans), Georgia, serif; }
 /* Gradienti in ikone kot pri karticah drugod (.expenseSummary, .invoiceSummary). */
 .clientFinance span:nth-child(1) { background: linear-gradient(140deg, oklch(96% .025 165), oklch(88% .065 165)); }
