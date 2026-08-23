@@ -462,7 +462,12 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 @media print{.pw-det-glava{display:none}}
 .pw-det-panel h2{margin:.3rem 0 .1rem;font-family:var(--font-sans),system-ui,sans-serif;font-weight:600;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.05;color:var(--ink)}
 /* paneli = BELO ozadje (ne bez) */
-.pw-vsi-panel,.pw-det-panel{background:#fff !important}
+/* Kot DokPanel: panel je steklen ovoj, vsebina pa bel papir z zaobljenim vrhom.
+   Ploscato belo polje je bilo videti kot druga vrsta okna. */
+.pw-vsi-panel,.pw-det-panel{background:rgba(255,255,255,.86) !important;backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-left:1px solid rgba(255,255,255,.7)}
+.pw-det-panel{padding:.9rem 1rem 0;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
+.pw-det-papir{flex:1 1 auto;min-height:0;overflow-y:auto;padding:2.2rem clamp(1.4rem,4vw,2.6rem) 3rem;background:#fff;border-radius:1rem 1rem 0 0;box-shadow:0 -2px 24px oklch(40% .08 300 / .08)}
+@media print{.pw-det-papir{padding:0;border-radius:0;box-shadow:none;overflow:visible}}
 /* dejanski dokument pogodbe v panelu (PDF videz) */
 .pw-det-doktelo{margin-top:1.3rem;font-family:var(--font-sans),system-ui,sans-serif;color:var(--ink);font-size:.86rem;line-height:1.6}
 .pw-det-doktelo .kick{font-size:.6rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in oklch,var(--ink) 72%,transparent);margin:0 0 .4rem}
@@ -2062,6 +2067,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               </button>
               <button type="button" className="pw-det-x" onClick={zapri} aria-label={L('Zapri', 'Close')}>×</button>
             </header>
+            <div className="pw-det-papir">
             {tip === 'ponudbe' && (() => {
               const o = item as FlowOffer;
               return <>
@@ -2145,6 +2151,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <Link href={`${base}/kalkulator/stroski`} className="pw-det-uredi">{L('Uredi v Stroških', 'Edit in Expenses')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></Link>
               </>;
             })()}
+            </div>
           </aside>
         </div>
       );
