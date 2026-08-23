@@ -28,6 +28,7 @@ import {
   preberiDodelitve,
   shraniDodelitev,
   izbrisiDodelitev,
+  preklopiStoparico as preklopiStoparicoNaloge,
 } from '@/lib/naloge';
 import { preberiSodelavci, shraniSodelavci } from '@/lib/sodelavci';
 import { loadFlowData, type FlowClient } from '@/lib/pinartFlowStore';
@@ -984,26 +985,12 @@ export default function TaskManagerWorkspace() {
      Klik na "stop" (na nalogi, kjer stoparica ze tece) samo ustavi in shrani odsek. */
   const preklopiStoparico = (id: string) => {
     if (samoOgled) return;
-    const zdajIso = new Date().toISOString();
-    const zdajMs = Date.now();
-    let ustavljena: { naloga: Naloga; minute: number } | null = null;
-    const posodobljene = naloge.map((n) => {
-      const jeTaNaloga = n.id === id;
-      if (n.isTimerRunning) {
-        const el = Math.max(0, Math.round((zdajMs - new Date(n.timerStartTime || zdajIso).getTime()) / 60000));
-        ustavljena = { naloga: n, minute: el };
-        return { ...n, isTimerRunning: false, timerStartTime: undefined, porabljeniCasMinute: (n.porabljeniCasMinute || 0) + el };
-      }
-      if (jeTaNaloga) {
-        return { ...n, isTimerRunning: true, timerStartTime: zdajIso };
-      }
-      return n;
-    });
-    posodobiInShrani(posodobljene);
-    /* ob ustavitvi zabeleži porabljeni odsek v Zgodovino aktivnosti */
-    if (ustavljena) {
-      const u = ustavljena as { naloga: Naloga; minute: number };
-      zabeleziAktivnost(u.naloga.id, trenutni.ime, `Ustavil štoparico (+${u.minute} min) na »${u.naloga.naslov}«`);
+    /* Logika je v lib/naloge (cista funkcija s testi), da nadzorna plosca
+       zazene isto stoparico na isti nacin — brez podvojenega pravila. */
+    const izid = preklopiStoparicoNaloge(naloge, id, new Date());
+    posodobiInShrani(izid.naloge);
+    if (izid.ustavljena) {
+      zabeleziAktivnost(izid.ustavljena.id, trenutni.ime, `Ustavil štoparico (+${izid.ustavljena.minute} min) na »${izid.ustavljena.naslov}«`);
       setZgodovina(preberiZgodovino());
     }
   };

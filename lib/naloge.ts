@@ -51,6 +51,10 @@ export interface Naloga {
   porabljeniCasMinute?: number; // skupni porabljeni cas (minute)
   isTimerRunning?: boolean;     // ali stoparica trenutno tece za to nalogo
   timerStartTime?: string;      // ISO timestamp zacetka zadnjega merjenja
+  /* ISO cas, ko je stoparica na tej nalogi NAZADNJE tekla (ob zagonu in ob
+     ustavitvi). Brez tega po ustavitvi ni sledu, kdaj si na cem delala, in
+     nadzorna plosca ne more ponuditi "Nadaljuj". */
+  zadnjeMerjenje?: string;
   prioriteta?: NalogaPrioriteta;
   komentarji?: NalogaKomentar[];
   /* prosti tagi na nalogi (npr. "funkcionalnost", "dizajn", "CRM", "zaledje", "ideja" + prosto
@@ -378,3 +382,57 @@ export const zapisiNalogeNastavitve = (n: NalogeNastavitve, casIso: string): voi
     console.error('Napaka pri shranjevanju nastavitev nalog v localStorage:', e);
   }
 };
+
+
+/* ── stoparica ───────────────────────────────────────────────────────────── */
+
+export type StoparicaIzid = {
+  naloge: Naloga[];
+  /* naloga, ki se je ustavila, in koliko minut je prispevala */
+  ustavljena?: { id: string; naslov: string; minute: number };
+  /* naloga, na kateri je stoparica stekla */
+  zagnana?: { id: string; naslov: string };
+};
+
+/* Cista funkcija: tece lahko iz Nalog ali z nadzorne plosce, izid je isti.
+   Pravilo je eno samo merjenje naenkrat — tekoca naloga se vedno ustavi,
+   ciljna pa stece samo, ce ni bila prav ona tekoca (klik na tekoco = ustavi).
+   `zdaj` je parameter, da funkcija ostane testljiva in ne klice new Date(). */
+export function preklopiStoparico(naloge: Naloga[], id: string, zdaj: Date): StoparicaIzid {
+  const zdajIso = zdaj.toISOString();
+  const zdajMs = zdaj.getTime();
+  let ustavljena: StoparicaIzid['ustavljena'];
+  let zagnana: StoparicaIzid['zagnana'];
+  const posodobljene = naloge.map((n) => {
+    if (n.isTimerRunning) {
+      const zacetek = new Date(n.timerStartTime || zdajIso).getTime();
+      const minute = Math.max(0, Math.round((zdajMs - zacetek) / 60000));
+      ustavljena = { id: n.id, naslov: n.naslov, minute };
+      return {
+        ...n,
+        isTimerRunning: false,
+        timerStartTime: undefined,
+        porabljeniCasMinute: (n.porabljeniCasMinute || 0) + minute,
+        zadnjeMerjenje: zdajIso,
+      };
+    }
+    if (n.id === id) {
+      zagnana = { id: n.id, naslov: n.naslov };
+      return { ...n, isTimerRunning: true, timerStartTime: zdajIso, zadnjeMerjenje: zdajIso };
+    }
+    return n;
+  });
+  return { naloge: posodobljene, ustavljena, zagnana };
+}
+
+/* Naloga, na kateri stoparica trenutno tece (ce sploh). */
+export const tekocaNaloga = (naloge: Naloga[]): Naloga | undefined =>
+  naloge.find((n) => n.isTimerRunning);
+
+/* Nedokoncane naloge, na katerih je stoparica nazadnje tekla — najnovejsa prva.
+   Iz tega nadzorna plosca sestavi "Nadaljuj". */
+export const zadnjeMerjene = (naloge: Naloga[], najvec = 3): Naloga[] =>
+  naloge
+    .filter((n) => n.stolpec !== 'done' && !!n.zadnjeMerjenje)
+    .sort((a, b) => (b.zadnjeMerjenje || '').localeCompare(a.zadnjeMerjenje || ''))
+    .slice(0, najvec);
