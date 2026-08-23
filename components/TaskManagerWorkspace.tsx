@@ -1731,10 +1731,10 @@ export default function TaskManagerWorkspace() {
                     <input
                       value={novoPodopraviloBesedilo}
                       onChange={(e) => setNovoPodopraviloBesedilo(e.target.value)}
-                      placeholder="+ dodaj podopravilo"
+                      placeholder="+ dodaj opravilo"
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajPodopravilo(odprtaNaloga.id, novoPodopraviloBesedilo); setNovoPodopraviloBesedilo(''); } }}
                     />
-                    <button type="button" className="tm-zase" disabled={!novoPodopraviloBesedilo.trim()} onClick={() => { dodajPodopravilo(odprtaNaloga.id, novoPodopraviloBesedilo); setNovoPodopraviloBesedilo(''); }}>+ Dodaj</button>
+                    <button type="button" className="tm-zase" disabled={!novoPodopraviloBesedilo.trim()} onClick={() => { dodajPodopravilo(odprtaNaloga.id, novoPodopraviloBesedilo); setNovoPodopraviloBesedilo(''); }}>Shrani</button>
                   </div>
                 )}
               </div>
