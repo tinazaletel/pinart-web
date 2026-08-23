@@ -828,6 +828,11 @@
 .expenseEditor form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; align-items: end; }
 .expenseEditor label { display: grid; gap: .35rem; font-size: .58rem; font-weight: 800; }
 .expenseEditor input, .expenseEditor select { min-width: 0; height: 2.65rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .65rem; background: oklch(100% 0 0 / .8); font: 500 .66rem var(--font-sans), sans-serif; }
+/* Znesek in valuta sta ENO polje (valuta se shrani ob znesku, brez preracuna).
+   Videz obeh vnosov ostane isti — tu urejamo samo, kako si delita sirino. */
+.expenseZnesek { display: flex; gap: .35rem; }
+.expenseZnesek input { flex: 1 1 auto; }
+.expenseZnesek select { flex: 0 0 5.4rem; padding: 0 .4rem; }
 .expenseEditorActions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .5rem; }
 .expenseEditorActions button { min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: .65rem; background: transparent; font: 800 .61rem var(--font-sans), sans-serif; cursor: pointer; }
 .expenseEditorActions button:last-child { border-color: var(--ink); background: var(--ink); color: var(--paper); }

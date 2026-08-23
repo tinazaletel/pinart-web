@@ -23,6 +23,11 @@ type CloudSettings = {
 };
 
 const dateOnly = (value?: string) => (value || new Date().toISOString()).slice(0, 10);
+/* Nov stolpec v bazi zivi v migraciji, ki je lahko se ni nihce pognal. Postgres tak
+   primer javi kot 42703, PostgREST pa kot PGRST204 (zastarel predpomnilnik sheme) —
+   po tem locimo "stolpca (se) ni" od prave napake. */
+const manjkaStolpec = (error: { code?: string; message?: string }, stolpec: string) =>
+  (error.code === '42703' || error.code === 'PGRST204') && (error.message || '').includes(stolpec);
 const stableId = (value: string) => {
   let hash = 2166136261;
   for (let index = 0; index < value.length; index += 1) {
@@ -249,6 +254,8 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       expense_period: expense.obdobje || 'enkratni',
       expense_date: dateOnly(expense.date),
       amount: expense.amount || 0,
+      /* valuta zneska (brez preracuna); stari zapisi brez polja so EUR */
+      currency: expense.valuta || 'eur',
       file_path: expense.filePath || null,
       deleted_at: expense.deletedAt || null,
       deleted_by: expense.deletedBy || null,
@@ -256,7 +263,13 @@ export async function pushFlowData(data: FlowData): Promise<void> {
     })), expenseVersions.data || []);
     if (rows.length) {
       const { error } = await supabase.from('expenses').upsert(rows, { onConflict: 'organization_id,external_id' });
-      if (error) throw error;
+      /* Ce migracija za stolpec "currency" se ni bila izvedena, bi upsert padel in
+         stroski se sploh ne bi shranili. Raje jih shranimo brez valute kot nic. */
+      if (error && manjkaStolpec(error, 'currency')) {
+        const brezValute = rows.map(({ currency: _valuta, ...ostalo }) => ostalo);
+        const { error: napakaBrezValute } = await supabase.from('expenses').upsert(brezValute, { onConflict: 'organization_id,external_id' });
+        if (napakaBrezValute) throw napakaBrezValute;
+      } else if (error) throw error;
     }
   }
 
@@ -367,6 +380,8 @@ export async function pullFlowData(): Promise<FlowData | null> {
       company: row.supplier || undefined, category: row.category || undefined,
       tags: Array.isArray(row.tags) ? row.tags.map(String) : undefined,
       obdobje: row.expense_period === 'mesecni' || row.expense_period === 'letni' ? row.expense_period : 'enkratni',
+      /* EUR pustimo brez polja (kot stari zapisi), da se zapis po sinhronizaciji ne spremeni */
+      valuta: row.currency && row.currency !== 'eur' ? String(row.currency) : undefined,
       filePath: row.file_path || undefined, fileName: row.file_path ? String(row.file_path).split('/').pop() : undefined,
       deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
