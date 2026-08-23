@@ -1081,7 +1081,11 @@
 .clientContacts small, .clientFinance small { color: var(--muted); font-size: .54rem; }
 .clientContacts strong { font-size: .64rem; overflow-wrap: anywhere; }
 /* spletna stran izpostavljena: prvo mesto, čez celo širino, akcent link + globus */
-.clientSplet { grid-column: 1 / -1; }
+/* Spletna stran deli vrstico z davcno; cez celo gre samo naslov, ki je dvovrsticni.
+   Dolg URL se odreze s tremi pikami, namesto da bi raztegoval stolpec. */
+.clientSplet { min-width: 0; }
+.clientSplet a { max-width: 100%; }
+.clientSplet a strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .clientSplet small { font-size: .68rem; }
 .clientSplet a { display: inline-flex; align-items: center; gap: .4rem; color: oklch(52% .17 300); text-decoration: none; }
 .clientSplet a:hover { text-decoration: underline; }
