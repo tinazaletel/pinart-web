@@ -6449,14 +6449,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uv-forma .gumb { align-self: center; margin-top: .5rem; }
         @media (max-width: 560px) { .cw .uv-forma { margin-left: 0; } .cw .uv-forma .uv-mreza { grid-template-columns: 1fr; } }
         /* področja dela — kompaktni chipi za več izbir (v chatu) */
-        .cw .chat-podrocja { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: .7rem; margin: .5rem auto .3rem; width: 100%; max-width: 900px; }
+        .cw .chat-podrocja { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: .7rem; margin: .5rem auto .3rem; width: 100%; max-width: 1000px; }
         .cw .chat-podrocja > * { width: 100%; justify-self: stretch; white-space: nowrap; }
         .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid oklch(93% .006 82 / .55); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
         .cw .chip-podrocje:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(35,18,45,.1); }
         .cw .chip-podrocje .pi-pod { width: 2.15rem; height: 2.15rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
         .cw .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
         .cw .chip-podrocje b { font-weight: 700; }
-        .cw .chip-podrocje b { flex: 1; min-width: 0; text-align: left; }
+        .cw .chip-podrocje b { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; }
         .cw .chip-podrocje .chip-kljuk { flex: none; width: 1.35rem; height: 1.35rem; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: auto; flex: none; transition: background .18s, border-color .18s; }
         @media (max-width: 700px) {
           .cw .chat-podrocja { display: grid; grid-template-columns: minmax(0, 1fr); margin-left: 0; width: 100%; }
