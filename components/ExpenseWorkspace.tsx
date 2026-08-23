@@ -84,6 +84,18 @@ export default function ExpenseWorkspace() {
   useEffect(() => { setTags(editing?.tags ? [...editing.tags] : []); setTagInput(''); }, [editing, open]);
 
 
+  /* FlowCloudBridge po sinhronizaciji z oblakom sprozi 'pinart-flow-change', a
+     ga doslej ni poslusal nihce: podatki so prispeli, komponente pa so ostale
+     pri praznem seznamu do rocne osvezitve. Tako sta bila spustna seznama
+     "Projekt / ponudba" in "Podjetje" prazna, cetudi je uporabnica imela oboje.
+     Odslej se seznam prebere znova, ko podatki prispejo. */
+  const [osvezi, setOsvezi] = useState(0);
+  useEffect(() => {
+    const naSpremembo = () => setOsvezi(n => n + 1);
+    window.addEventListener('pinart-flow-change', naSpremembo);
+    return () => window.removeEventListener('pinart-flow-change', naSpremembo);
+  }, []);
+
   useEffect(() => {
     const flow = podatkiZaPredogled(nacin, loadFlowData());
     const settings = JSON.parse(localStorage.getItem('pinart-kalkulator-v2') || '{}');
@@ -103,7 +115,7 @@ export default function ExpenseWorkspace() {
     setExpenses(list);
     setOffers(flow.offers.map(({ id, title, client }) => ({ id, title, client })));
     const savedCompanies = JSON.parse(localStorage.getItem('pinart-kalkulator-podjetja') || '{}') as Record<string, { ime?: string }>; setCompanies(Object.entries(savedCompanies).map(([id, item]) => item.ime || id));
-  }, [nacin]);
+  }, [nacin, osvezi]);
 
   /* mesecni znesek stroska (letni /12) — za osnovo in vsote */
   const mesecniZnesek = (item: FlowExpense) => item.obdobje === 'letni' ? item.amount / 12 : item.amount;
