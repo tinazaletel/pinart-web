@@ -151,14 +151,15 @@
 .canvasCardPlan:hover { background: color-mix(in oklch, oklch(58% .2 297) 22%, transparent); }
 
 /* Urejevalnik: vrh z »nazaj« + napredkom */
-.editorHead { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; background: color-mix(in oklch, var(--paper, #F5F2EA) 82%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
-.editorBack { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.6rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.6); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: var(--ink); font: 700 .82rem var(--font-sans), sans-serif; cursor: pointer; transition: border-color .16s ease, background .16s ease; }
-.editorBack:hover { border-color: var(--ink); background: rgba(255,255,255,.82); }
-.editorHead .progressWrap { grid-auto-flow: column; align-items: center; gap: .7rem; }
-.editorHead .progress { width: 6.5rem; }
-.editorHead .progress::after { inset: .75rem; }
-.editorHead .progress strong { font-size: 1.7rem; }
-.editorHead .progressLabel { text-align: left; max-width: 7rem; }
+/* Bezastega pasu ni vec: nazaj stoji nad naslovom kot povsod v Flowu, napredek
+   in tisk pa sta tiha spremljevalca naslova. Prej je bila to svoja letev, ki je
+   nosila velik krog 9/9 in beli gumb Natisni. */
+.editorMeta { display: flex; align-items: center; gap: 1rem; flex: none; }
+.editorNapredek { display: inline-flex; align-items: baseline; gap: .25rem; font: 500 .78rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 62%, transparent); white-space: nowrap; }
+.editorNapredek b { font: 600 1.05rem var(--font-sans), sans-serif; color: var(--ink); }
+.editorNapredek i { font-style: normal; color: color-mix(in oklch, var(--ink) 45%, transparent); }
+.editorBack { display: inline-flex; align-items: center; gap: .4rem; margin: 0 0 1rem; padding: .55rem .95rem; border: 1px solid oklch(93% .006 82 / .55); border-radius: 999px; background: oklch(98% .008 87 / .92); color: var(--ink); font: 700 .72rem var(--font-sans), sans-serif; cursor: pointer; transition: background .15s, color .15s; }
+.editorBack:hover { background: var(--ink); color: var(--paper); }
 @media (max-width: 1100px) { .canvas { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: none; }.canvas article[data-block] { grid-area: auto; }.canvas article[data-block='value'] { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .page { min-width: 0; padding-left: .5rem; padding-right: .5rem; box-sizing: border-box; }.canvasToolbar, .newCanvasForm { align-items: stretch; flex-direction: column; }.canvasToolbar label, .newCanvasForm label { flex-basis: auto; }.canvasToolbar button, .newCanvasForm > div, .newCanvasForm button { width: 100%; }.intro, .actions { grid-template-columns: 1fr; gap: 1.25rem; padding: 1.15rem; }.intro::after { right: -4rem; }.progress { width: 7rem; }.canvas { grid-template-columns: 1fr; }.canvas article[data-block='value'] { grid-column: auto; }.canvas article { min-width: 0; min-height: auto; padding: 1rem; }.canvas textarea { min-height: 8rem; }.actions > div:last-child, .plan footer { justify-content: stretch; flex-direction: column; }.saveFeedback { text-align: left; }.actions button, .plan footer button { width: 100%; min-height: 3rem; }.plan { min-width: 0; padding: 1rem; }.plan header { gap: .75rem; }.plan header > button { flex: 0 0 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }.plan pre { max-width: 100%; padding: 1rem; box-sizing: border-box; } }
 
@@ -172,5 +173,5 @@
 }
 
 /* Tisk: gumb ob merilcu izpolnjenosti v glavi urejevalnika. */
-.editorPrint { margin-left: auto; padding: .5rem 1rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: 700 .8rem var(--font-sans), sans-serif; color: var(--ink); cursor: pointer; }
-.editorPrint:hover { border-color: color-mix(in oklch, oklch(58% .2 297) 45%, transparent); color: color-mix(in oklch, oklch(46% .2 297) 92%, var(--ink)); }
+.editorPrint { display: inline-flex; align-items: center; gap: .4rem; padding: 0; border: 0; background: none; font: 700 .78rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 62%, transparent); cursor: pointer; transition: color .15s; }
+.editorPrint:hover { color: oklch(52% .2 297); text-decoration: underline; text-underline-offset: 3px; }

@@ -12,6 +12,7 @@ import { getActiveOrganizationId, listUserOrganizations, setActiveOrganization, 
 import { usePredogled } from '@/lib/predogled';
 import { useLocale } from 'next-intl';
 import styles from './BusinessCanvasWorkspace.module.css';
+import shell from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { preberiProjekti, shraniProjekt, type Projekt } from '@/lib/projekti';
 import { natisniElement } from '@/lib/natisni';
 
@@ -214,6 +215,7 @@ export default function BusinessCanvasWorkspace() {
   return <div className={styles.page}>
     {notice && <div className={`${styles.notice} ${noticeIsError ? styles.noticeError : ''}`} role={noticeIsError ? 'alert' : 'status'}>{notice}<button type="button" onClick={() => setNotice('')} aria-label="Zapri obvestilo">×</button></div>}
     {view === 'list' ? <>
+      <header className={shell.topbar}><div><p className={shell.eyebrow}>BUSINESS CANVAS</p><h1>{locale === 'en' ? 'Your business on one page.' : 'Posel na eni strani.'}</h1></div></header>
       <p className={styles.listSub}>Odpri obstoječ poslovni model ali začni novega. Spodaj so dokumenti, ki jih Pupa napiše zate.</p>
       <section className={styles.canvasGrid} aria-label="Shranjeni canvasi">
         <button type="button" className={styles.newCanvasCard} disabled={preview !== 'mine'} onClick={startNewCanvas} title={preview !== 'mine' ? 'Demo je samo za predogled — prijavi se za svoj Canvas.' : undefined}>
@@ -273,17 +275,25 @@ export default function BusinessCanvasWorkspace() {
         </div>
       </section>
     </> : <>
-      <section className={styles.editorHead}>
-        <button type="button" className={styles.editorBack} onClick={() => { if (saveState === 'dirty' && !confirm('Imaš neshranjene spremembe. Zapreti brez shranjevanja?')) return; setPlanOpen(false); setView('list'); }}>← Vsi dokumenti</button>
-        <div className={styles.progressWrap}>
-          <div className={styles.progress} style={{ background: `conic-gradient(from -90deg, oklch(72% .18 300), oklch(82% .13 288) ${(completed / 9) * 100}%, oklch(95% .02 300) 0)` }} aria-label={`${completed} od 9 področij izpolnjenih`}><strong>{completed}<small>/9</small></strong></div>
-          <span className={styles.progressLabel}>izpolnjenih področij</span>
+      {/* Nazaj stoji NAD naslovom, kot povsod v Flowu. Bezastega pasu ni vec:
+          napredek in tisk sta tiha spremljevalca naslova, ne svoja letev. */}
+      <button type="button" className={styles.editorBack} onClick={() => { if (saveState === 'dirty' && !confirm('Imaš neshranjene spremembe. Zapreti brez shranjevanja?')) return; setPlanOpen(false); setView('list'); }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg>
+        {locale === 'en' ? 'All documents' : 'Vsi dokumenti'}
+      </button>
+      <header className={shell.topbar}>
+        <div><p className={shell.eyebrow}>BUSINESS CANVAS</p><h1>{locale === 'en' ? 'Your business on one page.' : 'Posel na eni strani.'}</h1></div>
+        <div className={styles.editorMeta}>
+          <span className={styles.editorNapredek} aria-label={`${completed} od 9 področij izpolnjenih`}>
+            <b>{completed}</b><i>/9</i> {locale === 'en' ? 'areas filled' : 'izpolnjenih področij'}
+          </span>
+          <button type="button" className={styles.editorPrint}
+            onClick={() => natisniElement('canvas-tisk', `Business Canvas — ${brandName || companyName || 'Pinart'}`, { lezece: true, robMm: 12 })}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" /></svg>
+            {locale === 'en' ? 'Print' : 'Natisni'}
+          </button>
         </div>
-        <button type="button" className={styles.editorPrint}
-          onClick={() => natisniElement('canvas-tisk', `Business Canvas — ${brandName || companyName || 'Pinart'}`, { lezece: true, robMm: 12 })}>
-          Natisni
-        </button>
-      </section>
+      </header>
       <section className={styles.canvasToolbar} aria-label="Podatki Business Canvasa">
         {organizations.length > 1 && <label><span>Podjetje</span><select value={activeOrganizationId} onChange={event => { setActiveOrganization(event.target.value); window.location.reload(); }}>{organizations.map(organization => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select></label>}
         <label><span>Podjetje ali organizacija</span><input value={shownCompanyName} readOnly={preview !== 'mine'} onChange={event => { setCompanyName(event.target.value); setSaveState('dirty'); }} placeholder="Npr. Rdeča kapica d.o.o." /></label>
