@@ -166,6 +166,16 @@ export default function BusinessOverview({ base }: { base: string }) {
       ponudbe: activeOffers.map(o => ({ id: o.id, title: o.title, client: o.client, date: o.date, status: o.status })),
     }, danes, locale === 'en'));
   }, [danes, dashNaloge, dashPosta, activeInvoices, activeOffers, locale]);
+  /* Naloga, ki je ze v seznamu DANES, se v bloku "Aktivne naloge" ne ponovi.
+     sestaviDanes zapise id kot `naloga-<indeks>`, zato iz njega dobimo indeks. */
+  const danesNalogeIdx = useMemo(
+    () => new Set(danesVrstice.filter(v => v.id.startsWith('naloga-')).map(v => v.id.slice(7))),
+    [danesVrstice],
+  );
+  const aktivneNaloge = useMemo(
+    () => dashNaloge.map((n, i) => ({ n, i })).filter(({ i }) => !danesNalogeIdx.has(String(i))),
+    [dashNaloge, danesNalogeIdx],
+  );
   const recurringTotal = recurringCosts.reduce((sum, item) => sum + (Number(item.znesek) || 0), 0);
   const currentMonthExpenses = expenses.filter(item => {
     const date = new Date(`${item.date}T00:00:00`); const now = new Date();
@@ -444,7 +454,10 @@ export default function BusinessOverview({ base }: { base: string }) {
           naredi, iz dejanja ne rabi ugotavljati nicesar (Codex, 23. 8.).
           Pravila prioritete so v lib/danes.ts in pokrita s testi. */}
       <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('01 · DANES', '01 · TODAY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/naloge`}><span className={styles.abTxt}>{L('Vse naloge', 'All tasks')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        {/* Brez gumba "Vse naloge": ta seznam NI seznam nalog. Vanj tecejo tudi
+            racuni, stranke brez odgovora in priloznosti, zato ena sama ciljna
+            stran ne obstaja — vsaka vrstica pelje tja, kamor sodi (v.kam). */}
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('01 · DANES', '01 · TODAY')}</p></div>
         <div className={styles.bandBody}>
         <h2 id="events-title" className={styles.bandNaslov}>{L('Kaj čaka nate', 'What needs you')}</h2>
         {danesVrstice.length ? (
@@ -480,8 +493,8 @@ export default function BusinessOverview({ base }: { base: string }) {
           <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · NALOGE', '05 · TASKS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/naloge`}><span className={styles.abTxt}>{L('Vse naloge', 'All tasks')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="task-title" className={styles.bandNaslov}>{L('Aktivne naloge', 'Active tasks')}</h2>
-          {dashNaloge.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-            {dashNaloge.slice(0, 4).map((n, i) => { const tone = n.stolpec === 'in_progress' ? 'info' : n.stolpec === 'waiting' ? 'waiting' : n.stolpec === 'done' ? 'success' : 'neutral'; const lbl = n.stolpec === 'in_progress' ? L('V teku', 'In progress') : n.stolpec === 'waiting' ? L('Za pregled', 'For review') : n.stolpec === 'done' ? L('Končano', 'Done') : L('Za začeti', 'To do'); return (
+          {aktivneNaloge.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
+            {aktivneNaloge.slice(0, 4).map(({ n, i }) => { const tone = n.stolpec === 'in_progress' ? 'info' : n.stolpec === 'waiting' ? 'waiting' : n.stolpec === 'done' ? 'success' : 'neutral'; const lbl = n.stolpec === 'in_progress' ? L('V teku', 'In progress') : n.stolpec === 'waiting' ? L('Za pregled', 'For review') : n.stolpec === 'done' ? L('Končano', 'Done') : L('Za začeti', 'To do'); return (
               <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/naloge`}>
                 <span className={styles[`status_${tone}`]} aria-hidden style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', background: 'var(--pill-bg)', color: 'var(--pill-ink)' }}><CheckCircle size={17} weight="regular" /></span>
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.naslov}</b>{n.oseba && <small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.oseba}</small>}</span>
@@ -489,7 +502,7 @@ export default function BusinessOverview({ base }: { base: string }) {
                 <span className={styles.dashRowArrow} aria-hidden>›</span>
               </Link></li>
             ); })}
-          </ul> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Naloge se prikažejo tukaj — dodaj jih v Task managerju.', 'Tasks appear here — add them in the Task manager.')}</p></div></div>}
+          </ul> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{dashNaloge.length ? L('Vse aktivne naloge so že zgoraj v seznamu Danes.', 'All active tasks are already in the Today list above.') : L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{dashNaloge.length ? L('Tu se pokaže, kar danes ni nujno.', 'What is not urgent today shows up here.') : L('Naloge se prikažejo tukaj — dodaj jih v Task managerju.', 'Tasks appear here — add them in the Task manager.')}</p></div></div>}
           </div>
         </section>
 
