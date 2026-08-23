@@ -666,7 +666,10 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
           .km-posta-vrh{flex-wrap:nowrap;justify-content:flex-end;gap:.5rem;margin-top:-2.65rem;pointer-events:none}
           .km-posta-vrh > *{pointer-events:auto}
           /* izbor ostane v desni skupini: vrstica je dvignjena cez zavihke in poravnana desno */
-          .km-posta-vrh .km-vsi-vrh{order:-1;margin-right:.2rem;padding:0 .2rem;background:transparent}
+          /* Kljukica in kos sta ena poteza -- oznacis in zbrises -- zato stojita skupaj,
+             levo od iskalnika, in se kos pojavi sele ko je kaj oznaceno. */
+          .km-posta-vrh .km-vsi-vrh{order:-2;margin-right:.15rem;padding:0 .2rem;background:transparent}
+          .km-posta-vrh .km-akc-brisi,.km-posta-vrh .km-akc-obnovi{order:-1;margin-right:.35rem}
           .km-isk-krog{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.55rem;height:2.55rem;border-radius:50%;border:1px solid var(--k-line);background:#fff;color:var(--k-ink);cursor:pointer}
           .km-isk-krog:hover{background:var(--k-ink);color:#fff}
           .km-posta-vrh .km-iskalnik{display:none;flex:none;margin-bottom:0}
