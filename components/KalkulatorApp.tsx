@@ -6438,7 +6438,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
         .cw .chip-podrocje b { font-weight: 700; }
         .cw .chip-podrocje .chip-kljuk { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: .3rem; flex: none; transition: background .18s, border-color .18s; }
-        @media (max-width: 560px) { .cw .chat-podrocja { margin-left: 0; grid-template-columns: 1fr; } }
+        @media (max-width: 700px) {
+          .cw .chat-podrocja { display: grid; grid-template-columns: 1fr; margin-left: 0; }
+          .cw .chat-podrocja > * { width: 100%; white-space: normal; }
+          .cw .chip-podrocje { padding-right: .8rem; }
+        }
         /* v modalu dodaj/uredi: brez chat-zamika, leva poravnava; naravne pilule (razlicne sirine),
            besedilo v eni vrsti, kljukica na desni strani pilule */
         .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; }
