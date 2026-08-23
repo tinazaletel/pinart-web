@@ -282,11 +282,16 @@ export default function BusinessCanvasWorkspace() {
         {locale === 'en' ? 'All documents' : 'Vsi dokumenti'}
       </button>
       <header className={shell.topbar}>
-        <div><p className={shell.eyebrow}>BUSINESS CANVAS</p><h1>{locale === 'en' ? 'Your business on one page.' : 'Posel na eni strani.'}</h1></div>
-        <div className={styles.editorMeta}>
+        <div>
+          <p className={shell.eyebrow}>BUSINESS CANVAS</p>
+          <h1>{locale === 'en' ? 'Your business on one page.' : 'Posel na eni strani.'}</h1>
+          {/* Napredek stoji pod naslovom kot podnaslov, ne ob njem: pove, kako dalec
+              je dokument, kar je opis stanja, ne dejanje. */}
           <span className={styles.editorNapredek} aria-label={`${completed} od 9 področij izpolnjenih`}>
             <b>{completed}</b><i>/9</i> {locale === 'en' ? 'areas filled' : 'izpolnjenih področij'}
           </span>
+        </div>
+        <div className={styles.editorMeta}>
           <button type="button" className={styles.editorPrint}
             onClick={() => natisniElement('canvas-tisk', `Business Canvas — ${brandName || companyName || 'Pinart'}`, { lezece: true, robMm: 12 })}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" /></svg>
