@@ -817,7 +817,10 @@
 /* Koš = izbris stroška, potisnjen levo (Prekliči + Shrani ostaneta desno) */
 .expenseEditorActions .expenseEditorDelete { margin-right: auto; width: 2.6rem; height: 2.6rem; min-height: 0; aspect-ratio: 1; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border-color: color-mix(in oklch, oklch(52% .16 25) 45%, var(--line)); background: transparent; color: oklch(52% .16 25); }
 .expenseEditorActions .expenseEditorDelete:hover { border-color: oklch(52% .16 25); background: oklch(95% .04 25); }
-.expenseArchive > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+/* Naslov dobi svojo vrstico, da se ne lomi na dvoje, pod njim pa gredo preklop,
+   znacke in iskalnik v ENO vrstico. Prej sta si naslov in krmilje delila
+   vrstico, znacke pa so visele se eno vrstico nizje. */
+.expenseArchive > header { display: flex; flex-direction: column; align-items: stretch; gap: .7rem; margin-bottom: 1rem; }
 .expenseList article { position: relative; display: grid; grid-template-columns: auto auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 3.4rem; padding: .5rem .8rem; border-top: 1px solid rgba(17,17,17,.05); background: transparent; transition: background-color .18s ease; }
 .expenseList .expenseSwipe:first-child article { border-top: none; }
 /* Swipe-left akcije (iOS slog): vrstica + skrita Uredi/Izbriši za njo, razkrijeta s potegom */
@@ -885,11 +888,16 @@
 .expenseTagSuggestions button:hover { border-style: solid; color: var(--ink); background: oklch(95% .01 87); }
 /* ── Znacke stroska: majhni cipi pod opisom v seznamu ── */
 /* značke = svoja vrsta ČEZ CELO širino (sicer kot 6. grid-otrok razširijo 1. stolpec in premaknejo kovanec/naziv desno) */
-.expenseItemTags { grid-column: 1 / -1; min-width: 0; display: flex; flex-wrap: nowrap; gap: .3rem; margin-top: .3rem; overflow-x: auto; scrollbar-width: none; }
+/* Znacke se zacnejo pri NASLOVU (3. stolpec), ne pri kljukici. Prej so tekle
+   cez cel grid in so visele pod checkboxom, izven besedila, ki ga opisujejo. */
+.expenseItemTags { grid-column: 3 / -1; min-width: 0; display: flex; flex-wrap: nowrap; gap: .3rem; margin-top: .3rem; overflow-x: auto; scrollbar-width: none; }
 .expenseItemTags::-webkit-scrollbar { display: none; }
 .expenseItemTag { flex: none; display: inline-flex; align-items: center; padding: .22rem .55rem; border: 0; border-radius: 999px; background: oklch(94% .05 var(--tag-h, 280)); color: oklch(42% .12 var(--tag-h, 280)); font-size: .68rem; font-weight: 700; white-space: nowrap; }
 /* ── Filter po znacki: enak jezik kot .invoiceFilters, a lomi v vec vrstic ── */
-.tagFilterRow { flex-wrap: wrap; row-gap: .3rem; margin-top: .6rem; width: 100%; }
+/* Znacke so zdaj clan krmilne vrstice: ne raztezajo se cez vso sirino in ne
+   potiskajo iskalnika v novo vrstico. Prevec znack se odrine v vodoravni scroll. */
+.tagFilterRow { flex-wrap: nowrap; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.tagFilterRow::-webkit-scrollbar { display: none; }
 /* levi stolpec dovolj sirok, da se naslov ne lomi; desni omejen, sicer se
    ena vrstica stroska raztegne cez 1000 px praznine */
 .recurringCosts { display: grid; grid-template-columns: minmax(19rem, .4fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
@@ -1411,6 +1419,8 @@
   .expenseEditor, .recurringCosts { grid-template-columns: 1fr; }
   .expenseList article { grid-template-columns: auto 1fr auto; }
   .expenseList article > div:nth-child(3) { grid-column: 2 / -1; }
+  /* mobilni grid ima samo tri stolpce -- znacke ostanejo cez celo sirino */
+  .expenseItemTags { grid-column: 1 / -1; }
   .clientLayout { grid-template-columns: 1fr; padding-left: .5rem; padding-right: .5rem; box-sizing: border-box; }
   /* Mobilni master-detail: profil = samostojna stran z »nazaj«.
      Ko je izbrana stranka -> skrij imenik, pokaži profil. Sicer obratno. */
