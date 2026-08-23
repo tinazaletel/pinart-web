@@ -243,11 +243,14 @@ ta evidenca formalno nepopolna, tudi če je tehnično vse urejeno.
 
 - Ves promet po HTTPS; podatki v mirovanju šifrirani pri ponudniku.
 - Baza stoji v EU (Supabase, eu-north-1 Stockholm) — potrjeno 23. 8. 2026.
-- **Varnostnih kopij baze trenutno NI.** Projekt je na paketu Free, ki
-  samodejnih kopij ne vključuje; nadzorna plošča kaže »No backups«. To je
-  odprto neskladje s členom 32(1)(c) GDPR, ki zahteva zmožnost pravočasne
-  povrnitve podatkov ob incidentu. **Odpraviti pred prvimi plačljivimi
-  uporabniki.** Stanje na dan 23. 8. 2026.
+- **Varnostne kopije baze delujejo.** Projekt je na paketu Supabase Pro,
+  ki vključuje samodejne dnevne kopije; nadzorna plošča je 23. 8. 2026
+  kazala zadnjo kopijo izpred ene ure. S tem je izpolnjena zahteva člena
+  32(1)(c) GDPR po zmožnosti pravočasne povrnitve podatkov.
+  Neodvisno od tega obstaja ročna kopija (`scripts/varnostna-kopija-baze.sh`)
+  kot izvod izven Supabase — glej `docs/VARNOSTNE-KOPIJE.md`.
+  [DOPOLNI] dobo hrambe kopij in ali je vklopljen Point-in-Time Recovery
+  (pri Supabase je doplačilo nad paketom Pro in ni samodejen).
 
 **Organizacijsko**
 
@@ -262,7 +265,7 @@ ta evidenca formalno nepopolna, tudi če je tehnično vse urejeno.
 | # | naloga | kdo |
 |---|---|---|
 | 1 | ~~preveriti regijo Supabase~~ — **opravljeno 23. 8. 2026: EU, Stockholm** | ✔ |
-| 1b | **vzpostaviti varnostne kopije baze** (Free paket jih nima) | upravljavec, **nujno** |
+| 1b | ~~vzpostaviti varnostne kopije baze~~ — **opravljeno 23. 8. 2026: Supabase Pro, dnevne kopije** | ✔ |
 | 2 | podpisati DPA z vsemi podobdelovalci | upravljavec |
 | 3 | dodati pogodbo o obdelavi v splošne pogoje (naša vloga obdelovalca) | pravnik |
 | 4 | določiti roke hrambe, označene z [DOPOLNI] | upravljavec |

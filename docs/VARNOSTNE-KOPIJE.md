@@ -1,14 +1,15 @@
 # Varnostne kopije baze
 
-Supabase Free samodejnih kopij nima — nadzorna plošča kaže »No backups«.
-Dokler to velja, je edina mreža ročna kopija s to skripto:
-`scripts/varnostna-kopija-baze.sh`.
+**Samodejne kopije delujejo.** Projekt je od 23. 8. 2026 na paketu Supabase
+Pro, ki vključuje dnevne kopije; nadzorna plošča je tega dne kazala zadnjo
+kopijo izpred ene ure. Zahteva člena 32(1)(c) GDPR po zmožnosti pravočasne
+povrnitve podatkov je s tem izpolnjena.
 
-To je začasna rešitev. Trajna je Supabase Pro (25 $/mes) z dnevnimi kopijami
-in Point-in-Time Recovery. **Preden beta testerji vnesejo prave podatke svojih
-strank, mora biti eno ali drugo urejeno** — člen 32(1)(c) GDPR zahteva
-zmožnost pravočasne povrnitve podatkov, mi pa smo obdelovalec za podatke,
-ki jih uporabniki vnesejo o SVOJIH strankah (pogoji, točka 4g).
+Ta skripta zato ni več edina mreža, ampak **dodatna varnost**: naredi izvod,
+ki leži izven Supabase. Če bi bil račun nedosegljiv, pomotoma izbrisan ali
+zaklenjen, so samodejne kopije nedosegljive skupaj z njim — ta izvod pa ne.
+Za tak primer jo je vredno pognati pred večjimi posegi v bazo in občasno
+sicer.
 
 ---
 
@@ -101,9 +102,12 @@ za bazo:
 
 | Manjka | Zakaj |
 |---|---|
-| Samodejnost | teče samo, ko jo pognaš; pozabljena kopija je nobena |
+| Samodejnost | teče samo, ko jo pognaš — za to so zdaj kopije Supabase |
 | Kopija izven lokacije | vse leži na istem prenosniku kot vse drugo |
 | Point-in-time recovery | vrniti se da le na trenutek zadnjega zagona |
 | Datoteke iz Storage bucketov | zajeti so samo zapisi o njih, ne vsebina |
 
-Vse štiri reši Supabase Pro. Ta skripta pokrije čas do takrat.
+Prvo pokrivajo dnevne kopije Supabase. Point-in-Time Recovery pri Supabase
+ni samodejen niti na paketu Pro — je doplačilo, ki ga je treba vklopiti
+posebej; brez njega se da vrniti na dan, ne na uro. Vsebina Storage bucketov
+ni zajeta ne tu ne tam.
