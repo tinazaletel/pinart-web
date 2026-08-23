@@ -84,13 +84,13 @@ export default async function DashboardSidebar({ base, active }: { base: string;
     </MeniSkupina>
     <MeniSkupina naslov={L('Načrt', 'Plan')} aktivna={active === 'goals' || active === 'time' || active === 'evidenca' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', L('Cilji', 'Goals'), 'cilji', 'businessInsights')}
-      {item('time', `${base}/kalkulator/cas`, '02', L('Ure na projektih', 'Project hours'), 'cas', 'businessInsights')}
-      {/* »Ure na projektih« in »Delovni čas« sta nalašč tako poimenovana: prvo meri,
-          koliko je delo na projektu stalo, drugo beleži, kdaj je bil človek na
+      {item('time', `${base}/kalkulator/cas`, '02', L('Štoparica', 'Stopwatch'), 'cas', 'businessInsights')}
+      {/* »Štoparica« in »Delovna prisotnost« sta nalašč tako poimenovana: prva meri,
+          koliko je delo na projektu stalo, druga beleži, kdaj je bil človek na
           delu (ZEPDSV). Prej sta se imenovala »Čas« in »Evidenca časa« in iz
-          menija ni bilo mogoče uganiti, katero je katero. Delovni čas je brez
-          ključavnice, ker je zakonska obveznost, ne analitika. */}
-      {item('evidenca', `${base}/kalkulator/evidenca-casa`, '03', L('Delovni čas', 'Working time'), 'evidenca')}
+          menija ni bilo mogoče uganiti, katero je katero. Delovna prisotnost je
+          brez ključavnice, ker je zakonska obveznost, ne analitika. */}
+      {item('evidenca', `${base}/kalkulator/evidenca-casa`, '03', L('Delovna prisotnost', 'Attendance'), 'evidenca')}
       {item('plan', `${base}/kalkulator/poslovni-nacrt`, '04', L('Poslovni okvir', 'Business framework'), 'okvir', 'businessInsights')}
       {item('naloge', `${base}/kalkulator/naloge`, '05', L('Naloge', 'Tasks'), 'naloge')}
       {item('koledar', `${base}/kalkulator/koledar`, '06', L('Koledar', 'Calendar'), 'koledar')}

@@ -386,7 +386,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     /* Evidenca delovnega časa je nekaj DRUGEGA kot štoparica: štoparica meri ure
        na projektu (koliko je delo stalo), evidenca beleži prihod in odhod osebe
        (zakonska obveznost po ZEPDSV). Landing je do zdaj poznal samo štoparico. */
-    { Ikona: ClipboardText, kat: 'finance', h: 135, ime: t('Evidenca delovnega časa', 'Working time records'), opis: t('Prihod, odmor in odhod po ZEPDSV — mesečna tabela in izvoz za kadrovsko.', 'Arrival, break and departure as Slovenian law requires — monthly table and HR export.'), href: localePath(locale, '/kalkulator/evidenca-casa') },
+    { Ikona: ClipboardText, kat: 'finance', h: 135, ime: t('Delovna prisotnost', 'Attendance'), opis: t('Prihod, odmor in odhod po ZEPDSV — mesečna tabela in izvoz za kadrovsko.', 'Arrival, break and departure as Slovenian law requires — monthly table and HR export.'), href: localePath(locale, '/kalkulator/evidenca-casa') },
     { Ikona: Suitcase, kat: 'finance', h: 200, ime: t('Poslovni okvir', 'Business framework'), opis: t('Širša slika: rezerva, davki in spodnja meja poštene cene.', 'Understand reserves, taxes and the minimum sustainable price.'), href: localePath(locale, '/kalkulator/poslovni-nacrt') },
     { Ikona: CalendarBlank, kat: 'stranke', h: 200, ime: t('Koledar', 'Calendar'), opis: t('Sestanki, klici in roki projektov na enem koledarju.', 'Meetings, calls and project deadlines in one calendar.'), href: localePath(locale, '/kalkulator/koledar') },
   ];
