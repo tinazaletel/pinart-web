@@ -821,7 +821,10 @@
    znacke in iskalnik v ENO vrstico. Prej sta si naslov in krmilje delila
    vrstico, znacke pa so visele se eno vrstico nizje. */
 .expenseArchive > header { display: flex; flex-direction: column; align-items: stretch; gap: .7rem; margin-bottom: 1rem; }
-.expenseList article { position: relative; display: grid; grid-template-columns: auto auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; gap: .8rem; min-height: 3.4rem; padding: .5rem .8rem; border-top: 1px solid rgba(17,17,17,.05); background: transparent; transition: background-color .18s ease; }
+/* column-gap in row-gap locena: stolpci potrebujejo zracnost, vrstice ne --
+   z enotnim gap .8rem so znacke odplavale od besedila, ki ga opisujejo, in
+   je bil spodnji del vrstice videti visji od zgornjega. */
+.expenseList article { position: relative; display: grid; grid-template-columns: auto auto minmax(12rem, 1fr) minmax(10rem, .7fr) auto; align-items: center; column-gap: .8rem; row-gap: .15rem; min-height: 3.4rem; padding: .55rem .8rem; border-top: 1px solid rgba(17,17,17,.05); background: transparent; transition: background-color .18s ease; }
 .expenseList .expenseSwipe:first-child article { border-top: none; }
 /* Swipe-left akcije (iOS slog): vrstica + skrita Uredi/Izbriši za njo, razkrijeta s potegom */
 .expenseSwipe { display: block; }
@@ -890,7 +893,7 @@
 /* značke = svoja vrsta ČEZ CELO širino (sicer kot 6. grid-otrok razširijo 1. stolpec in premaknejo kovanec/naziv desno) */
 /* Znacke se zacnejo pri NASLOVU (3. stolpec), ne pri kljukici. Prej so tekle
    cez cel grid in so visele pod checkboxom, izven besedila, ki ga opisujejo. */
-.expenseItemTags { grid-column: 3 / -1; min-width: 0; display: flex; flex-wrap: nowrap; gap: .3rem; margin-top: .3rem; overflow-x: auto; scrollbar-width: none; }
+.expenseItemTags { grid-column: 3 / -1; min-width: 0; display: flex; flex-wrap: nowrap; gap: .3rem; overflow-x: auto; scrollbar-width: none; }
 .expenseItemTags::-webkit-scrollbar { display: none; }
 .expenseItemTag { flex: none; display: inline-flex; align-items: center; padding: .22rem .55rem; border: 0; border-radius: 999px; background: oklch(94% .05 var(--tag-h, 280)); color: oklch(42% .12 var(--tag-h, 280)); font-size: .68rem; font-weight: 700; white-space: nowrap; }
 /* ── Filter po znacki: enak jezik kot .invoiceFilters, a lomi v vec vrstic ── */
