@@ -11,6 +11,7 @@ import { demoPodatki, usePredogled } from '@/lib/predogled';
 import { preberiNaloge } from '@/lib/naloge';
 import { preberiVsePoste, type PostaVnos } from '@/lib/postaDnevnik';
 import { jeLicencaKmalu, jeLicencaPotekla } from '@/lib/licencePotek';
+import { sestaviDanes, urediDanes } from '@/lib/danes';
 
 /* Demo za nadzorno ploščo (»polno poslovanje«) — naloge + komunikacija */
 const DASH_DEMO_NALOGE: { naslov: string; stolpec: string; oseba?: string }[] = [
@@ -80,14 +81,14 @@ export default function BusinessOverview({ base }: { base: string }) {
   const [period, setPeriod] = useState<Period>('month');
   /* prej useState -> preklop je veljal SAMO tu in podstrani so ostale prazne */
   const [preview, setPreview] = usePredogled();
-  const [dashNaloge, setDashNaloge] = useState<{ naslov: string; stolpec: string; oseba?: string }[]>([]);
-  const [dashPosta, setDashPosta] = useState<{ smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string }[]>([]);
+  const [dashNaloge, setDashNaloge] = useState<{ naslov: string; stolpec: string; oseba?: string; rok?: string }[]>([]);
+  const [dashPosta, setDashPosta] = useState<{ smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string; datum?: string }[]>([]);
   useEffect(() => {
     if (preview === 'empty') { setDashNaloge([]); setDashPosta([]); return; }
     if (preview !== 'mine') { setDashNaloge(DASH_DEMO_NALOGE); setDashPosta(DASH_DEMO_POSTA); return; }
     try {
-      setDashNaloge(preberiNaloge().filter(n => n.stolpec !== 'done').sort((a, b) => (a.stolpec === 'waiting' ? -1 : 0) - (b.stolpec === 'waiting' ? -1 : 0)).slice(0, 4).map(n => ({ naslov: n.naslov, stolpec: n.stolpec, oseba: n.dodeljenoOsebaIme })));
-      setDashPosta(preberiVsePoste().slice(0, 4).map((v: PostaVnos) => ({ smer: v.smer, kdo: v.prejemniki[0] || '—', zadeva: v.zadeva || '—' })));
+      setDashNaloge(preberiNaloge().filter(n => n.stolpec !== 'done').sort((a, b) => (a.stolpec === 'waiting' ? -1 : 0) - (b.stolpec === 'waiting' ? -1 : 0)).slice(0, 12).map(n => ({ rok: n.rok, naslov: n.naslov, stolpec: n.stolpec, oseba: n.dodeljenoOsebaIme })));
+      setDashPosta(preberiVsePoste().slice(0, 12).map((v: PostaVnos) => ({ smer: v.smer, kdo: v.prejemniki[0] || '—', zadeva: v.zadeva || '—', datum: v.datum })));
     } catch { setDashNaloge([]); setDashPosta([]); }
   }, [preview]);
   const [contractMode, setContractMode] = useState<'offer' | 'upload'>('offer');
@@ -134,6 +135,12 @@ export default function BusinessOverview({ base }: { base: string }) {
   const activeExpenses = preview === 'demo' ? demo.expenses : zac ? demo.expenses.slice(0, 2) : preview === 'mine' ? expenses : [];
   const activeOffers = preview === 'demo' ? demo.offers : zac ? demo.offers.slice(0, 2) : preview === 'mine' ? offers : [];
   const activeContracts = preview === 'mine' ? contracts : [];
+  /* Danasnji datum vzamemo SELE po montazi: new Date() med renderjem da na
+     strezniku drugacen izid kot v brskalniku in React javi "Text does not
+     match". Do takrat je seznam prazen, kar je pravilno -- ne pokaze napacnega. */
+  const [danes, setDanes] = useState('');
+  useEffect(() => { setDanes(new Date().toISOString().slice(0, 10)); }, []);
+
   const periodInvoices = activeInvoices.filter(i => inPeriod(i.date));
   const periodExpenses = activeExpenses.filter(e => inPeriod(e.date));
   const paid = periodInvoices.filter(i => i.paid).reduce((sum, i) => sum + i.amount, 0);
@@ -147,6 +154,18 @@ export default function BusinessOverview({ base }: { base: string }) {
   const costShare = resultTotal > 0 ? Math.round((costs / resultTotal) * 100) : 0;
   const profitShare = resultTotal > 0 ? 100 - costShare : 0;
   const waiting = activeOffers.filter(o => o.status === 'sent');
+  /* Seznam "Danes": kaj caka nate, urejeno po nujnosti. Pravila in vrstni red
+     so v lib/danes.ts in pokriti s testi (tests/unit/danes.test.ts) -- tu samo
+     zberemo vire, ki jih plosca ze bere. */
+  const danesVrstice = useMemo(() => {
+    if (!danes) return [];
+    return urediDanes(sestaviDanes({
+      naloge: dashNaloge.map((n, i) => ({ id: String(i), naslov: n.naslov, stolpec: n.stolpec, rok: n.rok })),
+      posta: dashPosta.map((v, i) => ({ id: String(i), smer: v.smer, prejemniki: [v.kdo], zadeva: v.zadeva, datum: v.datum || '' })),
+      racuni: activeInvoices.map(r => ({ id: r.id, client: r.client, paid: r.paid, date: r.date })),
+      ponudbe: activeOffers.map(o => ({ id: o.id, title: o.title, client: o.client, date: o.date, status: o.status })),
+    }, danes, locale === 'en'));
+  }, [danes, dashNaloge, dashPosta, activeInvoices, activeOffers, locale]);
   const recurringTotal = recurringCosts.reduce((sum, item) => sum + (Number(item.znesek) || 0), 0);
   const currentMonthExpenses = expenses.filter(item => {
     const date = new Date(`${item.date}T00:00:00`); const now = new Date();
@@ -419,19 +438,28 @@ export default function BusinessOverview({ base }: { base: string }) {
         </div>
       </section>
 
+      {/* SEZNAM "DANES" -- kaj caka nate, ne koledar prihodnjih dogodkov.
+          Vrstica pove DEJANJE ("Posljji opomnik za racun"), ne stanja
+          ("racun zapadel"): iz stanja mora clovek sam ugotoviti, kaj naj
+          naredi, iz dejanja ne rabi ugotavljati nicesar (Codex, 23. 8.).
+          Pravila prioritete so v lib/danes.ts in pokrita s testi. */}
       <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('04 · PRIHODNJI DOGODKI', '04 · UPCOMING EVENTS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}><span className={styles.abTxt}>{L('Vsi dogodki', 'All events')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('01 · DANES', '01 · TODAY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/naloge`}><span className={styles.abTxt}>{L('Vse naloge', 'All tasks')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
-        <h2 id="events-title" className={styles.bandNaslov}>{L('Dogodki & roki', 'Events & deadlines')}</h2>
-        {(() => {
-          const addDays = (iso: string, n: number) => { const dt = new Date(iso); dt.setDate(dt.getDate() + n); return dt; };
-          const ev = [
-            ...periodInvoices.filter(i => !i.paid).map(i => ({ id: `inv-${i.id}`, kind: L('Rok plačila', 'Payment due'), who: i.client || L('Račun', 'Invoice'), when: addDays(i.date, 15), tone: 'waiting' })),
-            ...waiting.map(o => ({ id: `off-${o.id}`, kind: L('Ponudba čaka odgovor', 'Offer awaiting reply'), who: o.client || o.title, when: addDays(o.date, 8), tone: 'info' })),
-            ...activeOffers.filter(o => o.status === 'accepted').map(o => ({ id: `acc-${o.id}`, kind: L('Rok izvedbe', 'Delivery deadline'), who: o.client || o.title, when: addDays(o.date, 20), tone: 'waiting' })),
-          ].sort((a, b) => a.when.getTime() - b.when.getTime()).slice(0, 5);
-          return ev.length ? <ul className={styles.eventList}>{ev.map(e => <li key={e.id}><span className={styles.eventDate} data-tone={e.tone}><b>{e.when.getDate()}</b><small>{e.when.toLocaleDateString(dl, { month: 'short' }).replace('.', '').toUpperCase()}</small></span><span className={styles.eventCard}><span className={styles.eventIco} data-tone={e.tone} aria-hidden>{e.tone === 'waiting' ? <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg> : <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /></svg>}</span><span className={styles.eventBody}><strong>{e.kind}</strong><small>{e.who}</small></span><i className={styles.eventDot} data-tone={e.tone} aria-hidden /></span></li>)}</ul> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Ni prihodnjih rokov.', 'No upcoming deadlines.')}</strong><p>{L('Roki plačil in ponudbe, ki čakajo odgovor, se prikažejo tukaj.', 'Payment due dates and offers awaiting a reply will appear here.')}</p></div></div>;
-        })()}
+        <h2 id="events-title" className={styles.bandNaslov}>{L('Kaj čaka nate', 'What needs you')}</h2>
+        {danesVrstice.length ? (
+          <ul className={styles.eventList}>
+            {danesVrstice.map(v => (
+              <li key={v.id}>
+                <Link className={styles.danesVrstica} href={`${base}${v.kam}`}>
+                  <span className={styles.danesPika} data-vrsta={v.vrsta} aria-hidden />
+                  <span className={styles.danesTekst}>{v.dejanje}</span>
+                  <time className={styles.danesPripis} data-nujno={v.vrsta === 'zamujeno' ? '1' : undefined}>{v.pripis}</time>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : <p className={styles.tipText}>{danes ? L('Danes te nič ne čaka.', 'Nothing needs you today.') : ''}</p>}
         </div>
       </section>
       </div>
@@ -453,7 +481,7 @@ export default function BusinessOverview({ base }: { base: string }) {
           <div className={styles.bandBody}>
           <h2 id="task-title" className={styles.bandNaslov}>{L('Aktivne naloge', 'Active tasks')}</h2>
           {dashNaloge.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-            {dashNaloge.map((n, i) => { const tone = n.stolpec === 'in_progress' ? 'info' : n.stolpec === 'waiting' ? 'waiting' : n.stolpec === 'done' ? 'success' : 'neutral'; const lbl = n.stolpec === 'in_progress' ? L('V teku', 'In progress') : n.stolpec === 'waiting' ? L('Za pregled', 'For review') : n.stolpec === 'done' ? L('Končano', 'Done') : L('Za začeti', 'To do'); return (
+            {dashNaloge.slice(0, 4).map((n, i) => { const tone = n.stolpec === 'in_progress' ? 'info' : n.stolpec === 'waiting' ? 'waiting' : n.stolpec === 'done' ? 'success' : 'neutral'; const lbl = n.stolpec === 'in_progress' ? L('V teku', 'In progress') : n.stolpec === 'waiting' ? L('Za pregled', 'For review') : n.stolpec === 'done' ? L('Končano', 'Done') : L('Za začeti', 'To do'); return (
               <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/naloge`}>
                 <span className={styles[`status_${tone}`]} aria-hidden style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', background: 'var(--pill-bg)', color: 'var(--pill-ink)' }}><CheckCircle size={17} weight="regular" /></span>
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.naslov}</b>{n.oseba && <small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.oseba}</small>}</span>
@@ -470,7 +498,7 @@ export default function BusinessOverview({ base }: { base: string }) {
           <div className={styles.bandBody}>
           <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
           {dashPosta.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-            {dashPosta.map((v, i) => { const tone = v.smer === 'prejeto' ? 'success' : 'info'; return <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/komunikacija`}><span className={styles[`status_${tone}`]} aria-hidden style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', background: 'var(--pill-bg)', color: 'var(--pill-ink)' }}>{v.smer === 'prejeto' ? <EnvelopeSimple size={16} weight="regular" /> : <PaperPlaneRight size={16} weight="regular" />}</span><span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.84rem', color: 'var(--ink)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.zadeva}</b><small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.kdo}</small></span><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span><span className={styles.dashRowArrow} aria-hidden>›</span></Link></li>; })}
+            {dashPosta.slice(0, 4).map((v, i) => { const tone = v.smer === 'prejeto' ? 'success' : 'info'; return <li key={i}><Link className={styles.dashRow} href={`${base}/kalkulator/komunikacija`}><span className={styles[`status_${tone}`]} aria-hidden style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', background: 'var(--pill-bg)', color: 'var(--pill-ink)' }}>{v.smer === 'prejeto' ? <EnvelopeSimple size={16} weight="regular" /> : <PaperPlaneRight size={16} weight="regular" />}</span><span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}><b style={{ fontSize: '.84rem', color: 'var(--ink)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.zadeva}</b><small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.kdo}</small></span><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span><span className={styles.dashRowArrow} aria-hidden>›</span></Link></li>; })}
           </ul> : <Link className={styles.emptyState} href={`${base}/kalkulator/komunikacija`}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Poveži svojo pošto', 'Connect your mail')}</strong><p>{L('Projektni maili in klepeti se zbirajo tukaj. Odpri Komunikacijo, da začneš.', 'Project mail and chats collect here. Open Communication to get started.')}</p></div></Link>}
           </div>
         </section>
