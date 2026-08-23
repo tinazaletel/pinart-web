@@ -2129,6 +2129,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [onboardingOdprt, setOnboardingOdprt] = useState(false);
   /* fake-chat uvod (gradi intimo): ime -> izkusnje -> nova/obstojeca -> ime ponudbe */
   const [uvodChat, setUvodChat] = useState(false);
+  /* Brezplacen obiskovalec ni prisel delat ponudbe, ampak pogledat ceno. Davcna,
+     e-posta, telefon, TRR in naslov so podatki DOKUMENTA, ne izracuna, zato so
+     pri njem zloženi pod povezavo. Prijavljeni jih vidi takoj — on ponudbo res
+     dela in podatki so ze predizpolnjeni. */
+  const [podatkiPodjetjaOdprti, setPodatkiPodjetjaOdprti] = useState(false);
   const [uvodOdhaja, setUvodOdhaja] = useState(false);   /* mehak prehod chat -> izbira (brez preskoka) */
   /* nacin: chat (privzeto) ali klasicen vprasalnik (nastavitve) */
   const [klasicnaOblika, setKlasicnaOblika] = useState(false);
@@ -6468,6 +6473,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uv-forma .uv-polje { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
         .cw .uv-forma .uv-polje-siroko { grid-column: 1 / -1; }
         .cw .uv-forma label { font-size: .84rem; font-weight: 600; color: var(--ink); display: flex; align-items: baseline; gap: .5rem; }
+        /* Povezava, ki odpre dokumentna polja pri brezplacnem vstopu. Ni gumb v
+           polnem pomenu — je ponudba, ne zahteva, zato brez ozadja in obrobe. */
+        .cw .uv-forma .uv-vec { display: flex; flex-direction: column; align-items: flex-start; gap: .15rem; padding: .25rem 0; border: 0; background: none; color: var(--accent, #B25476); font: 700 .82rem var(--font-sans), sans-serif; text-align: left; cursor: pointer; text-decoration: underline; text-underline-offset: .22em; }
+        .cw .uv-forma .uv-vec:hover { color: var(--ink); }
+        .cw .uv-forma .uv-vec-pripis { font: 500 .72rem var(--font-sans), sans-serif; color: rgba(17,17,17,.62); text-decoration: none; }
         .cw .uv-forma .uv-neobvezno { font-size: .7rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .cw .uv-forma input, .cw .uv-forma select { width: 100%; background: rgba(255,255,255,.62); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid rgba(255,255,255,.6); border-radius: 12px; padding: .72rem .95rem; font-family: inherit; font-size: .98rem; font-weight: 500; color: var(--ink); outline: none; box-shadow: 0 4px 14px rgba(40,25,40,.05); transition: border-color .18s; box-sizing: border-box; }
         .cw .uv-forma input:focus, .cw .uv-forma select:focus { border-color: var(--accent); }
@@ -8467,7 +8477,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       value={custDrzavaMoj}
                       onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
                   </div>
-                  <div className="uv-mreza">
+                  {!vFlow && !podatkiPodjetjaOdprti && (
+                    <button type="button" className="uv-vec" onClick={() => setPodatkiPodjetjaOdprti(true)}>
+                      {L('Dodaj podatke za ponudbo (davčna, TRR, kontakt)', 'Add details for the quote (tax number, IBAN, contact)')}
+                      <span className="uv-vec-pripis">{L('za ceno jih ne rabim — dopolniš lahko pozneje', 'not needed for the price — you can fill these in later')}</span>
+                    </button>
+                  )}
+                  <div className="uv-mreza" hidden={!vFlow && !podatkiPodjetjaOdprti}>
                     <div className="uv-polje">
                       <label htmlFor="uv-pdavcna">{L('Davčna številka', 'Tax number')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
                       <input id="uv-pdavcna" type="text" placeholder={L('SI98765432', 'SI98765432')}
