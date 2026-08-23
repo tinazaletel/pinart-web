@@ -415,24 +415,6 @@ export default function TaskManagerWorkspace() {
   /* Hitro dodajanje ni AI — je samo drug nacin iste forme: ena naloga na vrstico.
      Zato zivi kot preklop znotraj "Nova naloga", ne kot svoje okno. */
   const [novaHitro, setNovaHitro] = useState(false);
-  /* Filter je na telefonu spodnja plosca, na namizju pa navaden spustni seznam
-     pod gumbom. Portal ostane (drugace ga odreze prednik), zato mesto izracunamo
-     iz gumba samega — sicer bi popover obvisel v kotu zaslona. */
-  const [jeNamizje, setJeNamizje] = useState(false);
-  const filterGumbRef = useRef<HTMLButtonElement>(null);
-  const [filterPoz, setFilterPoz] = useState<{ top: number; left: number } | null>(null);
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 981px)');
-    const osvezi = () => setJeNamizje(mq.matches);
-    osvezi();
-    mq.addEventListener('change', osvezi);
-    return () => mq.removeEventListener('change', osvezi);
-  }, []);
-  const odpriFilter = () => {
-    const r = filterGumbRef.current?.getBoundingClientRect();
-    if (r) setFilterPoz({ top: r.bottom + 8, left: Math.max(8, Math.min(r.left, window.innerWidth - 340)) });
-    setFilterVecOdprt(true);
-  };
   const [hitroBesedilo, setHitroBesedilo] = useState('');
   /* kratko sporocilo ob kliku "Nalozi razvojne naloge (Flow)" — koliko jih je bilo dodanih */
   const [seedSporocilo, setSeedSporocilo] = useState('');
@@ -1134,7 +1116,19 @@ export default function TaskManagerWorkspace() {
             >
               <span>{filterNalogeNaziv}</span><CaretDown size={16} weight="bold" />
             </button>
-            <button ref={filterGumbRef} type="button" className={'tm-filter-vec' + ((filterOznaka || filterProjekt) ? ' aktiv' : '')} onClick={odpriFilter} aria-haspopup="dialog" aria-expanded={filterVecOdprt}>
+            {/* Namizje: dva navadna spustna seznama, oznake in projekti LOCENO.
+                Telefon: en gumb, ki odpre spodnjo plosco (spodaj). Preklop je v CSS,
+                da ob nalaganju nic ne utripne. */}
+            <select className="tm-filter-oznaka" value={filterOznaka} onChange={(e) => setFilterOznaka(e.target.value)} aria-label="Filtriraj po oznaki">
+              <option value="">Vse oznake</option>
+              {vseOznake.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <select className="tm-filter-oznaka tm-filter-projekt" value={filterProjekt} onChange={(e) => setFilterProjekt(e.target.value)} aria-label="Filtriraj po projektu">
+              <option value="">Vsi projekti</option>
+              {vsiProjekti.map((projekt) => <option key={projekt.id} value={projekt.id}>{projekt.ime}</option>)}
+              {vidneNaloge.some((n) => !n.projectId) && <option value="__brez__">Brez projekta</option>}
+            </select>
+            <button type="button" className={'tm-filter-vec' + ((filterOznaka || filterProjekt) ? ' aktiv' : '')} onClick={() => setFilterVecOdprt(true)} aria-haspopup="dialog" aria-expanded={filterVecOdprt}>
               <FunnelSimple size={15} weight="bold" /><span>Filter</span>{(filterOznaka || filterProjekt) && <span className="tm-filter-vec-pika" aria-hidden />}
             </button>
           </div>
@@ -1189,22 +1183,13 @@ export default function TaskManagerWorkspace() {
       )}
 
       {filterVecOdprt && typeof document !== 'undefined' && createPortal(
-        <div className={'tm-mobilni-sheet-zastor' + (jeNamizje ? ' tm-pop-zastor' : '')} onClick={() => setFilterVecOdprt(false)}>
-          <section
-            className={'tm-mobilni-sheet' + (jeNamizje ? ' tm-filter-pop' : '')}
-            style={jeNamizje && filterPoz ? { top: filterPoz.top, left: filterPoz.left } : undefined}
-            role="dialog"
-            aria-modal={jeNamizje ? undefined : true}
-            aria-label="Filter — oznake in projekti"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {!jeNamizje && <div className="tm-mobilni-sheet-rocaj" aria-hidden="true" />}
-            {!jeNamizje && (
-              <div className="tm-mobilni-sheet-glava">
-                <div><p>FILTER</p><h2>Oznake in projekti</h2></div>
-                <button type="button" onClick={() => setFilterVecOdprt(false)} aria-label="Zapri filter"><X size={20} /></button>
-              </div>
-            )}
+        <div className="tm-mobilni-sheet-zastor" onClick={() => setFilterVecOdprt(false)}>
+          <section className="tm-mobilni-sheet" role="dialog" aria-modal="true" aria-label="Filter — oznake in projekti" onClick={(e) => e.stopPropagation()}>
+            <div className="tm-mobilni-sheet-rocaj" aria-hidden="true" />
+            <div className="tm-mobilni-sheet-glava">
+              <div><p>FILTER</p><h2>Oznake in projekti</h2></div>
+              <button type="button" onClick={() => setFilterVecOdprt(false)} aria-label="Zapri filter"><X size={20} /></button>
+            </div>
             {vseOznake.length > 0 && (
               <>
                 <p className="tm-sheet-pod">Oznaka</p>
@@ -1944,7 +1929,7 @@ export default function TaskManagerWorkspace() {
         .tm-filtri button.tm-filter-on{background:var(--ink);color:var(--paper)}
         .tm-mobilni-filter-gumb{display:none}
         /* skupni »Filter« gumb (oznake+projekti) -> slide-up list; bel, hover micro-anim */
-        .tm-filter-vec{flex:none;display:inline-flex;align-items:center;gap:.4rem;min-height:2.75rem;padding:0 1rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:750 .74rem var(--font-sans),sans-serif;cursor:pointer;transition:background .16s,color .16s,border-color .16s,transform .16s cubic-bezier(.2,.8,.3,1),box-shadow .16s}
+        .tm-filter-vec{display:none;flex:none;align-items:center;gap:.4rem;min-height:2.75rem;padding:0 1rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:750 .74rem var(--font-sans),sans-serif;cursor:pointer;transition:background .16s,color .16s,border-color .16s,transform .16s cubic-bezier(.2,.8,.3,1),box-shadow .16s}
         .tm-filter-vec:hover{border-color:color-mix(in oklch,var(--ink) 40%,transparent);transform:translateY(-1px);box-shadow:0 .4rem 1rem oklch(30% .02 55/.1)}
         .tm-filter-vec.aktiv{background:var(--ink);color:var(--paper);border-color:var(--ink)}
         .tm-filter-vec-pika{width:.4rem;height:.4rem;border-radius:50%;background:currentColor}
@@ -1963,13 +1948,6 @@ export default function TaskManagerWorkspace() {
         /* Portal visi na <body>, zunaj .shell -> --font-serif je tam portfeljev
            Bodoni. Flow serif je --font-serif-flow. Glej DESIGN.md, tocka 2. */
         .tm-mobilni-sheet-glava h2{margin:0;font:500 1.45rem/1.1 var(--font-serif-flow),Georgia,serif}
-        /* Namizje: navaden spustni seznam pod gumbom Filter, brez zastora cez stran. */
-        .tm-pop-zastor{background:none;backdrop-filter:none;-webkit-backdrop-filter:none;display:block;animation:none}
-        .tm-filter-pop{position:fixed;width:20.5rem;max-width:calc(100vw - 1rem);max-height:min(26rem,68vh);padding:.7rem;border:1px solid var(--line);border-radius:.9rem;box-shadow:0 1rem 2.4rem oklch(30% .02 55/.14);animation:none}
-        .tm-filter-pop .tm-sheet-pod{margin:.3rem 0 .35rem}
-        .tm-filter-pop .tm-mobilni-sheet-izbire{gap:.25rem}
-        .tm-filter-pop .tm-mobilni-sheet-izbire button{min-height:2.4rem;padding:0 .7rem;border-radius:.55rem;font-size:.84rem}
-        .tm-filter-pop .tm-mobilni-sheet-izbire button svg{width:16px;height:16px}
         .tm-mobilni-sheet-glava button{display:grid;place-items:center;width:2.75rem;height:2.75rem;border:1px solid #ded8cf;border-radius:50%;background:#fff;color:#17110e}
         .tm-mobilni-sheet-izbire{display:grid;gap:.5rem}
         .tm-mobilni-sheet-izbire button{display:flex;align-items:center;justify-content:space-between;min-height:3.25rem;padding:0 1rem;border:1px solid #ded8cf;border-radius:.9rem;background:#fff;color:#17110e;font:750 1rem var(--font-sans),sans-serif;text-align:left}
@@ -2281,6 +2259,8 @@ export default function TaskManagerWorkspace() {
           .tm-pogled-preklop{flex:none;width:auto}
           .tm-filtri-vrsta{order:2;flex:1 1 100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.5rem;overflow:visible}
           .tm-filtri{display:none}
+          .tm-filter-oznaka,.tm-filter-projekt{display:none}
+          .tm-filter-vec{display:inline-flex}
           .tm-mobilni-filter-gumb{display:flex;align-items:center;justify-content:space-between;min-width:0;min-height:2.75rem;padding:0 .75rem 0 .9rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:750 .82rem var(--font-sans),sans-serif}
           .tm-mobilni-filter-gumb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
           .tm-filter-oznaka{width:100%;min-width:0;font-size:.82rem;padding-left:.9rem}
