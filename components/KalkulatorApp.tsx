@@ -7945,19 +7945,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
-                {/* Interna admin analitika — samo prijavljenim. Prej je pogoj vezal na
-                    odFlow, ki je true LE pri ?od=flow, zato se je povezava kazala
-                    tudi neprijavljenim v brezplačnem kalkulatorju. */}
-                {jePrijavljen && (
-                  <a className="profil-meni-vrsta" href={localePath(locale, `/kalkulator/admin`)} style={{ textDecoration: 'none' }}>
-                    <SquaresFour size={20} weight="bold" />
-                    <span>
-                      <strong>{L('Pregled poslovanja', 'Business overview')}</strong>
-                      <small>{L('koliko uporabnikov, kakšne cene, od kod so (interno)', 'how many users, what prices, where they are from (internal)')}</small>
-                    </span>
-                    <span className="pm-puscica" aria-hidden>→</span>
-                  </a>
-                )}
+                {/* Interne analitike TU NI namenoma. Prijavljeni niso samo Tina, ampak
+                    vsi uporabniki Flow -- povezava v meniju bi jo pokazala vsem. Do
+                    /kalkulator/admin se pride samo prek naslova, ki ga pozna ona, in
+                    stran je za geslom (KALKULATOR_ADMIN_GESLO). */}
               </div>
             )}
 
