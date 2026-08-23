@@ -60,6 +60,27 @@ useEffect(() => {
 }, [odprt]);
 ```
 
+## USTAVI SE — popravek naloge (23. 8., 19:55)
+
+**Prva različica te naloge je bila napačna in je pokvarila kalkulator.**
+Naročeno je bilo »poravnaj vse panele«, kar je zajelo tudi elemente, ki
+**niso** drseči paneli. V `KalkulatorApp` je `.cw .ponudba0` **stalni desni
+stolpec**, ne panel, ki zdrsne čez stran: bil je `min(480px, 40vw)`, po
+poravnavi pa `min(46rem, 94vw)` — in je zavzel skoraj cel zaslon.
+
+Spremembe so bile vrnjene. Preden se lotiš znova:
+
+1. **Poravnaj SAMO tisto, kar se odpre čez stran** — ima zatemnitev
+   (`backdrop`) in se zapre s klikom vanjo ali z Esc.
+2. **Ne dotikaj se stalnih stolpcev in vgnezdenih predalov**, tudi če
+   uporabljajo `position: fixed`. Če ni zatemnitve, ni panel.
+3. Pri vsakem elementu, kjer nisi prepričan, **ga preskoči in ga naštej v
+   poročilu** namesto da ugibaš.
+4. Zaklep drsenja (točka c spodaj) velja samo za panele iz točke 1.
+
+Del tvojega dela je bil pravilen in je shranjen kot zaplata; ni ga treba
+pisati znova iz nič, je pa treba ločiti panele od stolpcev.
+
 ## Meje — česa se NE dotikaj
 
 Te datoteke hkrati ureja Claude; ne odpiraj jih:

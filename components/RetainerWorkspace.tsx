@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom';
 import { User, TextAa, ArrowUp, ArrowDown, PencilSimple, Eye, CaretDown, CaretUp, TextB, TextItalic, PenNib, Paperclip, X, Plus } from '@phosphor-icons/react';
 import { getBusinessDocumentUrl, saveRetainerDraft, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { pdfZahteva } from '@/lib/pdfZahteva';
 import { loadFlowData } from '@/lib/pinartFlowStore';
 import PosljiBlok from '@/components/PosljiBlok';
 import { OrbSfera, ORB_BARVE, ikonaZa, ORB0_CSS, osvetli } from './Orb0';
@@ -504,7 +505,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       const footerNaziv = jeEn
         ? (kaj === 'ponudba' ? 'Ongoing collaboration proposal' : 'Ongoing Collaboration Agreement')
         : (kaj === 'ponudba' ? 'Retainer ponudba' : 'Pogodba o dolgoročnem sodelovanju');
-      const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime, footer: [ponudnik.ime.trim(), footerNaziv].filter(Boolean).join(' · ') }) });
+      const res = await pdfZahteva({ html, ime, footer: [ponudnik.ime.trim(), footerNaziv].filter(Boolean).join(' · ') });
       if (!res.ok) throw new Error('pdf');
       const blob = await res.blob();
       if (!blob.size) throw new Error('prazen');
@@ -543,7 +544,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
     const t = window.setTimeout(async () => {
       try {
         const html = doc(izvozniTelo());
-        const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime: 'predogled' }) });
+        const res = await pdfZahteva({ html, ime: 'predogled' });
         if (!res.ok) throw new Error('pdf');
         const buf = await res.arrayBuffer();
         if (!buf.byteLength || !ziv) return;
@@ -1081,7 +1082,7 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
       <style>{`
         .rw{position:relative;min-width:0;max-width:100%;min-height:100dvh;color:var(--ink);font-weight:400;overflow-x:clip;--muted:color-mix(in oklch,var(--ink) 72%,transparent)}
         /* header (kot kalkulator: Pinart | Dolgorocno | BETA  ...  x zapri) */
-        .rw-glava{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:.85rem clamp(1.2rem,4vw,3rem);background:var(--paper);border-bottom:1px solid rgba(17,17,17,.08)}
+        .rw-glava{position:fixed;top:0;left:var(--sidebar-w,17.5rem);right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:.85rem clamp(1.2rem,4vw,3rem);background:var(--paper);border-bottom:1px solid rgba(17,17,17,.08)}
         /* min-width:0 + shrink: brez tega leva skupina (z novo puscico) preraste prostor in
            pri space-between stisne avatar ob rob; "zapri" se je lomil v dve vrstici. */
         .rw-glava-levo{display:inline-flex;align-items:center;gap:1rem;min-width:0;flex:1 1 auto;overflow:hidden}
@@ -1152,8 +1153,9 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
         @media (prefers-reduced-motion:reduce){.rw-sek.rw-stran{animation:none}}
         /* fiksna noga z gumbi — ENAKO kot kalkulator (okrogel Nazaj s puscico + Naprej pilula) */
         .rw-noga{position:fixed;bottom:0;left:var(--sidebar-w,17.5rem);right:0;display:flex;justify-content:center;padding:1rem clamp(1.2rem,4vw,3rem) 1.1rem;background:linear-gradient(to top,#fff 70%,transparent);z-index:40}
+        :global(body[data-meni='zaprt']) .rw-glava{left:4.4rem}
         :global(body[data-meni='zaprt']) .rw-noga{left:4.4rem}
-        @media (max-width:980px){.rw-noga{left:0}}
+        @media (max-width:980px){.rw-noga{left:0}.rw-glava{left:0}}
         .rw-noga-gumbi{display:flex;align-items:center;justify-content:center;gap:.7rem;position:relative;flex-wrap:nowrap}
         .rw-gumb-nazaj{width:3.1rem;height:3.1rem;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none;transition:background .18s ease,color .18s ease,transform .2s ease}
         .rw-gumb-nazaj:hover{background:var(--ink);color:var(--paper);transform:scale(1.08)}
