@@ -6467,7 +6467,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            besedilo v eni vrsti, kljukica na desni strani pilule */
         .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; }
         .cw .uredi-plosca .chip-podrocje b { white-space: nowrap; }
-        .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; flex-direction: column; }
+        .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; grid-template-columns: minmax(0, 1fr); }
         .cw .profil-predal .chip-podrocje { width: 100%; }
         .cw .profil-predal .chip-podrocje .chip-kljuk { margin-left: auto; }
         @media (max-width: 560px) {
