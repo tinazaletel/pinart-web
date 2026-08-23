@@ -116,6 +116,11 @@ export type FlowExpense = {
   /* obdobje stroska: enkratni (privzeto), mesecni ali letni. Mesecni/letni sluzijo
      kot poslovna osnova (redni stroski). Odsotnost = enkratni (nazaj-zdruzljivo). */
   obdobje?: 'enkratni' | 'mesecni' | 'letni';
+  /* neobvezna valuta zneska (id iz lib/valute.ts, npr. 'usd' za SaaS narocnine).
+     Odsotnost = EUR, zato starih zapisov ni treba migrirati. Znesek se vpise
+     NEPOSREDNO v tej valuti — tecajev ne uporabljamo, zato vsote sestejejo samo
+     EUR, tuje valute pa se izpisejo ob vsoti posebej. */
+  valuta?: string;
   deletedAt?: string;
   deletedBy?: string;
   updatedAt?: string;

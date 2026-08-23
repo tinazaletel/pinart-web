@@ -90,7 +90,7 @@ export default async function AccessibilityPage({
         paddingInline: 'clamp(1.5rem, 8vw, 12rem)',
       }}
     >
-      <div style={{ maxWidth: '720px' }}>
+      <div style={{ maxWidth: '720px', marginInline: 'auto' }}>
         <NazajLink rezerva="/" label="Nazaj" />
 
         <h1

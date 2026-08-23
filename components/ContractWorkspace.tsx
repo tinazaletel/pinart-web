@@ -12,6 +12,7 @@ import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB
 import GumbNazaj from '@/components/ui/GumbNazaj';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
+import { pdfZahteva } from '@/lib/pdfZahteva';
 import { deleteBusinessDocument, getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo, migrirajStariFont } from '@/lib/dokVidez';
@@ -667,7 +668,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     const ime = metaVrsta.slug + '-' + (slug || 'pinart');
     setPdfNalaganje(true);
     try {
-      const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime, footer: [ponudnik.ime.trim(), nazivDok].filter(Boolean).join(' · ') }) });
+      const res = await pdfZahteva({ html, ime, footer: [ponudnik.ime.trim(), nazivDok].filter(Boolean).join(' · ') });
       if (!res.ok) throw new Error('pdf');
       const blob = await res.blob();
       if (!blob.size) throw new Error('prazen');
@@ -685,7 +686,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
     const t = window.setTimeout(async () => {
       try {
         const html = doc(izvozniTelo());
-        const res = await fetch('/api/ponudba-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, ime: 'predogled' }) });
+        const res = await pdfZahteva({ html, ime: 'predogled' });
         if (!res.ok) throw new Error('pdf');
         const buf = await res.arrayBuffer();
         if (!buf.byteLength || !ziv) return;

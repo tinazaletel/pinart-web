@@ -77,6 +77,16 @@ function evro(n: number): string {
   return new Intl.NumberFormat('sl-SI', { maximumFractionDigits: 0 }).format(n) + ' €';
 }
 
+type Poraba = { porabljeno: number; kvota: number; obnovitev?: string };
+
+/* Kapa se obrne po koledarskem mesecu strežnika, zato datum beremo v UTC —
+   sicer bi zadnji dan v mesecu kazal en dan narazen od zaledja. */
+function datumObnovitve(iso: string, jeEn: boolean): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI', { timeZone: 'UTC' });
+}
+
 export default function PupaPogovor({ base = '' }: { base?: string }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
@@ -86,6 +96,7 @@ export default function PupaPogovor({ base = '' }: { base?: string }) {
   const [sporocila, setSporocila] = useState<Sporocilo[]>([]);
   const [vnos, setVnos] = useState('');
   const [urejam, setUrejam] = useState<number | null>(null); // id sporočila v urejanju
+  const [poraba, setPoraba] = useState<Poraba | null>(null);
   const idRef = useRef(1);
   const nextId = () => idRef.current++;
   const koncRef = useRef<HTMLDivElement>(null);
@@ -102,6 +113,26 @@ export default function PupaPogovor({ base = '' }: { base?: string }) {
     try { setIme((lokalniOdgovori().ime || '').trim()); } catch { /* ignore */ }
   }, []);
   useEffect(() => { osnutekRef.current = osnutek; }, [osnutek]);
+
+  /* Mesečna kvota Pupinih sporočil — pokažemo jo VNAPREJ in tiho. Doslej je
+     uporabnica za mejo izvedela šele ob 429, kar sredi dela izgleda kot okvara.
+     Če je poraba neznana (ni paketa, manjka RPC), kazalnik ostane skrit —
+     polovična številka je slabša od nobene. */
+  useEffect(() => {
+    let ziv = true;
+    fetch('/api/pupa/poraba')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (!ziv || !d || typeof d.porabljeno !== 'number' || typeof d.kvota !== 'number' || d.kvota <= 0) return;
+        setPoraba({
+          porabljeno: d.porabljeno,
+          kvota: d.kvota,
+          obnovitev: typeof d.obnovitev === 'string' ? d.obnovitev : undefined,
+        });
+      })
+      .catch(() => { /* kazalnik je postranski — napaka ne sme motiti pogovora */ });
+    return () => { ziv = false; };
+  }, []);
 
   /* uvodni namig iz PupaDom (?namig=...) obravnavamo kot prvo sporočilo */
   useEffect(() => {
@@ -213,6 +244,9 @@ export default function PupaPogovor({ base = '' }: { base?: string }) {
   }
 
   const pripravljen = osnutek.storitve.length > 0;
+  /* Do 80 % je podatek, od 80 % naprej je opozorilo — prej bi bilo samo hrup. */
+  const porabaVisoka = !!poraba && poraba.porabljeno / poraba.kvota >= 0.8;
+  const porabaDatum = poraba?.obnovitev ? datumObnovitve(poraba.obnovitev, jeEn) : '';
 
   return (
     <div className="pp">
@@ -226,6 +260,14 @@ export default function PupaPogovor({ base = '' }: { base?: string }) {
             <p className="pp-eyebrow">PUPA</p>
             <h1 className="pp-naslov">{ime ? L(`Pripravimo ponudbo, ${ime}`, `Let's build a quote, ${ime}`) : L('Pripravimo ponudbo', "Let's build a quote")}</h1>
           </div>
+          {poraba && (
+            <span
+              className={`pp-poraba ${porabaVisoka ? 'blizu' : ''}`}
+              title={porabaDatum ? L(`Kvota se obnovi ${porabaDatum}.`, `Quota renews on ${porabaDatum}.`) : undefined}
+            >
+              {L(`${poraba.porabljeno} od ${poraba.kvota} ta mesec`, `${poraba.porabljeno} of ${poraba.kvota} this month`)}
+            </span>
+          )}
         </header>
 
         <div className="pp-nit">
@@ -326,6 +368,10 @@ export default function PupaPogovor({ base = '' }: { base?: string }) {
         .pp-orb { flex: none; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: conic-gradient(from 210deg, oklch(70% .19 300), oklch(72% .16 200), oklch(80% .13 150), oklch(78% .17 25), oklch(70% .19 300)); box-shadow: inset -2px -3px 6px oklch(100% 0 0 / .35), inset 2px 3px 6px oklch(30% .1 300 / .25); }
         .pp-eyebrow { margin: 0; font: 800 .58rem var(--font-sans), sans-serif; letter-spacing: .18em; color: var(--purple, oklch(60% .2 297)); }
         .pp-naslov { margin: .1rem 0 0; font: 500 1.15rem var(--font-serif), Georgia, serif; font-synthesis: none; color: var(--ink, #1a1a1a); }
+        /* Privzeto ista tiha siva kot pri »obdelano«; pri 80 % prevzame obstoječo
+           vijolično značko (.pp-o-status), da opozorilo ne uvaja nove barve. */
+        .pp-poraba { margin-left: auto; flex: none; font: 600 .68rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 40%, transparent); white-space: nowrap; }
+        .pp-poraba.blizu { padding: .2rem .55rem; border-radius: 999px; background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 12%, transparent); color: var(--purple, oklch(52% .2 297)); }
 
         .pp-nit { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: .7rem; padding: 1rem .1rem; }
         .pp-vr { display: flex; flex-direction: column; gap: .2rem; max-width: 85%; }

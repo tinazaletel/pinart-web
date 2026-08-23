@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '@/lib/pinartFlowStore';
-import { getBusinessDocumentUrl, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
+import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
@@ -2306,6 +2306,25 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [valuta, setValuta] = useState('eur');
   const [valutaRocna, setValutaRocna] = useState(false);
   const [ponudnik, setPonudnik] = useState({ ime: '', davcna: '', email: '', telefon: '', naslov: '', trr: '' });
+  /* Kalkulator je profil podjetja doslej samo SHRANJEVAL, nikoli bral -- zato je
+     uporabnica svoje ime in davcno vpisovala znova ob vsaki ponudbi, cetudi sta
+     bila v profilu. Predizpolnimo samo PRAZNA polja, da ne povozimo tega, kar je
+     ze vpisala v tej ponudbi. */
+  useEffect(() => {
+    let ziv = true;
+    void loadOrganizationProfile().then(profil => {
+      if (!ziv || !profil) return;
+      setPonudnik(prej => ({
+        ime: prej.ime || profil.name || '',
+        davcna: prej.davcna || profil.tax || '',
+        email: prej.email || profil.email || '',
+        telefon: prej.telefon || profil.phone || '',
+        naslov: prej.naslov || profil.address || '',
+        trr: prej.trr || profil.bankAccount || '',
+      }));
+    }).catch(() => undefined);
+    return () => { ziv = false; };
+  }, []);
   const [predklic, setPredklic] = useState('+386');
   /* Videz dokumentov (barva poudarka + pisava naslovov) — velja cez celotno
      dokumentacijo (ponudba, racun, pogodba, retainer). Shranjeno v K_NAST. */
@@ -5906,7 +5925,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <style dangerouslySetInnerHTML={{ __html: `
         /* zgornji rob (overscroll / varno obmocje pod URL vrstico) = barva papirja, ne prosojno (da se ne vidi obrazec skozi) */
         html, body { background-color: var(--paper, oklch(97% 0.012 87)); }
-        .cw { --font-serif: var(--font-serif-flow); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 400; overflow-x: clip; }
+                .cw { --font-serif: var(--font-serif-flow); --cw-rob: clamp(.8rem, 1.2vw, 1.3rem); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 400; overflow-x: clip; }
+        @media (min-width: 981px) { .cw { margin-right: calc(-1 * var(--cw-rob)); padding-right: var(--cw-rob); } }
         /* Ovoj portala na <body>: obstaja SAMO zato, da veljajo pravila ".cw ..." za predala.
            Brez tega bi podedoval min-height:100dvh + z-index:1 in kot prazna ploskev prekril
            celo aplikacijo (bela stran). Predala sta position:fixed, zato ovoja ne potrebujeta. */
@@ -6429,19 +6449,29 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uv-forma .gumb { align-self: center; margin-top: .5rem; }
         @media (max-width: 560px) { .cw .uv-forma { margin-left: 0; } .cw .uv-forma .uv-mreza { grid-template-columns: 1fr; } }
         /* področja dela — kompaktni chipi za več izbir (v chatu) */
-        .cw .chat-podrocja { display: flex; flex-wrap: wrap; gap: .75rem; margin: .5rem 0 .3rem 3.05rem; max-width: 680px; }
-        .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid oklch(93% .006 82 / .55); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
+        .cw .chat-podrocja { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: .7rem; margin: .5rem auto .3rem; width: 100%; max-width: 1140px; align-items: stretch; }
+        .cw .chat-podrocja > * { width: 100%; justify-self: stretch; }
+        .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .45rem; background: #fff; border: 1px solid oklch(93% .006 82 / .55); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
         .cw .chip-podrocje:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(35,18,45,.1); }
         .cw .chip-podrocje .pi-pod { width: 2.15rem; height: 2.15rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
         .cw .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
         .cw .chip-podrocje b { font-weight: 700; }
-        .cw .chip-podrocje .chip-kljuk { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: .3rem; flex: none; transition: background .18s, border-color .18s; }
-        @media (max-width: 560px) { .cw .chat-podrocja { margin-left: 0; } }
+        .cw .chip-podrocje b { flex: 1; min-width: 0; text-align: left; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
+        .cw .chip-podrocje .chip-kljuk { flex: none; align-self: center; width: 1.35rem; min-width: 1.35rem; height: 1.35rem; min-height: 1.35rem; max-height: 1.35rem; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: auto; flex: none; transition: background .18s, border-color .18s; }
+        @media (max-width: 700px) {
+          .cw .chat-podrocja { display: grid; grid-template-columns: minmax(0, 1fr); margin-left: 0; width: 100%; }
+          .cw .chat-podrocja > * { width: 100%; justify-self: stretch; white-space: normal; }
+          .cw .chip-podrocje { padding-right: .8rem; }
+        }
         /* v modalu dodaj/uredi: brez chat-zamika, leva poravnava; naravne pilule (razlicne sirine),
            besedilo v eni vrsti, kljukica na desni strani pilule */
         .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; }
         .cw .uredi-plosca .chip-podrocje b { white-space: nowrap; }
-        .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; flex-direction: column; }
+        .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; grid-template-columns: minmax(0, 1fr); }
+        .cw .profil-predal .kartica { padding-left: 16px; padding-right: 16px; }
+        .cw .profil-predal .profil-meni-vrsta { padding-left: 20px; padding-right: 20px; }
+        .cw .profil-predal .cenik-card > summary { padding-left: .6rem; padding-right: .6rem; }
+        .cw .profil-predal .cenik-card .cenik-telo { padding-left: .6rem; padding-right: .6rem; }
         .cw .profil-predal .chip-podrocje { width: 100%; }
         .cw .profil-predal .chip-podrocje .chip-kljuk { margin-left: auto; }
         @media (max-width: 560px) {
@@ -6460,7 +6490,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0-vsota-vrsta.ponudba0-mini + .ponudba0-vsota-vrsta { margin-top: .35rem; }
 
         /* DESKTOP: × skrije panel v črn FAB (kot mobilna kosarica). */
-        .cw .ponudba0-zapri { position: absolute; top: 1rem; right: 1rem; z-index: 4; display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; padding: 0; overflow: visible; border: 1px solid rgba(17,17,17,.12); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); color: rgba(17,17,17,.72); font-size: 1.05rem; line-height: 1; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+        .cw .ponudba0-zapri { position: absolute; top: 1.5rem; right: 1.25rem; z-index: 4; display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; padding: 0; overflow: visible; border: 1px solid rgba(17,17,17,.12); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); color: rgba(17,17,17,.72); font-size: 1.05rem; line-height: 1; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
         .cw .ponudba0-zapri:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
         .cw .ponudba0.skrit-desktop { display: none; }
         .cw .oder0:has(.ponudba0.skrit-desktop) { grid-template-columns: 1fr; }
@@ -6536,6 +6566,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           /* platno mehurckov poravnano s (centriranim) chatom — ne cisto ob levem robu */
           .cw .oder0 { display: block; width: auto; max-width: 800px; margin-left: auto; margin-right: auto; }
           .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(480px, 40vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; transition: width .34s cubic-bezier(.2,.8,.3,1); }
+          .cw .ponudba0 { background: rgba(255,255,255,.97); box-shadow: -18px 0 50px oklch(40% .08 300 / .18); }
           .cw .detajl-modal .choicegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
           .cw .detajl-modal .choicegrid > button { width: 100%; justify-content: flex-start; }
           .cw .detajl-modal .choicegrid .svoje-vrsta { grid-column: 1 / -1; }
@@ -6606,7 +6637,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .glava-profil:hover { color: var(--ink); border-color: rgba(17,17,17,.72); }
 
         .cw .profil-zastor { position: fixed; inset: 0; z-index: 60; background: rgba(17,17,17,.28); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
-        .cw .profil-predal { position: fixed; top: 0; right: 0; bottom: 0; z-index: 66; width: min(440px, 100vw); background: var(--paper); box-shadow: -12px 0 40px rgba(17,17,17,.14); overflow-y: auto; padding: clamp(1.6rem, 4vw, 2.4rem); padding-bottom: 5rem; animation: cwPredalIn .32s cubic-bezier(0.23,1,0.32,1) both; }
+        .cw .profil-predal { position: fixed; top: 0; right: 0; bottom: 0; z-index: 66; width: min(440px, 100vw); background: var(--paper); box-shadow: -12px 0 40px rgba(17,17,17,.14); overflow-y: auto; padding: 20px; padding-bottom: 5rem; animation: cwPredalIn .32s cubic-bezier(0.23,1,0.32,1) both; }
         @keyframes cwPredalIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @media (prefers-reduced-motion: reduce) { .cw .profil-predal { animation: none; } }
         .cw .profil-predal .kartica { max-width: none; }
@@ -7914,17 +7945,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
-                {/* Interna admin analitika — NE v brezplačnem kalkulatorju (odFlow = javni/free vstop). */}
-                {!odFlow && (
-                  <a className="profil-meni-vrsta" href={localePath(locale, `/kalkulator/admin`)} style={{ textDecoration: 'none' }}>
-                    <SquaresFour size={20} weight="bold" />
-                    <span>
-                      <strong>{L('Pregled poslovanja', 'Business overview')}</strong>
-                      <small>{L('koliko uporabnikov, kakšne cene, od kod so (interno)', 'how many users, what prices, where they are from (internal)')}</small>
-                    </span>
-                    <span className="pm-puscica" aria-hidden>→</span>
-                  </a>
-                )}
+                {/* Interne analitike TU NI namenoma. Prijavljeni niso samo Tina, ampak
+                    vsi uporabniki Flow -- povezava v meniju bi jo pokazala vsem. Do
+                    /kalkulator/admin se pride samo prek naslova, ki ga pozna ona, in
+                    stran je za geslom (KALKULATOR_ADMIN_GESLO). */}
               </div>
             )}
 
@@ -8352,8 +8376,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pime">{L('Ime / podjetje', 'Name / company')} <span className="uv-neobvezno">{L('obvezno', 'required')}</span></label>
-                    <input id="uv-pime" ref={uvodVnosRef} type="text" placeholder={L('Rdeča kapica d.o.o. ali tvoje ime', 'Little Red Riding Hood Ltd. or your name')}
-                      value={ponudnik.ime} onChange={e => setPonudnik({ ...ponudnik, ime: e.target.value })} />
+                    <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
+                      naVrednost={v => setPonudnik(prej => ({ ...prej, ime: v }))}
+                      naIzbiro={pod => {
+                        const naslov = [pod.naslov, [pod.posta_st, pod.posta].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+                        setPonudnik(prej => ({
+                          ...prej,
+                          ime: pod.ime || prej.ime,
+                          davcna: pod.davcna || prej.davcna,
+                          naslov: naslov || prej.naslov,
+                          email: pod.email || prej.email,
+                        }));
+                      }}
+                      obvezno ime="uv-pime" jeEn={L('sl', 'en') === 'en'} />
                   </div>
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pdrzava">{L('Država', 'Country')} <span className="uv-neobvezno">{L('določi privzet trg / raven cen', 'sets the default market / price level')}</span></label>
