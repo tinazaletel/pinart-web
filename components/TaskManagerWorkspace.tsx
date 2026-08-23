@@ -1619,6 +1619,17 @@ export default function TaskManagerWorkspace() {
         const porabljenePanel = porabljeneMinute(odprtaNaloga);
         const ocenaPanel = odprtaNaloga.ocenjeniCasUre;
         const oznakePanel = odprtaNaloga.oznake || [];
+        /* Umestitev (kdo, za koga, kje, oznake) je zlozena — v panelu mora biti
+           najprej vidna naloga in komentarji. Povzetek pove stanje brez odpiranja. */
+        const strankaPanel = stranke.find((s) => s.id === odprtaNaloga.clientId)?.name;
+        const stOznak = oznakePanel.length;
+        const oznakeBeseda = stOznak === 1 ? 'oznaka' : stOznak === 2 ? 'oznaki' : stOznak === 3 || stOznak === 4 ? 'oznake' : 'oznak';
+        const umestitevPovzetek = [
+          dodeljenoImePanel || 'nedodeljeno',
+          strankaPanel || 'brez stranke',
+          (odprtaNaloga.projectId || '').trim() || 'brez projekta',
+          stOznak ? `${stOznak} ${oznakeBeseda}` : 'brez oznak',
+        ].join(' · ');
         return (
         <div className="tm-detajli-podlaga" onClick={() => setOdprtaNalogaId(null)}>
           <aside className="tm-detajli-panel" onClick={(e) => e.stopPropagation()}>
@@ -1766,6 +1777,30 @@ export default function TaskManagerWorkspace() {
               )}
             </div>
 
+            <h3 className="tm-analitika-podnaslov">Komentarji</h3>
+            {(!odprtaNaloga.komentarji || odprtaNaloga.komentarji.length === 0) && <p className="tm-prazno">Še ni komentarjev.</p>}
+            <ul className="tm-komentarji-seznam">
+              {(odprtaNaloga.komentarji || []).map((k) => (
+                <li key={k.id}>
+                  <div className="tm-komentar-glava"><strong>{k.avtorIme}</strong>{k.vloga && <span className={`tm-vloga-znacka tm-vloga-${k.vloga}`}>{VLOGA_LABEL[k.vloga]}</span>}<span className="tm-komentar-cas">{datStr(k.cas)}</span></div>
+                  <p>{k.besedilo}</p>
+                </li>
+              ))}
+            </ul>
+            {!samoOgled ? (
+              <form className="tm-komentar-forma" onSubmit={(e) => { e.preventDefault(); dodajKomentar(odprtaNaloga.id, novKomentar); setNovKomentar(''); }}>
+                <textarea value={novKomentar} onChange={(e) => setNovKomentar(e.target.value)} placeholder="Dodaj komentar …" rows={2} />
+                <button type="submit" className="tm-shrani" disabled={!novKomentar.trim()}>Dodaj komentar</button>
+              </form>
+            ) : (
+              <p className="tm-demo-namig">Dodajanje komentarjev ni na voljo v predogledu (demo).</p>
+            )}
+
+            <details className="tm-umestitev">
+              <summary>
+                <span className="tm-umestitev-naslov">Umestitev</span>
+                <span className="tm-umestitev-povzetek">{umestitevPovzetek}</span>
+              </summary>
             <label className="tm-polje tm-detajli-spodaj"><span>Dodeli</span>
               <select value={odprtaNaloga.dodeljenoOsebaId || ''} onChange={(e) => dodeliNalogi(odprtaNaloga.id, e.target.value)} disabled={samoOgled}>
                 <option value="">— nedodeljeno —</option>
@@ -1804,25 +1839,8 @@ export default function TaskManagerWorkspace() {
               />
               <button type="button" className="tm-zase" disabled={samoOgled || !novaOznaka.trim()} onClick={() => { dodajOznako(odprtaNaloga.id, novaOznaka); setNovaOznaka(''); }}>+ Dodaj</button>
             </div>
+            </details>
 
-            <h3 className="tm-analitika-podnaslov">Komentarji</h3>
-            {(!odprtaNaloga.komentarji || odprtaNaloga.komentarji.length === 0) && <p className="tm-prazno">Še ni komentarjev.</p>}
-            <ul className="tm-komentarji-seznam">
-              {(odprtaNaloga.komentarji || []).map((k) => (
-                <li key={k.id}>
-                  <div className="tm-komentar-glava"><strong>{k.avtorIme}</strong>{k.vloga && <span className={`tm-vloga-znacka tm-vloga-${k.vloga}`}>{VLOGA_LABEL[k.vloga]}</span>}<span className="tm-komentar-cas">{datStr(k.cas)}</span></div>
-                  <p>{k.besedilo}</p>
-                </li>
-              ))}
-            </ul>
-            {!samoOgled ? (
-              <form className="tm-komentar-forma" onSubmit={(e) => { e.preventDefault(); dodajKomentar(odprtaNaloga.id, novKomentar); setNovKomentar(''); }}>
-                <textarea value={novKomentar} onChange={(e) => setNovKomentar(e.target.value)} placeholder="Dodaj komentar …" rows={2} />
-                <button type="submit" className="tm-shrani" disabled={!novKomentar.trim()}>Dodaj komentar</button>
-              </form>
-            ) : (
-              <p className="tm-demo-namig">Dodajanje komentarjev ni na voljo v predogledu (demo).</p>
-            )}
           </aside>
         </div>
         );
@@ -1857,6 +1875,13 @@ export default function TaskManagerWorkspace() {
         .tm-analitika-stevec{display:flex;flex-direction:column;gap:.2rem;padding:.7rem .6rem;border:1px solid var(--line);border-radius:.8rem;background:oklch(97.5% .008 87/.75);text-align:center}
         .tm-analitika-stevec strong{font:600 1.3rem var(--font-serif),Georgia,serif;color:var(--ink)}
         .tm-analitika-stevec span{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+        .tm-umestitev{margin-top:1.5rem;border-top:1px solid var(--line,rgba(17,17,17,.1));padding-top:.5rem}
+        .tm-umestitev>summary{display:flex;align-items:baseline;gap:.65rem;cursor:pointer;list-style:none;padding:.45rem 0;min-width:0}
+        .tm-umestitev>summary::-webkit-details-marker{display:none}
+        .tm-umestitev>summary::after{content:'+';margin-left:auto;flex:none;font-size:1rem;line-height:1;color:var(--muted)}
+        .tm-umestitev[open]>summary::after{content:'–'}
+        .tm-umestitev-naslov{flex:none;font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+        .tm-umestitev-povzetek{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem;color:var(--muted)}
         .tm-analitika-podnaslov{margin:1.1rem 0 .6rem;font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
         .tm-analitika-zgodovina{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem}
         .tm-analitika-zgodovina li{display:flex;flex-direction:column;gap:.15rem;padding:.6rem .7rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0/.6);font-size:.78rem;color:var(--ink)}
