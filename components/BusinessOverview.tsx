@@ -413,32 +413,6 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>}
 
       <div className={styles.overviewColumns}>
-      <section className={styles.historyBand} aria-labelledby="proj-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('02 · PROJEKTI', '02 · PROJECTS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>{L('Vsi projekti', 'All projects')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
-          <div className={styles.bandBody}>
-          <h2 id="proj-title" className={styles.bandNaslov}>{L('Zadnji projekti', 'Recent projects')}</h2>
-          {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable} ${styles.projTable}`}><table><thead><tr><th>{L('Projekt', 'Project')}</th><th>Status</th><th>{L('Rok', 'Deadline')}</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
-            const map: Record<string, [string, string]> = { draft: [L('Osnutek', 'Draft'), 'neutral'], sent: [L('V teku', 'In progress'), 'info'], accepted: [L('Zaključeno', 'Completed'), 'success'], rejected: [L('Zavrnjeno', 'Rejected'), 'danger'] };
-            const [label, tone] = map[o.status] || ['—', 'neutral'];
-            return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString(dl)}</td></tr>;
-          })}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še ni projektov.', 'No projects yet.')}</strong><p>{L('Projekti se prikažejo tukaj, ko ustvariš ponudbo.', 'Projects will appear here once you create an offer.')}</p></div></div>}
-          </div>
-        </section>
-
-      <section className={styles.resultsBand} id="clients" aria-labelledby="business-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('03 · POSLOVNI REZULTATI', '03 · BUSINESS RESULTS')}</p><select className={styles.periodSelect} value={period} onChange={e => setPeriod(e.target.value as Period)} aria-label={L('Obdobje prikaza', 'Display period')}><option value="month">{L('Ta mesec', 'This month')}</option><option value="quarter">{L('To četrtletje', 'This quarter')}</option><option value="year">{L('Letos', 'This year')}</option></select></div>
-        <div className={styles.bandBody}>
-        <h2 id="business-title" className={styles.bandNaslov}>{L('Kako ti gre?', 'How are you doing?')}</h2>
-        <div className={styles.kpiGrid}>
-          <div className={styles.kpi}><span>{L('Izdano', 'Issued')}</span><strong>{money(issued)}</strong><small>{L(`${periodInvoices.length} računov`, `${periodInvoices.length} invoices`)}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="issued" /></b></div>
-          <div className={styles.kpi}><span>{L('Plačano', 'Paid')}</span><strong>{money(paid)}</strong><small>{L(`${periodInvoices.filter(i => i.paid).length} potrjenih plačil`, `${periodInvoices.filter(i => i.paid).length} confirmed payments`)}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="paid" /></b></div>
-          <div className={styles.kpi}><span>{L('Stroški', 'Costs')}</span><strong>{money(costs)}</strong><small>{L(`${periodExpenses.length} vnosov`, `${periodExpenses.length} entries`)}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="cost" /></b></div>
-          <div className={`${styles.kpi} ${profit < 0 ? styles.negative : ''}`}><span>{L('Ocenjeni dobiček', 'Estimated profit')}</span><strong>{money(profit)}</strong><small>{L('plačano minus stroški', 'paid minus costs')}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="profit" /></b></div>
-        </div>
-        <Link className={styles.panelMore} href={`${base}/kalkulator/racunovodstvo`}>{L('Pojdi na podrobnosti', 'Go to details')} <span aria-hidden>→</span></Link>
-        </div>
-      </section>
-
       {/* SEZNAM "DANES" -- kaj caka nate, ne koledar prihodnjih dogodkov.
           Vrstica pove DEJANJE ("Posljji opomnik za racun"), ne stanja
           ("racun zapadel"): iz stanja mora clovek sam ugotoviti, kaj naj
@@ -448,7 +422,7 @@ export default function BusinessOverview({ base }: { base: string }) {
         {/* Brez gumba "Vse naloge": ta seznam NI seznam nalog. Vanj tecejo tudi
             racuni, stranke brez odgovora in priloznosti, zato ena sama ciljna
             stran ne obstaja — vsaka vrstica pelje tja, kamor sodi (v.kam). */}
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('04 · DANES', '04 · TODAY')}</p></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('02 · DANES', '02 · TODAY')}</p></div>
         <div className={styles.bandBody}>
         <h2 id="events-title" className={styles.bandNaslov}>{L('Kaj čaka nate', 'What needs you')}</h2>
         {danesVrstice.length ? (
@@ -466,6 +440,32 @@ export default function BusinessOverview({ base }: { base: string }) {
         ) : <p className={styles.tipText}>{danes ? L('Danes te nič ne čaka.', 'Nothing needs you today.') : ''}</p>}
         </div>
       </section>
+
+      <section className={styles.resultsBand} id="clients" aria-labelledby="business-title">
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('03 · POSLOVNI REZULTATI', '03 · BUSINESS RESULTS')}</p><select className={styles.periodSelect} value={period} onChange={e => setPeriod(e.target.value as Period)} aria-label={L('Obdobje prikaza', 'Display period')}><option value="month">{L('Ta mesec', 'This month')}</option><option value="quarter">{L('To četrtletje', 'This quarter')}</option><option value="year">{L('Letos', 'This year')}</option></select></div>
+        <div className={styles.bandBody}>
+        <h2 id="business-title" className={styles.bandNaslov}>{L('Kako ti gre?', 'How are you doing?')}</h2>
+        <div className={styles.kpiGrid}>
+          <div className={styles.kpi}><span>{L('Izdano', 'Issued')}</span><strong>{money(issued)}</strong><small>{L(`${periodInvoices.length} računov`, `${periodInvoices.length} invoices`)}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="issued" /></b></div>
+          <div className={styles.kpi}><span>{L('Plačano', 'Paid')}</span><strong>{money(paid)}</strong><small>{L(`${periodInvoices.filter(i => i.paid).length} potrjenih plačil`, `${periodInvoices.filter(i => i.paid).length} confirmed payments`)}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="paid" /></b></div>
+          <div className={styles.kpi}><span>{L('Stroški', 'Costs')}</span><strong>{money(costs)}</strong><small>{L(`${periodExpenses.length} vnosov`, `${periodExpenses.length} entries`)}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="cost" /></b></div>
+          <div className={`${styles.kpi} ${profit < 0 ? styles.negative : ''}`}><span>{L('Ocenjeni dobiček', 'Estimated profit')}</span><strong>{money(profit)}</strong><small>{L('plačano minus stroški', 'paid minus costs')}</small><b className={styles.resultIcon} aria-hidden><ResultIcon type="profit" /></b></div>
+        </div>
+        <Link className={styles.panelMore} href={`${base}/kalkulator/racunovodstvo`}>{L('Pojdi na podrobnosti', 'Go to details')} <span aria-hidden>→</span></Link>
+        </div>
+      </section>
+
+      <section className={styles.historyBand} aria-labelledby="proj-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('04 · PROJEKTI', '04 · PROJECTS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>{L('Vsi projekti', 'All projects')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandBody}>
+          <h2 id="proj-title" className={styles.bandNaslov}>{L('Zadnji projekti', 'Recent projects')}</h2>
+          {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable} ${styles.projTable}`}><table><thead><tr><th>{L('Projekt', 'Project')}</th><th>Status</th><th>{L('Rok', 'Deadline')}</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
+            const map: Record<string, [string, string]> = { draft: [L('Osnutek', 'Draft'), 'neutral'], sent: [L('V teku', 'In progress'), 'info'], accepted: [L('Zaključeno', 'Completed'), 'success'], rejected: [L('Zavrnjeno', 'Rejected'), 'danger'] };
+            const [label, tone] = map[o.status] || ['—', 'neutral'];
+            return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString(dl)}</td></tr>;
+          })}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še ni projektov.', 'No projects yet.')}</strong><p>{L('Projekti se prikažejo tukaj, ko ustvariš ponudbo.', 'Projects will appear here once you create an offer.')}</p></div></div>}
+          </div>
+        </section>
       </div>
 
       <div className={styles.detailRow}>

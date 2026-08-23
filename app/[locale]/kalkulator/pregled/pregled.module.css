@@ -252,7 +252,7 @@
 }
 /* mockup-slog panela: bež pasica (title bar) na vrhu → belo telo */
 .flowBand, .historyBand, .resultsBand, .eventsBand { padding: 0; overflow: hidden; }
-.bandTop { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .55rem 1.1rem; background: transparent; border-bottom: 1px solid oklch(22% .015 60 / .06); }
+.bandTop { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; min-height: 3.2rem; padding: .55rem 1.1rem; background: transparent; border-bottom: 1px solid oklch(22% .015 60 / .06); }
 .bandTop .eyebrow { margin: 0; }
 .bandBody { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 1rem 1.1rem 1.4rem; }
 .bandNaslov { margin: 0 0 1rem; padding: 0; display: block; font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif; }
@@ -457,7 +457,9 @@
 .danesPika[data-vrsta="rokKmalu"] { background: oklch(62% .1 165); }
 .danesTekst { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .87rem; font-weight: 600; }
 .danesPripis { flex: none; font-size: .72rem; font-weight: 600; color: color-mix(in oklch, var(--ink) 55%, transparent); white-space: nowrap; }
-.danesPripis[data-nujno="1"] { color: oklch(52% .17 25); }
+/* Rdece besedilo v seznamu je kricalo; nujnost ze pove rdeca pika levo,
+   zato je pripis samo temnejsi in polkrepek. */
+.danesPripis[data-nujno="1"] { color: color-mix(in oklch, var(--ink) 78%, transparent); font-weight: 700; }
 @media (max-width: 700px) { .danesTekst { white-space: normal; } }
 .eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; aspect-ratio: 1; padding: .3rem; border-radius: .95rem; background: var(--edbg, #fff); border: 1px solid oklch(22% .015 60 / .1); line-height: .95; }
 .eventDate b { font: 700 .88rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; color: var(--ink); }

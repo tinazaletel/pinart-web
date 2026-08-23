@@ -47,6 +47,10 @@ export type DanesVrstica = {
 
 export const NAJVEC_VRSTIC = 8;
 
+/* Koliko vrstic iste vrste sme priti na vrh seznama, preden pridejo na vrsto
+   druge. Brez tega ena sama vrsta poje cel seznam. */
+export const NAJVEC_ENAKIH = 3;
+
 /* ── čas ─────────────────────────────────────────────────────────────────── */
 
 const naDan = (v: string | Date): Date | null => {
@@ -82,18 +86,38 @@ export function pripisRoka(dni: number, jeEn = false): string {
  * vrstice brez roka gredo za tistimi z rokom, da nujno ne pade pod nenujno.
  */
 export function urediDanes(vrstice: DanesVrstica[], najvec = NAJVEC_VRSTIC): DanesVrstica[] {
-  return [...vrstice]
-    .sort((a, b) => {
-      const t = TEZA[a.vrsta] - TEZA[b.vrsta];
-      if (t !== 0) return t;
-      const ar = a.dniDoRoka;
-      const br = b.dniDoRoka;
-      if (ar == null && br == null) return a.dejanje.localeCompare(b.dejanje, 'sl');
-      if (ar == null) return 1;
-      if (br == null) return -1;
-      return ar - br;
-    })
-    .slice(0, najvec);
+  const urejene = [...vrstice].sort((a, b) => {
+    const t = TEZA[a.vrsta] - TEZA[b.vrsta];
+    if (t !== 0) return t;
+    const ar = a.dniDoRoka;
+    const br = b.dniDoRoka;
+    if (ar == null && br == null) return a.dejanje.localeCompare(b.dejanje, 'sl');
+    if (ar == null) return 1;
+    if (br == null) return -1;
+    return ar - br;
+  });
+
+  /* Brez omejitve po vrsti seznam poje ena sama vrsta: sest zapadlih racunov
+     istega narocnika je zasedlo vseh osem mest in seznam je bil videti, kot da
+     kaze vedno isto. Najprej vzamemo najvec NAJVEC_ENAKIH od vsake vrste, sele
+     ce mest se ostane, jih dopolnimo po prvotnem vrstnem redu. */
+  const izbrane: DanesVrstica[] = [];
+  const steviloPoVrsti = new Map<DanesVrsta, number>();
+  for (const v of urejene) {
+    if (izbrane.length >= najvec) break;
+    const doslej = steviloPoVrsti.get(v.vrsta) || 0;
+    if (doslej >= NAJVEC_ENAKIH) continue;
+    steviloPoVrsti.set(v.vrsta, doslej + 1);
+    izbrane.push(v);
+  }
+  if (izbrane.length < najvec) {
+    const ze = new Set(izbrane.map(v => v.id));
+    for (const v of urejene) {
+      if (izbrane.length >= najvec) break;
+      if (!ze.has(v.id)) izbrane.push(v);
+    }
+  }
+  return izbrane;
 }
 
 /* ── sestavljanje vrstic iz virov ────────────────────────────────────────── */
