@@ -5906,10 +5906,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <style dangerouslySetInnerHTML={{ __html: `
         /* zgornji rob (overscroll / varno obmocje pod URL vrstico) = barva papirja, ne prosojno (da se ne vidi obrazec skozi) */
         html, body { background-color: var(--paper, oklch(97% 0.012 87)); }
-        /* overflow-x: hidden, NE clip: clip ustvari obmocje obrezovanja, ki v Safariju
-           ujame tudi position:fixed potomce -- panel ponudbe se je zato odmaknil od
-           roba in mu je odrezalo rob z gumbom za zapiranje. */
-        .cw { --font-serif: var(--font-serif-flow); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 400; overflow-x: hidden; }
+                .cw { --font-serif: var(--font-serif-flow); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 400; overflow-x: clip; }
         /* Ovoj portala na <body>: obstaja SAMO zato, da veljajo pravila ".cw ..." za predala.
            Brez tega bi podedoval min-height:100dvh + z-index:1 in kot prazna ploskev prekril
            celo aplikacijo (bela stran). Predala sta position:fixed, zato ovoja ne potrebujeta. */
