@@ -1064,8 +1064,12 @@
 }
 .clientContacts, .clientFinance { display: grid; gap: .5rem; margin-top: 1rem; }
 .clientContacts { grid-template-columns: repeat(2, 1fr); }
-.clientFinance { grid-template-columns: repeat(3, 1fr); }
+/* Pet metrik v ENI vrstici. Prej so bile tri tu in se stiri v locenem bloku pod
+   okvirjem stranke -- Placano in Odprti racuni sta se zato izpisala dvakrat. */
+.clientFinance { grid-template-columns: repeat(5, 1fr); }
 .clientContacts span, .clientFinance span { display: grid; gap: .3rem; padding: .8rem; border-radius: .8rem; }
+/* prostor za ikono v ozadju, isto kot .expenseSummary na Stroskih */
+.clientFinance span { position: relative; overflow: hidden; min-height: 5.6rem; align-content: start; }
 .clientContacts span { background: #fff; transition: background-color .16s ease; }
 .clientContacts span:hover { background: oklch(96.5% .018 87); }
 .clientFinance span { background: oklch(95% .018 87); }
@@ -1079,9 +1083,20 @@
 .clientSplet a svg { flex: none; }
 .clientSplet a strong { font-size: .82rem; color: inherit; }
 .clientFinance strong { font: 500 1.25rem var(--font-sans), Georgia, serif; }
-.clientFinance span:nth-child(1) { background: oklch(93% .045 160); }
-.clientFinance span:nth-child(2) { background: oklch(94% .05 65); }
-.clientFinance span:nth-child(3) { background: oklch(94% .04 295); }
+/* Gradienti in ikone kot pri karticah drugod (.expenseSummary, .invoiceSummary). */
+.clientFinance span:nth-child(1) { background: linear-gradient(140deg, oklch(96% .025 165), oklch(88% .065 165)); }
+.clientFinance span:nth-child(2) { background: linear-gradient(140deg, oklch(96% .04 60), oklch(89% .075 52)); }
+.clientFinance span:nth-child(3) { background: linear-gradient(140deg, oklch(95% .025 295), oklch(89% .06 295)); }
+.clientFinance span:nth-child(4) { background: linear-gradient(140deg, oklch(96% .03 235), oklch(89% .06 235)); }
+.clientFinance span:nth-child(5) { background: linear-gradient(140deg, oklch(96% .018 87), oklch(90% .035 82)); }
+.clientFinance span:nth-child(1) .subpageMetricIcon { color: oklch(52% .14 165); }
+.clientFinance span:nth-child(2) .subpageMetricIcon { color: oklch(66% .18 52); }
+.clientFinance span:nth-child(3) .subpageMetricIcon { color: oklch(58% .18 295); }
+.clientFinance span:nth-child(4) .subpageMetricIcon { color: oklch(56% .15 235); }
+.clientFinance span:nth-child(5) .subpageMetricIcon { color: oklch(55% .08 82); }
+.clientFinance .subpageMetricIcon { right: .5rem; bottom: .4rem; width: 3.6rem; }
+.clientFinance .subpageMetricIcon svg { width: 3.4rem !important; height: 3.2rem !important; }
+.clientFinance span > small, .clientFinance span > strong { position: relative; z-index: 1; }
 /* "Projekti stranke" — stranka je STARŠ (seznam projektov), klik na vrstico
    odpre otroka (ProjectsWorkspace detajl) prek ${base}/kalkulator/projekti?projekt=<id>.
    Fonti >=.8rem (Tina: "ne sme bit tok mini font" — prejšnji ploščati seznam je bil .53-.6rem). */
