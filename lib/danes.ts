@@ -46,6 +46,8 @@ export type DanesVrstica = {
   kam: string;
   /* koliko dni do roka; negativno = zamuda. Brez roka = undefined. */
   dniDoRoka?: number;
+  /* datum, na katerega se vrstica nanasa (ISO) — za datumski zetonu levo. */
+  datum?: string;
 };
 
 export const NAJVEC_VRSTIC = 8;
@@ -163,6 +165,7 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       vrsta,
       dejanje: `${L('Poskrbi za', 'Take care of')} ${n.naslov}`,
       pripis: dni == null ? L('brez roka', 'no deadline') : pripisRoka(dni, jeEn),
+      datum: n.rok,
       kam: '/kalkulator/naloge',
       dniDoRoka: dni ?? undefined,
     });
@@ -197,6 +200,7 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       dejanje: `${L('Odgovori', 'Reply to')} ${kdo || v.zadeva}`,
       podnaslov: kdo && v.zadeva ? v.zadeva : undefined,
       pripis: L(`čaka ${cakaDni} dni`, `waiting ${cakaDni} days`),
+      datum: v.datum,
       kam: '/kalkulator/komunikacija',
       dniDoRoka: dni,
     });
@@ -219,6 +223,7 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
         : `${L('Spremljaj', 'Watch')} ${oznaka}`,
       podnaslov: r.client,
       pripis: pripisRoka(dni, jeEn),
+      datum: rok.toISOString().slice(0, 10),
       kam: '/kalkulator/racuni',
       dniDoRoka: dni,
     });
@@ -235,6 +240,7 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       dejanje: `${L('Preveri ponudbo', 'Follow up on the offer')} ${p.title}`,
       podnaslov: p.client,
       pripis: L(`poslana pred ${Math.abs(dni)} dni`, `sent ${Math.abs(dni)} days ago`),
+      datum: p.date,
       kam: '/kalkulator/projekti',
       dniDoRoka: dni,
     });

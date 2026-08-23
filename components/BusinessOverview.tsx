@@ -450,17 +450,26 @@ export default function BusinessOverview({ base }: { base: string }) {
         <div className={styles.bandBody}>
         <h2 id="events-title" className={styles.bandNaslov}>{L('Kaj čaka nate', 'What needs you')}</h2>
         {danesVrstice.length ? (
-          <ul className={`${styles.eventList} ${styles.danesSeznam}`}>
+          <ul className={styles.eventList}>
             {danesVrstice.map(v => (
               <li key={v.id}>
-                <Link className={styles.dashRow} href={`${base}${v.kam}`}>
-                  <span className={styles[`status_${DANES_TON[v.vrsta]}`]} aria-hidden style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', background: 'var(--pill-bg)', color: 'var(--pill-ink)' }}>{(() => { const I = danesIkona(v.id); return <I size={17} weight="regular" />; })()}</span>
-                  <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                    <b style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.dejanje}</b>
-                    {v.podnaslov && <small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.podnaslov}</small>}
+                <Link className={styles.eventVrstica} href={`${base}${v.kam}`}>
+                  {v.datum ? (
+                    <span className={styles.eventDate} data-tone={DANES_TON[v.vrsta]}>
+                      <b>{new Date(v.datum).getDate()}</b>
+                      <small>{new Date(v.datum).toLocaleDateString(dl, { month: 'short' }).replace('.', '').toUpperCase()}</small>
+                    </span>
+                  ) : (
+                    <span className={styles.eventDate} data-tone={DANES_TON[v.vrsta]}><b>—</b><small>{L('BREZ', 'NONE')}</small></span>
+                  )}
+                  <span className={styles.eventCard}>
+                    <span className={styles.eventIco} data-tone={DANES_TON[v.vrsta]} aria-hidden>{(() => { const I = danesIkona(v.id); return <I size={13} weight="regular" />; })()}</span>
+                    <span className={styles.eventBody}>
+                      <strong>{v.dejanje}</strong>
+                      <small>{v.podnaslov || v.pripis}</small>
+                    </span>
+                    <i className={styles.eventDot} data-tone={DANES_TON[v.vrsta]} aria-hidden />
                   </span>
-                  <span className={`${styles.statusPill} ${styles[`status_${DANES_TON[v.vrsta]}`]}`}>{v.pripis}</span>
-                  <span className={styles.dashRowArrow} aria-hidden>›</span>
                 </Link>
               </li>
             ))}
