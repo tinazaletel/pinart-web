@@ -70,15 +70,13 @@ const sl = {
     },
     {
       heading: '9. Umetna inteligenca (Pupa) in varnost podatkov',
-      text: `OSNUTEK — pravno mora potrditi odvetnik.
-
-Pupa je izbirna pomočnica, ki deluje prek Anthropic Claude API. Obdelava poteka strežniško, zato API ključ ni izpostavljen v uporabnikovem brskalniku. Anthropic prejme samo vsebino, ki jo uporabnik vnese v Pupo, in minimalen kontekst odprtega orodja ali ponudbe, potreben za odgovor; nič drugega. Anthropic nima dostopa do baze Pinart Flow — vidi le besedilo posamezne zahteve in baze ne more brati ali izvoziti.
+      text: `Pupa je izbirna pomočnica, ki deluje prek Anthropic Claude API. Obdelava poteka strežniško, zato API ključ ni izpostavljen v uporabnikovem brskalniku. Anthropic prejme samo vsebino, ki jo uporabnik vnese v Pupo, in minimalen kontekst odprtega orodja ali ponudbe, potreben za odgovor; nič drugega. Anthropic nima dostopa do baze Pinart Flow — vidi le besedilo posamezne zahteve in baze ne more brati ali izvoziti.
 
 V Pupo ne vnašajte zaupnih podatkov, poslovnih skrivnosti ali osebnih podatkov strank. Če Pupe ne uporabljate, se podatki ne pošiljajo družbi Anthropic ali kateremu koli drugemu zunanjemu ponudniku AI. Orodja Pinart Flow delujejo brez AI, cene pa se izračunajo s formulami in pravili lokalno oziroma na zaledju Pinart Flow.
 
 Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje modelov. Obdobje hrambe velja po aktualnih pogojih Anthropic. Ker se podatki lahko obdelujejo v ZDA, mora biti prenos urejen z DPA z družbo Anthropic in ustreznimi standardnimi pogodbenimi klavzulami (SCC).
 
-Pravno podlago (privolitev ali zakoniti interes) mora pred objavo potrditi odvetnik. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si. Več: https://privacy.anthropic.com/en/collections/10663361-commercial-customers.`,
+Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si. Več: https://privacy.anthropic.com/en/collections/10663361-commercial-customers.`,
     },
     {
       heading: '10. Spremembe politike',
@@ -137,15 +135,13 @@ const en = {
     },
     {
       heading: '9. Artificial Intelligence (Pupa) and Data Security',
-      text: `DRAFT — must be legally reviewed and approved by a lawyer.
-
-Pupa is an optional assistant powered by the Anthropic Claude API. Processing takes place server-side, so the API key is not exposed in the user's browser. Anthropic receives the content entered into Pupa and the limited open-tool or offer context required to provide a response. Anthropic has no direct access to the Pinart Flow database.
+      text: `Pupa is an optional assistant powered by the Anthropic Claude API. Processing takes place server-side, so the API key is not exposed in the user's browser. Anthropic receives the content entered into Pupa and the limited open-tool or offer context required to provide a response. Anthropic has no direct access to the Pinart Flow database.
 
 Do not enter confidential information, trade secrets, or clients' personal data into Pupa. If you do not use Pupa, data is not sent to Anthropic or another external AI provider; the core Pinart Flow tools operate without AI.
 
 Anthropic is intended to act as a subprocessor. Under its current terms, commercial API inputs and outputs are not used for model training by default. Retention follows Anthropic's then-current terms. Because data may be processed in the United States, transfers must be governed by a DPA and appropriate Standard Contractual Clauses (SCCs).
 
-A lawyer must confirm the legal basis (consent or legitimate interest) before publication. The current list of subprocessors is available on request at tina@pinart.si. More: https://privacy.anthropic.com/en/collections/10663361-commercial-customers.`,
+The current list of subprocessors is available on request at tina@pinart.si. More: https://privacy.anthropic.com/en/collections/10663361-commercial-customers.`,
     },
     {
       heading: '10. Changes to This Policy',
@@ -205,21 +201,6 @@ export default async function PrivacyPage({
         >
           {content.updated}
         </p>
-
-        {locale === 'en' && (
-          <p
-            style={{
-              fontFamily: 'var(--font-sans)',
-              fontSize: '0.88rem',
-              lineHeight: 1.5,
-              color: 'var(--ink)',
-              fontWeight: 700,
-              margin: '-2rem 0 3.5rem',
-            }}
-          >
-            DRAFT — pending legal review.
-          </p>
-        )}
 
         {content.sections.map((s, i) => (
           <section key={i} style={{ marginBottom: '2.5rem' }}>

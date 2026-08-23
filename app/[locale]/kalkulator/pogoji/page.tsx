@@ -40,7 +40,6 @@ export default async function KalkulatorPogojiPage({
   const S: React.CSSProperties = { marginTop: '2.6rem' };
   const H: React.CSSProperties = { fontSize: '.78rem', fontWeight: 600, letterSpacing: '.18em', textTransform: 'uppercase', marginBottom: '.7rem' };
   const P: React.CSSProperties = { fontSize: '.95rem', lineHeight: 1.75, color: 'rgba(17,17,17,.8)', margin: '0 0 .8rem' };
-  const OSNUTEK: React.CSSProperties = { ...P, padding: '.8rem 1rem', border: '1px solid rgba(178,84,118,.4)', borderRadius: '.75rem', fontWeight: 600 };
 
   return (
     <main style={{ minHeight: '100dvh' }}>
@@ -54,7 +53,6 @@ export default async function KalkulatorPogojiPage({
         <h1 style={{ fontFamily: 'var(--font-serif-flow), Georgia, serif', fontWeight: 400, fontSize: 'clamp(2.2rem, 7vw, 3.6rem)', lineHeight: 1, letterSpacing: '-.01em', margin: '.6rem 0 1rem' }}>
           {en ? 'Terms of Use' : 'Pogoji uporabe'}
         </h1>
-        {en && <p style={OSNUTEK}>DRAFT — pending legal review.</p>}
         <p style={P}>
           {en ? (
             <>
@@ -422,7 +420,6 @@ export default async function KalkulatorPogojiPage({
 
         <section style={S}>
           <h2 style={H}>{en ? '4c. Authorship vault' : '4c. Sef avtorstva'}</h2>
-          <p style={OSNUTEK}>{en ? 'DRAFT — must be legally reviewed and approved by a lawyer.' : 'OSNUTEK — pravno mora potrditi odvetnik.'}</p>
           <p style={P}>
             {en ? (
               <>
@@ -730,7 +727,6 @@ export default async function KalkulatorPogojiPage({
 
         <section style={S}>
           <h2 style={H}>{en ? '7. Artificial intelligence (Pupa) and data security' : '7. Umetna inteligenca (Pupa) in varnost podatkov'}</h2>
-          <p style={OSNUTEK}>{en ? 'DRAFT — must be legally reviewed and approved by a lawyer.' : 'OSNUTEK — pravno mora potrditi odvetnik.'}</p>
           <p style={P}>
             {en ? (
               <>
@@ -973,7 +969,6 @@ export default async function KalkulatorPogojiPage({
 
         <section style={S}>
           <h2 style={H}>{en ? '9a. Decisions based on the tool and AI' : '9a. Odločitve na podlagi orodja in AI'}</h2>
-          <p style={OSNUTEK}>{en ? 'DRAFT — must be legally reviewed and approved by a lawyer.' : 'OSNUTEK — pravno mora potrditi odvetnik.'}</p>
           <p style={P}>
             {en ? (
               <>
@@ -1182,11 +1177,6 @@ export default async function KalkulatorPogojiPage({
 
         <section style={S}>
           <h2 style={H}>{en ? '11d. Dispute resolution for US users (arbitration)' : '11d. Reševanje sporov za uporabnike v ZDA (arbitraža)'}</h2>
-          <p style={OSNUTEK}>
-            {en
-              ? 'DRAFT — binding arbitration and a class-action waiver are a legal choice, not a requirement. Confirm scope and enforceability with a US attorney (FAA and state-law limits) before relying on this.'
-              : 'OSNUTEK — zavezujoča arbitraža in odpoved skupinski tožbi sta pravna izbira, ne zahteva. Pred uporabo naj obseg in izvršljivost potrdi odvetnik za ZDA (FAA in omejitve po pravu posamezne države).'}
-          </p>
           <p style={P}>
             {en ? (
               <>
