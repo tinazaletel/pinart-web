@@ -507,7 +507,9 @@ export default function BusinessOverview({ base }: { base: string }) {
           </div>
         </section>
 
-        <section className={styles.historyBand} aria-labelledby="comm-title">
+        {/* Vrstica ima dva stolpca, pasovi v njej pa so trije — Komunikacija je
+            ostala sama in ob njej je zijala luknja. Zato tece cez oba stolpca. */}
+        <section className={`${styles.historyBand} ${styles.bandFull}`} aria-labelledby="comm-title">
           <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · KOMUNIKACIJA', '07 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
