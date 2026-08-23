@@ -573,7 +573,12 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-nit-txt small{font:500 .7rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 48%,transparent)}
         .km-av{flex:none;width:2.1rem;height:2.1rem;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,oklch(72% .13 297),oklch(62% .2 297));color:#fff;font:700 .82rem var(--font-sans),sans-serif}
         .km-av.sm{width:1.9rem;height:1.9rem;font-size:.76rem}
-        .km-zavihki{display:inline-flex;gap:.3rem;margin:0 0 1.1rem;padding:.25rem;background:#fff;border:1px solid var(--k-line);border-radius:999px}
+        /* --km-levi je sirina levega stolpca: preklop Posta/Klepet in stolpec map sta
+   enako siroka, zato se seznam mailov zacne na isti crti in se lahko
+   "Oznaci vse" poravna s kljukicami v njem. */
+        .km-posta-ovoj,.km-zavihki{--km-levi:12rem}
+        .km-zavihki{display:flex;width:var(--km-levi);box-sizing:border-box;gap:.3rem;margin:0 0 1.1rem;padding:.25rem;background:#fff;border:1px solid var(--k-line);border-radius:999px}
+        .km-zavihki > *{flex:1;justify-content:center}
         .km-zavihki button{display:inline-flex;align-items:center;gap:.4rem;border:0;background:none;border-radius:999px;padding:.5rem 1.1rem;font:700 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 60%,transparent);cursor:pointer}
         .km-zavihki button.on{background:var(--k-ink,#2a2620);color:#fff}
         .km-noga{display:none}
@@ -651,7 +656,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-iskalnik{display:flex;align-items:center;gap:.5rem;background:#fff;border:1px solid var(--k-line);border-radius:999px;padding:.38rem .9rem;margin-bottom:1rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
         .km-iskalnik input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 .85rem var(--font-sans),sans-serif;color:var(--k-ink)}
         .km-posta-body{display:flex;gap:1.3rem;align-items:flex-start}
-        .km-mape{flex:none;width:11rem;display:flex;flex-direction:column;gap:.15rem}
+        .km-mape{flex:none;width:var(--km-levi,12rem);display:flex;flex-direction:column;gap:.15rem}
         .km-mape button{display:flex;align-items:center;gap:.55rem;width:100%;text-align:left;border:0;background:none;border-radius:.6rem;padding:.6rem .7rem;font:700 .82rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 62%,transparent);cursor:pointer}
         .km-mape button:hover{background:color-mix(in oklch,var(--k-purple) 6%,transparent)}
         .km-mape button.on{background:color-mix(in oklch,var(--k-purple) 12%,transparent);color:var(--k-ink)}
@@ -668,8 +673,11 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
           /* izbor ostane v desni skupini: vrstica je dvignjena cez zavihke in poravnana desno */
           /* Kljukica in kos sta ena poteza -- oznacis in zbrises -- zato stojita skupaj,
              levo od iskalnika, in se kos pojavi sele ko je kaj oznaceno. */
-          .km-posta-vrh .km-vsi-vrh{order:-2;margin-right:.15rem;padding:0 .2rem;background:transparent}
-          .km-posta-vrh .km-akc-brisi,.km-posta-vrh .km-akc-obnovi{order:-1;margin-right:.35rem}
+          .km-posta-vrh .km-vsi-vrh{order:-2;margin-left:calc(var(--km-levi,12rem) + 1.3rem + .9rem);margin-right:.15rem;padding:0;background:transparent}
+          .km-posta-vrh .km-akc-brisi,.km-posta-vrh .km-akc-obnovi{order:-1;margin-right:.15rem}
+          /* Prazen prostor gre MED izbor in iskalnik, ne za kos -- kos se pojavlja in
+             izginja, zato bi se izbor ob vsakem izboru premaknil s svoje crte. */
+          .km-posta-vrh .km-isk-krog,.km-posta-vrh .km-iskalnik{margin-left:auto}
           .km-isk-krog{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.55rem;height:2.55rem;border-radius:50%;border:1px solid var(--k-line);background:#fff;color:var(--k-ink);cursor:pointer}
           .km-isk-krog:hover{background:var(--k-ink);color:#fff}
           /* Ali gumb ali polje, nikoli oboje: odkar polje ni vec absoluten overlay,
