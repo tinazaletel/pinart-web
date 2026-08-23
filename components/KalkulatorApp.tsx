@@ -6457,7 +6457,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
         .cw .chip-podrocje b { font-weight: 700; }
         .cw .chip-podrocje b { flex: 1; min-width: 0; text-align: left; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
-        .cw .chip-podrocje .chip-kljuk { flex: none; width: 1.35rem; height: 1.35rem; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: auto; flex: none; transition: background .18s, border-color .18s; }
+        .cw .chip-podrocje .chip-kljuk { flex: none; align-self: center; width: 1.35rem; min-width: 1.35rem; height: 1.35rem; min-height: 1.35rem; max-height: 1.35rem; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: auto; flex: none; transition: background .18s, border-color .18s; }
         @media (max-width: 700px) {
           .cw .chat-podrocja { display: grid; grid-template-columns: minmax(0, 1fr); margin-left: 0; width: 100%; }
           .cw .chat-podrocja > * { width: 100%; justify-self: stretch; white-space: normal; }
