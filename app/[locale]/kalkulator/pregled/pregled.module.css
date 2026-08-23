@@ -973,6 +973,11 @@
 /* svinčnik = poln temni krogec, potisnjen DESNO (brez sivega outlina); višja specifičnost povozi .shell */
 .shell .clientProfileTop .clientEditPen { display: inline-flex; align-items: center; justify-content: center; margin-left: auto; width: 2.4rem; height: 2.4rem; flex: none; padding: 0; border: 0; border-radius: 50%; background: var(--ink); color: var(--paper); cursor: pointer; transition: opacity .15s; }
 .shell .clientProfileTop .clientEditPen:hover { opacity: .9; }
+/* Brisanje profila je bilo velik gumb na DNU kartice, sredi vsebine -- nevarno
+   dejanje na mestu, kjer ga clovek zadene med branjem. Zdaj je tiha ikona ob
+   svincniku, obarva se sele ob prehodu z misko. Potrditev je ze v remove(). */
+.shell .clientProfileTop .clientDeleteIcon { display: inline-flex; align-items: center; justify-content: center; width: 2.4rem; height: 2.4rem; flex: none; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink) 55%, transparent); cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.shell .clientProfileTop .clientDeleteIcon:hover { border-color: oklch(58% .17 25); background: oklch(96% .04 25); color: oklch(48% .17 25); }
 /* kontakt vrstica = tap za urejanje (ime + subtilni svinčnik); brez ločenih ✎/× */
 .clientKontaktEdit { display: flex; align-items: center; justify-content: space-between; gap: .6rem; width: 100%; padding: .15rem 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .clientKontaktEdit:disabled { cursor: default; opacity: .6; }
