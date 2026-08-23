@@ -411,7 +411,9 @@ export default function TaskManagerWorkspace() {
   useEffect(() => { setMontiran(true); }, []);
   /* prosto besedilo za novo oznako v panelu Podrobnosti naloge */
   const [novaOznaka, setNovaOznaka] = useState('');
-  const [hitroOdprt, setHitroOdprt] = useState(false);
+  /* Hitro dodajanje ni AI — je samo drug nacin iste forme: ena naloga na vrstico.
+     Zato zivi kot preklop znotraj "Nova naloga", ne kot svoje okno. */
+  const [novaHitro, setNovaHitro] = useState(false);
   const [hitroBesedilo, setHitroBesedilo] = useState('');
   /* kratko sporocilo ob kliku "Nalozi razvojne naloge (Flow)" — koliko jih je bilo dodanih */
   const [seedSporocilo, setSeedSporocilo] = useState('');
@@ -541,7 +543,7 @@ export default function TaskManagerWorkspace() {
     posodobiInShrani([...naloge, ...nove]);
     nove.forEach((n) => zabeleziAktivnost(n.id, trenutni.ime, `Ustvaril nalogo »${n.naslov}«`));
     setHitroBesedilo('');
-    setHitroOdprt(false);
+    setPrikaziFormo(false);
   };
 
   const dodajNalogo = (e: React.FormEvent) => {
@@ -1143,7 +1145,7 @@ export default function TaskManagerWorkspace() {
           ) : (
             <p className="tm-demo-namig">Urejanje ni na voljo v predogledu (demo).</p>
           )}
-          <button type="button" className="tm-seed-gumb tm-seed-gumb-ai" aria-label="AI dodaj več nalog" onClick={() => { setPogled('kanban'); setHitroOdprt((o) => !o); }} title="Piši prosto, več nalog naenkrat — AI pomoč pri dodajanju"><Sparkle size={18} weight="fill" /><span className="tm-akcija-tekst">AI dodaj več</span></button>
+          <button type="button" className="tm-seed-gumb tm-seed-gumb-ai" aria-label="Prosi Pupo za naloge" onClick={() => { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('pupa:odpri', { detail: { nacin: 'chat' } })); }} title="Prosi Pupo, naj ti naredi naloge"><Sparkle size={18} weight="fill" /><span className="tm-akcija-tekst">Prosi Pupo</span></button>
         </div>
       </div>
 
@@ -1195,19 +1197,19 @@ export default function TaskManagerWorkspace() {
         document.body,
       )}
 
-      {pogled === 'kanban' && hitroOdprt && (
-        <form className="tm-forma" onSubmit={(e) => { e.preventDefault(); hitroDodaj(); }}>
-          <div className="tm-forma-glava"><h2>Hitro dodaj naloge</h2><button type="button" className="tm-x" onClick={() => setHitroOdprt(false)} aria-label="Zapri">×</button></div>
-          <label className="tm-polje"><span>Ena naloga na vrstico — vsaka postane kartica v »Za narediti«</span>
-            <textarea value={hitroBesedilo} onChange={(e) => setHitroBesedilo(e.target.value)} rows={6} autoFocus placeholder={'Prenova logotipa\nPokliči stranko\nPripravi ponudbo za …'} style={{ resize: 'vertical', minHeight: '7rem', lineHeight: 1.6, width: '100%', boxSizing: 'border-box' }} />
-          </label>
-          <div className="tm-forma-akcije"><button type="button" className="tm-preklici" onClick={() => setHitroOdprt(false)}>Prekliči</button><button type="submit" className="tm-shrani" disabled={!hitroBesedilo.trim()}>Dodaj vse</button></div>
-        </form>
-      )}
-
       {pogled === 'kanban' && prikaziFormo && (
-        <form className="tm-forma" onSubmit={dodajNalogo}>
+        <form className="tm-forma" onSubmit={(e) => { if (novaHitro) { e.preventDefault(); hitroDodaj(); } else { dodajNalogo(e); } }}>
           <div className="tm-forma-glava"><h2>Nova naloga</h2><button type="button" className="tm-x" onClick={() => setPrikaziFormo(false)} aria-label="Zapri">×</button></div>
+          <div className="tm-pogled-preklop tm-nacin-preklop" role="tablist" aria-label="Način dodajanja">
+            <button type="button" role="tab" aria-selected={!novaHitro} className={!novaHitro ? 'tm-pogled-on' : ''} onClick={() => setNovaHitro(false)}>Podrobno</button>
+            <button type="button" role="tab" aria-selected={novaHitro} className={novaHitro ? 'tm-pogled-on' : ''} onClick={() => setNovaHitro(true)}>Hitro</button>
+          </div>
+          {novaHitro ? (<>
+            <label className="tm-polje"><span>Ena naloga na vrstico — vsaka postane kartica v »Za narediti«</span>
+              <textarea value={hitroBesedilo} onChange={(e) => setHitroBesedilo(e.target.value)} rows={6} autoFocus placeholder={'Prenova logotipa\nPokliči stranko\nPripravi ponudbo za …'} style={{ resize: 'vertical', minHeight: '7rem', lineHeight: 1.6, width: '100%', boxSizing: 'border-box' }} />
+            </label>
+            <div className="tm-forma-akcije"><button type="button" className="tm-preklici" onClick={() => setPrikaziFormo(false)}>Prekliči</button><button type="submit" className="tm-shrani" disabled={!hitroBesedilo.trim()}>Dodaj vse</button></div>
+          </>) : (<>
           <label className="tm-polje"><span>Naslov</span><input value={novNaslov} onChange={(e) => setNovNaslov(e.target.value)} placeholder="Npr. Pripravi poročilo za Rokus …" autoFocus /></label>
           <label className="tm-polje"><span>Opis</span><textarea value={novOpis} onChange={(e) => setNovOpis(e.target.value)} placeholder="Podrobnosti naloge …" rows={3} /></label>
           <div className="tm-polje"><span>Oznake</span>
@@ -1242,6 +1244,7 @@ export default function TaskManagerWorkspace() {
             <label className="tm-polje"><span>Ocenjeni čas (ure)</span><input type="number" step={0.5} min={0} value={novaOcena} onChange={(e) => setNovaOcena(e.target.value)} placeholder="npr. 2.5" /></label>
           </div>
           <div className="tm-forma-akcije"><button type="button" className="tm-preklici" onClick={() => setPrikaziFormo(false)}>Prekliči</button><button type="submit" className="tm-shrani" disabled={!novNaslov.trim()}>Shrani nalogo</button></div>
+          </>)}
         </form>
       )}
 
@@ -1875,6 +1878,7 @@ export default function TaskManagerWorkspace() {
         .tm-analitika-stevec{display:flex;flex-direction:column;gap:.2rem;padding:.7rem .6rem;border:1px solid var(--line);border-radius:.8rem;background:oklch(97.5% .008 87/.75);text-align:center}
         .tm-analitika-stevec strong{font:600 1.3rem var(--font-serif),Georgia,serif;color:var(--ink)}
         .tm-analitika-stevec span{font:700 .58rem var(--font-sans),sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+        .tm-nacin-preklop{margin:0 0 1rem;align-self:flex-start}
         .tm-umestitev{margin-top:1.5rem;border-top:1px solid var(--line,rgba(17,17,17,.1));padding-top:.5rem}
         .tm-umestitev>summary{display:flex;align-items:baseline;gap:.65rem;cursor:pointer;list-style:none;padding:.45rem 0;min-width:0}
         .tm-umestitev>summary::-webkit-details-marker{display:none}
