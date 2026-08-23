@@ -780,7 +780,9 @@
 .invoiceHint { margin: 0; color: var(--muted); font-size: .6rem; text-align: center; }
 .invoiceHint a { color: var(--ink); font-weight: 800; }
 .expensePage { display: grid; gap: 1rem; }
-.expenseSummary { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+/* Tri metrike + gumb Dodaj = STIRJE stolpci, isto kot .invoiceSummary na
+   Racunih. S tremi stolpci je gumb padel v svojo vrstico pod prvo kartico. */
+.expenseSummary { display: grid; grid-template-columns: repeat(3, 1fr) minmax(11rem, .9fr); gap: .7rem; }
 .expenseSummary > * { position: relative; overflow: hidden; min-height: 8rem; display: flex; flex-direction: column; align-items: flex-start; padding: 1rem; border: 1px solid color-mix(in oklch, var(--ink) 8%, transparent); border-radius: 1rem; background: oklch(98% .008 87 / .92); }
 .expenseSummary article:nth-child(1) { background: linear-gradient(140deg, oklch(96% .04 60), oklch(89% .075 52)); }
 .expenseSummary article:nth-child(2) { background: linear-gradient(140deg, oklch(96% .025 165), oklch(88% .065 165)); }
