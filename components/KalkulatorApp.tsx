@@ -6429,8 +6429,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uv-forma .gumb { align-self: center; margin-top: .5rem; }
         @media (max-width: 560px) { .cw .uv-forma { margin-left: 0; } .cw .uv-forma .uv-mreza { grid-template-columns: 1fr; } }
         /* področja dela — kompaktni chipi za več izbir (v chatu) */
-        .cw .chat-podrocja { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem .75rem; margin: .5rem 0 .3rem 3.05rem; max-width: 680px; }
-        .cw .chat-podrocja > * { width: 100%; justify-content: flex-start; }
+        .cw .chat-podrocja { display: grid; grid-template-columns: repeat(2, max-content); gap: .6rem .75rem; margin: .5rem 0 .3rem 3.05rem; max-width: none; }
+        .cw .chat-podrocja > * { width: 100%; justify-content: flex-start; white-space: nowrap; }
         .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid oklch(93% .006 82 / .55); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
         .cw .chip-podrocje:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(35,18,45,.1); }
         .cw .chip-podrocje .pi-pod { width: 2.15rem; height: 2.15rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
