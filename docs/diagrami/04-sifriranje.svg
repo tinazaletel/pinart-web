@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 884" width="1200" height="884" role="img" aria-label="Sifriranje, plast za plastjo">
+<defs>
+  <style>
+    .bg{fill:#F5F2EA}
+    .t1{font-family:'DM Serif Display','Bodoni Moda',Georgia,serif;font-size:31px;fill:#111}
+    .t2{font-family:'Archivo',system-ui,sans-serif;font-size:13.5px;fill:#55524C}
+    .h{font-family:'DM Serif Display','Bodoni Moda',Georgia,serif;font-size:19px;fill:#111}
+    .lab{font-family:'Archivo',system-ui,sans-serif;font-size:11px;fill:#55524C;letter-spacing:1.6px}
+    .rw{font-family:'Archivo',system-ui,sans-serif;font-size:13px;fill:#111}
+    .sm{font-family:'Archivo',system-ui,sans-serif;font-size:11.5px;fill:#55524C}
+    .xs{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;fill:#7A756B;letter-spacing:.7px}
+    .chip{font-family:'Archivo',system-ui,sans-serif;font-size:10px;font-weight:600;letter-spacing:.6px}
+    .card{fill:#FFFFFF;stroke:#D8D4C8;stroke-width:1}
+    .num{font-family:'DM Serif Display',Georgia,serif;font-size:15px;fill:#A170FB}
+  </style>
+</defs>
+
+<rect class="bg" width="1200" height="884"/>
+<text class="t1" x="60" y="68">Sifriranje, plast za plastjo</text>
+<text class="t2" x="60" y="96">Kaj je sifrirano, kaj ni in kaj je samo videti kot sifriranje.</text>
+<line x1="60" y1="126" x2="1140" y2="126" stroke="#D8D4C8" stroke-width="1"/>
+
+<!-- ============ 1 V PRENOSU ============ -->
+<rect class="card" x="60" y="150" width="1080" height="180" rx="14"/>
+<rect x="60" y="150" width="4.5" height="180" fill="#2E7D5B"/>
+<text class="num" x="86" y="182">01</text>
+<text class="h" x="116" y="183">V prenosu</text>
+<text class="sm" x="252" y="182">vsak odsek gre prek HTTPS &#8212; razen zadnjega koraka odhodne poste</text>
+
+<line x1="86" y1="198" x2="1116" y2="198" stroke="#EDE9DC"/>
+
+<text class="rw" x="86" y="228">Brskalnik &#8594; Vercel</text>
+<rect x="430" y="215" width="130" height="19" rx="9.5" fill="#E3F0EA"/>
+<text class="chip" x="440" y="228.5" fill="#2E7D5B">HTTPS &#183; HSTS 2 LETI</text>
+<text class="rw" x="628" y="228">Vercel &#8594; Anthropic, OpenAI, Google, Mistral</text>
+<rect x="1058" y="215" width="58" height="19" rx="9.5" fill="#E3F0EA"/>
+<text class="chip" x="1068" y="228.5" fill="#2E7D5B">HTTPS</text>
+
+<text class="rw" x="86" y="258">Vercel &#8594; Supabase</text>
+<rect x="502" y="245" width="58" height="19" rx="9.5" fill="#E3F0EA"/>
+<text class="chip" x="512" y="258.5" fill="#2E7D5B">HTTPS</text>
+<text class="rw" x="628" y="258">Vercel &#8594; freetsa.org</text>
+<rect x="972" y="245" width="144" height="19" rx="9.5" fill="#E3F0EA"/>
+<text class="chip" x="982" y="258.5" fill="#2E7D5B">HTTPS &#183; http JE ZAVRNJEN</text>
+
+<text class="rw" x="86" y="288">Vercel &#8594; Resend</text>
+<rect x="502" y="275" width="58" height="19" rx="9.5" fill="#E3F0EA"/>
+<text class="chip" x="512" y="288.5" fill="#2E7D5B">HTTPS</text>
+<text class="rw" x="628" y="288">Resend &#8594; streznik prejemnika</text>
+<rect x="978" y="275" width="138" height="19" rx="9.5" fill="#FAE7E2"/>
+<text class="chip" x="988" y="288.5" fill="#C0492E">STARTTLS, NI ZAJAMCEN</text>
+
+<text class="rw" x="86" y="318">Cloudflare Worker &#8594; Vercel</text>
+<rect x="382" y="305" width="178" height="19" rx="9.5" fill="#E3F0EA"/>
+<text class="chip" x="392" y="318.5" fill="#2E7D5B">HTTPS + SKUPNA SKRIVNOST</text>
+
+<!-- ============ 2 V MIROVANJU ============ -->
+<rect class="card" x="60" y="354" width="1080" height="190" rx="14"/>
+<rect x="60" y="354" width="4.5" height="190" fill="#B0803A"/>
+<text class="num" x="86" y="386">02</text>
+<text class="h" x="116" y="387">V mirovanju</text>
+<text class="sm" x="278" y="386">kjer podatki lezijo, ko jih nihce ne uporablja</text>
+
+<line x1="86" y1="402" x2="1116" y2="402" stroke="#EDE9DC"/>
+
+<text class="rw" x="86" y="432">Supabase Postgres &#8212; sifriranje diska je na strani ponudnika</text>
+<rect x="982" y="419" width="134" height="19" rx="9.5" fill="#F6EEDD"/>
+<text class="chip" x="992" y="432.5" fill="#8A6420">PREVERI IN ZAPISI V DPA</text>
+
+<text class="rw" x="86" y="464">Supabase Storage &#8212; bucket business-documents, public = false</text>
+<rect x="936" y="451" width="180" height="19" rx="9.5" fill="#E3F0EA"/>
+<text class="chip" x="946" y="464.5" fill="#2E7D5B">ZASEBEN &#183; PODPISANI URL-JI</text>
+
+<text class="rw" x="86" y="496">Vercel &#8212; uporabnikovih podatkov ne hrani trajno, ostanejo dnevniki</text>
+<rect x="1006" y="483" width="110" height="19" rx="9.5" fill="#E3F0EA"/>
+<text class="chip" x="1016" y="496.5" fill="#2E7D5B">NI TRAJNE SHRAMBE</text>
+
+<text class="rw" x="86" y="528" fill="#C0492E">localStorage v brskalniku &#8212; stranke, ponudbe, racuni, stroski</text>
+<rect x="1018" y="515" width="98" height="19" rx="9.5" fill="#FAE7E2"/>
+<text class="chip" x="1028" y="528.5" fill="#C0492E">NI SIFRIRANO</text>
+
+<!-- ============ 3 NA RAVNI APLIKACIJE ============ -->
+<rect class="card" x="60" y="568" width="1080" height="236" rx="14"/>
+<rect x="60" y="568" width="4.5" height="236" fill="#A170FB"/>
+<text class="num" x="86" y="600">03</text>
+<text class="h" x="116" y="601">Na ravni aplikacije</text>
+<text class="sm" x="330" y="600">kar sifrira oziroma zgosti nasa lastna koda</text>
+
+<line x1="86" y1="616" x2="1116" y2="616" stroke="#EDE9DC"/>
+
+<!-- levo: pravo sifriranje -->
+<rect x="86" y="634" width="452" height="152" rx="12" fill="#F0E9FE" stroke="#D6C4FA"/>
+<text class="lab" x="106" y="660" fill="#7B3FE4">SIFRIRAMO SAMI &#8212; ENO SAMO MESTO</text>
+<text class="h" x="106" y="692">AES-256-GCM</text>
+<text class="sm" x="106" y="716" fill="#111">Kljuci AI povezav, ki jih uporabnik sam doda.</text>
+<text class="sm" x="106" y="736">lib/aiConnections.ts &#183; kljuc AI_CREDENTIALS_ENCRYPTION_KEY</text>
+<text class="sm" x="106" y="754">zapis v1.&lt;iv&gt;.&lt;tag&gt;.&lt;sifropis&gt;</text>
+<text class="sm" x="106" y="772">V vmesnik se kljuc nikoli ne vrne &#8212; samo maska &#8226;&#8226;&#8226;&#8226;1234.</text>
+
+<!-- desno: zgostitve -->
+<text class="lab" x="576" y="660">ENOSMERNE ZGOSTITVE &#8212; TO NI SIFRIRANJE</text>
+<text class="sm" x="576" y="686" fill="#111">API kljuci</text>
+<text class="sm" x="900" y="686">SHA-256 &#183; lib/apiKljuc.ts</text>
+<text class="sm" x="576" y="708" fill="#111">Zetoni portala za stranko</text>
+<text class="sm" x="900" y="708">SHA-256 &#183; lib/portalZeton.ts</text>
+<text class="sm" x="576" y="730" fill="#111">Zetoni za podpis pogodbe</text>
+<text class="sm" x="900" y="730">SHA-256 &#183; lib/podpisPogodbe.ts</text>
+<text class="sm" x="576" y="752" fill="#111">Vsebina pogodbe kot dokaz nespremenjenosti</text>
+<text class="sm" x="900" y="752">SHA-256</text>
+<text class="sm" x="576" y="774" fill="#111">IP naslovi za omejevanje klicev</text>
+<text class="sm" x="900" y="774">SHA-256 s soljo &#183; lib/rate-limit.ts</text>
+<line x1="576" y1="692" x2="1116" y2="692" stroke="#F0EDE2"/>
+<line x1="576" y1="714" x2="1116" y2="714" stroke="#F0EDE2"/>
+<line x1="576" y1="736" x2="1116" y2="736" stroke="#F0EDE2"/>
+<line x1="576" y1="758" x2="1116" y2="758" stroke="#F0EDE2"/>
+
+<line x1="60" y1="830" x2="1140" y2="830" stroke="#D8D4C8" stroke-width="1"/>
+<text class="rw" x="60" y="856">Gesla hrani in preverja Supabase Auth. Nasa koda gesla nikoli ne vidi in ga nikoli ne shrani.</text>
+<text class="xs" x="1140" y="856" text-anchor="end">Pinart Flow &#183; 22. 8. 2026</text>
+</svg>

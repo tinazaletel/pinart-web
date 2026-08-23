@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 780" width="1200" height="780" role="img" aria-label="Strezniki in kje stojijo">
+<defs>
+  <style>
+    .bg{fill:#F5F2EA}
+    .t1{font-family:'DM Serif Display','Bodoni Moda',Georgia,serif;font-size:31px;fill:#111}
+    .t2{font-family:'Archivo',system-ui,sans-serif;font-size:13.5px;fill:#55524C}
+    .lab{font-family:'Archivo',system-ui,sans-serif;font-size:11px;fill:#55524C;letter-spacing:1.6px}
+    .bx{font-family:'Archivo',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#111}
+    .sm{font-family:'Archivo',system-ui,sans-serif;font-size:12px;fill:#55524C}
+    .xs{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;fill:#7A756B;letter-spacing:.7px}
+    .chip{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.5px}
+    .card{fill:#FFFFFF;stroke:#D8D4C8;stroke-width:1}
+    .frame{fill:none;stroke:#C9C4B4;stroke-width:1;stroke-dasharray:5 5}
+    .ln{stroke:#8A857A;stroke-width:1.4;fill:none}
+    .bus{stroke:#8A857A;stroke-width:1.4;fill:none}
+  </style>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#8A857A"/>
+  </marker>
+</defs>
+
+<rect class="bg" width="1200" height="780"/>
+<text class="t1" x="60" y="68">Strezniki in kje stojijo</text>
+<text class="t2" x="60" y="96">Kdo poganja kateri del sistema in v kateri jurisdikciji. Stanje 22. 8. 2026, veja demo.</text>
+<line x1="60" y1="120" x2="1140" y2="120" stroke="#D8D4C8" stroke-width="1"/>
+
+<!-- ============ STOLPEC 1: NAPRAVA ============ -->
+<rect class="frame" x="60" y="160" width="250" height="330" rx="18"/>
+<text class="lab" x="78" y="188">NAPRAVA UPORABNIKA</text>
+
+<rect class="card" x="80" y="204" width="210" height="76" rx="12"/>
+<text class="bx" x="98" y="234">Brskalnik</text>
+<text class="sm" x="98" y="256">Flow UI, React</text>
+
+<line class="ln" x1="185" y1="280" x2="185" y2="306" marker-end="url(#ar)" marker-start="url(#ar)"/>
+
+<rect class="card" x="80" y="306" width="210" height="112" rx="12"/>
+<rect x="80" y="306" width="4.5" height="112" fill="#C0492E"/>
+<text class="bx" x="98" y="334">localStorage</text>
+<text class="sm" x="98" y="356">predponi pinart-</text>
+<text class="sm" x="98" y="374">in pinflow_</text>
+<rect x="98" y="386" width="118" height="20" rx="10" fill="#FAE7E2"/>
+<text class="chip" x="108" y="400" fill="#C0492E">NI SIFRIRANO</text>
+
+<text class="sm" x="80" y="446">Podatki ostanejo na napravi</text>
+<text class="sm" x="80" y="464">tudi po odjavi, dokler jih</text>
+<text class="sm" x="80" y="482">izrecno ne pobrisemo.</text>
+
+<!-- ============ STOLPEC 2: EU ============ -->
+<rect class="frame" x="370" y="160" width="330" height="520" rx="18"/>
+<text class="lab" x="388" y="188">NASE OKOLJE &#183; EU</text>
+
+<rect class="card" x="390" y="204" width="290" height="96" rx="12"/>
+<text class="bx" x="410" y="234">Vercel</text>
+<text class="sm" x="410" y="256">Next.js streznik in poti /api/**</text>
+<rect x="410" y="266" width="182" height="20" rx="10" fill="#E3F0EA"/>
+<text class="chip" x="420" y="280" fill="#2E7D5B">FRANKFURT &#183; fra1 &#183; POTRJENO</text>
+
+<rect class="card" x="390" y="332" width="290" height="96" rx="12"/>
+<text class="bx" x="410" y="362">Supabase Postgres</text>
+<text class="sm" x="410" y="384">60 tabel, RLS na vseh</text>
+<rect x="410" y="394" width="128" height="20" rx="10" fill="#F6EEDD"/>
+<text class="chip" x="420" y="408" fill="#8A6420">REGIJA: PREVERI</text>
+
+<rect class="card" x="390" y="460" width="290" height="96" rx="12"/>
+<text class="bx" x="410" y="490">Supabase Storage</text>
+<text class="sm" x="410" y="512">bucket business-documents</text>
+<rect x="410" y="522" width="212" height="20" rx="10" fill="#E3F0EA"/>
+<text class="chip" x="420" y="536" fill="#2E7D5B">ZASEBEN &#183; SAMO PODPISANI URL-JI</text>
+
+<line class="ln" x1="535" y1="300" x2="535" y2="332" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<line class="ln" x1="535" y1="428" x2="535" y2="460" marker-end="url(#ar)" marker-start="url(#ar)"/>
+
+<text class="sm" x="390" y="592">Vercel uporabnikovih podatkov ne</text>
+<text class="sm" x="390" y="610">hrani trajno &#8212; ostanejo dnevniki.</text>
+
+<!-- povezava naprava -> EU -->
+<line class="ln" x1="310" y1="250" x2="390" y2="250" marker-end="url(#ar)"/>
+<text class="xs" x="322" y="242">HTTPS</text>
+
+<!-- ============ STOLPEC 3: OBDELOVALCI ============ -->
+<rect class="frame" x="760" y="160" width="380" height="520" rx="18"/>
+<text class="lab" x="778" y="188">ZUNANJI OBDELOVALCI</text>
+
+<line class="bus" x1="730" y1="240" x2="730" y2="642"/>
+<line class="ln" x1="680" y1="240" x2="730" y2="240" marker-start="url(#ar)"/>
+<text class="xs" x="686" y="232">HTTPS</text>
+
+<g>
+  <line class="bus" x1="730" y1="241" x2="780" y2="241"/>
+  <rect class="card" x="780" y="210" width="340" height="62" rx="12"/>
+  <text class="bx" x="796" y="236">Cloudflare</text>
+  <text class="xs" x="1104" y="236" text-anchor="end">GLOBALNO</text>
+  <text class="sm" x="796" y="257">Email Routing + Worker &#8212; dohodna posta</text>
+</g>
+<g>
+  <line class="bus" x1="730" y1="315" x2="780" y2="315"/>
+  <rect class="card" x="780" y="284" width="340" height="62" rx="12"/>
+  <text class="bx" x="796" y="310">Resend</text>
+  <text class="xs" x="1104" y="310" text-anchor="end">ZDA &#183; PREVERI EU</text>
+  <text class="sm" x="796" y="331">odhodna posta, kljuc bere samo streznik</text>
+</g>
+<g>
+  <line class="bus" x1="730" y1="389" x2="780" y2="389"/>
+  <rect class="card" x="780" y="358" width="340" height="62" rx="12"/>
+  <text class="bx" x="796" y="384">Anthropic</text>
+  <text class="xs" x="1104" y="384" text-anchor="end">ZDA</text>
+  <text class="sm" x="796" y="405">Pupa &#8212; privzeti ponudnik AI</text>
+</g>
+<g>
+  <line class="bus" x1="730" y1="463" x2="780" y2="463"/>
+  <rect class="card" x="780" y="432" width="340" height="62" rx="12"/>
+  <text class="bx" x="796" y="458">Google</text>
+  <text class="xs" x="1104" y="458" text-anchor="end">ZDA &#183; GLOBALNO</text>
+  <text class="sm" x="796" y="479">OAuth prijava &#183; Analytics &#183; Sheets</text>
+</g>
+<g>
+  <line class="bus" x1="730" y1="537" x2="780" y2="537"/>
+  <rect class="card" x="780" y="506" width="340" height="62" rx="12"/>
+  <rect x="780" y="506" width="4.5" height="62" fill="#2E7D5B"/>
+  <text class="bx" x="796" y="532">freetsa.org</text>
+  <text class="xs" x="1104" y="532" text-anchor="end">NE PREJME OSEBNIH PODATKOV</text>
+  <text class="sm" x="796" y="553">casovni zig RFC 3161 &#8212; samo 32 bajtov zgostitve</text>
+</g>
+<g>
+  <line class="bus" x1="730" y1="611" x2="780" y2="611"/>
+  <rect class="card" x="780" y="580" width="340" height="62" rx="12"/>
+  <text class="bx" x="796" y="606">OpenAI &#183; Google &#183; Mistral</text>
+  <text class="xs" x="1104" y="606" text-anchor="end">PO IZBIRI</text>
+  <text class="sm" x="796" y="627">samo ce jih uporabnik sam poveze</text>
+</g>
+
+<!-- legenda -->
+<line x1="60" y1="716" x2="1140" y2="716" stroke="#D8D4C8" stroke-width="1"/>
+<line class="ln" x1="60" y1="744" x2="96" y2="744" marker-end="url(#ar)"/>
+<text class="sm" x="106" y="748">prenos prek HTTPS/TLS</text>
+<rect x="286" y="736" width="14" height="14" rx="4" fill="#FAE7E2" stroke="#C0492E"/>
+<text class="sm" x="308" y="748">ni sifrirano</text>
+<rect x="410" y="736" width="14" height="14" rx="4" fill="#F6EEDD" stroke="#B0803A"/>
+<text class="sm" x="432" y="748">treba preveriti (DPA, regija)</text>
+<rect x="632" y="736" width="14" height="14" rx="4" fill="#E3F0EA" stroke="#2E7D5B"/>
+<text class="sm" x="654" y="748">preverjeno v redu</text>
+<text class="xs" x="1140" y="748" text-anchor="end">Pinart Flow &#183; 22. 8. 2026</text>
+</svg>

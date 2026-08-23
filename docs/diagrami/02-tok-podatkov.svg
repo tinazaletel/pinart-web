@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img" aria-label="Tok poslovnih podatkov">
+<defs>
+  <style>
+    .bg{fill:#F5F2EA}
+    .t1{font-family:'DM Serif Display','Bodoni Moda',Georgia,serif;font-size:31px;fill:#111}
+    .t2{font-family:'Archivo',system-ui,sans-serif;font-size:13.5px;fill:#55524C}
+    .lab{font-family:'Archivo',system-ui,sans-serif;font-size:11px;fill:#55524C;letter-spacing:1.6px}
+    .bx{font-family:'Archivo',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#111}
+    .sm{font-family:'Archivo',system-ui,sans-serif;font-size:12px;fill:#55524C}
+    .xs{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;fill:#7A756B;letter-spacing:.7px}
+    .chip{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.5px}
+    .card{fill:#FFFFFF;stroke:#D8D4C8;stroke-width:1}
+    .ln{stroke:#8A857A;stroke-width:1.4;fill:none}
+    .dash{stroke:#A170FB;stroke-width:1.4;fill:none;stroke-dasharray:6 5}
+  </style>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#8A857A"/>
+  </marker>
+  <marker id="av" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#A170FB"/>
+  </marker>
+  <marker id="axr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#C0492E"/>
+  </marker>
+</defs>
+
+<rect class="bg" width="1200" height="800"/>
+<text class="t1" x="60" y="68">Tok poslovnih podatkov</text>
+<text class="t2" x="60" y="96">Stranka, ponudba, pogodba, racun. Vsak vnos se zapise na DVE mesti hkrati.</text>
+<line x1="60" y1="140" x2="1140" y2="140" stroke="#D8D4C8" stroke-width="1"/>
+
+<!-- povratna zanka (nad verigo) -->
+<path class="dash" d="M1050 390 L1050 180 L690 180 L690 280 L676 280" marker-end="url(#av)"/>
+<text class="xs" x="860" y="172" text-anchor="middle" fill="#A170FB">POTEG OB PRIJAVI &#8212; ZLIJE SE PO updated_at</text>
+
+<!-- localStorage -->
+<rect class="card" x="470" y="215" width="206" height="130" rx="12"/>
+<rect x="470" y="215" width="4.5" height="130" fill="#C0492E"/>
+<text class="bx" x="490" y="245">localStorage</text>
+<text class="sm" x="490" y="268">v brskalniku uporabnika</text>
+<text class="sm" x="490" y="288">predponi pinart- , pinflow_</text>
+<rect x="490" y="300" width="130" height="21" rx="10.5" fill="#FAE7E2"/>
+<text class="chip" x="500" y="315" fill="#C0492E">ODPRTO BESEDILO</text>
+
+<!-- vrsta: uporabnik -> UI -> api -> RLS -> baza -->
+<rect class="card" x="60" y="390" width="150" height="90" rx="12"/>
+<text class="bx" x="80" y="428">Uporabnik</text>
+<text class="sm" x="80" y="450">vnese stranko,</text>
+<text class="sm" x="80" y="468">ponudbo, racun</text>
+
+<line class="ln" x1="210" y1="435" x2="250" y2="435" marker-end="url(#ar)"/>
+
+<rect class="card" x="250" y="390" width="160" height="90" rx="12"/>
+<text class="bx" x="270" y="428">Flow UI</text>
+<text class="sm" x="270" y="450">React v brskalniku</text>
+<text class="sm" x="270" y="468">+ FlowCloudBridge</text>
+
+<!-- razcep -->
+<path class="ln" d="M410 435 L440 435 L440 280 L466 280" marker-end="url(#ar)"/>
+<line class="ln" x1="440" y1="435" x2="466" y2="435" marker-end="url(#ar)"/>
+
+<rect class="card" x="470" y="390" width="180" height="90" rx="12"/>
+<text class="bx" x="490" y="428">/api/**</text>
+<text class="sm" x="490" y="450">na Vercelu</text>
+<text class="sm" x="490" y="468">prijava + omejitev klicev</text>
+
+<line class="ln" x1="650" y1="435" x2="696" y2="435" marker-end="url(#ar)"/>
+<text class="xs" x="654" y="427">HTTPS</text>
+
+<rect class="card" x="700" y="390" width="200" height="90" rx="12" stroke="#A170FB" stroke-width="1.6"/>
+<text class="bx" x="720" y="424">RLS</text>
+<text class="sm" x="720" y="446">Ali je uporabnik clan</text>
+<text class="sm" x="720" y="464">te organizacije?</text>
+
+<line class="ln" x1="900" y1="435" x2="946" y2="435" marker-end="url(#ar)"/>
+<text class="xs" x="906" y="427">DA</text>
+
+<rect class="card" x="950" y="390" width="200" height="90" rx="12"/>
+<text class="bx" x="970" y="424">Supabase Postgres</text>
+<text class="sm" x="970" y="446">clients, offers, contracts,</text>
+<text class="sm" x="970" y="464">invoices, expenses, projects</text>
+
+<!-- zavrnitev -->
+<line x1="800" y1="480" x2="800" y2="520" stroke="#C0492E" stroke-width="1.4" marker-end="url(#axr)"/>
+<text class="chip" x="812" y="516" fill="#C0492E">NE &#8212; ZAVRNJENO</text>
+
+<!-- opomba pod localStorage -->
+<text class="sm" x="700" y="316">Ostane na napravi tudi po odjavi.</text>
+<text class="sm" x="700" y="334">Kdor ima dostop do brskalniskega</text>
+<text class="sm" x="700" y="352">profila, prebere vse &#8212; tudi podatke</text>
+<text class="sm" x="700" y="370">o strankah uporabnika.</text>
+
+<!-- pas: kateri podatki -->
+<rect x="60" y="570" width="1080" height="130" rx="14" fill="#FFFFFF" stroke="#D8D4C8"/>
+<text class="lab" x="84" y="600">KATERI PODATKI SE ZAPISEJO</text>
+<text class="sm" x="84" y="628">STRANKA</text>
+<text class="sm" x="84" y="648" fill="#111">ime ali naziv, naslov,</text>
+<text class="sm" x="84" y="666" fill="#111">davcna in maticna stevilka,</text>
+<text class="sm" x="84" y="684" fill="#111">e-posta, telefon</text>
+
+<text class="sm" x="440" y="628">DOKUMENTI</text>
+<text class="sm" x="440" y="648" fill="#111">vsebina ponudb, pogodb</text>
+<text class="sm" x="440" y="666" fill="#111">in racunov, zneski, roki,</text>
+<text class="sm" x="440" y="684" fill="#111">opombe</text>
+
+<text class="sm" x="796" y="628">PROJEKT</text>
+<text class="sm" x="796" y="648" fill="#111">naloge, sestanki, dnevnik,</text>
+<text class="sm" x="796" y="666" fill="#111">evidenca casa, stroski,</text>
+<text class="sm" x="796" y="684" fill="#111">komunikacija</text>
+
+<line x1="416" y1="612" x2="416" y2="690" stroke="#E6E1D4"/>
+<line x1="772" y1="612" x2="772" y2="690" stroke="#E6E1D4"/>
+
+<text class="sm" x="60" y="740" fill="#111">To so osebni podatki STRANK nasih uporabnikov. Pri njih je Flow obdelovalec, uporabnik pa upravljavec.</text>
+<text class="xs" x="1140" y="740" text-anchor="end">Pinart Flow &#183; 22. 8. 2026</text>
+</svg>
