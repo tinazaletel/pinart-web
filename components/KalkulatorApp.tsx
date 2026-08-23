@@ -7945,8 +7945,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </span>
                   <span className="pm-puscica" aria-hidden>→</span>
                 </button>
-                {/* Interna admin analitika — NE v brezplačnem kalkulatorju (odFlow = javni/free vstop). */}
-                {!odFlow && (
+                {/* Interna admin analitika — samo prijavljenim. Prej je pogoj vezal na
+                    odFlow, ki je true LE pri ?od=flow, zato se je povezava kazala
+                    tudi neprijavljenim v brezplačnem kalkulatorju. */}
+                {jePrijavljen && (
                   <a className="profil-meni-vrsta" href={localePath(locale, `/kalkulator/admin`)} style={{ textDecoration: 'none' }}>
                     <SquaresFour size={20} weight="bold" />
                     <span>
