@@ -5925,7 +5925,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       <style dangerouslySetInnerHTML={{ __html: `
         /* zgornji rob (overscroll / varno obmocje pod URL vrstico) = barva papirja, ne prosojno (da se ne vidi obrazec skozi) */
         html, body { background-color: var(--paper, oklch(97% 0.012 87)); }
-                .cw { --font-serif: var(--font-serif-flow); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 400; overflow-x: clip; }
+                .cw { --font-serif: var(--font-serif-flow); --cw-rob: clamp(.8rem, 1.2vw, 1.3rem); position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; color: var(--ink); font-weight: 400; overflow-x: clip; }
+        @media (min-width: 981px) { .cw { margin-right: calc(-1 * var(--cw-rob)); padding-right: var(--cw-rob); } }
         /* Ovoj portala na <body>: obstaja SAMO zato, da veljajo pravila ".cw ..." za predala.
            Brez tega bi podedoval min-height:100dvh + z-index:1 in kot prazna ploskev prekril
            celo aplikacijo (bela stran). Predala sta position:fixed, zato ovoja ne potrebujeta. */
