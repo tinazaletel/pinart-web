@@ -455,13 +455,7 @@
   .eventVrstica .eventBody strong { white-space: normal; line-height: 1.25; }
 }
 
-/* SEZNAM "DANES" -- vrstice kot pri nalogah in postah drugod na plosci:
-   ozadje sezje cez rob kartice ob prehodu z misko, pika levo pove nujnost.
-   Barve so iste kot pri statusih (.status_*), da se seznam ne uvede novega
-   barvnega jezika. */
-/* Rdece besedilo v seznamu je kricalo; nujnost ze pove rdeca pika levo,
-   zato je pripis samo temnejsi in polkrepek. */
-@media (max-width: 700px) { .eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; aspect-ratio: 1; padding: .3rem; border-radius: .95rem; background: var(--edbg, #fff); border: 1px solid oklch(22% .015 60 / .1); line-height: .95; }
+.eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; aspect-ratio: 1; padding: .3rem; border-radius: .95rem; background: var(--edbg, #fff); border: 1px solid oklch(22% .015 60 / .1); line-height: .95; }
 .eventDate b { font: 700 .88rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; color: var(--ink); }
 .eventDate small { font-size: .4rem; font-weight: 700; letter-spacing: .09em; color: var(--ink); }
 .eventDate[data-tone='waiting'] { --edbg: #fff; }
