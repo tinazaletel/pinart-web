@@ -155,7 +155,11 @@
    in tisk pa sta tiha spremljevalca naslova. Prej je bila to svoja letev, ki je
    nosila velik krog 9/9 in beli gumb Natisni. */
 .editorMeta { display: flex; align-items: center; gap: 1rem; flex: none; }
-.editorNapredek { justify-self: start; margin: -.35rem 0 -.6rem; display: inline-flex; align-items: baseline; gap: .25rem; font: 500 .78rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 62%, transparent); white-space: nowrap; }
+/* Glava strani (.topbar iz pregled.module.css) nosi padding-bottom 2rem, pisan
+   za strani, kjer za naslovom takoj sledi vsebina. Tu pod njim stoji napis
+   9/9, zato ga skrajsamo -- po elementu, ker je razred iz drugega modula. */
+.page > header { padding-bottom: .35rem; }
+.editorNapredek { justify-self: start; margin: 0 0 -.6rem; display: inline-flex; align-items: baseline; gap: .25rem; font: 500 .78rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 62%, transparent); white-space: nowrap; }
 .editorNapredek b { font: 600 1.05rem var(--font-sans), sans-serif; color: var(--ink); }
 .editorNapredek i { font-style: normal; color: color-mix(in oklch, var(--ink) 45%, transparent); }
 .editorBack { justify-self: start; display: inline-flex; align-items: center; gap: .4rem; margin: 0 0 .8rem; padding: .55rem .95rem; border: 1px solid rgba(255,255,255,.7); border-radius: 999px; background: #fff; box-shadow: 0 4px 14px rgba(40,25,40,.06); font: 700 .82rem var(--font-sans), sans-serif; color: var(--ink); cursor: pointer; transition: background .15s, color .15s; }
