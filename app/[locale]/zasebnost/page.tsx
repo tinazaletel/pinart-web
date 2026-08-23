@@ -54,7 +54,7 @@ const sl = {
     },
     {
       heading: '5c. Varnost',
-      text: `Podatke varujemo s tehničnimi in organizacijskimi ukrepi: šifriran prenos (TLS), dostop na ravni baze (vsak uporabnik vidi le svoje podatke) in prijava prek zaupanja vrednega ponudnika (Google OAuth). Noben sistem ni popolnoma neprebojen; za varovanje dostopa do svojega računa (npr. naprave in prijave) odgovarjate tudi sami.`,
+      text: `Podatke varujemo s tehničnimi in organizacijskimi ukrepi: šifriran prenos (TLS), šifrirana hramba pri ponudniku baze, dostop na ravni baze (vsak uporabnik vidi le svoje podatke), prijava prek zaupanja vrednega ponudnika (Google OAuth) in samodejne dnevne varnostne kopije baze, ki omogočajo povrnitev podatkov ob incidentu (člen 32(1)(c) GDPR). Noben sistem ni popolnoma neprebojen; za varovanje dostopa do svojega računa (npr. naprave in prijave) odgovarjate tudi sami.`,
     },
     {
       heading: '6. Google Analytics',
@@ -121,7 +121,7 @@ const en = {
     },
     {
       heading: '5c. Security',
-      text: `We protect your data with technical and organisational measures: encrypted transport (TLS), database-level access control (each user sees only their own data), and sign-in through a trusted provider (Google OAuth). No system is completely impenetrable; you are also responsible for protecting access to your account (e.g. your device and login).`,
+      text: `We protect your data with technical and organisational measures: encrypted transport (TLS), encryption at rest at our database provider, database-level access control (each user sees only their own data), sign-in through a trusted provider (Google OAuth), and automated daily database backups that allow data to be restored after an incident (Article 32(1)(c) GDPR). No system is completely impenetrable; you are also responsible for protecting access to your account (e.g. your device and login).`,
     },
     {
       heading: '6. Google Analytics',
