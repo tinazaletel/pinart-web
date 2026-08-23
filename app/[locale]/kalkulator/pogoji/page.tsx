@@ -429,7 +429,7 @@ export default async function KalkulatorPogojiPage({
                 The Authorship vault computes a cryptographic fingerprint (SHA-256) of your file and records it, together
                 with the date and work details, as evidence of the existence and priority of the work. The fingerprint is a
                 unique &quot;fingerprint&quot; of the file; the content cannot be reconstructed from it. For an
-                independent timestamp we may use the OpenTimestamps service, which writes to a public chain (Bitcoin)
+                independent timestamp we use an RFC 3161 timestamp authority (currently FreeTSA), which receives
                 <strong> only the fingerprint, never the file</strong>. If you opt for the cloud vault
                 (paid), the original file is stored in the provider&apos;s private cloud storage (EU).
               </>
@@ -438,8 +438,8 @@ export default async function KalkulatorPogojiPage({
                 Sef avtorstva izračuna kriptografski odtis (SHA-256) tvoje datoteke in ga skupaj z
                 datumom ter podatki o delu zabeleži kot dokaz o obstoju in prioriteti dela. Odtis je
                 enolični »prstni odtis« datoteke; iz njega ni mogoče rekonstruirati vsebine. Za
-                neodvisen časovni žig lahko uporabimo storitev OpenTimestamps, ki v javno verigo (Bitcoin)
-                zapiše <strong>samo odtis, nikoli datoteke</strong>. Če se odločiš za oblačni trezor
+                neodvisen časovni žig uporabljamo overitelja po standardu RFC 3161 (trenutno FreeTSA), ki prejme
+                <strong>samo odtis, nikoli datoteke</strong>. Če se odločiš za oblačni trezor
                 (plačljivo), se izvirna datoteka shrani v zasebno oblačno shrambo ponudnika (EU).
               </>
             )}
@@ -838,7 +838,7 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Resend</strong> — sending email<br />
                 — <strong>Google</strong> — sign-in with a Google account (OAuth)<br />
                 — <strong>Anthropic</strong> — the AI assistant Pupa (only when used)<br />
-                — <strong>OpenTimestamps / Bitcoin</strong> — independent timestamp for the vault (receives only the fingerprint)<br />
+                — <strong>FreeTSA (RFC 3161)</strong> — independent timestamp for the vault (receives only the fingerprint)<br />
                 — an authorised payment provider (Merchant of Record) — subscription payment processing
               </>
             ) : (
@@ -848,7 +848,7 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Resend</strong> — pošiljanje e-pošte<br />
                 — <strong>Google</strong> — prijava z Google računom (OAuth)<br />
                 — <strong>Anthropic</strong> — AI asistentka Pupa (samo ob uporabi)<br />
-                — <strong>OpenTimestamps / Bitcoin</strong> — neodvisni časovni žig sefa (prejme samo odtis)<br />
+                — <strong>FreeTSA (RFC 3161)</strong> — neodvisni časovni žig sefa (prejme samo odtis)<br />
                 — pooblaščeni ponudnik plačil (Merchant of Record) — obdelava plačil naročnine
               </>
             )}
