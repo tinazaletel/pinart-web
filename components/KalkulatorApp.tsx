@@ -6538,6 +6538,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .oder0 { display: block; width: auto; max-width: 800px; margin-left: auto; margin-right: auto; }
           .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(480px, 40vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; transition: width .34s cubic-bezier(.2,.8,.3,1); }
           .cw .ponudba0 { background: rgba(255,255,255,.97); box-shadow: -18px 0 50px oklch(40% .08 300 / .18); }
+          .cw .ponudba0 { right: calc(-1 * clamp(.8rem, 1.2vw, 1.3rem)); border-radius: 22px 0 0 0; }
           .cw .detajl-modal .choicegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
           .cw .detajl-modal .choicegrid > button { width: 100%; justify-content: flex-start; }
           .cw .detajl-modal .choicegrid .svoje-vrsta { grid-column: 1 / -1; }
