@@ -106,6 +106,18 @@ export default function ProjectDetailModern({
   const [taskOdprt, setTaskOdprt] = useState<NalogaLite | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
+  /* Stran za panelom obmiruje -- enako kot v DokPanelu. Brez tega se ob drsenju
+     nad odprtim panelom pomika se stran spodaj in vidita se dva drsnika. */
+  useEffect(() => {
+    if (typeof document === 'undefined' || !(briefOdprt || taskOdprt !== null || dokumentOdprt !== null)) return;
+    const prejOverflow = document.body.style.overflow;
+    const prejPadding = document.body.style.paddingRight;
+    const sirinaDrsnika = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (sirinaDrsnika > 0) document.body.style.paddingRight = `${sirinaDrsnika}px`;
+    return () => { document.body.style.overflow = prejOverflow; document.body.style.paddingRight = prejPadding; };
+  }, [briefOdprt, taskOdprt, dokumentOdprt]);
+
   const dodeljeniIds = real?.dodeljeni || [];
   const ekipa = dodeljeniIds.map(id => sodelavci.find(s => s.id === id)).filter(Boolean) as Sodelavec[];
   const naVoljo = sodelavci.filter(s => s.aktiven && !dodeljeniIds.includes(s.id));

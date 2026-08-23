@@ -1089,6 +1089,17 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const closeVsi = () => { setVsiOdprt(null); setVsiIskanje(''); setVsiIskanjeOdprto(false); setVsiStran(1); setVsiNacin('strani'); };
   /* klik na vrstico (na kartici ALI v slideu) -> predogled dokumenta v panelu z desne */
   const [vrsticaDetajl, setVrsticaDetajl] = useState<null | { tip: 'ponudbe' | 'pogodbe' | 'racuni' | 'stroski'; item: FlowOffer | FlowContract | FlowInvoice | FlowExpense }>(null);
+  /* Stran za panelom obmiruje -- enako kot v DokPanelu. Brez tega se ob drsenju
+     nad odprtim panelom pomika se stran spodaj in vidita se dva drsnika. */
+  useEffect(() => {
+    if (typeof document === 'undefined' || !(komOdprt || dokOdprt || nalogaOdprt || vsiOdprt || vrsticaDetajl !== null)) return;
+    const prejOverflow = document.body.style.overflow;
+    const prejPadding = document.body.style.paddingRight;
+    const sirinaDrsnika = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (sirinaDrsnika > 0) document.body.style.paddingRight = `${sirinaDrsnika}px`;
+    return () => { document.body.style.overflow = prejOverflow; document.body.style.paddingRight = prejPadding; };
+  }, [komOdprt, dokOdprt, nalogaOdprt, vsiOdprt, vrsticaDetajl]);
   /* Zaklep ozadja: ko je odprt kateri koli desni panel/letev, se STRAN v ozadju NE skrola
      (skrola se le vsebina panela). */
   useEffect(() => {

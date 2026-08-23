@@ -37,6 +37,22 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
   const [montiran, setMontiran] = useState(false);
   useEffect(() => setMontiran(true), []);
 
+  /* Stran za panelom obmiruje: ko je panel odprt, se premika samo panel. Sicer se
+     ob drsenju nad njim pomika stran spodaj, kar je videti kot dva drsnika hkrati.
+     Padding nadomesti sirino drsnika, da vsebina ob zaklepu ne poskoci. */
+  useEffect(() => {
+    if (!odprt || typeof document === 'undefined') return;
+    const prejsnjiOverflow = document.body.style.overflow;
+    const prejsnjiPadding = document.body.style.paddingRight;
+    const sirinaDrsnika = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (sirinaDrsnika > 0) document.body.style.paddingRight = `${sirinaDrsnika}px`;
+    return () => {
+      document.body.style.overflow = prejsnjiOverflow;
+      document.body.style.paddingRight = prejsnjiPadding;
+    };
+  }, [odprt]);
+
   /* Esc zapre, fokus gre v panel in se ob zaprtju vrne tja, od koder je prišel.
      Brez tega je panel za tipkovnico past — glej docs/DOSTOPNOST-pregled.md. */
   useEffect(() => {
