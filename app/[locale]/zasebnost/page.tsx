@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import { POGOJI_RAZLICICA } from '@/lib/pogojiRazlicica';
 import type { Metadata } from 'next';
 import { routing, type Locale } from '@/i18n/routing';
 import NazajLink from '@/components/NazajLink';
@@ -22,7 +23,7 @@ export async function generateMetadata({
 
 const sl = {
   title: 'Politika zasebnosti',
-  updated: 'Zadnja posodobitev: 18. avgust 2026',
+  updated: `Različica ${POGOJI_RAZLICICA} · Zadnja posodobitev: 23. avgust 2026`,
   sections: [
     {
       heading: '1. Upravljavec osebnih podatkov',
@@ -87,7 +88,7 @@ Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si. Več: 
 
 const en = {
   title: 'Privacy Policy',
-  updated: 'Last updated: 18 August 2026',
+  updated: `Version ${POGOJI_RAZLICICA} · Last updated: 23 August 2026`,
   sections: [
     {
       heading: '1. Data Controller',

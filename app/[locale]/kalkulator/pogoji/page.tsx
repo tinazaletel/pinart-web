@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { POGOJI_RAZLICICA } from '@/lib/pogojiRazlicica';
 import { setRequestLocale } from 'next-intl/server';
 import { localePath } from '@/i18n/routing';
 import NazajLink from '@/components/NazajLink';
@@ -1237,7 +1238,7 @@ export default async function KalkulatorPogojiPage({
             )}
           </p>
           <p style={{ ...P, color: 'rgba(17,17,17,.6)', fontSize: '.85rem' }}>
-            {en ? 'Last updated: 15 Aug 2026 · Contact: tina@pinart.si' : 'Zadnja sprememba: 15. 8. 2026 · Kontakt: tina@pinart.si'}
+            {en ? `Version ${POGOJI_RAZLICICA} · Last updated: 23 Aug 2026 · Contact: tina@pinart.si` : `Različica ${POGOJI_RAZLICICA} · Zadnja sprememba: 23. 8. 2026 · Kontakt: tina@pinart.si`}
           </p>
         </section>
 

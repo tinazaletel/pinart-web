@@ -11,6 +11,7 @@ import { predlagajDdv } from '@/lib/ddvSvet';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
 import { nastaviNapredek } from '@/lib/flowNapredek';
+import { POGOJI_RAZLICICA, jePolnaPotrditev, preberiPotrditevPogojev, zapisiPotrditevPogojev } from '@/lib/pogojiRazlicica';
 import { pregledCopilot, type Nasvet } from '@/lib/copilot';
 import { objaviPupaKontekst, pocistiPupaKontekst, odpriPupo } from '@/lib/pupaBridge';
 import VidezDokumentov from '@/components/VidezDokumentov';
@@ -1924,6 +1925,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* neobvezna prijava na obvescanje ob vstopu (locena od anonimne statistike) */
     if (zeliEmail && imamKontakt) posljiKontakt('prijava na obveščanje ob vstopu');
     try { localStorage.setItem('pinart-kalk-pogoji-ok', '1'); } catch { /* ignoriraj */ }
+    /* Zapisemo, KAJ je potrdil in KDAJ — potrditev brez razlicice ne dokaze nicesar. */
+    const zapis = zapisiPotrditevPogojev(vFlow && pogojiPotrjeni ? 'polno' : 'vstop', new Date());
+    if (zapis.nacin === 'polno') setPolnaPotrditev(true);
     /* Uvodni pogovor zazenemo TU, v istem kliku, ne sele v useEffect: sicer se
        med sprejemom in ucinkom za en okvir izrise korak 0 (mehurcki) in slika
        utripne, kot da je napaka. React posodobitve v istem dogodku zdruzi. */
@@ -2253,6 +2257,30 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      kartica pogojev pri vstopu v Flow lahko izrisala v razlicici za neprijavljene
      (brez obvezne potrditve pogojev) in uporabnik je sel naprej brez potrditve. */
   const vFlow = vLupini || jePrijavljen;
+  /* Polna potrditev pogojev (prelistano do konca + kljukica) za brezplacni
+     kalkulator. Vstopnega gumba NE zapiramo s pogoji — vrh lijaka mora ostati
+     odprt; polno potrditev zahtevamo sele tam, kjer nekaj res nastane:
+     izvoz PDF, posiljanje ponudbe, shranjevanje v arhiv. */
+  const [polnaPotrditev, setPolnaPotrditev] = useState(false);
+  const [pogojiZahteva, setPogojiZahteva] = useState<null | (() => void)>(null);
+  useEffect(() => { setPolnaPotrditev(jePolnaPotrditev(preberiPotrditevPogojev())); }, []);
+  /* true = dejanje se ustavi in odpre se okno s pogoji; po potrditvi se izvede samo. */
+  const rabiPogoje = (znova: () => void) => {
+    if (vFlow || polnaPotrditev) return false;
+    setPogojiPrebrani(false);
+    setPogojiPotrjeni(false);
+    setPogojiZahteva(() => znova);
+    return true;
+  };
+  /* ovoj za onClick: <button onClick={zPogoji(() => { ... })}> */
+  const zPogoji = (akcija: () => void) => () => { if (!rabiPogoje(akcija)) akcija(); };
+  const potrdiPolnePogoje = () => {
+    zapisiPotrditevPogojev('polno', new Date());
+    setPolnaPotrditev(true);
+    const akcija = pogojiZahteva;
+    setPogojiZahteva(null);
+    if (akcija) akcija();
+  };
   /* Pogoji v Flow razlicici: uporabnik jih mora preleteti do dna, sele nato se
      odklene kljukica. Ce branja ni mogoce zaznati (varnostne omejitve brskalnika),
      kljukico odklenemo, da uporabnik ni ujet. */
@@ -6611,6 +6639,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .sg-pogoji-okvir { width: 100%; height: min(52vh, 560px); min-height: 260px; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; background: #fff; display: block; }
         .cw .sg-uvod { margin: 0; font-size: .95rem; line-height: 1.55; color: #4a4550; }
         .cw .sg-pogoji-namig { margin: 0; font-size: .78rem; color: #6b655d; }
+        .cw .sg-vhod { margin: 0; font-size: .85rem; line-height: 1.5; color: #4a453f; text-align: center; max-width: 30rem; }
+        .cw .sg-vhod a { color: var(--accent, #B25476); text-decoration: underline; text-underline-offset: .2em; }
         .cw .sg-potrdi-zaklenjen { opacity: .55; cursor: not-allowed; }
         .cw .sg-potrdi-zaklenjen input { cursor: not-allowed; }
         .cw .soglasje-gumbi .gumb:disabled { opacity: .45; cursor: not-allowed; transform: none; }
@@ -7759,8 +7789,48 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <span>{L('Preletel/-a sem in potrjujem ', 'I have reviewed and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
                 </label>
               )}
+              {!vFlow && (
+                <p className="sg-vhod">
+                  {L('S klikom potrjuješ ', 'By clicking you accept the ')}
+                  <a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje uporabe', 'terms of use')}</a>
+                  {L(' in ', ' and the ')}
+                  <a href={localePath(locale, `/zasebnost`)} target="_blank" rel="noopener noreferrer">{L('politiko zasebnosti', 'privacy policy')}</a>.
+                </p>
+              )}
               <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vFlow && !pogojiPotrjeni} title={vFlow && !pogojiPotrjeni ? L('Najprej preleti in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vFlow ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
-              {!vFlow && <a className="povezava" href={localePath(locale, `/kalkulator/pogoji`)}>{L('Preberi celotne pogoje', 'Read the full terms')}</a>}
+            </div>
+          </div>
+        </div>
+        </div>,
+        document.body,
+      )}
+
+      {/* Polni pogoji: brezplacnega obiskovalca ne ustavimo na vhodu, ampak sele
+          tam, kjer nekaj nastane — izvoz, posiljanje, shranjevanje. Prelistati
+          jih mora do konca, potrditev pa zapisemo skupaj z razlicico. */}
+      {pogojiZahteva !== null && typeof document !== 'undefined' && createPortal(
+        <div className="cw">
+        <div className="soglasje" role="dialog" aria-modal="true" aria-label={L('Pogoji poslovanja', 'Terms of business')}>
+          <div className="soglasje-kartica">
+            <h2>{L('Še pogoji, pa gre', 'The terms, then off it goes')}</h2>
+            <p className="sg-uvod">{L('Ponudba zdaj zapusti brskalnik ali se shrani — zato pogoje poslovanja preleti do konca in jih potrdi. To narediš enkrat.', 'The quote is about to leave your browser or be saved — so scroll through the terms of business to the end and accept them. You only do this once.')}</p>
+            <div className="sg-pogoji">
+              <span className="sg-pogoji-ozn">{L('Pogoji poslovanja', 'Terms of business')}</span>
+              <iframe className="sg-pogoji-okvir" title={L('Pogoji poslovanja', 'Terms of business')}
+                src={localePath(locale, `/kalkulator/pogoji`)} onLoad={naloziPogoje} />
+              <p className="sg-pogoji-namig">
+                {pogojiPrebrani
+                  ? L('Hvala — zdaj lahko potrdiš spodaj.', 'Thank you — you can confirm below.')
+                  : L('Preleti pogoje do konca, da jih lahko potrdiš.', 'Scroll through the terms to the end to confirm them.')}
+              </p>
+            </div>
+            <div className="soglasje-gumbi">
+              <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}>
+                <input type="checkbox" checked={pogojiPotrjeni} disabled={!pogojiPrebrani} onChange={e => setPogojiPotrjeni(e.target.checked)} />
+                <span>{L('Preletel/-a sem in potrjujem ', 'I have reviewed and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>{L(' (različica ', ' (version ')}{POGOJI_RAZLICICA}).</span>
+              </label>
+              <button type="button" className="gumb" onClick={potrdiPolnePogoje} disabled={!pogojiPotrjeni}>{L('Potrjujem, nadaljuj →', 'I accept, continue →')}</button>
+              <button type="button" className="povezava" onClick={() => setPogojiZahteva(null)}>{L('Ne zdaj', 'Not now')}</button>
             </div>
           </div>
         </div>
@@ -10087,7 +10157,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <button type="button"
                       className={'posl-gumb' + (posiljamMail ? ' je-poslano' : '') + (posljiUspeh ? ' je-uspeh' : '')}
                       disabled={posiljamMail || posljiUspeh}
-                      onClick={() => { posljiPonudbo(); proslaviKonfeti(); }}>
+                      onClick={zPogoji(() => { posljiPonudbo(); proslaviKonfeti(); })}>
                       {posljiUspeh ? (
                         <><Check size={17} weight="bold" /> {L('Poslano naročniku', 'Sent to client')}</>
                       ) : posiljamMail ? (
@@ -10118,7 +10188,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
                 <CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}
               </button>
-              <button type="button" className="povezava" disabled={pdfNalaganje} onClick={() => { prenesiPdf(); proslaviKonfeti(); }} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
+              <button type="button" className="povezava" disabled={pdfNalaganje} onClick={zPogoji(() => { prenesiPdf(); proslaviKonfeti(); })} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
                 <FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}
               </button>
               <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}>
@@ -10127,7 +10197,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <button type="button" className="povezava" onClick={() => { prenesiCsv(); proslaviKonfeti(); }}>
                 <FileText size={16} /> {L('Izvozi postavke (CSV)', 'Export items (CSV)')}
               </button>
-              <button type="button" className="povezava" onClick={() => { shraniVArhiv(); proslaviKonfeti(); }}>
+              <button type="button" className="povezava" onClick={zPogoji(() => { shraniVArhiv(); proslaviKonfeti(); })}>
                 <FloppyDisk size={16} /> {L('Shrani v arhiv', 'Save to archive')}
               </button>
               {dolgorocno && ret && (
@@ -10146,10 +10216,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <div className="pmsheet" role="dialog" aria-modal="true" aria-label={L('Kaj s ponudbo?', 'What next?')}>
                   <div className="pmsheet-glava"><span>{L('Kaj s ponudbo?', 'What next?')}</span><button type="button" onClick={() => setVecMoznosti(false)} aria-label={L('Zapri', 'Close')}>✕</button></div>
                   <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}><CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}</button>
-                  <button type="button" className="povezava" disabled={pdfNalaganje} onClick={() => { prenesiPdf(); proslaviKonfeti(); }}><FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}</button>
+                  <button type="button" className="povezava" disabled={pdfNalaganje} onClick={zPogoji(() => { prenesiPdf(); proslaviKonfeti(); })}><FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}</button>
                   <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}><DownloadSimple size={16} /> {L('Prenesi besedilo', 'Download text')}</button>
                   <button type="button" className="povezava" onClick={() => { prenesiCsv(); proslaviKonfeti(); }}><FileText size={16} /> {L('Izvozi postavke (CSV)', 'Export items (CSV)')}</button>
-                  <button type="button" className="povezava" onClick={() => { shraniVArhiv(); proslaviKonfeti(); }}><FloppyDisk size={16} /> {L('Shrani v arhiv', 'Save to archive')}</button>
+                  <button type="button" className="povezava" onClick={zPogoji(() => { shraniVArhiv(); proslaviKonfeti(); })}><FloppyDisk size={16} /> {L('Shrani v arhiv', 'Save to archive')}</button>
                   <button type="button" className="povezava" onClick={() => { setVecMoznosti(false); odpriRacun(); }}><Receipt size={16} /> {L('Pretvori v račun', 'Convert to invoice')}</button>
                 </div>
               </div>,
