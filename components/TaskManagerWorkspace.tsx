@@ -5,6 +5,7 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect, useRef } from 'react';
+import DokPanel from '@/components/DokPanel';
 import { Pause, Play, ChartBar, ChatCircleDots, Sparkle, UploadSimple, DownloadSimple, CaretLeft, CaretRight, CaretDown, Buildings, Circle, CheckCircle, UserPlus, Calendar, Plus, X, FunnelSimple } from '@phosphor-icons/react';
 import { createPortal } from 'react-dom';
 import Toast from '@/components/Toast';
@@ -414,6 +415,24 @@ export default function TaskManagerWorkspace() {
   /* Hitro dodajanje ni AI — je samo drug nacin iste forme: ena naloga na vrstico.
      Zato zivi kot preklop znotraj "Nova naloga", ne kot svoje okno. */
   const [novaHitro, setNovaHitro] = useState(false);
+  /* Filter je na telefonu spodnja plosca, na namizju pa navaden spustni seznam
+     pod gumbom. Portal ostane (drugace ga odreze prednik), zato mesto izracunamo
+     iz gumba samega — sicer bi popover obvisel v kotu zaslona. */
+  const [jeNamizje, setJeNamizje] = useState(false);
+  const filterGumbRef = useRef<HTMLButtonElement>(null);
+  const [filterPoz, setFilterPoz] = useState<{ top: number; left: number } | null>(null);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 981px)');
+    const osvezi = () => setJeNamizje(mq.matches);
+    osvezi();
+    mq.addEventListener('change', osvezi);
+    return () => mq.removeEventListener('change', osvezi);
+  }, []);
+  const odpriFilter = () => {
+    const r = filterGumbRef.current?.getBoundingClientRect();
+    if (r) setFilterPoz({ top: r.bottom + 8, left: Math.max(8, Math.min(r.left, window.innerWidth - 340)) });
+    setFilterVecOdprt(true);
+  };
   const [hitroBesedilo, setHitroBesedilo] = useState('');
   /* kratko sporocilo ob kliku "Nalozi razvojne naloge (Flow)" — koliko jih je bilo dodanih */
   const [seedSporocilo, setSeedSporocilo] = useState('');
@@ -1115,7 +1134,7 @@ export default function TaskManagerWorkspace() {
             >
               <span>{filterNalogeNaziv}</span><CaretDown size={16} weight="bold" />
             </button>
-            <button type="button" className={'tm-filter-vec' + ((filterOznaka || filterProjekt) ? ' aktiv' : '')} onClick={() => setFilterVecOdprt(true)} aria-haspopup="dialog" aria-expanded={filterVecOdprt}>
+            <button ref={filterGumbRef} type="button" className={'tm-filter-vec' + ((filterOznaka || filterProjekt) ? ' aktiv' : '')} onClick={odpriFilter} aria-haspopup="dialog" aria-expanded={filterVecOdprt}>
               <FunnelSimple size={15} weight="bold" /><span>Filter</span>{(filterOznaka || filterProjekt) && <span className="tm-filter-vec-pika" aria-hidden />}
             </button>
           </div>
@@ -1170,13 +1189,22 @@ export default function TaskManagerWorkspace() {
       )}
 
       {filterVecOdprt && typeof document !== 'undefined' && createPortal(
-        <div className="tm-mobilni-sheet-zastor" onClick={() => setFilterVecOdprt(false)}>
-          <section className="tm-mobilni-sheet" role="dialog" aria-modal="true" aria-labelledby="tm-filter-vec-naslov" onClick={(e) => e.stopPropagation()}>
-            <div className="tm-mobilni-sheet-rocaj" aria-hidden="true" />
-            <div className="tm-mobilni-sheet-glava">
-              <div><p>FILTER</p><h2 id="tm-filter-vec-naslov">Oznake in projekti</h2></div>
-              <button type="button" onClick={() => setFilterVecOdprt(false)} aria-label="Zapri filter"><X size={20} /></button>
-            </div>
+        <div className={'tm-mobilni-sheet-zastor' + (jeNamizje ? ' tm-pop-zastor' : '')} onClick={() => setFilterVecOdprt(false)}>
+          <section
+            className={'tm-mobilni-sheet' + (jeNamizje ? ' tm-filter-pop' : '')}
+            style={jeNamizje && filterPoz ? { top: filterPoz.top, left: filterPoz.left } : undefined}
+            role="dialog"
+            aria-modal={jeNamizje ? undefined : true}
+            aria-label="Filter — oznake in projekti"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {!jeNamizje && <div className="tm-mobilni-sheet-rocaj" aria-hidden="true" />}
+            {!jeNamizje && (
+              <div className="tm-mobilni-sheet-glava">
+                <div><p>FILTER</p><h2>Oznake in projekti</h2></div>
+                <button type="button" onClick={() => setFilterVecOdprt(false)} aria-label="Zapri filter"><X size={20} /></button>
+              </div>
+            )}
             {vseOznake.length > 0 && (
               <>
                 <p className="tm-sheet-pod">Oznaka</p>
@@ -1534,86 +1562,81 @@ export default function TaskManagerWorkspace() {
         );
       })()}
 
-      {urediOddelkeOdprto && jeVodjaAliAdmin && (
-        <div className="tm-analitika-podlaga" onClick={() => setUrediOddelkeOdprto(false)}>
-          <aside className="tm-analitika-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="tm-forma-glava">
-              <h2>Uredi oddelke</h2>
-              <button type="button" className="tm-x" onClick={() => setUrediOddelkeOdprto(false)} aria-label="Zapri">×</button>
-            </div>
+      {/* Oba panela gresta skozi DokPanel — isti videz, isti serif (--font-serif-flow,
+          ne portfeljev Bodoni), okrogel × desno, portal in zaklep drsenja. */}
+      <DokPanel
+        odprt={urediOddelkeOdprto && jeVodjaAliAdmin}
+        nadnaslov="Ekipa"
+        naslov="Uredi oddelke"
+        onZapri={() => setUrediOddelkeOdprto(false)}
+      >
+        <label className="tm-polje"><span>Nov oddelek</span>
+          <div className="tm-dodeljeno-vrsta">
+            <input value={novOddelekIme} onChange={(e) => setNovOddelekIme(e.target.value)} placeholder="Npr. Dizajn, Video, Produkcija …"
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajOddelekRocno(); } }} />
+            <button type="button" className="tm-zase" onClick={dodajOddelekRocno}>Shrani</button>
+          </div>
+        </label>
 
-            <label className="tm-polje"><span>Nov oddelek</span>
-              <div className="tm-dodeljeno-vrsta">
-                <input value={novOddelekIme} onChange={(e) => setNovOddelekIme(e.target.value)} placeholder="Npr. Dizajn, Video, Produkcija …"
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajOddelekRocno(); } }} />
-                <button type="button" className="tm-zase" onClick={dodajOddelekRocno}>+ Dodaj</button>
-              </div>
-            </label>
+        {oddelki.length === 0 && <p className="tm-prazno">Ni še oddelkov — vsi projekti se prikazujejo v enem stolpcu »Vse«.</p>}
 
-            {oddelki.length === 0 && <p className="tm-prazno">Ni še oddelkov — vsi projekti se prikazujejo v enem stolpcu »Vse«.</p>}
+        {oddelki.length > 0 && (
+          <ul className="tm-oddelki-seznam">
+            {oddelki.map((o) => (
+              <li key={o.id} className="tm-oddelki-vrstica">
+                <strong>{o.ime}</strong>
+                <select value={o.sefId || ''} onChange={(e) => posodobiSefaOddelka(o.id, e.target.value)} aria-label={`Šef oddelka ${o.ime}`}>
+                  <option value="">— brez šefa —</option>
+                  {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime}</option>)}
+                </select>
+                <button type="button" className="tm-kartica-x" onClick={() => izbrisiOddelekRocno(o.id)} title="Izbriši oddelek" aria-label={`Izbriši oddelek ${o.ime}`}>×</button>
+              </li>
+            ))}
+          </ul>
+        )}
 
-            {oddelki.length > 0 && (
-              <ul className="tm-oddelki-seznam">
-                {oddelki.map((o) => (
-                  <li key={o.id} className="tm-oddelki-vrstica">
-                    <strong>{o.ime}</strong>
-                    <select value={o.sefId || ''} onChange={(e) => posodobiSefaOddelka(o.id, e.target.value)} aria-label={`Šef oddelka ${o.ime}`}>
-                      <option value="">— brez šefa —</option>
-                      {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime}</option>)}
-                    </select>
-                    <button type="button" className="tm-kartica-x" onClick={() => izbrisiOddelekRocno(o.id)} title="Izbriši oddelek" aria-label={`Izbriši oddelek ${o.ime}`}>×</button>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <h3 className="tm-analitika-podnaslov">Dodeli sodelavce oddelkom</h3>
-            <ul className="tm-oddelki-seznam">
-              {sodelavci.map((s) => (
-                <li key={s.id} className="tm-oddelki-vrstica">
-                  <span className="tm-oseba-krog" aria-hidden>{initialke(s.ime)}</span>
-                  <strong>{s.ime}</strong>
-                  <select value={s.oddelekId || ''} onChange={(e) => posodobiSodelavcaOddelek(s.id, e.target.value)} aria-label={`Oddelek za ${s.ime}`}>
-                    <option value="">— brez oddelka —</option>
-                    {oddelki.map((o) => <option key={o.id} value={o.id}>{o.ime}</option>)}
-                  </select>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        </div>
-      )}
-
-      {prikaziAnalitiko && jeVodjaAliAdmin && montiran && typeof document !== 'undefined' && createPortal(
-        <div className="tm-analitika-podlaga" onClick={() => setPrikaziAnalitiko(false)}>
-          <aside className="tm-analitika-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="tm-forma-glava">
-              <h2>Analitika ekipe</h2>
-              <button type="button" className="tm-x" onClick={() => setPrikaziAnalitiko(false)} aria-label="Zapri">×</button>
-            </div>
-            <label className="tm-polje"><span>Sodelavec</span>
-              <select value={analitikaSodelavecId} onChange={(e) => setAnalitikaSodelavecId(e.target.value)}>
-                {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime} ({s.vloga.toUpperCase()})</option>)}
+        <h3 className="tm-analitika-podnaslov">Dodeli sodelavce oddelkom</h3>
+        <ul className="tm-oddelki-seznam">
+          {sodelavci.map((s) => (
+            <li key={s.id} className="tm-oddelki-vrstica">
+              <span className="tm-oseba-krog" aria-hidden>{initialke(s.ime)}</span>
+              <strong>{s.ime}</strong>
+              <select value={s.oddelekId || ''} onChange={(e) => posodobiSodelavcaOddelek(s.id, e.target.value)} aria-label={`Oddelek za ${s.ime}`}>
+                <option value="">— brez oddelka —</option>
+                {oddelki.map((o) => <option key={o.id} value={o.id}>{o.ime}</option>)}
               </select>
-            </label>
-            <div className="tm-analitika-stevci">
-              <div className="tm-analitika-stevec"><strong>{analitikaNaloge.length}</strong><span>nalog skupaj</span></div>
-              <div className="tm-analitika-stevec"><strong>{analitikaKoncane}</strong><span>končanih</span></div>
-              <div className="tm-analitika-stevec"><strong>{analitikaUre.toFixed(1)}h</strong><span>porabljenega časa</span></div>
-            </div>
-            <h3 className="tm-analitika-podnaslov">Zadnjih 10 vnosov zgodovine</h3>
-            {analitikaZgodovina.length === 0 && <p className="tm-prazno">Za tega sodelavca še ni zabeleženih aktivnosti.</p>}
-            <ul className="tm-analitika-zgodovina">
-              {analitikaZgodovina.map((z) => (
-                <li key={z.id}>
-                  <span className="tm-analitika-datum">{datStr(z.datum)}</span>
-                  <span>{z.opis}</span>
-                </li>
-              ))}
-            </ul>
-          </aside>
+            </li>
+          ))}
+        </ul>
+      </DokPanel>
+
+      <DokPanel
+        odprt={prikaziAnalitiko && jeVodjaAliAdmin}
+        nadnaslov="Naloge"
+        naslov="Analitika ekipe"
+        onZapri={() => setPrikaziAnalitiko(false)}
+      >
+        <label className="tm-polje"><span>Sodelavec</span>
+          <select value={analitikaSodelavecId} onChange={(e) => setAnalitikaSodelavecId(e.target.value)}>
+            {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime} ({s.vloga.toUpperCase()})</option>)}
+          </select>
+        </label>
+        <div className="tm-analitika-stevci">
+          <div className="tm-analitika-stevec"><strong>{analitikaNaloge.length}</strong><span>nalog skupaj</span></div>
+          <div className="tm-analitika-stevec"><strong>{analitikaKoncane}</strong><span>končanih</span></div>
+          <div className="tm-analitika-stevec"><strong>{analitikaUre.toFixed(1)}h</strong><span>porabljenega časa</span></div>
         </div>
-      , document.body)}
+        <h3 className="tm-analitika-podnaslov">Zadnjih 10 vnosov zgodovine</h3>
+        {analitikaZgodovina.length === 0 && <p className="tm-prazno">Za tega sodelavca še ni zabeleženih aktivnosti.</p>}
+        <ul className="tm-analitika-zgodovina">
+          {analitikaZgodovina.map((z) => (
+            <li key={z.id}>
+              <span className="tm-analitika-datum">{datStr(z.datum)}</span>
+              <span>{z.opis}</span>
+            </li>
+          ))}
+        </ul>
+      </DokPanel>
 
       {odprtaNaloga && (() => {
         const podopravila = odprtaNaloga.podopravila || [];
@@ -1937,7 +1960,16 @@ export default function TaskManagerWorkspace() {
         .tm-mobilni-sheet-rocaj{width:2.8rem;height:.25rem;margin:0 auto .85rem;border-radius:999px;background:#d7d0c5}
         .tm-mobilni-sheet-glava{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem}
         .tm-mobilni-sheet-glava p{margin:0 0 .3rem;font:800 .62rem var(--font-sans),sans-serif;letter-spacing:.16em;color:#665f58}
-        .tm-mobilni-sheet-glava h2{margin:0;font:500 1.45rem/1.1 var(--font-serif),Georgia,serif}
+        /* Portal visi na <body>, zunaj .shell -> --font-serif je tam portfeljev
+           Bodoni. Flow serif je --font-serif-flow. Glej DESIGN.md, tocka 2. */
+        .tm-mobilni-sheet-glava h2{margin:0;font:500 1.45rem/1.1 var(--font-serif-flow),Georgia,serif}
+        /* Namizje: navaden spustni seznam pod gumbom Filter, brez zastora cez stran. */
+        .tm-pop-zastor{background:none;backdrop-filter:none;-webkit-backdrop-filter:none;display:block;animation:none}
+        .tm-filter-pop{position:fixed;width:20.5rem;max-width:calc(100vw - 1rem);max-height:min(26rem,68vh);padding:.7rem;border:1px solid var(--line);border-radius:.9rem;box-shadow:0 1rem 2.4rem oklch(30% .02 55/.14);animation:none}
+        .tm-filter-pop .tm-sheet-pod{margin:.3rem 0 .35rem}
+        .tm-filter-pop .tm-mobilni-sheet-izbire{gap:.25rem}
+        .tm-filter-pop .tm-mobilni-sheet-izbire button{min-height:2.4rem;padding:0 .7rem;border-radius:.55rem;font-size:.84rem}
+        .tm-filter-pop .tm-mobilni-sheet-izbire button svg{width:16px;height:16px}
         .tm-mobilni-sheet-glava button{display:grid;place-items:center;width:2.75rem;height:2.75rem;border:1px solid #ded8cf;border-radius:50%;background:#fff;color:#17110e}
         .tm-mobilni-sheet-izbire{display:grid;gap:.5rem}
         .tm-mobilni-sheet-izbire button{display:flex;align-items:center;justify-content:space-between;min-height:3.25rem;padding:0 1rem;border:1px solid #ded8cf;border-radius:.9rem;background:#fff;color:#17110e;font:750 1rem var(--font-sans),sans-serif;text-align:left}
