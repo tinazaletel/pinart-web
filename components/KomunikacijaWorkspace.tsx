@@ -672,6 +672,9 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
           .km-posta-vrh .km-akc-brisi,.km-posta-vrh .km-akc-obnovi{order:-1;margin-right:.35rem}
           .km-isk-krog{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.55rem;height:2.55rem;border-radius:50%;border:1px solid var(--k-line);background:#fff;color:var(--k-ink);cursor:pointer}
           .km-isk-krog:hover{background:var(--k-ink);color:#fff}
+          /* Ali gumb ali polje, nikoli oboje: odkar polje ni vec absoluten overlay,
+             gumb ni vec skrit pod njim, zato ga umaknemo, ko je polje odprto. */
+          .km-posta-vrh:has(.km-iskalnik.odprt) .km-isk-krog{display:none}
           .km-posta-vrh .km-iskalnik{display:none;flex:none;margin-bottom:0}
                     /* Na namizju odprt iskalnik NE prekriva nicesar: ostane clan vrstice in
              samo zasede prostor med izborom in gumbi. Prej je bil absoluten cez
