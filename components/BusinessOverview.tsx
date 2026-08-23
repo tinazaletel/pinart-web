@@ -52,12 +52,20 @@ const danesIkona = (id: string) =>
   : id.startsWith('ponudba-') ? FileText
   : CheckCircle;
 
-const DASH_DEMO_POSTA: { smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string }[] = [
-  { smer: 'prejeto', kdo: 'info@rokusklett.si', zadeva: 'Re: Prenova portala — potrditev obsega' },
-  { smer: 'poslano', kdo: 'info@rokusklett.si', zadeva: 'Prenova portala — osnutek za pregled' },
-  { smer: 'prejeto', kdo: 'ana@rokusklett.si', zadeva: 'Gradiva in dostopi' },
-  { smer: 'poslano', kdo: 'nina@studio-lipa.si', zadeva: 'Ponudba za celostno grafično podobo' },
+/* Demo posta: `predDnevi` je odmik od danes, ne trd datum — sicer demo cez
+   teden dni kaze sporocila iz preteklosti in "stranka caka" se ne sprozi. */
+const DASH_DEMO_POSTA: { smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string; predDnevi: number }[] = [
+  { smer: 'prejeto', kdo: 'info@rokusklett.si', zadeva: 'Re: Prenova portala — potrditev obsega', predDnevi: 3 },
+  { smer: 'poslano', kdo: 'info@rokusklett.si', zadeva: 'Prenova portala — osnutek za pregled', predDnevi: 6 },
+  { smer: 'prejeto', kdo: 'ana@rokusklett.si', zadeva: 'Gradiva in dostopi', predDnevi: 5 },
+  { smer: 'poslano', kdo: 'nina@studio-lipa.si', zadeva: 'Ponudba za celostno grafično podobo', predDnevi: 1 },
 ];
+
+/* Datum izpred N dni kot YYYY-MM-DD. */
+const predDnevi = (n: number, od: Date): string => {
+  const d = new Date(od.getFullYear(), od.getMonth(), od.getDate() - n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 type Offer = { id: string; title: string; client: string; date: string; status: OfferStatus; scope?: string[]; offerNumber?: string; licencaDo?: string };
 type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
@@ -142,7 +150,12 @@ export default function BusinessOverview({ base }: { base: string }) {
   };
   useEffect(() => {
     if (preview === 'empty') { setDashNaloge([]); setDashPosta([]); return; }
-    if (preview !== 'mine') { setDashNaloge(DASH_DEMO_NALOGE); setDashPosta(DASH_DEMO_POSTA); return; }
+    if (preview !== 'mine') {
+      const zdaj = new Date();
+      setDashNaloge(DASH_DEMO_NALOGE);
+      setDashPosta(DASH_DEMO_POSTA.map(v => ({ smer: v.smer, kdo: v.kdo, zadeva: v.zadeva, datum: predDnevi(v.predDnevi, zdaj) })));
+      return;
+    }
     try {
       setDashNaloge(preberiNaloge().filter(n => n.stolpec !== 'done').sort((a, b) => (a.stolpec === 'waiting' ? -1 : 0) - (b.stolpec === 'waiting' ? -1 : 0)).slice(0, 12).map(n => ({ rok: n.rok, naslov: n.naslov, stolpec: n.stolpec, oseba: n.dodeljenoOsebaIme })));
       setDashPosta(preberiVsePoste().slice(0, 12).map((v: PostaVnos) => ({ smer: v.smer, kdo: v.prejemniki[0] || '—', zadeva: v.zadeva || '—', datum: v.datum })));

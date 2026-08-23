@@ -117,11 +117,18 @@ export function urediDanes(vrstice: DanesVrstica[], najvec = NAJVEC_VRSTIC): Dan
      od vsakega vira, sele ce mesta se ostanejo, jih dopolnimo po vrstnem redu. */
   const izbrane: DanesVrstica[] = [];
   const steviloPoViru = new Map<string, number>();
+  /* Prvi prehod je strog: ista stranka pri istem viru dobi ENO vrstico. Sicer
+     stojita druga ob drugi dve skoraj enaki ("Pošlji opomnik za račun — Rokus
+     Klett") in izgledata kot podvojitev, čeprav gre za dva različna računa. */
+  const videnaStranka = new Set<string>();
   for (const v of urejene) {
     if (izbrane.length >= najvec) break;
     const k = vir(v.id);
+    const kStranka = `${k}|${v.podnaslov || ''}`;
+    if (videnaStranka.has(kStranka)) continue;
     const doslej = steviloPoViru.get(k) || 0;
     if (doslej >= NAJVEC_ENAKIH) continue;
+    videnaStranka.add(kStranka);
     steviloPoViru.set(k, doslej + 1);
     izbrane.push(v);
   }
