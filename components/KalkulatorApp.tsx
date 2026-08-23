@@ -6468,6 +6468,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; }
         .cw .uredi-plosca .chip-podrocje b { white-space: nowrap; }
         .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; grid-template-columns: minmax(0, 1fr); }
+        .cw .profil-predal .kartica { padding-left: 10px; padding-right: 10px; }
         .cw .profil-predal .cenik-card > summary { padding-left: .6rem; padding-right: .6rem; }
         .cw .profil-predal .cenik-card .cenik-telo { padding-left: .6rem; padding-right: .6rem; }
         .cw .profil-predal .chip-podrocje { width: 100%; }
