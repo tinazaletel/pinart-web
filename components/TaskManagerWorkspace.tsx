@@ -2234,6 +2234,11 @@ export default function TaskManagerWorkspace() {
           .tm-x,.tm-kartica-x,.tm-cas-gumb,.tm-podopravilo-krog,.tm-podopravilo-dodeli-gumb,.tm-podopravilo-brisi,.tm-podrocje-plus{min-width:2.75rem;min-height:2.75rem}
         }
         @media (prefers-reduced-motion:reduce){.tm-mobilni-sheet-zastor,.tm-mobilni-sheet{animation:none}}
+        @media (min-width:981px){
+          .tm-mobilni-sheet-zastor{align-items:flex-start;justify-content:flex-end;padding:9.5rem 2rem 0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+          .tm-mobilni-sheet{width:min(22rem,90vw);max-height:min(60vh,32rem);border-radius:14px;padding:.6rem;box-shadow:0 14px 44px rgba(25,18,14,.18);animation:none}
+          .tm-mobilni-sheet .tm-sheet-rocaj{display:none}
+        }
 
         /* Enoten »Apple glass« videz na glavnih vsebinskih panelih (kanban stolpci) */
         .tm-stolpec{background:rgba(255,255,255,.5) !important;backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);box-shadow:0 1px 2px oklch(30% .02 55 / .035),0 10px 26px oklch(30% .02 55 / .05),inset 0 1px 0 rgba(255,255,255,.5)}
