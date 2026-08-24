@@ -6250,6 +6250,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uredi-telo { overflow-y: auto; padding: 1.1rem 1.35rem 1.5rem; display: flex; flex-direction: column; gap: 1.4rem; }
         .cw .uredi-sekcija { display: flex; flex-direction: column; }
         .cw .uredi-naslov { font-size: .78rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: rgba(17,17,17,.72); margin-bottom: .7rem; }
+        /* Pripis ob naslovu NI verzalka: dve verzalki druga za drugo se bereta
+           kot en dolg stavek brez locila. */
+        .cw .uredi-naslov .vec { display: block; margin-top: .2rem; font-size: .78rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: rgba(17,17,17,.6); }
         .cw .uredi-dodaj { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
         .cw .uredi-dodaj input[type=text] { flex: 1; min-width: 150px; border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; padding: .4rem .2rem; font-family: inherit; font-size: .95rem; color: var(--ink); }
         .cw .uredi-dodaj input[type=number] { width: 84px; border: none; border-bottom: 1px solid rgba(17,17,17,.35); background: transparent; padding: .4rem .2rem; font-family: inherit; font-size: .95rem; text-align: right; color: var(--ink); }
@@ -6503,6 +6506,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .chat-podrocja > * { width: 100%; justify-self: stretch; }
         .cw .chip-podrocje { display: inline-flex; align-items: center; gap: .45rem; background: #fff; border: 1px solid oklch(93% .006 82 / .55); border-radius: 999px; padding: .55rem 1.2rem .55rem .55rem; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; box-shadow: 0 2px 10px rgba(35,18,45,.05); transition: border-color .18s, box-shadow .18s, transform .2s cubic-bezier(.34,1.56,.5,1); }
         .cw .chip-podrocje:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(35,18,45,.1); }
+        /* Glavni gumb v jeziku aplikacije: crn, pilulast, po meri vsebine —
+           poln vijolicen cez celo sirino je bil tezji od samih ploscic. */
+        .cw .uredi-shrani { display: inline-flex; margin-top: 1.4rem; }
         .cw .chip-podrocje .pi-pod { width: 2.15rem; height: 2.15rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
         .cw .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
         .cw .chip-podrocje b { font-weight: 700; }
@@ -6516,7 +6522,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* v modalu dodaj/uredi: brez chat-zamika, leva poravnava; naravne pilule (razlicne sirine),
            besedilo v eni vrsti, kljukica na desni strani pilule */
         .cw .uredi-plosca .chat-podrocja { margin-left: 0; max-width: none; }
-        .cw .uredi-plosca .chip-podrocje b { white-space: nowrap; }
+        /* V modalu je bil nowrap, zato je dolg naziv ("Kreativna direkcija /
+           strategija") tekel v kljukico. Naj se rajsi prelomi v dve vrsti. */
+        .cw .uredi-plosca .chip-podrocje b { white-space: normal; padding-right: .35rem; }
         .cw .profil-predal .chat-podrocja { margin-left: 0; max-width: none; grid-template-columns: minmax(0, 1fr); }
         .cw .profil-predal .kartica { padding-left: 16px; padding-right: 16px; }
         .cw .profil-predal .profil-meni-vrsta { padding-left: 20px; padding-right: 20px; }
@@ -9176,8 +9184,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             </>
                           )}
                         </div>
-                        <button type="button" className="gumb" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }} style={{ display: 'block', width: '100%', marginTop: '1.4rem', padding: '.95rem', fontSize: '1rem', fontWeight: 700, background: 'var(--accent, #7C3AED)', color: '#fff', border: 'none', borderRadius: '999px', cursor: 'pointer' }}>{L('Shrani', 'Save')}</button>
-                        <button type="button" className="povezava povezava-roza" style={{ display: 'block', marginTop: '.9rem' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>{L('↳ Cene, razpored in ceniki', '↳ Prices, ordering and price lists')}</button>
+                        <button type="button" className="gumb uredi-shrani" onClick={() => { setKazemUredi(false); setNovaIme(''); setNovaCena(''); }}>{L('Shrani', 'Save')}</button>
+                        <button type="button" className="povezava povezava-roza" style={{ display: 'block', marginTop: '.9rem' }} onClick={() => { setKazemUredi(false); setKazemProfil(true); setProfilPogled('cene-nastavitve'); }}>{L('Cene, razpored in ceniki', 'Prices, ordering and price lists')}</button>
                       </div>
                     </div>
                   </div>
