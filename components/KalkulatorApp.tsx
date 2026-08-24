@@ -7616,9 +7616,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Racun panel na Zakljucku */
         /* Vijolicna, ne jantarna: v aplikaciji nosita pomen samo dve barvi —
            vijolicna (pozornost, znamka) in rdeca (opozorilo). Tretje ni. */
-        .cw .pon-namig-glava { display: flex; flex-direction: column; gap: .2rem; margin: 0 0 1rem; padding: .8rem 1rem .8rem .95rem; border: 1px solid color-mix(in oklch, var(--accent, #6E4FA6) 38%, transparent); border-left: 5px solid var(--accent, #6E4FA6); border-radius: .6rem; background: color-mix(in oklch, var(--accent, #6E4FA6) 15%, #fff); color: oklch(34% .13 300); }
-        .cw .pon-namig-glava b { font: 800 .92rem/1.3 var(--font-sans), sans-serif; }
-        .cw .pon-namig-glava span { font: 500 .84rem/1.45 var(--font-sans), sans-serif; opacity: .88; }
+        .cw .pon-namig-glava { display: flex; flex-direction: column; gap: .15rem; margin: 0 0 .95rem; padding: .6rem .9rem; border-left: 4px solid var(--accent, #6E4FA6); border-radius: .1rem .55rem .55rem .1rem; background: color-mix(in oklch, var(--accent, #6E4FA6) 9%, #fff); color: oklch(36% .12 300); }
+        .cw .pon-namig-glava b { font: 800 .84rem/1.3 var(--font-sans), sans-serif; }
+        .cw .pon-namig-glava span { font: 500 .8rem/1.45 var(--font-sans), sans-serif; opacity: .85; }
         .cw .posl-naziv { display: flex; flex-direction: column; gap: .3rem; margin: 0 0 1.1rem; }
         .cw .posl-naziv > span { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
         .cw .posl-naziv input { width: 100%; box-sizing: border-box; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; color: var(--ink); font: 600 .95rem var(--font-sans), sans-serif; }
