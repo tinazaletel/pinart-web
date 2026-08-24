@@ -39,7 +39,8 @@ export default function StoparicaBliznjica() {
     <Toast
       ton="napaka"
       trajanje={0}
-      sporocilo={`Štoparica teče že ${ur} ${ur === 1 ? 'uro' : ur === 2 ? 'uri' : ur < 5 ? 'ure' : 'ur'} — ${merjenje.projectName}. Si jo pozabila ustaviti?`}
+      naslov={`Štoparica teče že ${ur} ${ur === 1 ? 'uro' : ur === 2 ? 'uri' : ur < 5 ? 'ure' : 'ur'}`}
+      sporocilo={`${merjenje.projectName} — si jo pozabila ustaviti?`}
       onClose={potrdiTek}
       ikona={<Timer size={19} weight="fill" />}
       dejanja={<>

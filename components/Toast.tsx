@@ -18,6 +18,7 @@ export default function Toast({
   ton = 'info',
   dejanja,
   ikona,
+  naslov,
 }: {
   sporocilo: string;
   onClose: () => void;
@@ -30,6 +31,9 @@ export default function Toast({
   /* Ikona na začetku. Kadar je podana, nadomesti barvno piko — obvestilo o
      štoparici naj se prepozna, preden ga uporabnica prebere. */
   ikona?: ReactNode;
+  /* Naslov v krepkem, ob ikoni. Sporočilo se prelomi pod njega — dolgo
+     obvestilo v enem kosu se prelomi kjer koli in je videti razmetano. */
+  naslov?: string;
 }) {
   const [mounted, setMounted] = useState(false);
   const [odhaja, setOdhaja] = useState(false);
@@ -55,7 +59,10 @@ export default function Toast({
       {ikona
         ? <span className="pw-toast-ikona" style={{ color: barva }} aria-hidden>{ikona}</span>
         : <span className="pw-toast-pika" style={{ background: barva }} />}
-      <span className="pw-toast-txt">{sporocilo}</span>
+      <span className={`pw-toast-txt${naslov ? ' pw-toast-txt-dvojni' : ''}`}>
+        {naslov && <b className="pw-toast-naslov">{naslov}</b>}
+        <span>{sporocilo}</span>
+      </span>
       {dejanja && <span className="pw-toast-dejanja">{dejanja}</span>}
       <button type="button" className="pw-toast-x" onClick={() => { setOdhaja(true); window.setTimeout(() => zapriRef.current(), 240); }} aria-label="Zapri obvestilo">×</button>
       <style>{`
@@ -66,22 +73,27 @@ export default function Toast({
            išče. Ne visijo čez sredino glave, kjer bi zakrivala orodno vrstico.
            Kratka info in uspeh obvestila ostanejo na sredini zgoraj.
            Glava je visoka 3.25rem, zato 4rem pusti prst zraka pod njo. */
-        .pw-toast-vztrajen{top:4rem;left:auto;right:1rem;transform:none;max-width:min(92vw,26rem);border-left:4px solid oklch(58% .18 25);animation:pwToastVstran .34s cubic-bezier(.16,1,.3,1) both}
+        .pw-toast-vztrajen{top:4rem;left:auto;right:1rem;transform:none;align-items:flex-start;max-width:min(92vw,31rem);border-left:4px solid oklch(58% .18 25);animation:pwToastVstran .34s cubic-bezier(.16,1,.3,1) both}
         .pw-toast-vztrajen .pw-toast-txt{font-size:.86rem;font-weight:700}
         .pw-toast-vztrajen.pw-toast-off{animation:pwToastVstranOff .28s ease-in both}
         @keyframes pwToastVstran{from{opacity:0;transform:translateX(115%)}to{opacity:1;transform:translateX(0)}}
         @keyframes pwToastVstranOff{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(115%)}}
         .pw-toast-pika{flex:none;width:.5rem;height:.5rem;border-radius:999px}
         .pw-toast-ikona{flex:none;display:grid;place-items:center;width:1.6rem;height:1.6rem}
+        .pw-toast-vztrajen .pw-toast-ikona,.pw-toast-vztrajen .pw-toast-dejanja,.pw-toast-vztrajen .pw-toast-x{margin-top:.05rem}
         .pw-toast-napaka .pw-toast-ikona{color:oklch(52% .17 25)}
-        .pw-toast-napaka{background:oklch(96% .035 25);border-color:oklch(78% .13 25 / .6)}
-        .pw-toast-napaka .pw-toast-txt{color:oklch(46% .17 25)}
-        .pw-toast-napaka .pw-toast-x{color:oklch(56% .13 25)}
+        .pw-toast-napaka{background:#fff;border-color:color-mix(in oklch,var(--ink, #2a2620) 12%,transparent)}
+        .pw-toast-napaka .pw-toast-txt{color:var(--ink, #2a2620)}
+        .pw-toast-napaka .pw-toast-x{color:color-mix(in oklch,var(--ink, #2a2620) 45%,transparent)}
         .pw-toast-napaka .pw-toast-pika{display:none}
         .pw-toast-txt{font:600 .82rem var(--font-sans),system-ui,sans-serif;color:var(--ink, #2a2620);line-height:1.4}
+        .pw-toast-txt-dvojni{display:flex;flex-direction:column;gap:.1rem;min-width:0}
+        .pw-toast-naslov{font-weight:800;font-size:.86rem}
+        .pw-toast-txt-dvojni>span{font-weight:600;opacity:.82}
         .pw-toast-dejanja{flex:none;display:inline-flex;align-items:center;gap:.4rem;margin-left:.2rem}
         .pw-toast-dejanja button{min-height:2rem;padding:.3rem .7rem;border-radius:999px;font:700 .74rem var(--font-sans),system-ui,sans-serif;white-space:nowrap;cursor:pointer}
-        .pw-toast-dejanja button:first-child{border:0;background:var(--purple,#6E4FA6);color:#fff}
+        .pw-toast-dejanja button:first-child{border:0;background:var(--ink, #2a2620);color:#fff}
+        .pw-toast-dejanja button:first-child:hover{opacity:.88}
         .pw-toast-dejanja button+button{border:1px solid color-mix(in oklch,var(--ink, #2a2620) 18%,transparent);background:#fff;color:var(--ink, #2a2620)}
         @media (max-width:640px){.pw-toast{flex-wrap:wrap}.pw-toast-dejanja{flex-basis:100%;margin-left:0}}
         .pw-toast-x{flex:none;border:0;background:none;color:color-mix(in oklch,var(--ink, #2a2620) 45%,transparent);font-size:1.05rem;line-height:1;cursor:pointer;padding:0 .1rem;margin-left:.1rem}

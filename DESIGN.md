@@ -137,6 +137,11 @@ je visoka `3.25rem`, obvestilo stoji na `top: 4rem`.
 Na telefonu opozorilo pride **spodaj**, čez celo širino, nad varnim robom — tam
 je palec.
 
+**Nujnost nosi ena stvar, ne štiri.** Opozorilo je **bela kartica** z **rdečo
+črto na levi** in rdečo ikono. Besedilo je `--ink`, ne rdeče; glavni gumb je
+`--ink`, ne vijoličen. Vijolična je znamka, rdeča je alarm — skupaj se izničita
+in obvestilo postane pisano namesto resno.
+
 **Ikona na začetku.** `ikona` nadomesti barvno piko in pove, o čem obvestilo
 govori, preden ga uporabnica prebere — štoparica dobi `<Timer />`. Pri obvestilih
 brez svoje ikone ostane pika.
