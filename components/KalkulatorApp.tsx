@@ -7773,6 +7773,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .a11y-close { position: absolute; top: .85rem; right: .9rem; border: none; background: none; padding: .2rem; font-family: inherit; font-size: 1rem; line-height: 1; cursor: pointer; color: var(--ink); }
         @media (max-width: 760px) {
           .cw .glava { padding-top: .8rem; padding-bottom: .8rem; }
+          /* Na telefonu je logotip rinil v ikono za Pupo: manjsi razmiki,
+             ozja pisava in znacka BETA, da blok zavzame manj sirine. */
+          .cw .glava .glava-brand { gap: .35rem; min-width: 0; flex: 0 1 auto; }
+          .cw .glava .glava-ime { font-size: .68rem; letter-spacing: .05em; }
+          .cw .glava .glava-brand > span:first-child { flex: none; }
           /* "Kalkulator BETA" ostane viden tudi na mobilnem (sam "BETA" nic ne
              pove); na ozkih zaslonih skrijemo besedo "Zapri", ostane ✕ */
           /* ikonski, a z dovolj veliko tarco za prst (bil je 22x26px — pretezko zadeti) */
