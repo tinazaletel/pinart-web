@@ -85,7 +85,7 @@ export default function Toast({
            dvovrsticnem obvestilu je videti bolj mirno. */
         .pw-toast-vztrajen .pw-toast-ikona{align-self:center;margin-top:0}
         .pw-toast-napaka .pw-toast-ikona{color:oklch(52% .17 25)}
-        .pw-toast-napaka{background:#fff;border-color:color-mix(in oklch,var(--ink, #2a2620) 12%,transparent)}
+        .pw-toast-napaka{background:oklch(97.5% .022 25);border-color:oklch(80% .1 25 / .5)}
         .pw-toast-napaka .pw-toast-txt{color:var(--ink, #2a2620)}
         .pw-toast-napaka .pw-toast-x{color:color-mix(in oklch,var(--ink, #2a2620) 45%,transparent)}
         .pw-toast-napaka .pw-toast-pika{display:none}
