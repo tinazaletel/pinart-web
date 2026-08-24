@@ -276,8 +276,13 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     track.addEventListener('scroll', onScroll, { passive: true });
     return () => { track.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
   }, []);
-  /* aktiven pill naj bo viden v drseči vrsti pillov */
+  /* Aktiven pill naj bo viden v drseci vrsti pillov — a SELE, ko zavihek res
+     zamenjas. Ob prvem izrisu je vrstica pillov se pod vidnim poljem in
+     scrollIntoView potegne CELO stran navzdol do nje: obiskovalec je vsakic
+     pristal sredi strani pri vrtiljaku orodij, namesto na vrhu. */
+  const pillPrviIzris = useRef(true);
   useEffect(() => {
+    if (pillPrviIzris.current) { pillPrviIzris.current = false; return; }
     const active = scPillsRef.current?.querySelector('.fl-sc-pill.on') as HTMLElement | null;
     active?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }, [taZavihek]);
