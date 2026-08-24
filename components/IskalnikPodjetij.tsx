@@ -135,7 +135,7 @@ export default function IskalnikPodjetij({
         onChange={e => { setIzbrano(false); naVrednost(e.target.value); setOdprt(true); }}
         onFocus={() => setOdprt(true)}
         onKeyDown={naTipko}
-        placeholder={L('Začni tipkati ime podjetja …', 'Start typing a company name …')}
+        placeholder={L('Tvoje ime ali naziv podjetja …', 'Your name or business name …')}
       />
       {pokazi && (karKoli || iscem) && (
         <div className="ip-seznam" role="listbox">

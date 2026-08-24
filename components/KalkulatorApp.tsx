@@ -8515,7 +8515,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
                     {podatkiPodjetjaOdprti && <p className="uv-mreza-naslov">{L('Podatki na dokumentu', 'Details shown on the document')}</p>}
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pime">{L('Ime ali naziv studia', 'Your name or studio')}</label>
+                    <label htmlFor="uv-pime">{L('Ime ali naziv', 'Name or business name')} <span className="uv-neobvezno">{L('kot bo pisalo na ponudbi', 'as it will appear on the quote')}</span></label>
                     <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
                       naVrednost={v => setPonudnik(prej => ({ ...prej, ime: v }))}
                       naIzbiro={pod => {
