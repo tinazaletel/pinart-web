@@ -786,8 +786,7 @@ export default async function KalkulatorPogojiPage({
                 se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje
                 modelov, hramba pa sledi njegovim aktualnim pogojem. Morebitni prenos v ZDA
                 mora biti urejen z DPA z družbo Anthropic in ustreznimi standardnimi
-                pogodbenimi klavzulami (SCC). Pravno podlago (privolitev ali zakoniti
-                interes) mora pred objavo določiti odvetnik. Seznam podobdelovalcev je na
+                pogodbenimi klavzulami (SCC). Seznam podobdelovalcev je na
                 voljo na zahtevo na tina@pinart.si.
               </>
             )}

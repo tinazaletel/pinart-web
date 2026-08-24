@@ -1,0 +1,142 @@
+PINART FLOW: VPRAŠANJA ZA PRAVNI PREGLED
+========================================
+
+Sem Tina Zaletel, oblikovalka. Zadnje leto sem naredila Pinart Flow, spletno
+orodje za samostojne kreativce in male studie. V njem pripravijo ponudbo,
+pogodbo in račun, vodijo projekte in stranke ter hranijo dokumente. Del orodja
+je brezplačni kalkulator cen, ki deluje brez registracije.
+
+Pogoje uporabe in politiko zasebnosti sem napisala sama, brez pravne pomoči.
+Objavljena sta in v uporabi; obe besedili prilagam, na strani sta na
+www.pinartflow.com/kalkulator/pogoji in www.pinartflow.com/zasebnost.
+
+Zagon načrtujem v začetku septembra 2026. Najbolj me zanima kaj moram
+popraviti pred tem in kaj lahko počaka. Spodaj so vprašanja, ki me najbolj
+težijo. Na koncu je še kratek seznam tega, kar načrtujem, da mi ni treba priti
+k vam vsak mesec posebej.
+
+──────────────────────────────────────────────────────────────
+
+KAR ME NAJBOLJ SKRBI
+
+1. Računi in FURS. Flow izdaja račune, ni pa davčna blagajna in računov ne
+potrjuje pri FURS. Namenjeni so plačilu na transakcijski račun. Bojim se
+primera, ko uporabnik izda račun pri meni, plačilo prejme v gotovini in misli,
+da je davčno vse urejeno. Kako naj to omejitev zapišem, da je odgovornost
+jasno na uporabniku? Tako sem ga zaenkrat zapisala sama, prosim, popravite ga
+po svoje:
+
+   Pinart Flow ni davčna blagajna in ne izvaja davčnega potrjevanja računov pri
+   FURS. Računi, izdani v Flowu, so namenjeni plačilu z nakazilom na
+   transakcijski račun. Če uporabnik prejema plačila v gotovini, s plačilno
+   kartico na prodajnem mestu ali na drug način, ki se šteje za gotovinsko
+   poslovanje, mora za izdajo računov uporabiti ustrezno davčno blagajno. Za
+   skladnost s predpisi o davčnem potrjevanju računov odgovarja uporabnik.
+
+2. Podatki strank mojih uporabnikov. V Flow vnašajo imena, naslove, davčne
+številke in vsebino komunikacije svojih strank. Razumem, da sem pri tem
+obdelovalec, uporabnik pa upravljavec, in sem pogodbo o obdelavi napisala kar
+v pogoje (točka 4g). Ali to zadošča po 28. členu GDPR ali potrebujem ločen
+dokument, ki ga vsak podpiše posebej?
+
+3. Pupa (AI pomočnica). Deluje prek Anthropic Claude API. Uporabniku povem,
+naj vanjo ne vnaša zaupnih podatkov, in da brez uporabe Pupe podatki ne gredo
+nikamor. Vprašanji: katera pravna podlaga je prava, privolitev ali zakoniti
+interes, in kaj moram urediti za prenos v ZDA (DPA, standardne pogodbene
+klavzule)? Enako me zanima za vse ponudnike zunaj EU, ki jih naštevam med
+podobdelovalci.
+
+4. Cene, ki jih orodje priporoči. Privzete cene in množitelji so nastali iz AI
+raziskave trga: iz javnih cenikov, priporočil stanovskih združenj in primerjav
+objavljenih cen. Niso izmerjena statistika; to bazo šele gradim iz anonimnih
+izračunov. V pogojih pišem, da so informativni in da je končna cena odločitev
+uporabnika. Je to dovolj, da me ne doleti odgovornost, če nekdo po mojem
+predlogu zaračuna preveč ali premalo?
+
+5. Podatki iz javnih registrov. V orodju je iskalnik podjetij, ki iz javnih
+virov (AJPES, FURS) predizpolni naziv, naslov in davčno številko stranke. Ali
+smem te podatke uporabljati na tak način in ali moram kaj posebej navesti?
+
+MANJŠE, A NEREŠENO
+
+6. Sef avtorstva. Shrani kriptografski odtis datoteke in datum, časovni žig pa
+naredi neodvisen overitelj po standardu RFC 3161. Pišem, da to dokazuje obstoj
+dela na določen dan, ne pa avtorstva. Je taka formulacija dovolj previdna?
+
+7. Potrošniki proti podjetjem. Orodje je namenjeno poslovni rabi, a samostojni
+kreativci so pogosto tudi potrošniki. Katere določbe moram prilagoditi, da so
+pravice potrošnikov spoštovane (odstop od pogodbe, vračila)?
+
+8. Zaprta beta. Dostop je po vabilu, funkcije se še spreminjajo, podatki se
+lahko ponastavijo. Kako to zapisati, da je pošteno in hkrati varno?
+
+9. Izbris in izvoz. Uporabnik lahko podatke kadarkoli izvozi, izbris zahteva
+po e-pošti. Moram izbris ponuditi kot gumb v aplikaciji?
+
+10. Priponke. Uporabniki lahko k projektom in pošti pripenjajo datoteke
+(slike, PDF, tudi SVG). Shranjene so v zasebni shrambi v EU. Moram za naložene
+vsebine dodati kaj več, kot imam v točki 8c (prijava sporne vsebine)?
+
+11. Ustanovna cena. Razmišljam o ponudbi »ustanovna cena ostane enaka, dokler
+naročnina neprekinjeno traja«. Ali me taka obljuba zavezuje za vedno in kako
+naj jo zapišem, da jo lahko izpolnim?
+
+12. Predloge pogodb. V orodju so predloge pogodb med kreativcem in njegovo
+stranko, s privzetimi vrednostmi (obseg pravic, rok, avans). Kakšna je moja
+odgovornost za vsebino teh predlog?
+
+13. Arbitraža za ZDA. V pogojih (točka 11d) imam določbo o zavezujoči
+arbitraži in odpovedi skupinski tožbi. Prevzela sem jo po zgledu ameriških
+storitev. Naj jo obdržim ali umaknem, dokler ZDA niso moj trg?
+
+14. Podobdelovalca, dodana 25. 8. 2026. Politika in pogoji zdaj navajata
+Google Sheets (vanj se zapišejo povpraševanja s kontaktnega obrazca: ime,
+e-naslov in sporočilo) in Cloudflare (dohodna pošta na @pinartflow.com). Prej
+ju nista. Je opis zadosten in ali moram obvestiti tiste, ki so obrazec
+izpolnili prej?
+
+15. Prijava na obveščanje. Uporabljam dvojno privolitev: prijava se zapiše kot
+nepotrjena, potrditveno pisemce gre po e-pošti, seznam nastane šele ob kliku,
+nepotrjene prijave se po 14 dneh izbrišejo, odjava zapis izbriše. Zapišem čas,
+vir in različico pogojev; IP-naslova ne hranim. Zadošča kot dokaz privolitve
+po členu 7(1)?
+
+16. Brezplačni kalkulator. Ker deluje brez računa in se pri meni ne shrani nič
+razen anonimne cenovne vrstice, obiskovalcu ob vstopu pokažem kratko kartico s
+tremi bistvenimi točkami in povezavama na pogoje in zasebnost, celotne pogoje
+s potrditvijo pa šele ob prvem izvozu ali pošiljanju. Je tak dvostopenjski
+pristop v redu ali potrebujem ločene, krajše pogoje samo za kalkulator?
+
+17. Odstavki za funkcije, ki še ne delujejo. Nekaj določb (plačljivi trezor,
+naročnina, arbitraža) je pisanih vnaprej. Je bolje imeti jih zapisane in
+neuporabljene ali jih dodati šele, ko funkcija zaživi?
+
+KAM GREM NAPREJ
+
+Da vam ni treba istega besedila pregledovati večkrat, na kratko še načrti za
+naslednje leto. Zanima me le, ali je pri kateri od teh smeri kaj takega, kar
+moram vedeti že zdaj: ali gre za regulirano dejavnost in ali bo treba pogoje
+bistveno predelati.
+
+  – davčna blagajna in potrjevanje pri FURS, vključno s prodajnim mestom. Vem,
+  da je to najbolj regulirano od vsega.
+  – povezava z banko (odprto bančništvo, PSD2), da uporabnik vidi plačila in
+  označi račun kot plačan. Ali s tem postanem plačilni posrednik?
+  – kvalificirani časovni žig po eIDAS namesto sedanjega
+  – ekipe in sodelavci: kdo je upravljavec, ko podatke vnese povabljeni
+  sodelavec?
+  – priklop uporabnikovega lastnega AI in agenti, ki opravijo nalogo v
+  njegovem imenu. Kdo odgovarja za izhod tujega modela?
+  – povezava z Gmailom prek OAuth (branje nabiralnika)
+  – priporočila in donacije, torej nagrada za povabljenega kolega
+  – tuji trgi: najprej EU, nato ZDA, s plačili prek pooblaščenega ponudnika
+  (Merchant of Record)
+  – mobilna aplikacija in naročnine prek trgovin
+  – anonimna cenovna statistika kot javno dostopen ali plačljiv pregled trga
+
+ŠE NEKAJ, KAR NI PRAVNO VPRAŠANJE
+
+V orodju imam gumb, prek katerega se uporabnik lahko odloči za pravno pomoč,
+kadar želi pogodbo pregledati ali napisati bolj profesionalno. Iščem odvetnika
+ali pisarno, na katero bom lahko naslovila take stranke. Če koga poznate in bi
+ga to zanimalo, bom hvaležna za povezavo.

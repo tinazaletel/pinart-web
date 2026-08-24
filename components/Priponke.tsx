@@ -25,7 +25,10 @@ import { besediloKvote } from '@/lib/kvota';
 
 export { datotekeIzOdlozisca };
 
-const SPREJME = '.pdf,.png,.jpg,.jpeg,.webp,.docx,.xlsx,.csv,.zip';
+/* SVG je v seznamu, ker ga zaledje SPREJME (z opozorilom o postnih streznikih,
+   glej preveriPriponko). Brez njega je izbirnik datotek sicer sivil prav tiste
+   datoteke, ki jih oblikovalka najveckrat prilaga (Tina, 25. 8., na produkciji). */
+const SPREJME = '.pdf,.png,.jpg,.jpeg,.webp,.svg,.svgz,.docx,.xlsx,.csv,.zip';
 
 function Slog() {
   return (
