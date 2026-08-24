@@ -171,6 +171,45 @@ pripravljene, ko pride čas, in da danes ne obljubljamo, česar ni.
 **Vprašanje:** je z vidika prava bolje imeti določbe vnaprej (in jih ne
 uporabljati) ali jih dodati šele, ko funkcija zaživi?
 
+## 16. Privzete vrednosti v predlogah pogodb
+
+Flow ponuja šest vrst pogodb s **privzetimi** vrednostmi. Te niso oblikovna
+nastavitev, ampak poslovna odločitev, ki jo uporabnica pogosto sprejme, ne da bi
+opazila. Prosimo za oceno vsake posebej — ali je privzeta vrednost sprejemljiva,
+ali je nepoštena, in ali sme sploh biti privzeta:
+
+- **konkurenčna prepoved 12 mesecev** — privzeto omeji delo IZVAJALCA, torej
+  našo uporabnico; ali je tak privzetek sploh dopusten
+- **pogodbena kazen 0,5 % na dan** (največ 10 %) — sorazmernost
+- **pristojnost sodišča v kraju izvajalca**
+- **privzeto ozemlje in trajanje prenosa avtorskih pravic**
+- **licenca brez določenega trajanja** — kaj to pomeni po ZASP
+- **NDA z veljavnostjo še tri leta po prenehanju**
+- **besedilo o podobdelovalcih v DPA**
+
+Vprašanje širše: ali sme orodje takšne določbe sploh ponuditi kot privzete, ali
+mora uporabnica vsako izbrati zavestno? Naš namen je drugo, a bi radi vedeli,
+kje je meja.
+
+## 17. Priponke in naložene datoteke (novo, 24. 8. 2026)
+
+Od 24. 8. uporabnice v Flow nalagajo datoteke — priponke v pošti in na nalogah,
+vključno z **datotekami svojih strank**. Hranijo se v zasebni shrambi Supabase
+(EU), povezave so kratkoživé in podpisane.
+
+**Vprašanje:** kaj mora o tem pisati v politiki zasebnosti — vrsta podatkov, rok
+hrambe, kaj se z datotekami zgodi ob izbrisu računa in kdo do njih dostopa? To
+je nova vrsta obdelave, ki je besedila še ne pokrivajo.
+
+## 18. Obljuba o ceni kot pogodbena zaveza
+
+Na ceniku bo pisalo: »Cena ostane enaka ves čas neprekinjene naročnine« in
+»uvodna cena velja za naročila do 31. 10. 2026«.
+
+**Vprašanje:** je to zavezujoča obljuba, ki mora biti v pogojih, ne le na
+prodajni strani? Kako naj bo zapisano, kaj pomeni prekinitev in kaj velja ob
+vrnitvi po prekinitvi?
+
 ---
 
 ## Kaj smo že popravili
