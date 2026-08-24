@@ -7849,7 +7849,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             <h2>{vFlow ? L('Preden začneš', 'Before you begin') : L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
             <div className="soglasje-tocke">
               {vFlow ? (
-              <p className="sg-uvod">{L('Preleti pogoje poslovanja do konca — gumb za potrditev te čaka na dnu.', 'Scroll through the terms of business to the end — the confirmation button is waiting at the bottom.')}</p>
+              <p className="sg-uvod">{L('Preberi pogoje poslovanja in jih potrdi spodaj.', 'Read the terms of business and confirm below.')}</p>
               ) : (<>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
@@ -7900,23 +7900,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
             </div>
             )}
-            {vFlow && (
-              <div className="sg-pogoji">
-                <span className="sg-pogoji-ozn">{L('Pogoji poslovanja', 'Terms of business')}</span>
-                <iframe className="sg-pogoji-okvir" title={L('Pogoji poslovanja', 'Terms of business')}
-                  src={localePath(locale, `/kalkulator/pogoji`)} onLoad={naloziPogoje} />
-                <p className="sg-pogoji-namig">
-                  {pogojiPrebrani
-                    ? L('Hvala — zdaj lahko potrdiš spodaj.', 'Thank you — you can confirm below.')
-                    : L('Preleti pogoje do konca, da jih lahko potrdiš.', 'Scroll through the terms to the end to confirm them.')}
-                </p>
-              </div>
-            )}
+            {/* Vstop je spet preprost (Tina, 25. 8.): brez vgrajenega okna s
+               pogoji in brez drsenja do dna. Cel dokument z drsenjem ostane
+               SAMO ob prvem izvozu/posiljanju ("Se pogoji, pa gre"). */}
             <div className="soglasje-gumbi">
               {vFlow && (
-                <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}>
-                  <input type="checkbox" checked={pogojiPotrjeni} disabled={!pogojiPrebrani} onChange={e => setPogojiPotrjeni(e.target.checked)} />
-                  <span>{L('Preletel/-a sem in potrjujem ', 'I have reviewed and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
+                <label className="sg-potrdi">
+                  <input type="checkbox" checked={pogojiPotrjeni} onChange={e => setPogojiPotrjeni(e.target.checked)} />
+                  <span>{L('Prebral/-a sem in sprejemam ', 'I have read and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
                 </label>
               )}
               {!vFlow && (
@@ -7927,7 +7918,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <a href={localePath(locale, `/zasebnost`)} target="_blank" rel="noopener noreferrer">{L('politiko zasebnosti', 'privacy policy')}</a>.
                 </p>
               )}
-              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vFlow && !pogojiPotrjeni} title={vFlow && !pogojiPotrjeni ? L('Najprej preleti in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vFlow ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
+              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vFlow && !pogojiPotrjeni} title={vFlow && !pogojiPotrjeni ? L('Najprej preberi in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vFlow ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
             </div>
           </div>
         </div>
@@ -7943,7 +7934,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         <div className="soglasje" role="dialog" aria-modal="true" aria-label={L('Pogoji poslovanja', 'Terms of business')}>
           <div className="soglasje-kartica">
             <h2>{L('Še pogoji, pa gre', 'The terms, then off it goes')}</h2>
-            <p className="sg-uvod">{L('Ponudba zdaj zapusti brskalnik ali se shrani — zato pogoje poslovanja preleti do konca in jih potrdi. To narediš enkrat.', 'The quote is about to leave your browser or be saved — so scroll through the terms of business to the end and accept them. You only do this once.')}</p>
+            <p className="sg-uvod">{L('Ponudba zdaj zapusti brskalnik ali se shrani — zato pogoje poslovanja preberi do konca in jih potrdi. To narediš enkrat.', 'The quote is about to leave your browser or be saved — so scroll through the terms of business to the end and accept them. You only do this once.')}</p>
             <div className="sg-pogoji">
               <span className="sg-pogoji-ozn">{L('Pogoji poslovanja', 'Terms of business')}</span>
               <iframe className="sg-pogoji-okvir" title={L('Pogoji poslovanja', 'Terms of business')}
@@ -7951,13 +7942,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <p className="sg-pogoji-namig">
                 {pogojiPrebrani
                   ? L('Hvala — zdaj lahko potrdiš spodaj.', 'Thank you — you can confirm below.')
-                  : L('Preleti pogoje do konca, da jih lahko potrdiš.', 'Scroll through the terms to the end to confirm them.')}
+                  : L('Preberi pogoje do konca, da jih lahko potrdiš.', 'Read the terms to the end to confirm them.')}
               </p>
             </div>
             <div className="soglasje-gumbi">
               <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}>
                 <input type="checkbox" checked={pogojiPotrjeni} disabled={!pogojiPrebrani} onChange={e => setPogojiPotrjeni(e.target.checked)} />
-                <span>{L('Preletel/-a sem in potrjujem ', 'I have reviewed and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>{L(' (različica ', ' (version ')}{POGOJI_RAZLICICA}).</span>
+                <span>{L('Prebral/-a sem in sprejemam ', 'I have read and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>{L(' (različica ', ' (version ')}{POGOJI_RAZLICICA}).</span>
               </label>
               <button type="button" className="gumb" onClick={potrdiPolnePogoje} disabled={!pogojiPotrjeni}>{L('Potrjujem, nadaljuj →', 'I accept, continue →')}</button>
               <button type="button" className="povezava" onClick={() => setPogojiZahteva(null)}>{L('Ne zdaj', 'Not now')}</button>
