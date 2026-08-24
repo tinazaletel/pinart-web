@@ -6681,6 +6681,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           /* footer SAMO v delu vprašalnika: desni rob konča ob panelu ponudbe (ne čez
              celo stran), zato so gumbi centrirani nad vsebino, ne nad celim zaslonom */
           .cw .noga.noga-ob-panelu { right: min(480px, 40vw); padding-right: clamp(1.2rem, 4vw, 3rem); }
+          /* Ko je panel skrit, mora noga do roba. Sicer se njen gradient konca
+             tam, kjer bi bil panel, in tisti rob je videti kot senca panela,
+             ki je ni. Isti vzorec :has() kot pri .oder0 zgoraj. */
+          .cw:has(.ponudba0.skrit-desktop) .noga.noga-ob-panelu { right: 0; }
         }
         @keyframes ponudbaVstop { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @media (prefers-reduced-motion: reduce) { .cw .ponudba0 { animation: none; } }
