@@ -80,18 +80,20 @@ export default function Toast({
         @keyframes pwToastVstranOff{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(115%)}}
         .pw-toast-pika{flex:none;width:.5rem;height:.5rem;border-radius:999px}
         .pw-toast-ikona{flex:none;display:grid;place-items:center;width:1.6rem;height:1.6rem}
-        .pw-toast-vztrajen .pw-toast-dejanja,.pw-toast-vztrajen .pw-toast-x{margin-top:.05rem}
-        /* Ikona se poravna na sredino visine kartice, ne z naslovom — pri
-           dvovrsticnem obvestilu je videti bolj mirno. */
-        .pw-toast-vztrajen .pw-toast-ikona{align-self:center;margin-top:0}
+        /* Ikona, gumba in kriz stojijo na sredini visine kartice. Poravnava z
+           naslovom jih je pri dvovrsticnem obvestilu potiskala previsoko. */
+        .pw-toast-vztrajen .pw-toast-ikona,
+        .pw-toast-vztrajen .pw-toast-dejanja,
+        .pw-toast-vztrajen .pw-toast-x{align-self:center;margin-top:0}
         .pw-toast-napaka .pw-toast-ikona{color:oklch(52% .17 25)}
-        .pw-toast-napaka{background:oklch(97.5% .022 25);border-color:oklch(80% .1 25 / .5)}
+        .pw-toast-napaka{background:oklch(95.5% .05 25);border-color:oklch(76% .13 25 / .65)}
         .pw-toast-napaka .pw-toast-txt{color:var(--ink, #2a2620)}
         .pw-toast-napaka .pw-toast-x{color:color-mix(in oklch,var(--ink, #2a2620) 45%,transparent)}
         .pw-toast-napaka .pw-toast-pika{display:none}
         .pw-toast-txt{font:600 .82rem var(--font-sans),system-ui,sans-serif;color:var(--ink, #2a2620);line-height:1.4}
         .pw-toast-txt-dvojni{display:flex;flex-direction:column;gap:.1rem;min-width:0}
         .pw-toast-naslov{font-weight:800;font-size:.86rem}
+        .pw-toast-napaka .pw-toast-naslov{color:oklch(46% .17 25)}
         .pw-toast-txt-dvojni>span{font-weight:600;opacity:.82}
         .pw-toast-dejanja{flex:none;display:inline-flex;align-items:center;gap:.4rem;margin-left:.2rem}
         .pw-toast-dejanja button{min-height:2rem;padding:.3rem .7rem;border-radius:999px;font:700 .74rem var(--font-sans),system-ui,sans-serif;white-space:nowrap;cursor:pointer}

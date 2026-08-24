@@ -139,8 +139,7 @@ je palec.
 
 **Rdeča pove, da je opozorilo. Ne pove pa vsega trikrat.** Opozorilo ima **rahlo
 rdeče ozadje**, **rdečo črto na levi** in **rdečo ikono** — na prvi pogled se
-loči od običajnega obvestila. Besedilo pa ostane `--ink` in glavni gumb prav
-tako: rdeče besedilo na rdeči podlagi je težje brati, vijoličen gumb v rdečem
+loči od običajnega obvestila. **Naslov je rdeč**, telo sporočila in glavni gumb pa ostaneta `--ink`: rdeče besedilo na rdeči podlagi je težje brati, vijoličen gumb v rdečem
 obvestilu pa združi znamko in alarm, ki se med seboj izničita.
 
 **Ikona na začetku.** `ikona` nadomesti barvno piko in pove, o čem obvestilo
