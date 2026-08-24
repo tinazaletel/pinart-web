@@ -10221,8 +10221,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 onInput={() => { if (!rocnoBesedilo) setRocnoBesedilo(true); }}
                 /* Tipke, ki se v urejevalniku uporabljajo za pisanje, ne smejo
                    nikamor naprej. Enter je delal novo vrstico IN sprozil gumb
-                   Naprej, ker je dogodek zletel do noge koraka. */
-                onKeyDown={e => { e.stopPropagation(); }}
+                   Naprej, ker je dogodek zletel do noge koraka.
+                   Enter naredi PRELOM VRSTICE, ne novega odstavka: naslov in
+                   kontakt sta vec vrstic ene misli, odstavcni razmik med njimi
+                   pa je videti kot luknja. Za nov odstavek Shift+Enter. */
+                onKeyDown={e => {
+                  e.stopPropagation();
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    document.execCommand('insertLineBreak');
+                  }
+                }}
                 onBlur={sinhronizirajEditor}
               />
               {rocnoBesedilo && (
