@@ -175,6 +175,21 @@ naslovom potisne previsoko.
 pozabljena, pilula v glavi ostane nedotaknjena in vprašanje pride ločeno — sicer
 uporabnica izgubi izpred oči prav tisto, o čemer jo sprašujemo.
 
+
+## 14. Nepovratna dejanja povej vnaprej
+
+Kar se ne da razveljaviti, mora biti povedano **preden** človek klikne, ne kot
+napaka za tem. Številka računa je najbolj oster primer: ko je enkrat izdana, se
+zaporedje lahko samo nadaljuje.
+
+- pod poljem, mirno in brez klicaja: *»Številke ni mogoče nastaviti nazaj.«*
+- ob potrditvi pokaži izid: *»Naslednji račun bo 2026-0015.«*
+- zavrnitev pojasni, ne samo javi: *»Nižje ni mogoče, ker bi se številka
+  ponovila.«*
+
+Isto velja povsod, kjer nastane zapis, ki ga uporabnica ne more vzeti nazaj —
+izdan račun, poslana pošta, časovni žig v Sefu.
+
 ---
 
 ## Preden rečeš, da je narejeno
