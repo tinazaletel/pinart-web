@@ -8486,7 +8486,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <span className="uv-vec-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
                     </span>
                     {!podatkiPodjetjaOdprti && (
-                      <span className="uv-vec-pripis">{L('Dodaj podatke, ki bodo prikazani na dokumentu.', 'Add the details shown on the document.')}</span>
+                      <span className="uv-vec-pripis">{L('Dodaj podatke za izpis na dokumentu.', 'Add the details printed on the document.')}</span>
                     )}
                   </button>
                   <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
