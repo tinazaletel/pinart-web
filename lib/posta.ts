@@ -2,6 +2,8 @@
    Ključa RESEND_API_KEY klient NIKOLI ne vidi — vse teče prek strežniške poti.
    Uporaba: const r = await posljiMail({ to, subject, html }); if (!r.ok) ... */
 
+import { preveriPriponke, type Priponka } from '@/lib/priponke';
+
 export interface MailVsebina {
   /* en prejemnik ali več (pošiljanje več osebam hkrati) */
   to: string | string[];
@@ -14,6 +16,12 @@ export interface MailVsebina {
   clientId?: string;
   idempotencyKey?: string;
   demo?: boolean;
+  /* Priponke gredo na streznik SAMO kot metapodatki (ime, velikost, mime in pot
+     v Supabase Storage). Vsebine ne posiljamo skozi JSON — datoteka je ze v
+     vedru business-documents, streznik jo od tam prebere in preda Resendu.
+     Tako telo zahtevka ostane majhno (limit preberiJson) in kljuci ostanejo
+     na strezniku. */
+  priponke?: Priponka[];
 }
 
 export interface MailRezultat {
@@ -45,6 +53,10 @@ export function pripraviMail(v: Partial<MailVsebina>): MailPredogled {
   if (!zadeva) opozorila.push('Dodaj zadevo.');
   if (zadeva.length > 300) opozorila.push('Zadeva je predolga.');
   if (!String(v.html || '').trim()) opozorila.push('Dodaj vsebino sporočila.');
+  /* Iste meje kot na zaledju (lib/priponke.ts) — tu samo zato, da uporabnica
+     napako vidi TAKOJ; vratar ostaja streznik. */
+  const priponke = preveriPriponke(v.priponke || []);
+  if (!priponke.veljavno && priponke.napaka) opozorila.push(priponke.napaka);
   return { veljavno: opozorila.length === 0, prejemniki, zadeva, opozorila };
 }
 

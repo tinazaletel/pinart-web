@@ -17,6 +17,7 @@ export type DanesVrsta =
   | 'zamujeno'        /* rok je mimo */
   | 'strankaCaka'     /* nekdo čaka na naš odgovor */
   | 'rokDanes'        /* zapade danes */
+  | 'licenca'         /* licenca pri stranki poteka ali je potekla */
   | 'dokumentCaka'    /* dokument čaka na našo potezo */
   | 'rokKmalu'        /* zapade v nekaj dneh */
   | 'mojaNaloga'      /* lastno delo brez roka */
@@ -27,10 +28,11 @@ const TEZA: Record<DanesVrsta, number> = {
   zamujeno: 1,
   strankaCaka: 2,
   rokDanes: 3,
-  dokumentCaka: 4,
-  rokKmalu: 5,
-  mojaNaloga: 6,
-  priloznost: 7,
+  licenca: 4,
+  dokumentCaka: 5,
+  rokKmalu: 6,
+  mojaNaloga: 7,
+  priloznost: 8,
 };
 
 export type DanesVrstica = {
@@ -38,14 +40,31 @@ export type DanesVrstica = {
   vrsta: DanesVrsta;
   /* besedilo se ZAČNE z glagolom: »Odgovori …«, »Pošlji …«, »Preglej …« */
   dejanje: string;
+  /* druga vrstica: čigavo je — stranka, naslovnik, projekt. Brez nje so vrstice
+     videti vse enake, ker se razlikujejo samo po imenu v oklepaju. */
+  podnaslov?: string;
   /* desni pripis: »zapadel 3 dni«, »danes«, »čez 5 dni« */
   pripis: string;
   kam: string;
   /* koliko dni do roka; negativno = zamuda. Brez roka = undefined. */
   dniDoRoka?: number;
+  /* datum, na katerega se vrstica nanasa (ISO) — za datumski zetonu levo. */
+  datum?: string;
 };
 
 export const NAJVEC_VRSTIC = 8;
+
+/* Koliko vrstic istega VIRA (naloge, računi, pošta, licence …) sme priti na vrh
+   seznama, preden pridejo na vrsto drugi. Omejitev je po viru a ne po vrsti
+   namenoma: pri projektu s štiridesetimi nalogami bi naloge sicer pojedle ves
+   seznam in opozorila — zapadel račun, potekla licenca — se ne bi videla. */
+export const NAJVEC_ENAKIH = 2;
+
+/* Vir je predpona id-ja: "racun-12" -> "racun". */
+const vir = (id: string): string => id.slice(0, id.indexOf('-') + 1) || id;
+
+/* Koliko dni vnaprej licenca ze steje kot nekaj, kar te caka. */
+export const LICENCA_DNI = 60;
 
 /* ── čas ─────────────────────────────────────────────────────────────────── */
 
@@ -82,18 +101,45 @@ export function pripisRoka(dni: number, jeEn = false): string {
  * vrstice brez roka gredo za tistimi z rokom, da nujno ne pade pod nenujno.
  */
 export function urediDanes(vrstice: DanesVrstica[], najvec = NAJVEC_VRSTIC): DanesVrstica[] {
-  return [...vrstice]
-    .sort((a, b) => {
-      const t = TEZA[a.vrsta] - TEZA[b.vrsta];
-      if (t !== 0) return t;
-      const ar = a.dniDoRoka;
-      const br = b.dniDoRoka;
-      if (ar == null && br == null) return a.dejanje.localeCompare(b.dejanje, 'sl');
-      if (ar == null) return 1;
-      if (br == null) return -1;
-      return ar - br;
-    })
-    .slice(0, najvec);
+  const urejene = [...vrstice].sort((a, b) => {
+    const t = TEZA[a.vrsta] - TEZA[b.vrsta];
+    if (t !== 0) return t;
+    const ar = a.dniDoRoka;
+    const br = b.dniDoRoka;
+    if (ar == null && br == null) return a.dejanje.localeCompare(b.dejanje, 'sl');
+    if (ar == null) return 1;
+    if (br == null) return -1;
+    return ar - br;
+  });
+
+  /* Brez omejitve seznam poje en sam vir: sest zapadlih racunov istega
+     narocnika je zasedlo vseh osem mest. Najprej vzamemo najvec NAJVEC_ENAKIH
+     od vsakega vira, sele ce mesta se ostanejo, jih dopolnimo po vrstnem redu. */
+  const izbrane: DanesVrstica[] = [];
+  const steviloPoViru = new Map<string, number>();
+  /* Prvi prehod je strog: ista stranka pri istem viru dobi ENO vrstico. Sicer
+     stojita druga ob drugi dve skoraj enaki ("Pošlji opomnik za račun — Rokus
+     Klett") in izgledata kot podvojitev, čeprav gre za dva različna računa. */
+  const videnaStranka = new Set<string>();
+  for (const v of urejene) {
+    if (izbrane.length >= najvec) break;
+    const k = vir(v.id);
+    const kStranka = `${k}|${v.podnaslov || ''}`;
+    if (videnaStranka.has(kStranka)) continue;
+    const doslej = steviloPoViru.get(k) || 0;
+    if (doslej >= NAJVEC_ENAKIH) continue;
+    videnaStranka.add(kStranka);
+    steviloPoViru.set(k, doslej + 1);
+    izbrane.push(v);
+  }
+  if (izbrane.length < najvec) {
+    const ze = new Set(izbrane.map(v => v.id));
+    for (const v of urejene) {
+      if (izbrane.length >= najvec) break;
+      if (!ze.has(v.id)) izbrane.push(v);
+    }
+  }
+  return izbrane;
 }
 
 /* ── sestavljanje vrstic iz virov ────────────────────────────────────────── */
@@ -104,6 +150,8 @@ export type DanesViri = {
   naloge?: Array<{ id?: string; naslov: string; stolpec: string; rok?: string }>;
   posta?: Array<{ id: string; smer: 'poslano' | 'prejeto'; prejemniki: string[]; zadeva: string; datum: string; osnutek?: boolean; izbrisano?: string }>;
   racuni?: Array<{ id: string; number?: string; client: string; paid: boolean; date: string; dueDays?: number }>;
+  /* licence: ponudba z datumom, do katerega velja licenca za uporabo dela */
+  licence?: Array<{ id: string; client: string; title?: string; licencaDo?: string }>;
   ponudbe?: Array<{ id: string; title: string; client: string; date: string; status: string }>;
 };
 
@@ -136,7 +184,8 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       vrsta,
       dejanje: `${L('Poskrbi za', 'Take care of')} ${n.naslov}`,
       pripis: dni == null ? L('brez roka', 'no deadline') : pripisRoka(dni, jeEn),
-      kam: '/kalkulator/naloge',
+      datum: n.rok,
+      kam: n.id ? `/kalkulator/naloge?id=${encodeURIComponent(n.id)}` : '/kalkulator/naloge',
       dniDoRoka: dni ?? undefined,
     });
   }
@@ -168,8 +217,10 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       id: `posta-${v.id}`,
       vrsta: 'strankaCaka',
       dejanje: `${L('Odgovori', 'Reply to')} ${kdo || v.zadeva}`,
+      podnaslov: kdo && v.zadeva ? v.zadeva : undefined,
       pripis: L(`čaka ${cakaDni} dni`, `waiting ${cakaDni} days`),
-      kam: '/kalkulator/komunikacija',
+      datum: v.datum,
+      kam: `/kalkulator/komunikacija?id=${encodeURIComponent(v.id)}`,
       dniDoRoka: dni,
     });
   }
@@ -187,10 +238,34 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       id: `racun-${r.id}`,
       vrsta: dni < 0 ? 'zamujeno' : dni === 0 ? 'rokDanes' : 'rokKmalu',
       dejanje: dni < 0
-        ? `${L('Pošlji opomnik za', 'Send a reminder for')} ${oznaka} (${r.client})`
-        : `${L('Spremljaj', 'Watch')} ${oznaka} (${r.client})`,
+        ? `${L('Pošlji opomnik za', 'Send a reminder for')} ${oznaka}`
+        : `${L('Spremljaj', 'Watch')} ${oznaka}`,
+      podnaslov: r.client,
       pripis: pripisRoka(dni, jeEn),
-      kam: '/kalkulator/racuni',
+      datum: rok.toISOString().slice(0, 10),
+      kam: `/kalkulator/racuni?id=${encodeURIComponent(r.id)}`,
+      dniDoRoka: dni,
+    });
+  }
+
+  /* Licence: potekla licenca je izgubljen prihodek, ki ga stranka ponavadi
+     rada podaljša — zato sodi mednje, kar te danes čaka, ne v svoj pas. */
+  for (const l of viri.licence || []) {
+    if (!l.licencaDo) continue;
+    const dni = dniMed(danes, l.licencaDo);
+    if (dni == null || dni > LICENCA_DNI) continue;
+    ven.push({
+      id: `licenca-${l.id}`,
+      vrsta: 'licenca',
+      dejanje: dni < 0
+        ? `${L('Predlagaj podaljšanje licence', 'Suggest renewing the licence')}${l.title ? ` — ${l.title}` : ''}`
+        : `${L('Pripravi podaljšanje licence', 'Prepare the licence renewal')}${l.title ? ` — ${l.title}` : ''}`,
+      podnaslov: l.client,
+      pripis: dni < 0
+        ? L(`potekla pred ${Math.abs(dni)} dni`, `expired ${Math.abs(dni)} days ago`)
+        : pripisRoka(dni, jeEn),
+      datum: l.licencaDo,
+      kam: '/kalkulator/projekti',
       dniDoRoka: dni,
     });
   }
@@ -203,8 +278,10 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
     ven.push({
       id: `ponudba-${p.id}`,
       vrsta: 'dokumentCaka',
-      dejanje: `${L('Preveri ponudbo', 'Follow up on the offer')} ${p.title} (${p.client})`,
+      dejanje: `${L('Preveri ponudbo', 'Follow up on the offer')} ${p.title}`,
+      podnaslov: p.client,
       pripis: L(`poslana pred ${Math.abs(dni)} dni`, `sent ${Math.abs(dni)} days ago`),
+      datum: p.date,
       kam: '/kalkulator/projekti',
       dniDoRoka: dni,
     });

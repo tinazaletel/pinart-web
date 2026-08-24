@@ -1,0 +1,197 @@
+{
+  "naloge": [
+    {
+      "id": "prev-23b-01",
+      "naslov": "Opombe za odvetnika ven z javnih strani",
+      "opis": "Odpri /kalkulator/pogoji in /zasebnost, v slovenščini IN angleščini. Nikjer več ne sme biti rdeče obrobljenih okvirčkov »OSNUTEK — pravno mora potrditi odvetnik« oziroma »DRAFT«. Bilo jih je osem.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "pravno",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-02",
+      "naslov": "Preberi dokument za odvetnika in dopiši svoje skrbi",
+      "opis": "docs/PRAVNO-vprasanja-za-odvetnika.md. Vanj so prestavljene vse opombe z javnih strani, dodana so vprašanja o 4G (pogodba o obdelavi), podlagi za Pupo, prenosih v ZDA, arbitraži 11d, neaktualnih odstavkih in prošnja za priporočilo odvetnika za SLO in ZDA. Preberi in dopiši, kar te še skrbi — s svojimi besedami.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "pravno"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-03",
+      "naslov": "Časovni žig — poenoten",
+      "opis": "V pogojih (točka 4c Sef avtorstva) mora pisati RFC 3161 / FreeTSA. Bitcoina ali OpenTimestamps ne sme biti nikjer — prej sta si politika in pogoji nasprotovala.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "pravno",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-04",
+      "naslov": "Vstopna vrstica s pogoji v brezplačnem kalkulatorju",
+      "opis": "Odpri kalkulator v anonimnem oknu. Nad gumbom »Razumem, gremo« mora biti vrstica: »S klikom potrjuješ pogoje uporabe in politiko zasebnosti« — obe povezavi morata delati in se odpreti v novem zavihku. Osamljene povezave »Preberi celotne pogoje« ni več.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "pravno",
+        "kalkulator",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-05",
+      "naslov": "Polna potrditev pogojev pred prenosom PDF",
+      "opis": "Kot NEPRIJAVLJEN sestavi ponudbo in klikni »Prenesi PDF«. Odpreti se mora okno s pogoji v okvirju. Kljukica je zaklenjena, dokler pogojev ne prelistaš do dna. Po potrditvi se PDF prenese sam, brez ponovnega klika.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "pravno",
+        "kalkulator",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-06",
+      "naslov": "Isto preveri še za pošiljanje in arhiv",
+      "opis": "»Pošlji ponudbo« in »Shrani v arhiv« morata sprožiti isto okno. Prijavljenih uporabnikov to ne sme ustaviti — oni pogoje potrdijo že ob vstopu.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "pravno",
+        "kalkulator",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-07",
+      "naslov": "Drugič se ne sme več vprašati",
+      "opis": "Ko pogoje enkrat potrdiš, mora naslednji prenos PDF steči brez okna. Potrditev se zapiše skupaj z različico pogojev.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "kalkulator",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-08",
+      "naslov": "»Ne zdaj« ne sme ničesar narediti",
+      "opis": "V oknu s pogoji klikni »Ne zdaj«. PDF se ne sme prenesti, ponudba se ne sme poslati, v arhivu ne sme nastati nič.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "kalkulator",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-09",
+      "naslov": "Različica pogojev je vidna",
+      "opis": "Na dnu strani /kalkulator/pogoji in /zasebnost mora pisati »Različica 2026-08-23«. Ko boš kdaj vsebinsko spremenila pogoje, se datum poveča v lib/pogojiRazlicica.ts in ljudje so pozvani k novi potrditvi.",
+      "stolpec": "waiting",
+      "prioriteta": "nizka",
+      "oznake": [
+        "pravno",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-10",
+      "naslov": "Pupa ustvari nalogo iz stavka",
+      "opis": "Na localhost:3456/kalkulator/dom napiši v Pupin klepet: »Pupa, dodaj nalogo: pokliči Rokus Klett do petka«. Pokazati se mora kartica z naslovom in rokom v petek. Klik »Ustvari« → naloga je v Nalogah, v stolpcu Za narediti, z oznako »pupa«.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "pupa",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-11",
+      "naslov": "Pupa: »Prekliči« ne sme zapisati ničesar",
+      "opis": "Ponovi zgornji preizkus in klikni »Prekliči«. V Nalogah ne sme nastati nič novega.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "pupa",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-12",
+      "naslov": "Pupina kartica na ozkem zaslonu",
+      "opis": "Zoži okno brskalnika na širino telefona (ali odpri na telefonu) in poglej kartico nove naloge. Zanima me samo, ali so polja pretesna.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "pupa",
+        "mobile",
+        "preveri"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-13",
+      "naslov": "Dodaj SUPABASE_SERVICE_ROLE_KEY na Vercel",
+      "opis": "To je stara naloga 25. Lokalno je ključ nastavljen in tabeli cenovne_tocke ter dogodki v bazi obstajata — migracija je pognana. Manjka samo še ključ na Vercelu: Settings → Environment Variables → ime SUPABASE_SERVICE_ROLE_KEY, brez predpone NEXT_PUBLIC_. Brez tega je analitika na živi strani prazna.",
+      "stolpec": "todo",
+      "prioriteta": "visoka",
+      "oznake": [
+        "zaledje"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-14",
+      "naslov": "Poženi migracijo za valuto pri stroških",
+      "opis": "Supabase → SQL Editor → prilepi vsebino supabase/migrations/20260823120000_expense_valuta.sql → Run. Brez tega se valuta pri stroških ne shrani v oblak.",
+      "stolpec": "todo",
+      "prioriteta": "visoka",
+      "oznake": [
+        "zaledje"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-15",
+      "naslov": "Odloči: zgornja AI ikona v Nalogah",
+      "opis": "V Nalogah sta dve AI ikoni — zgornja (»AI dodaj več«) in Pupa spodaj. Predlagam, da zgornja odslej odpre Pupo z že vklopljenim kontekstom Nalog: en sam pomočnik, vstop pa ostane blizu. Povej da ali ne.",
+      "stolpec": "todo",
+      "prioriteta": "srednja",
+      "oznake": [
+        "odlocitev",
+        "pupa"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    },
+    {
+      "id": "prev-23b-16",
+      "naslov": "Odloči: naj napišem PRODUCT.md in DESIGN.md",
+      "opis": "Projekt ju nima, zato agenti improvizirajo dizajn in sklepajo iz kode. DESIGN.md bi zapisal mehurčke, kartice z gradientom, Flow serif, --line, mobilne robove in pravilo, da je DokPanel vzorec za panele. Povej da ali ne.",
+      "stolpec": "todo",
+      "prioriteta": "srednja",
+      "oznake": [
+        "odlocitev",
+        "dizajn"
+      ],
+      "created": "2026-08-23T21:00:00.000Z"
+    }
+  ]
+}

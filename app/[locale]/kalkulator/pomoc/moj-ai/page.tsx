@@ -64,8 +64,8 @@ export default async function Stran({ params }: { params: Promise<{ locale: stri
         <div style={{ padding: '.9rem 1.1rem', border: '1px solid rgba(17,17,17,.1)', borderRadius: '.9rem', background: '#fff' }}>
           <strong style={{ fontSize: '.86rem' }}>{L('Ko imaš ključ', 'Once you have the key')}</strong>
           <p style={{ margin: '.35rem 0 .6rem', fontSize: '.86rem', lineHeight: 1.55, color: '#4a453f' }}>
-            {L('Prilepi ga v Nastavitve → Moj AI in klikni »Preveri povezavo«. Ključ se šifrira na strežniku in se nikoli ne vrne v brskalnik — vidiš le zadnje štiri znake.',
-               'Paste it into Settings → My AI and click “Test connection”. The key is encrypted on the server and never returned to the browser — you only see the last four characters.')}
+            {L('Prilepi ga v Nastavitve → Moj AI in izberi »Preveri povezavo«. Ključ se šifrira na strežniku in se nikoli ne vrne v brskalnik — vidiš le zadnje štiri znake.',
+               'Paste it into Settings → My AI and select “Test connection”. The key is encrypted on the server and never returned to the browser — you only see the last four characters.')}
           </p>
           <Link href={`${base}/kalkulator/nastavitve`} style={{ fontSize: '.82rem', fontWeight: 700, color: '#6E4FA6' }}>
             {L('Odpri Nastavitve → Moj AI →', 'Open Settings → My AI →')}

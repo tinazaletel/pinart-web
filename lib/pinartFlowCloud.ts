@@ -438,15 +438,28 @@ export function mergeFlowData(cloud: FlowData, local: FlowData): FlowData {
 const BUSINESS_DOCUMENT_BUCKET = 'business-documents';
 const MAX_BUSINESS_DOCUMENT_BYTES = 25 * 1024 * 1024;
 const MAX_SIGNED_URL_SECONDS = 3600;
+/* Seznam mora biti usklajen z vedrom (allowed_mime_types) in z lib/priponke.ts.
+   Prej je bil ožji od obojega, zato je datoteka, ki jo je vmesnik sprejel, tu
+   tiho padla — SVG, GIF, TXT in Officeove starejše oblike sploh niso prišle
+   skozi, sporočilo pa je govorilo o PDF, PNG in ZIP. */
 const ALLOWED_BUSINESS_DOCUMENT_TYPES: Record<string, readonly string[]> = {
   pdf: ['application/pdf'],
   png: ['image/png'],
   jpg: ['image/jpeg'],
   jpeg: ['image/jpeg'],
   webp: ['image/webp'],
+  gif: ['image/gif'],
+  heic: ['image/heic', 'image/heif'],
+  svg: ['image/svg+xml'],
+  txt: ['text/plain'],
+  rtf: ['application/rtf', 'text/rtf'],
+  ics: ['text/calendar'],
+  doc: ['application/msword'],
+  xls: ['application/vnd.ms-excel'],
   docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
   xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-  csv: ['text/csv', 'application/csv'],
+  pptx: ['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+  csv: ['text/csv', 'application/csv', 'text/plain'],
   zip: ['application/zip', 'application/x-zip-compressed'],
 };
 
@@ -483,7 +496,7 @@ function validateBusinessDocument(file: File): { safeName: string; mime: string 
   const allowedMime = ALLOWED_BUSINESS_DOCUMENT_TYPES[extension];
   const mime = file.type.trim().toLowerCase();
   if (!allowedMime || !mime || !allowedMime.includes(mime)) {
-    throw new Error('Dovoljene so datoteke PDF, PNG, JPG, WEBP, DOCX, XLSX, CSV in ZIP.');
+    throw new Error(`Te vrste datoteke ne sprejmemo: »${originalName}« (${mime || 'neznana vrsta'}). Dovoljeni so PDF, slike, Word, Excel, PowerPoint, CSV, TXT in ZIP.`);
   }
   const safeName = originalName.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^\.+/, '').slice(0, 180);
   if (!safeName || safeName.includes('..')) throw new Error('Ime datoteke ni veljavno.');
@@ -525,7 +538,7 @@ export async function uploadBusinessDocument(file: File, section: string, extern
   return path;
 }
 
-export async function getBusinessDocumentUrl(path: string, expiresIn = 60): Promise<string> {
+export async function getBusinessDocumentUrl(path: string, expiresIn = 60, prenesiKot?: string): Promise<string> {
   const context = await getOrganizationContext();
   if (!context) throw new Error('Prijava je potekla.');
   if (!path.startsWith(`${context.organizationId}/`) || path.includes('..')) {
@@ -542,7 +555,11 @@ export async function getBusinessDocumentUrl(path: string, expiresIn = 60): Prom
   if (!document || document.deleted_at) throw new Error('Datoteka ne obstaja ali je arhivirana.');
   if (document.scan_status !== 'clean') throw new Error('Datoteka še ni varnostno potrjena.');
   const seconds = Math.min(MAX_SIGNED_URL_SECONDS, Math.max(1, Number.isFinite(expiresIn) ? Math.floor(expiresIn) : 60));
-  const { data, error } = await supabase.storage.from(document.bucket).createSignedUrl(path, seconds);
+  /* prenesiKot postavi Content-Disposition: attachment. Za SVG je to varnostna
+     zahteva — brskalnik ga tako ne izrise in skripta v njem ne stece. */
+  const { data, error } = await supabase.storage
+    .from(document.bucket)
+    .createSignedUrl(path, seconds, prenesiKot ? { download: prenesiKot } : undefined);
   if (error) throw error;
   return data.signedUrl;
 }

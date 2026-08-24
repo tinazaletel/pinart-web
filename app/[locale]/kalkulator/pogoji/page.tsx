@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { POGOJI_RAZLICICA } from '@/lib/pogojiRazlicica';
 import { setRequestLocale } from 'next-intl/server';
 import { localePath } from '@/i18n/routing';
 import NazajLink from '@/components/NazajLink';
@@ -40,7 +41,6 @@ export default async function KalkulatorPogojiPage({
   const S: React.CSSProperties = { marginTop: '2.6rem' };
   const H: React.CSSProperties = { fontSize: '.78rem', fontWeight: 600, letterSpacing: '.18em', textTransform: 'uppercase', marginBottom: '.7rem' };
   const P: React.CSSProperties = { fontSize: '.95rem', lineHeight: 1.75, color: 'rgba(17,17,17,.8)', margin: '0 0 .8rem' };
-  const OSNUTEK: React.CSSProperties = { ...P, padding: '.8rem 1rem', border: '1px solid rgba(178,84,118,.4)', borderRadius: '.75rem', fontWeight: 600 };
 
   return (
     <main style={{ minHeight: '100dvh' }}>
@@ -54,7 +54,6 @@ export default async function KalkulatorPogojiPage({
         <h1 style={{ fontFamily: 'var(--font-serif-flow), Georgia, serif', fontWeight: 400, fontSize: 'clamp(2.2rem, 7vw, 3.6rem)', lineHeight: 1, letterSpacing: '-.01em', margin: '.6rem 0 1rem' }}>
           {en ? 'Terms of Use' : 'Pogoji uporabe'}
         </h1>
-        {en && <p style={OSNUTEK}>DRAFT — pending legal review.</p>}
         <p style={P}>
           {en ? (
             <>
@@ -422,14 +421,13 @@ export default async function KalkulatorPogojiPage({
 
         <section style={S}>
           <h2 style={H}>{en ? '4c. Authorship vault' : '4c. Sef avtorstva'}</h2>
-          <p style={OSNUTEK}>{en ? 'DRAFT — must be legally reviewed and approved by a lawyer.' : 'OSNUTEK — pravno mora potrditi odvetnik.'}</p>
           <p style={P}>
             {en ? (
               <>
                 The Authorship vault computes a cryptographic fingerprint (SHA-256) of your file and records it, together
                 with the date and work details, as evidence of the existence and priority of the work. The fingerprint is a
                 unique &quot;fingerprint&quot; of the file; the content cannot be reconstructed from it. For an
-                independent timestamp we may use the OpenTimestamps service, which writes to a public chain (Bitcoin)
+                independent timestamp we use an RFC 3161 timestamp authority (currently FreeTSA), which receives
                 <strong> only the fingerprint, never the file</strong>. If you opt for the cloud vault
                 (paid), the original file is stored in the provider&apos;s private cloud storage (EU).
               </>
@@ -438,8 +436,8 @@ export default async function KalkulatorPogojiPage({
                 Sef avtorstva izračuna kriptografski odtis (SHA-256) tvoje datoteke in ga skupaj z
                 datumom ter podatki o delu zabeleži kot dokaz o obstoju in prioriteti dela. Odtis je
                 enolični »prstni odtis« datoteke; iz njega ni mogoče rekonstruirati vsebine. Za
-                neodvisen časovni žig lahko uporabimo storitev OpenTimestamps, ki v javno verigo (Bitcoin)
-                zapiše <strong>samo odtis, nikoli datoteke</strong>. Če se odločiš za oblačni trezor
+                neodvisen časovni žig uporabljamo overitelja po standardu RFC 3161 (trenutno FreeTSA), ki prejme
+                <strong>samo odtis, nikoli datoteke</strong>. Če se odločiš za oblačni trezor
                 (plačljivo), se izvirna datoteka shrani v zasebno oblačno shrambo ponudnika (EU).
               </>
             )}
@@ -730,7 +728,6 @@ export default async function KalkulatorPogojiPage({
 
         <section style={S}>
           <h2 style={H}>{en ? '7. Artificial intelligence (Pupa) and data security' : '7. Umetna inteligenca (Pupa) in varnost podatkov'}</h2>
-          <p style={OSNUTEK}>{en ? 'DRAFT — must be legally reviewed and approved by a lawyer.' : 'OSNUTEK — pravno mora potrditi odvetnik.'}</p>
           <p style={P}>
             {en ? (
               <>
@@ -838,7 +835,7 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Resend</strong> — sending email<br />
                 — <strong>Google</strong> — sign-in with a Google account (OAuth)<br />
                 — <strong>Anthropic</strong> — the AI assistant Pupa (only when used)<br />
-                — <strong>OpenTimestamps / Bitcoin</strong> — independent timestamp for the vault (receives only the fingerprint)<br />
+                — <strong>FreeTSA (RFC 3161)</strong> — independent timestamp for the vault (receives only the fingerprint)<br />
                 — an authorised payment provider (Merchant of Record) — subscription payment processing
               </>
             ) : (
@@ -848,7 +845,7 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Resend</strong> — pošiljanje e-pošte<br />
                 — <strong>Google</strong> — prijava z Google računom (OAuth)<br />
                 — <strong>Anthropic</strong> — AI asistentka Pupa (samo ob uporabi)<br />
-                — <strong>OpenTimestamps / Bitcoin</strong> — neodvisni časovni žig sefa (prejme samo odtis)<br />
+                — <strong>FreeTSA (RFC 3161)</strong> — neodvisni časovni žig sefa (prejme samo odtis)<br />
                 — pooblaščeni ponudnik plačil (Merchant of Record) — obdelava plačil naročnine
               </>
             )}
@@ -973,7 +970,6 @@ export default async function KalkulatorPogojiPage({
 
         <section style={S}>
           <h2 style={H}>{en ? '9a. Decisions based on the tool and AI' : '9a. Odločitve na podlagi orodja in AI'}</h2>
-          <p style={OSNUTEK}>{en ? 'DRAFT — must be legally reviewed and approved by a lawyer.' : 'OSNUTEK — pravno mora potrditi odvetnik.'}</p>
           <p style={P}>
             {en ? (
               <>
@@ -1182,11 +1178,6 @@ export default async function KalkulatorPogojiPage({
 
         <section style={S}>
           <h2 style={H}>{en ? '11d. Dispute resolution for US users (arbitration)' : '11d. Reševanje sporov za uporabnike v ZDA (arbitraža)'}</h2>
-          <p style={OSNUTEK}>
-            {en
-              ? 'DRAFT — binding arbitration and a class-action waiver are a legal choice, not a requirement. Confirm scope and enforceability with a US attorney (FAA and state-law limits) before relying on this.'
-              : 'OSNUTEK — zavezujoča arbitraža in odpoved skupinski tožbi sta pravna izbira, ne zahteva. Pred uporabo naj obseg in izvršljivost potrdi odvetnik za ZDA (FAA in omejitve po pravu posamezne države).'}
-          </p>
           <p style={P}>
             {en ? (
               <>
@@ -1247,7 +1238,7 @@ export default async function KalkulatorPogojiPage({
             )}
           </p>
           <p style={{ ...P, color: 'rgba(17,17,17,.6)', fontSize: '.85rem' }}>
-            {en ? 'Last updated: 15 Aug 2026 · Contact: tina@pinart.si' : 'Zadnja sprememba: 15. 8. 2026 · Kontakt: tina@pinart.si'}
+            {en ? `Version ${POGOJI_RAZLICICA} · Last updated: 23 Aug 2026 · Contact: tina@pinart.si` : `Različica ${POGOJI_RAZLICICA} · Zadnja sprememba: 23. 8. 2026 · Kontakt: tina@pinart.si`}
           </p>
         </section>
 

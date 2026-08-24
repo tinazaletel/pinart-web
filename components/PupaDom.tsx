@@ -7,7 +7,9 @@ import CanvasAgent from '@/components/CanvasAgent';
 import AgentTabla from '@/components/AgentTabla';
 import RazisciStrankoAgent from '@/components/RazisciStrankoAgent';
 import PreglejKonkurencoAgent from '@/components/PreglejKonkurencoAgent';
-import { shraniProjekt } from '@/lib/projekti';
+import { shraniProjekt, preberiProjekti } from '@/lib/projekti';
+import { preberiNaloge, shraniNaloge, zabeleziAktivnost, type Naloga } from '@/lib/naloge';
+import { jeNamenNaloge, razcleniNalogo, type PupaNalogaOsnutek } from '@/lib/pupaNaloga';
 
 /* PUPA DOM — pogovorni dom (Faza 1). Chat v OSPREDJU (sredina), podatki nadzorne
    plošče PLAVAJO okoli (ambient, glass), aurora v ozadju. »Moderno in sveže«.
@@ -236,6 +238,73 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     setPupaCaka(false);
   };
 
+  /* ── PUPA ZAPIŠE NALOGO ───────────────────────────────────────────────────
+     Edino orodje, ki ga Pupa zna izpolniti sama. Vrstni red je namenoma
+     razčleni → POKAŽI → počakaj na »Ustvari« → zapiši: brez potrditve se ne
+     zapiše nič, ker uporabnica ne sme dobiti zapisa, ki ga ni videla.
+     Razčlenjevanje je čista funkcija (lib/pupaNaloga + testi), zapis pa gre
+     skozi obstoječi lib/naloge, da naloga potuje v oblak kot vsaka druga —
+     nobene svoje shrambe in nobenega novega endpointa. */
+  const [osnutekNaloge, setOsnutekNaloge] = useState<PupaNalogaOsnutek | null>(null);
+  const [ustvarjenaNaloga, setUstvarjenaNaloga] = useState<string | null>(null);
+
+  /* ISO rok v berljiv zapis; brez new Date(), da ne dramimo hidracije */
+  const rokIzpis = (iso?: string) => {
+    if (!iso) return L('brez roka', 'no deadline');
+    const [l, m, d] = iso.split('-');
+    return jeEn ? `${d}/${m}/${l}` : `${Number(d)}. ${Number(m)}. ${l}`;
+  };
+
+  /* Vrne true, če je vnos prevzela pot »ustvari nalogo« — takrat to ni več
+     klepet in tudi ne odpiranje orodja. */
+  function ponudiNalogo(besedilo: string): boolean {
+    if (!jeNamenNaloge(besedilo)) return false;
+    /* projekte beremo ob KLIKU (shramba), ne med renderjem */
+    const imenaProjektov = preberiProjekti().map(p => p.naslov).filter(Boolean);
+    const osnutek = razcleniNalogo(besedilo, new Date(), imenaProjektov);
+    /* brez naslova ni česa potrditi → obdrži staro vedenje (odpre se Task Manager) */
+    if (!osnutek) return false;
+    setUstvarjenaNaloga(null);
+    setOsnutekNaloge(osnutek);
+    setPupaSpor(s => [...s,
+      { role: 'user', content: besedilo },
+      { role: 'assistant', content: L('Tole bom zapisala med Naloge. Preveri in potrdi — dokler ne klikneš »Ustvari«, ni shranjeno nič.',
+        'Here is what I would add to Tasks. Check and confirm — nothing is saved until you click “Create”.') },
+    ]);
+    return true;
+  }
+
+  function potrdiNalogo() {
+    if (!osnutekNaloge) return;
+    const naslov = osnutekNaloge.naslov.trim();
+    if (!naslov) return;
+    const nova: Naloga = {
+      id: 'task_' + Date.now(),
+      naslov,
+      opis: osnutekNaloge.opis,
+      rok: osnutekNaloge.rok,
+      /* Naloga.projectId je PROSTO ime projekta (glej lib/naloge), ne ključ */
+      projectId: osnutekNaloge.projekt,
+      stolpec: osnutekNaloge.stolpec,
+      oznake: osnutekNaloge.oznake,
+      created: new Date().toISOString(),
+    };
+    /* obstoječa shramba: shraniNaloge postavi žig in javi oblaku */
+    shraniNaloge([...preberiNaloge(), nova]);
+    /* v zgodovini naj piše, da je nalogo ustvarila Pupa — da se ve, kdo je pisal */
+    zabeleziAktivnost(nova.id, 'Pupa', `Ustvarila nalogo »${nova.naslov}«`);
+    setOsnutekNaloge(null);
+    setUstvarjenaNaloga(naslov);
+    setPupaSpor(s => [...s, { role: 'assistant', content:
+      L(`Ustvarila sem nalogo »${naslov}« (rok: ${rokIzpis(nova.rok)}) v stolpcu »Za narediti«, označeno z »pupa«.`,
+        `Created the task “${naslov}” (due: ${rokIzpis(nova.rok)}) in the “To do” column, tagged “pupa”.`) }]);
+  }
+
+  function zavrniNalogo() {
+    setOsnutekNaloge(null);
+    setPupaSpor(s => [...s, { role: 'assistant', content: L('V redu, nič nisem zapisala.', 'Fine, nothing was saved.') }]);
+  }
+
   /* Zazna JASEN namen ustvarjanja iz besedila (akcijski glagol + predmet). Pokrije tudi
      pogodbo/dolgoročno (ki nista gumba). Sicer null → Pupa se pogovarja, ne vsili ponudbe. */
   function zaznajTip(low: string): typeof tip {
@@ -254,6 +323,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     if (!t) return;
     const el = textRef.current;
     const cilj = zaznajTip(t.toLowerCase());
+    // NALOGO Pupa napiše sama — a najprej pokaže osnutek v potrditveni kartici.
+    // Teče PRED izbiro AI načina, ker razčlenjevanje ne rabi AI: vse ostane v brskalniku.
+    if (ponudiNalogo(t)) { setVnos(''); if (el) el.style.height = 'auto'; return; }
     // AI način (Pupa / Moj AI): JASEN namen ustvarjanja → odpre orodje; sicer = KLEPET (NE vsili ponudbe).
     if (aiNacin === 'pupa' || aiNacin === 'moj') {
       setVnos(''); if (el) el.style.height = 'auto';
@@ -423,14 +495,14 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       {aiNacin === 'pupa' && <div className={`pd-srce${pupaCaka ? ' bije' : ''}`} aria-hidden />}
 
       {/* Gumb: zberi tage v kot / razprši nazaj (le namizje) */}
-      <button type="button" className="pd-razpored" onClick={preklopiRazpored} aria-pressed={zbrano}
+      {!zgodovinaOdprta && <button type="button" className="pd-razpored" onClick={preklopiRazpored} aria-pressed={zbrano}
         title={zbrano ? L('Razprši kartice', 'Scatter cards') : L('Zberi v kot', 'Collect to corner')}>
         {zbrano ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" /></svg>
         ) : (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
         )}
-      </button>
+      </button>}
 
       {/* Zgodovina Pupinih pogovorov — subtilen gumb desno, panel ZDRSNE z desne (kot ChatGPT/Claude) */}
       {!zgodovinaOdprta && (
@@ -553,6 +625,46 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             {pupaCaka && (
               <div className="pd-vr pupa"><div className="pd-vr-body"><div className="pd-mehur pd-tipka"><span /><span /><span /></div></div></div>
             )}
+
+            {/* POTRDITEV PRED ZAPISOM: kartica pokaže, KAJ bo Pupa ustvarila.
+                Naslov in rok se dasta popraviti (razčlenjevanje se lahko zmoti),
+                zapis se zgodi šele ob kliku »Ustvari«. */}
+            {osnutekNaloge && (
+              <div className="pd-potrdi" role="group" aria-label={L('Nova naloga — potrditev', 'New task — confirmation')}>
+                <div className="pd-potrdi-glava">
+                  <span className="pd-potrdi-znak">{L('Nova naloga', 'New task')}</span>
+                  <span className="pd-potrdi-status">{L('še ni shranjeno', 'not saved yet')}</span>
+                </div>
+                <label className="pd-potrdi-polje">
+                  <span>{L('Naslov', 'Title')}</span>
+                  <input value={osnutekNaloge.naslov} onChange={e => setOsnutekNaloge(o => (o ? { ...o, naslov: e.target.value } : o))} />
+                </label>
+                <label className="pd-potrdi-polje">
+                  <span>{L('Rok', 'Due date')}</span>
+                  <input type="date" value={osnutekNaloge.rok || ''} onChange={e => setOsnutekNaloge(o => (o ? { ...o, rok: e.target.value || undefined } : o))} />
+                </label>
+                <div className="pd-potrdi-polje"><span>{L('Stolpec', 'Column')}</span><b>{L('Za narediti', 'To do')}</b></div>
+                {osnutekNaloge.projekt && <div className="pd-potrdi-polje"><span>{L('Projekt', 'Project')}</span><b>{osnutekNaloge.projekt}</b></div>}
+                {osnutekNaloge.opis && <div className="pd-potrdi-polje"><span>{L('Opis', 'Notes')}</span><b>{osnutekNaloge.opis}</b></div>}
+                <p className="pd-potrdi-opomba">
+                  {osnutekNaloge.rokIzraz
+                    ? L(`Rok sem razbrala iz »${osnutekNaloge.rokIzraz}«. Nalogo označim z »pupa«, da veš, da je moja.`,
+                        `I read the due date from “${osnutekNaloge.rokIzraz}”. I tag the task “pupa” so you know it is mine.`)
+                    : L('Roka nisem našla — dodaš ga lahko zgoraj. Nalogo označim z »pupa«, da veš, da je moja.',
+                        'I found no due date — you can add one above. I tag the task “pupa” so you know it is mine.')}
+                </p>
+                <div className="pd-potrdi-akc">
+                  <button type="button" className="pd-potrdi-ne" onClick={zavrniNalogo}>{L('Prekliči', 'Cancel')}</button>
+                  <button type="button" className="pd-potrdi-da" onClick={potrdiNalogo} disabled={!osnutekNaloge.naslov.trim()}>{L('Ustvari', 'Create')}</button>
+                </div>
+              </div>
+            )}
+
+            {/* Po zapisu: pot do naloge, da ni treba iskati po meniju. <a> in ne
+                <Link>, ker styled-jsx <Link> ne scopa (glej reference v memory). */}
+            {ustvarjenaNaloga && !osnutekNaloge && (
+              <a className="pd-potrdi-link" href={`${base}/kalkulator/naloge`}>{L('Odpri Naloge', 'Open Tasks')} <span aria-hidden>→</span></a>
+            )}
           </div>
         )}
 
@@ -601,7 +713,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg>
             </button>
             <div className="pd-vnos-desno">
-              <button type="button" className={`pd-mik${poslusam ? ' posluam' : ''}`} onClick={glas} title={poslusam ? L('Poslušam … klikni za konec', 'Listening … click to stop') : L('Govori', 'Speak')} aria-label={L('Glas', 'Voice')} aria-pressed={poslusam}>
+              <button type="button" className={`pd-mik${poslusam ? ' posluam' : ''}`} onClick={glas} title={poslusam ? L('Poslušam … zaključi tukaj', 'Listening … click to stop') : L('Govori', 'Speak')} aria-label={L('Glas', 'Voice')} aria-pressed={poslusam}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" /></svg>
               </button>
               {pupaCaka ? (
@@ -908,6 +1020,28 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         @media (max-width: 640px) { .chat-podrocja { flex-direction: column; } .chip-podrocje { width: 100%; } .chip-podrocje .chip-kljuk { margin-left: auto; } }
         .pd-izbire-potrdi { padding: .55rem 1.3rem; border: 0; border-radius: 999px; background: var(--ink, #2a2620); color: var(--paper, #faf7f2); font: 700 .85rem var(--font-sans), sans-serif; cursor: pointer; }
         .pd-izbire-potrdi:disabled { opacity: .4; cursor: default; }
+
+        /* Potrditvena kartica »Nova naloga«: isti stekleni jezik kot mehurčki,
+           a z vidnim robom — od uporabnice zahteva odločitev, ne le branje. */
+        .pd-potrdi { align-self: flex-start; max-width: min(30rem, 100%); display: flex; flex-direction: column; gap: .5rem; margin: .25rem 0 .1rem; padding: .85rem .95rem; border: 1px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 30%, rgba(255,255,255,.7)); border-radius: 1.15rem; background: rgba(255,255,255,.74); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); box-shadow: 0 8px 24px oklch(45% .1 300 / .14); }
+        .pd-potrdi-glava { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+        .pd-potrdi-znak { font: 700 .84rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .pd-potrdi-status { padding: .15rem .55rem; border-radius: 999px; background: color-mix(in oklch, oklch(82% .13 70) 34%, #fff); font: 600 .68rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 78%, transparent); }
+        .pd-potrdi-polje { display: grid; grid-template-columns: 5rem 1fr; align-items: center; gap: .5rem; }
+        .pd-potrdi-polje > span { font: 600 .72rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 58%, transparent); }
+        .pd-potrdi-polje > b { font: 600 .85rem/1.4 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); overflow-wrap: anywhere; }
+        .pd-potrdi-polje input { width: 100%; min-height: 2.3rem; padding: .35rem .6rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 15%, transparent); border-radius: .7rem; background: #fff; font: 600 .85rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+        .pd-potrdi-polje input:focus-visible { outline: 2px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 50%, transparent); outline-offset: 1px; }
+        .pd-potrdi-opomba { margin: 0; font: 500 .73rem/1.45 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 62%, transparent); }
+        .pd-potrdi-akc { display: flex; justify-content: flex-end; gap: .5rem; }
+        .pd-potrdi-ne { min-height: 2.4rem; padding: .5rem 1rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 18%, transparent); border-radius: 999px; background: transparent; font: 600 .8rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); cursor: pointer; }
+        .pd-potrdi-ne:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 6%, transparent); }
+        .pd-potrdi-da { min-height: 2.4rem; padding: .5rem 1.25rem; border: 0; border-radius: 999px; background: var(--ink, #2a2620); color: var(--paper, #faf7f2); font: 700 .8rem var(--font-sans), sans-serif; cursor: pointer; }
+        .pd-potrdi-da:disabled { opacity: .4; cursor: default; }
+        .pd-potrdi-link { align-self: flex-start; display: inline-flex; align-items: center; gap: .35rem; margin: .1rem 0 .2rem; padding: .5rem .95rem; border: 1px solid rgba(255,255,255,.65); border-radius: 999px; background: color-mix(in oklch, oklch(72% .14 297) 16%, rgba(255,255,255,.65)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 700 .78rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); text-decoration: none; }
+        .pd-potrdi-link:hover { background: color-mix(in oklch, oklch(72% .14 297) 26%, rgba(255,255,255,.7)); }
+        /* na telefonu oznaka nad poljem, sicer je vrstica pretesna */
+        @media (max-width: 640px) { .pd-potrdi-polje { grid-template-columns: 1fr; gap: .2rem; } }
 
         /* izvlečni desni panel z živim osnutkom */
         .pd-panel { position: relative; z-index: 2; align-self: center; width: min(21rem, 94vw); display: flex; flex-direction: column; gap: .85rem; padding: 1.15rem 1.2rem; background: rgba(255,255,255,.72); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4); border: 1px solid rgba(255,255,255,.8); border-radius: 1.2rem; box-shadow: 0 20px 55px oklch(40% .08 300 / .18); animation: pdPanelIn .5s cubic-bezier(.2,.85,.25,1) both; }

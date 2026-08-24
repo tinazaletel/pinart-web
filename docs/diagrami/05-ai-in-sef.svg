@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" role="img" aria-label="Kaj zapusti sistem: AI in Sef avtorstva">
+<defs>
+  <style>
+    .bg{fill:#F5F2EA}
+    .t1{font-family:'DM Serif Display','Bodoni Moda',Georgia,serif;font-size:31px;fill:#111}
+    .t2{font-family:'Archivo',system-ui,sans-serif;font-size:13.5px;fill:#55524C}
+    .lab{font-family:'Archivo',system-ui,sans-serif;font-size:11px;fill:#55524C;letter-spacing:1.6px}
+    .bx{font-family:'Archivo',system-ui,sans-serif;font-size:14.5px;font-weight:600;fill:#111}
+    .sm{font-family:'Archivo',system-ui,sans-serif;font-size:11.5px;fill:#55524C}
+    .xs{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;fill:#7A756B;letter-spacing:.7px}
+    .card{fill:#FFFFFF;stroke:#D8D4C8;stroke-width:1}
+    .frame{fill:none;stroke:#C9C4B4;stroke-width:1;stroke-dasharray:5 5}
+    .ln{stroke:#8A857A;stroke-width:1.4;fill:none}
+  </style>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#8A857A"/>
+  </marker>
+</defs>
+
+<rect class="bg" width="1200" height="760"/>
+<text class="t1" x="60" y="68">Kaj zapusti sistem</text>
+<text class="t2" x="60" y="96">Dve funkciji, dva skrajno razlicna profila tveganja. Levo gre ven veliko, desno skoraj nic.</text>
+<line x1="60" y1="126" x2="1140" y2="126" stroke="#D8D4C8" stroke-width="1"/>
+
+<!-- ============ LEVO: AI ============ -->
+<rect class="frame" x="60" y="152" width="540" height="508" rx="18"/>
+<text class="lab" x="82" y="180">AI &#8212; PUPA IN LASTNE POVEZAVE</text>
+
+<rect class="card" x="90" y="196" width="480" height="56" rx="12"/>
+<text class="bx" x="110" y="222">Uporabnik pise Pupi</text>
+<text class="sm" x="110" y="240">vprasanje + kontekst iz odprtega projekta</text>
+
+<line class="ln" x1="330" y1="252" x2="330" y2="282" marker-end="url(#ar)"/>
+
+<rect class="card" x="90" y="286" width="480" height="56" rx="12"/>
+<text class="bx" x="110" y="312">/api/pupa na Vercelu</text>
+<text class="sm" x="110" y="330">zapise se v pupa_message in ai_usage (ip_hash, ne IP)</text>
+
+<path class="ln" d="M330 342 L330 362 L205 362 L205 384" marker-end="url(#ar)"/>
+<path class="ln" d="M330 342 L330 362 L455 362 L455 384" marker-end="url(#ar)"/>
+
+<rect class="card" x="90" y="388" width="230" height="116" rx="12"/>
+<text class="xs" x="108" y="412">PRIVZETO</text>
+<text class="bx" x="108" y="434">Pinartov racun</text>
+<text class="sm" x="108" y="456">ANTHROPIC_API_KEY</text>
+<text class="sm" x="108" y="474">iz okolja</text>
+<text class="sm" x="108" y="494" fill="#111">&#8594; Anthropic &#183; ZDA</text>
+
+<rect class="card" x="340" y="388" width="230" height="116" rx="12"/>
+<rect x="340" y="388" width="4.5" height="116" fill="#A170FB"/>
+<text class="xs" x="358" y="412">PO IZBIRI UPORABNIKA</text>
+<text class="bx" x="358" y="434">Lastna povezava</text>
+<text class="sm" x="358" y="456">decryptAiSecret()</text>
+<text class="sm" x="358" y="474">AES-256-GCM</text>
+<text class="sm" x="358" y="494" fill="#111">&#8594; OpenAI, Google, Mistral</text>
+
+<rect x="90" y="528" width="480" height="100" rx="12" fill="#FAE7E2" stroke="#E3BDB1"/>
+<text class="lab" x="110" y="554" fill="#C0492E">KAJ GRE VEN</text>
+<text class="sm" x="110" y="578" fill="#111">Vprasanje uporabnika in kontekst, ki ga Pupa dobi &#8212; torej lahko</text>
+<text class="sm" x="110" y="596" fill="#111">tudi imena strank in vsebina dokumentov. To je prenos v tretjo</text>
+<text class="sm" x="110" y="614" fill="#111">drzavo in mora biti v politiki zasebnosti izrecno pojasnjen.</text>
+
+<!-- ============ DESNO: SEF ============ -->
+<rect class="frame" x="640" y="152" width="500" height="508" rx="18"/>
+<text class="lab" x="662" y="180">SEF AVTORSTVA &#8212; OVERJEN CASOVNI ZIG</text>
+
+<rect class="card" x="670" y="196" width="440" height="56" rx="12"/>
+<text class="bx" x="690" y="222">Uporabnik izbere datoteko</text>
+<text class="sm" x="690" y="240">skica, projekt, besedilo, karkoli</text>
+
+<line class="ln" x1="890" y1="252" x2="890" y2="282" marker-end="url(#ar)"/>
+
+<rect class="card" x="670" y="286" width="440" height="70" rx="12"/>
+<rect x="670" y="286" width="4.5" height="70" fill="#2E7D5B"/>
+<text class="bx" x="690" y="312">Brskalnik izracuna SHA-256</text>
+<text class="sm" x="690" y="332">Datoteka NE zapusti naprave. Nikoli.</text>
+<text class="sm" x="690" y="348">Ven gre samo 32 bajtov zgostitve.</text>
+
+<line class="ln" x1="890" y1="356" x2="890" y2="382" marker-end="url(#ar)"/>
+
+<rect class="card" x="670" y="386" width="440" height="56" rx="12"/>
+<text class="bx" x="690" y="412">/api/sef/zig na Vercelu</text>
+<text class="sm" x="690" y="430">prebere samo stolpec zgostitev iz sef_zapisi</text>
+
+<line class="ln" x1="890" y1="442" x2="890" y2="468" marker-end="url(#ar)"/>
+<text class="xs" x="900" y="460">HTTPS &#183; TimeStampReq (RFC 3161)</text>
+
+<rect class="card" x="670" y="472" width="440" height="56" rx="12"/>
+<text class="bx" x="690" y="498">freetsa.org &#183; casovni organ</text>
+<text class="sm" x="690" y="516">vrne podpisan casovni zeton, ki ga preveri kdorkoli z openssl</text>
+
+<rect x="670" y="552" width="440" height="76" rx="12" fill="#E3F0EA" stroke="#B9D8C8"/>
+<text class="lab" x="690" y="578" fill="#2E7D5B">KAJ GRE VEN</text>
+<text class="sm" x="690" y="602" fill="#111">Samo 32 bajtov zgostitve. Ne datoteka, ne ime datoteke,</text>
+<text class="sm" x="690" y="620" fill="#111">ne naslov dela, ne ime stranke. TSA ne izve, KAJ je zigosano.</text>
+
+<line x1="60" y1="690" x2="1140" y2="690" stroke="#D8D4C8" stroke-width="1"/>
+<text class="sm" x="60" y="716" fill="#111">Popravi pred odvetnikom: politika zasebnosti navaja OpenTimestamps in Bitcoin, koda pa RFC 3161 proti freetsa.org.</text>
+<text class="xs" x="1140" y="716" text-anchor="end">Pinart Flow &#183; 22. 8. 2026</text>
+</svg>

@@ -20,11 +20,44 @@ const DASH_DEMO_NALOGE: { naslov: string; stolpec: string; oseba?: string }[] = 
   { naslov: 'Uskladitev tipografije s CGP', stolpec: 'in_progress', oseba: 'Marko Zupan' },
   { naslov: 'Testiranje dostopnosti (WCAG AA)', stolpec: 'todo', oseba: 'Luka Beg' },
 ];
-const DASH_DEMO_POSTA: { smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string }[] = [
-  { smer: 'prejeto', kdo: 'info@rokusklett.si', zadeva: 'Re: Prenova portala — potrditev obsega' },
-  { smer: 'poslano', kdo: 'info@rokusklett.si', zadeva: 'Prenova portala — osnutek za pregled' },
-  { smer: 'prejeto', kdo: 'ana@rokusklett.si', zadeva: 'Gradiva in dostopi' },
+/* Videz vrstice v seznamu DANES posnema "Zadnji dokumenti": krog z ikono,
+   naslov, podnaslov in znacka desno. Tako se vrstice med seboj razlikujejo,
+   namesto da so vse ena siva crta. */
+/* Pet vrstic, ne osem: vrstica je zdaj dvovrsticna (naslov + stranka), zato je
+   osem vrstic stolpec raztegnilo visje od sosedov. */
+const DANES_VRSTIC = 5;
+
+const DANES_TON: Record<string, 'danger' | 'waiting' | 'info' | 'neutral' | 'success'> = {
+  zamujeno: 'danger',
+  strankaCaka: 'waiting',
+  rokDanes: 'info',
+  dokumentCaka: 'info',
+  rokKmalu: 'neutral',
+  mojaNaloga: 'neutral',
+  priloznost: 'success',
+};
+
+/* Ikona pove, IZ CESA vrstica izhaja — id se zacne z virom (racun-, posta- ...). */
+const danesIkona = (id: string) =>
+  id.startsWith('racun-') ? Receipt
+  : id.startsWith('posta-') ? EnvelopeSimple
+  : id.startsWith('ponudba-') ? FileText
+  : CheckCircle;
+
+/* Demo posta: `predDnevi` je odmik od danes, ne trd datum — sicer demo cez
+   teden dni kaze sporocila iz preteklosti in "stranka caka" se ne sprozi. */
+const DASH_DEMO_POSTA: { smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string; predDnevi: number }[] = [
+  { smer: 'prejeto', kdo: 'info@rokusklett.si', zadeva: 'Re: Prenova portala — potrditev obsega', predDnevi: 3 },
+  { smer: 'poslano', kdo: 'info@rokusklett.si', zadeva: 'Prenova portala — osnutek za pregled', predDnevi: 6 },
+  { smer: 'prejeto', kdo: 'ana@rokusklett.si', zadeva: 'Gradiva in dostopi', predDnevi: 5 },
+  { smer: 'poslano', kdo: 'nina@studio-lipa.si', zadeva: 'Ponudba za celostno grafično podobo', predDnevi: 1 },
 ];
+
+/* Datum izpred N dni kot YYYY-MM-DD. */
+const predDnevi = (n: number, od: Date): string => {
+  const d = new Date(od.getFullYear(), od.getMonth(), od.getDate() - n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 type Offer = { id: string; title: string; client: string; date: string; status: OfferStatus; scope?: string[]; offerNumber?: string; licencaDo?: string };
 type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
@@ -85,7 +118,12 @@ export default function BusinessOverview({ base }: { base: string }) {
   const [dashPosta, setDashPosta] = useState<{ smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string; datum?: string }[]>([]);
   useEffect(() => {
     if (preview === 'empty') { setDashNaloge([]); setDashPosta([]); return; }
-    if (preview !== 'mine') { setDashNaloge(DASH_DEMO_NALOGE); setDashPosta(DASH_DEMO_POSTA); return; }
+    if (preview !== 'mine') {
+      const zdaj = new Date();
+      setDashNaloge(DASH_DEMO_NALOGE);
+      setDashPosta(DASH_DEMO_POSTA.map(v => ({ smer: v.smer, kdo: v.kdo, zadeva: v.zadeva, datum: predDnevi(v.predDnevi, zdaj) })));
+      return;
+    }
     try {
       setDashNaloge(preberiNaloge().filter(n => n.stolpec !== 'done').sort((a, b) => (a.stolpec === 'waiting' ? -1 : 0) - (b.stolpec === 'waiting' ? -1 : 0)).slice(0, 12).map(n => ({ rok: n.rok, naslov: n.naslov, stolpec: n.stolpec, oseba: n.dodeljenoOsebaIme })));
       setDashPosta(preberiVsePoste().slice(0, 12).map((v: PostaVnos) => ({ smer: v.smer, kdo: v.prejemniki[0] || '—', zadeva: v.zadeva || '—', datum: v.datum })));
@@ -164,8 +202,12 @@ export default function BusinessOverview({ base }: { base: string }) {
       posta: dashPosta.map((v, i) => ({ id: String(i), smer: v.smer, prejemniki: [v.kdo], zadeva: v.zadeva, datum: v.datum || '' })),
       racuni: activeInvoices.map(r => ({ id: r.id, client: r.client, paid: r.paid, date: r.date })),
       ponudbe: activeOffers.map(o => ({ id: o.id, title: o.title, client: o.client, date: o.date, status: o.status })),
-    }, danes, locale === 'en'));
-  }, [danes, dashNaloge, dashPosta, activeInvoices, activeOffers, locale]);
+      licence: offers.filter(o => o.licencaDo).map(o => ({ id: o.id, client: o.client, title: o.title, licencaDo: o.licencaDo })),
+    }, danes, locale === 'en')
+      /* Naloga brez roka ni "danes" — to je seznam opozoril, ne seznam nalog.
+         Pri projektu s petdesetimi nalogami bi sicer opozorila utonila. */
+      .filter(v => v.vrsta !== 'mojaNaloga'), DANES_VRSTIC);
+  }, [danes, dashNaloge, dashPosta, activeInvoices, activeOffers, offers, locale]);
   const recurringTotal = recurringCosts.reduce((sum, item) => sum + (Number(item.znesek) || 0), 0);
   const currentMonthExpenses = expenses.filter(item => {
     const date = new Date(`${item.date}T00:00:00`); const now = new Date();
@@ -412,17 +454,46 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>}
 
       <div className={styles.overviewColumns}>
-      <section className={styles.historyBand} aria-labelledby="proj-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('02 · PROJEKTI', '02 · PROJECTS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>{L('Vsi projekti', 'All projects')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
-          <div className={styles.bandBody}>
-          <h2 id="proj-title" className={styles.bandNaslov}>{L('Zadnji projekti', 'Recent projects')}</h2>
-          {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable} ${styles.projTable}`}><table><thead><tr><th>{L('Projekt', 'Project')}</th><th>Status</th><th>{L('Rok', 'Deadline')}</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
-            const map: Record<string, [string, string]> = { draft: [L('Osnutek', 'Draft'), 'neutral'], sent: [L('V teku', 'In progress'), 'info'], accepted: [L('Zaključeno', 'Completed'), 'success'], rejected: [L('Zavrnjeno', 'Rejected'), 'danger'] };
-            const [label, tone] = map[o.status] || ['—', 'neutral'];
-            return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString(dl)}</td></tr>;
-          })}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še ni projektov.', 'No projects yet.')}</strong><p>{L('Projekti se prikažejo tukaj, ko ustvariš ponudbo.', 'Projects will appear here once you create an offer.')}</p></div></div>}
-          </div>
-        </section>
+      {/* SEZNAM "DANES" -- kaj caka nate, ne koledar prihodnjih dogodkov.
+          Vrstica pove DEJANJE ("Posljji opomnik za racun"), ne stanja
+          ("racun zapadel"): iz stanja mora clovek sam ugotoviti, kaj naj
+          naredi, iz dejanja ne rabi ugotavljati nicesar (Codex, 23. 8.).
+          Pravila prioritete so v lib/danes.ts in pokrita s testi. */}
+      <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
+        {/* Brez gumba "Vse naloge": ta seznam NI seznam nalog. Vanj tecejo tudi
+            racuni, stranke brez odgovora in priloznosti, zato ena sama ciljna
+            stran ne obstaja — vsaka vrstica pelje tja, kamor sodi (v.kam). */}
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('02 · DANES', '02 · TODAY')}</p></div>
+        <div className={styles.bandBody}>
+        <h2 id="events-title" className={styles.bandNaslov}>{L('Kaj čaka nate', 'What needs you')}</h2>
+        {danesVrstice.length ? (
+          <ul className={styles.eventList}>
+            {danesVrstice.map(v => (
+              <li key={v.id}>
+                <Link className={styles.eventVrstica} href={`${base}${v.kam}`}>
+                  {v.datum ? (
+                    <span className={styles.eventDate} data-tone={DANES_TON[v.vrsta]}>
+                      <b>{new Date(v.datum).getDate()}</b>
+                      <small>{new Date(v.datum).toLocaleDateString(dl, { month: 'short' }).replace('.', '').toUpperCase()}</small>
+                    </span>
+                  ) : (
+                    <span className={styles.eventDate} data-tone={DANES_TON[v.vrsta]}><b>—</b><small>{L('BREZ', 'NONE')}</small></span>
+                  )}
+                  <span className={styles.eventCard}>
+                    <span className={styles.eventIco} data-tone={DANES_TON[v.vrsta]} aria-hidden>{(() => { const I = danesIkona(v.id); return <I size={13} weight="regular" />; })()}</span>
+                    <span className={styles.eventBody}>
+                      <strong>{v.dejanje}</strong>
+                      <small>{v.podnaslov || v.pripis}</small>
+                    </span>
+                    <i className={styles.eventDot} data-tone={DANES_TON[v.vrsta]} aria-hidden />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : <p className={styles.tipText}>{danes ? L('Danes te nič ne čaka.', 'Nothing needs you today.') : ''}</p>}
+        </div>
+      </section>
 
       <section className={styles.resultsBand} id="clients" aria-labelledby="business-title">
         <div className={styles.bandTop}><p className={styles.eyebrow}>{L('03 · POSLOVNI REZULTATI', '03 · BUSINESS RESULTS')}</p><select className={styles.periodSelect} value={period} onChange={e => setPeriod(e.target.value as Period)} aria-label={L('Obdobje prikaza', 'Display period')}><option value="month">{L('Ta mesec', 'This month')}</option><option value="quarter">{L('To četrtletje', 'This quarter')}</option><option value="year">{L('Letos', 'This year')}</option></select></div>
@@ -438,44 +509,20 @@ export default function BusinessOverview({ base }: { base: string }) {
         </div>
       </section>
 
-      {/* SEZNAM "DANES" -- kaj caka nate, ne koledar prihodnjih dogodkov.
-          Vrstica pove DEJANJE ("Posljji opomnik za racun"), ne stanja
-          ("racun zapadel"): iz stanja mora clovek sam ugotoviti, kaj naj
-          naredi, iz dejanja ne rabi ugotavljati nicesar (Codex, 23. 8.).
-          Pravila prioritete so v lib/danes.ts in pokrita s testi. */}
-      <section className={styles.eventsBand} id="events" aria-labelledby="events-title">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('01 · DANES', '01 · TODAY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/naloge`}><span className={styles.abTxt}>{L('Vse naloge', 'All tasks')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
-        <div className={styles.bandBody}>
-        <h2 id="events-title" className={styles.bandNaslov}>{L('Kaj čaka nate', 'What needs you')}</h2>
-        {danesVrstice.length ? (
-          <ul className={styles.eventList}>
-            {danesVrstice.map(v => (
-              <li key={v.id}>
-                <Link className={styles.danesVrstica} href={`${base}${v.kam}`}>
-                  <span className={styles.danesPika} data-vrsta={v.vrsta} aria-hidden />
-                  <span className={styles.danesTekst}>{v.dejanje}</span>
-                  <time className={styles.danesPripis} data-nujno={v.vrsta === 'zamujeno' ? '1' : undefined}>{v.pripis}</time>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : <p className={styles.tipText}>{danes ? L('Danes te nič ne čaka.', 'Nothing needs you today.') : ''}</p>}
-        </div>
-      </section>
+      <section className={styles.historyBand} aria-labelledby="proj-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('04 · PROJEKTI', '04 · PROJECTS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/projekti`}><span className={styles.abTxt}>{L('Vsi projekti', 'All projects')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandBody}>
+          <h2 id="proj-title" className={styles.bandNaslov}>{L('Zadnji projekti', 'Recent projects')}</h2>
+          {activeOffers.length ? <div className={`${styles.tableWrap} ${styles.historyTable} ${styles.projTable}`}><table><thead><tr><th>{L('Projekt', 'Project')}</th><th>Status</th><th>{L('Rok', 'Deadline')}</th></tr></thead><tbody>{activeOffers.slice(0, 5).map(o => {
+            const map: Record<string, [string, string]> = { draft: [L('Osnutek', 'Draft'), 'neutral'], sent: [L('V teku', 'In progress'), 'info'], accepted: [L('Zaključeno', 'Completed'), 'success'], rejected: [L('Zavrnjeno', 'Rejected'), 'danger'] };
+            const [label, tone] = map[o.status] || ['—', 'neutral'];
+            return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString(dl)}</td></tr>;
+          })}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še ni projektov.', 'No projects yet.')}</strong><p>{L('Projekti se prikažejo tukaj, ko ustvariš ponudbo.', 'Projects will appear here once you create an offer.')}</p></div></div>}
+          </div>
+        </section>
       </div>
 
       <div className={styles.detailRow}>
-        <section className={styles.historyBand} aria-labelledby="licence-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · PRILOŽNOSTI', '05 · OPPORTUNITIES')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/koledar`}>{L('Koledar', 'Calendar')}</Link></div>
-          <div className={styles.bandBody}>
-            <h2 id="licence-title" className={styles.bandNaslov}>{L('Licence, ki potečejo', 'Licences expiring')}</h2>
-            {licence.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0 }}>{licence.map(o => {
-              const potekla = jeLicencaPotekla(o.licencaDo);
-              const datum = new Date(`${o.licencaDo}T00:00:00`).toLocaleDateString(dl);
-              return <li key={o.id} style={{ color: potekla ? '#a4342a' : '#8a8177', padding: '.55rem 0' }}><strong>{potekla ? L(`Licenca pri stranki ${o.client} je potekla ${datum}. Predlagaj podaljšanje.`, `The licence for ${o.client} expired on ${datum}. Suggest a renewal.`) : L(`Licenca pri stranki ${o.client} poteče ${datum}. Pripravi predlog podaljšanja.`, `The licence for ${o.client} expires on ${datum}. Prepare a renewal proposal.`)}</strong></li>;
-            })}</ul> : <p className={styles.tipText}>{L('V naslednjih 60 dneh ne poteče nobena licenca.', 'No licences expire in the next 60 days.')}</p>}
-          </div>
-        </section>
         <section className={styles.historyBand} aria-labelledby="task-title">
           <div className={styles.bandTop}><p className={styles.eyebrow}>{L('05 · NALOGE', '05 · TASKS')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/naloge`}><span className={styles.abTxt}>{L('Vse naloge', 'All tasks')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
@@ -492,6 +539,8 @@ export default function BusinessOverview({ base }: { base: string }) {
           </ul> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Naloge se prikažejo tukaj — dodaj jih v Task managerju.', 'Tasks appear here — add them in the Task manager.')}</p></div></div>}
           </div>
         </section>
+
+
 
         <section className={styles.historyBand} aria-labelledby="comm-title">
           <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJA', '06 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>

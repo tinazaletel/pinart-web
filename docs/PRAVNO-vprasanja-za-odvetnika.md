@@ -109,7 +109,192 @@ osnutku puščamo, jih odstranimo do ureditve, ali jih je treba pisati posebej?
 **Vprašanja:** kako dolgo smemo hraniti podatke po odpovedi naročnine, kaj mora
 pisati o izvozu podatkov ob odhodu in kaj o izbrisu na zahtevo?
 
+## 11. Pogodba o obdelavi je vpisana v pogoje (točka 4G)
+
+Vlogo obdelovalca smo medtem uredili v **točki 4G pogojev uporabe**; točka 8B
+politike zasebnosti se nanjo sklicuje.
+
+**Vprašanje:** ali 4G zadošča kot pogodba o obdelavi po 28. členu GDPR ali
+potrebujemo ločen dokument? Preverili bi radi, ali vsebuje vse zahtevane
+elemente: predmet, trajanje, namen, vrste podatkov, kategorije posameznikov,
+navodila upravljavca, zaupnost, varnost, podobdelovalce, pomoč pri pravicah
+posameznikov, izbris ali vrnitev podatkov ob koncu in možnost nadzora.
+
+Dokler tega ne potrdite, formulacije v pogojih ne bomo krepili.
+
+## 12. Pravna podlaga za AI (Pupa)
+
+Pupa deluje prek Anthropic Claude API. Uporabnik jo sproži sam; če je ne
+uporablja, se ne pošlje nič.
+
+**Vprašanje:** katera podlaga je pravilna — izvajanje pogodbe (6(1)(b)) ali
+privolitev (6(1)(a))? Po smernicah EDPB mora biti obdelava pri 6(1)(b)
+objektivno nujna za izvedbo storitve, kar pri izbirni funkciji ni samoumevno.
+Če je pravilna privolitev, moramo dodati preklic, ki je enako preprost kot
+podaja.
+
+Ne bi radi zapisali ene podlage »za vsak primer«, če ne drži.
+
+## 13. Prenosi v ZDA — za vsakega ponudnika posebej
+
+Uporabljamo Vercel (gostovanje), Resend (pošiljanje pošte) in Anthropic (AI).
+Podatki verjetno potujejo v ZDA.
+
+**Vprašanje:** kako naj to zapišemo, ne da bi trdili preveč? Za vsakega
+ponudnika bi bilo treba preveriti pravo pogodbeno družbo, sklenjen DPA,
+lokacijo obdelave in dejanski mehanizem prenosa (odločba o ustreznosti, Data
+Privacy Framework, standardne pogodbene klavzule). Tega doslej nismo preverili
+za vsakega posebej.
+
+## 14. Arbitraža za ZDA (točka 11d) — obdržati ali umakniti?
+
+V pogojih je klavzula o zavezujoči arbitraži in odpovedi skupinski tožbi za
+uporabnike v ZDA. Napisana je bila brez pravne pomoči.
+
+**Naša skrb:** Flow prodajamo tudi samostojnim ustvarjalcem, ki se lahko pravno
+štejejo za potrošnike. Vnaprej pripravljena klavzula, ki oteži sodno varstvo, je
+lahko nepoštena in nezavezujoča.
+
+**Vprašanje:** naj klavzulo obdržimo, spremenimo ali umaknemo, dokler ZDA ni naš
+dejanski trg?
+
+## 15. Odstavki, ki še niso aktualni
+
+Nekatere določbe so pisane za funkcije, ki še ne delujejo ali jih še ne
+prodajamo. Predlagamo, da jih do takrat **skrijemo**, ne izbrišemo — da so
+pripravljene, ko pride čas, in da danes ne obljubljamo, česar ni.
+
+- **plačljivi trezor** — omenjen v pogojih, funkcija še ni na trgu
+- **arbitraža za ZDA** — dokler ZDA ni naš trg
+- **naročnina in plačila** — plačilni sistem še ni postavljen
+
+**Vprašanje:** je z vidika prava bolje imeti določbe vnaprej (in jih ne
+uporabljati) ali jih dodati šele, ko funkcija zaživi?
+
+## 16. Privzete vrednosti v predlogah pogodb
+
+Flow ponuja šest vrst pogodb s **privzetimi** vrednostmi. Te niso oblikovna
+nastavitev, ampak poslovna odločitev, ki jo uporabnica pogosto sprejme, ne da bi
+opazila. Prosimo za oceno vsake posebej — ali je privzeta vrednost sprejemljiva,
+ali je nepoštena, in ali sme sploh biti privzeta:
+
+- **konkurenčna prepoved 12 mesecev** — privzeto omeji delo IZVAJALCA, torej
+  našo uporabnico; ali je tak privzetek sploh dopusten
+- **pogodbena kazen 0,5 % na dan** (največ 10 %) — sorazmernost
+- **pristojnost sodišča v kraju izvajalca**
+- **privzeto ozemlje in trajanje prenosa avtorskih pravic**
+- **licenca brez določenega trajanja** — kaj to pomeni po ZASP
+- **NDA z veljavnostjo še tri leta po prenehanju**
+- **besedilo o podobdelovalcih v DPA**
+
+Vprašanje širše: ali sme orodje takšne določbe sploh ponuditi kot privzete, ali
+mora uporabnica vsako izbrati zavestno? Naš namen je drugo, a bi radi vedeli,
+kje je meja.
+
+## 17. Priponke in naložene datoteke (novo, 24. 8. 2026)
+
+Od 24. 8. uporabnice v Flow nalagajo datoteke — priponke v pošti in na nalogah,
+vključno z **datotekami svojih strank**. Hranijo se v zasebni shrambi Supabase
+(EU), povezave so kratkoživé in podpisane.
+
+**Vprašanje:** kaj mora o tem pisati v politiki zasebnosti — vrsta podatkov, rok
+hrambe, kaj se z datotekami zgodi ob izbrisu računa in kdo do njih dostopa? To
+je nova vrsta obdelave, ki je besedila še ne pokrivajo.
+
+## 18. Obljuba o ceni kot pogodbena zaveza
+
+Na ceniku bo pisalo: »Cena ostane enaka ves čas neprekinjene naročnine« in
+»uvodna cena velja za naročila do 31. 10. 2026«.
+
+**Vprašanje:** je to zavezujoča obljuba, ki mora biti v pogojih, ne le na
+prodajni strani? Kako naj bo zapisano, kaj pomeni prekinitev in kaj velja ob
+vrnitvi po prekinitvi?
+
+---
+
+## Kaj smo že popravili
+
+Omenjamo zato, ker so bili to primeri, kjer je dokument trdil nekaj drugega kot
+koda. Radi bi, da za celoto velja: **politika opisuje resnično obdelavo, ne
+želene.**
+
+- **Časovni žig.** Politika in pogoji so navajali različna mehanizma (FreeTSA po
+  RFC 3161 proti OpenTimestamps/Bitcoin). Poenoteno po tem, kar koda res
+  uporablja: RFC 3161, privzeto FreeTSA. Bitcoina ni nikjer.
+- **Varnostne kopije.** Dokumentacija je navajala, da jih ni. Od 23. 8. 2026 je
+  projekt na paketu Supabase Pro z dnevnimi kopijami; besedilo je popravljeno.
+- **Regija.** Baza stoji v EU (Stockholm, eu-north-1) — potrjeno v nadzorni
+  plošči.
+- **Opombe za odvetnika** so umaknjene z javnih strani (spodaj).
+
+## Opombe, ki smo jih umaknili z javnih strani
+
+Te opombe so bile do 23. 8. 2026 vidne obiskovalcem. Namenjene so vam, ne
+strankam, zato so zdaj tukaj.
+
+| Kje | Kaj je pisalo |
+|---|---|
+| Pogoji, uvod (EN) | DRAFT — pending legal review |
+| Pogoji 4c — Sef avtorstva | OSNUTEK — pravno mora potrditi odvetnik |
+| Pogoji 7 — AI (Pupa) | OSNUTEK — pravno mora potrditi odvetnik |
+| Pogoji 9a — Odločitve in AI | OSNUTEK — pravno mora potrditi odvetnik |
+| Pogoji 11d — Arbitraža ZDA | OSNUTEK — zavezujoča arbitraža in odpoved skupinski tožbi sta pravna izbira, ne zahteva. Pred uporabo naj obseg in izvršljivost potrdi odvetnik za ZDA (FAA in omejitve po pravu posamezne države). |
+| Zasebnost, uvod (EN) | DRAFT — pending legal review |
+| Zasebnost 9 — Pupa | OSNUTEK — pravno mora potrditi odvetnik |
+| Zasebnost 9 — Pupa | »Pravno podlago (privolitev ali zakoniti interes) mora pred objavo potrditi odvetnik.« |
+
+---
+
+## Kje si lahko ogledate produkt
+
+- **brezplačni kalkulator cene** — odprt, brez registracije; pokaže logiko
+  izračuna in je edini del, ki gre morda v javni zagon prvi
+- **celotna platforma** — dostop uredimo posebej (zaprta beta)
+
+Povezavi pošljemo v spremnem sporočilu.
+
+V aplikaciji je tudi **gumb, prek katerega se stranka lahko odloči za odvetnika**
+— torej uporabnika napotimo na pravno pomoč, ko jo pri pogodbi potrebuje.
+
 ---
 
 **Prošnja.** Zanima nas predvsem, kaj je **nujno popraviti pred javnim
 zagonom** in kaj lahko počaka. Zagon je predviden v začetku septembra 2026.
+
+Prosimo tudi za **priporočilo odvetnika** za to vrsto vprašanj — SaaS, GDPR, AI
+in avtorske pravice — **za slovenski in za ameriški trg**. Flow načrtujemo tudi
+za tuje uporabnike, zato bi radi imeli oba pogleda. Enako nas zanima, koga bi
+lahko priporočili našim uporabnikom prek gumba, omenjenega zgoraj.
+
+---
+
+## Priloge
+
+- `docs/EVIDENCA-OBDELAVE.md` — evidenca dejavnosti obdelave (30. člen)
+- `docs/PODATKOVNI-TOK.md` — kateri podatki tečejo kam, z diagrami
+- pogoji uporabe in politika zasebnosti — objavljena, dvojezično
+- `docs/PRAVNI-PREGLEDI-AI.md` — pregledi jezikovnih orodij; niso pravno mnenje,
+  so pa vir vprašanj v tem dokumentu
+
+## 19. Dva podobdelovalca, ki ju politika ne navaja (najdeno 24. 8. 2026)
+
+Med urejanjem prijave na obveščanje sta se pokazali dve neskladji med tem, kar
+politika zasebnosti navaja, in tem, kar koda dejansko počne. Prosim za oceno,
+kako težki sta in ali zahtevata obveščanje že prijavljenih.
+
+**19.1 Google Sheets.** Povpraševanja s spletne strani gredo prek
+`GOOGLE_SHEETS_WEBHOOK_URL` v Google Sheet, torej Google obdeluje imena,
+e-naslove in vsebino sporočil. Politika zasebnosti pa Google navaja izključno
+kot »prijava z Google računom (OAuth)«. Vprašanje: ali zadostuje razširitev
+opisa podobdelovalca, ali je treba spremeniti tudi pravno podlago in obvestiti
+tiste, ki so obrazec že izpolnili?
+
+**19.2 Cloudflare.** Za pošto je v uporabi Cloudflare Worker; Cloudflare v
+politiki ni omenjen niti enkrat. Vprašanje enako kot zgoraj.
+
+**19.3 Prijava na obveščanje.** Od 24. 8. 2026 dela z dvojno privolitvijo:
+prijava se zapiše kot nepotrjena, potrditveno pisemce gre prek Resenda (ki je
+v politiki že naveden), seznam za pošiljanje nastane šele ob kliku, nepotrjene
+prijave se izbrišejo po 14 dneh. Odjava izbriše zapis. IP-naslova ne hranimo.
+Vprašanje: ali je tak zapis privolitve (čas, vir, različica pogojev) dovolj
+kot dokaz po členu 7(1) GDPR?

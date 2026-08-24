@@ -1,0 +1,292 @@
+{
+  "naloge": [
+    {
+      "id": "preveri-23-8-00",
+      "naslov": "Nadzorna plosca: seznam »Danes«",
+      "opis": "Prvi blok pokaze, kaj caka nate: zamujeni racuni, stranke brez odgovora, roki danes, ponudbe ki molcijo. Vrstica pove dejanje, ne stanja. Preveri vrstni red in prazno stanje.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "plosca"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-01",
+      "naslov": "Pupa: kazalnik mesecne porabe",
+      "opis": "Ob naslovu pise »47 od 200 ta mesec«. Pri 80 % postane opaznejsi. Ce porabe ni mogoce prebrati, se ne prikaze nic.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "pupa"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-02",
+      "naslov": "Stroski: valuta pri znesku",
+      "opis": "Izbirnik valute ob znesku, znak v seznamu (109 $), vsote stejejo samo EUR in ob njih pise »+ 109 $ - ni preracunano«. CSV ima stolpec Valuta. POZOR: migracijo je treba pognati.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "stroski"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-03",
+      "naslov": "Stroski: znacke in priponka",
+      "opis": "Klik na predlagano znacko jo doda (prej se ni zgodilo nic). Ob izbrani datoteki je tipka x, ki izbor preklice.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "stroski"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-04",
+      "naslov": "Stroski: projekt in podjetje v obrazcu",
+      "opis": "Spustna seznama se napolnita, ko podatki prispejo iz oblaka -- prej sta ostala prazna do rocne osvezitve.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "stroski"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-05",
+      "naslov": "Stroski: postavitev glave in kartic",
+      "opis": "Stiri kartice v eni vrstici, znacke poravnane z naslovom, preklop + znacke + iskalnik v eni vrstici.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "stroski"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-06",
+      "naslov": "Stranka: en blok metrik",
+      "opis": "Pet kartic v okvirju (Placano, Odprti racuni, Stroski, Zadnje delo, Zadnji stik) z gradientom in ikono. Prej sta bila dva bloka in dve metriki podvojeni.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "stranka"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-07",
+      "naslov": "Stranka: dokumenti, brisanje, kontakti",
+      "opis": "Dokumenti so v okvirju stranke. Brisanje profila je tiha ikona ob svincniku. Vrstni red: telefon, e-posta, naslov (cez celo), davcna, spletna stran.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "stranka"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-08",
+      "naslov": "Projekt: kartica DOKUMENTI",
+      "opis": "Kaze samo to, kar res obstaja. Brief se ne podvaja. Hover na vrsticah. Prazna kartica se ne prikaze.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "projekt"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-09",
+      "naslov": "Projekt: brisanje dokumentov",
+      "opis": "Pitch, SWOT, raziskavo, konkurenco in brief je mogoce izbrisati. Racunov in podpisanih pogodb NE -- imajo zakonsko hrambo.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "projekt"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-10",
+      "naslov": "Paneli: stran zadaj obmiruje",
+      "opis": "Ob odprtem panelu drsi samo panel; stran spodaj ostane na mestu in vsebina ob odprtju ne poskoci.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "paneli"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-11",
+      "naslov": "Paneli na projektu: enotne mere",
+      "opis": "Vsi merijo kot DokPanel. Dokumentni panel ima papir in glavo z Natisni levo, zapri desno.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "paneli"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-12",
+      "naslov": "Predogled pogodbe se ne zmrzne",
+      "opis": "PDF ima 15-sekundni rok; ce strezniku ne uspe, se pokaze HTML predogled v A4. Prej je obticalo na »Pripravljam predogled«.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "predogled"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-13",
+      "naslov": "Dolgorocno: meni je spet klikljiv",
+      "opis": "Glava strani je lezala cez levi meni in prestrezala klike.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "predogled"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-14",
+      "naslov": "Kalkulator: podatki podjetja",
+      "opis": "Ime, davcna, naslov, TRR se predizpolnijo iz profila (zahteva prijavo). Svoje podjetje se da poiskati po registru, tudi brez prijave.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "kalkulator"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-15",
+      "naslov": "Kalkulator: panel ponudbe",
+      "opis": "Sega do desnega roba, ozadje ne preseva, gumb za zapiranje ima zrak in ni odrezan.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "kalkulator"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-16",
+      "naslov": "Kalkulator: podrocja dela",
+      "opis": "Dva stolpca enake sirine, imena v eni vrstici (dolga se prelomijo), kljukice v ravni crti in okrogle. Na telefonu en stolpec.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "kalkulator"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-17",
+      "naslov": "Kalkulator: stranski predal",
+      "opis": "Manjsi odmiki -- predal 20px, kartice 16px, cenik ozje. Imena storitev se ne lomijo.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "kalkulator"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-18",
+      "naslov": "Kalkulator: interna analitika skrita",
+      "opis": "»Pregled poslovanja« ni vec v meniju. Prej se je kazal vsem, tudi neprijavljenim. VAZNO: preveri, da ga v zasebnem oknu res ni.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "varnost"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-19",
+      "naslov": "Meni: Stoparica in Delovna prisotnost",
+      "opis": "Preimenovano; delovna prisotnost je odsla pod profil. Landing je dobil svojo postavko.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "meni"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-20",
+      "naslov": "Komunikacija: ena orodna vrstica",
+      "opis": "Oznaci vse + kos + iskalnik + prejemniki + Nova posta v eni vrstici. Iskalnik ne prekriva prejemnikov. Odprt mail je sirok kot seznam. Mapa »Pogovori« je zdaj »Niti«.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "komunikacija"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-21",
+      "naslov": "Pravne strani centrirane",
+      "opis": "Politika zasebnosti in dostopnost sta na sirokem zaslonu na sredini.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "pravno"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-22",
+      "naslov": "Evidenca: varnostne kopije",
+      "opis": "Dokumenti ne trdijo vec, da kopij ni. Politika zasebnosti jih navaja med ukrepi. ODPRTO: doba hrambe in PITR sta [DOPOLNI].",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "pravno"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    },
+    {
+      "id": "preveri-23-8-23",
+      "naslov": "CI: preverjanje ob vsakem pushu",
+      "opis": "GitHub pozene tipe, teste in build. Preveri, da je pri zadnjem commitu zelena kljukica.",
+      "stolpec": "waiting",
+      "done": false,
+      "oznake": [
+        "preveri",
+        "razvoj"
+      ],
+      "created": "2026-08-23T22:00:00.000Z"
+    }
+  ]
+}

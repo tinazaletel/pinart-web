@@ -219,7 +219,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     </div>
   );
   const chatOdgovor = (korak: number, vsebina: string) => (
-    <div className="np-chat-jaz"><button type="button" className="np-chat-mehur-ured" onClick={() => setUrejamKorak(korak)} title="Klikni za popravek"><span>{vsebina}</span><PencilSimple size={13} weight="bold" aria-hidden /></button></div>
+    <div className="np-chat-jaz"><button type="button" className="np-chat-mehur-ured" onClick={() => setUrejamKorak(korak)} title="Izberi za popravek"><span>{vsebina}</span><PencilSimple size={13} weight="bold" aria-hidden /></button></div>
   );
 
   return <div className="np">

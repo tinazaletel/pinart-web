@@ -17,10 +17,13 @@ import Toast from '@/components/Toast';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { VALUTE_RACUN } from '@/lib/valute';
-import { naslednjaStevilka } from '@/lib/stevilcenje';
+import { naslednjaStevilka, nastaviStevilcenje, preberiStevilcenje, sestaviStevilko, type NastavitevStevilcenja } from '@/lib/stevilcenje';
+import { prepoznajStevilkoRacuna, uporabiOblikoStevilke, type PrepoznanaStevilkaRacuna } from '@/lib/prepoznajStevilkoRacuna';
 import PosljiBlok from '@/components/PosljiBlok';
 import { posljiMail } from '@/lib/posta';
 import { dodajPostavko, izbrisiPostavko, preberiPostavke, type Postavka, type PostavkaEnota } from '@/lib/postavke';
+import Skeleton from '@/components/Skeleton';
+import { useOblakPripravljen } from '@/lib/oblakStanje';
 
 const K_NAST = 'pinart-kalkulator-v2';
 
@@ -51,7 +54,7 @@ const danesISO = () => { const d = new Date(); return `${d.getFullYear()}-${Stri
 /* znesek vrstice: kolicina x cena (brez DDV) minus popust % */
 const vrsticaZnesek = (i: FlowInvoiceItem) => i.kolicina * i.cena * (1 - clamp(i.popust || 0, 0, 100) / 100);
 
-export default function InvoiceWorkspace({ base }: { base: string }) {
+export default function InvoiceWorkspace({ base, initialId }: { base: string; initialId?: string }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const docLocale = jeEn ? 'en-GB' : 'sl-SI';
@@ -67,6 +70,8 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
   const [offers, setOffers] = useState<Offer[]>([]);
   const [invoices, setInvoices] = useState<FlowInvoice[]>([]);
+  const [lokalnoNalozeno, setLokalnoNalozeno] = useState(false);
+  const oblakPripravljen = useOblakPripravljen();
   const [clients, setClients] = useState<FlowClient[]>([]);
   /* Demo/Prazno velja za VSE strani (lib/predogled.ts). V teh nacinih je
      urejanje onemogoceno — sicer bi popravek izmisljenega zapisa pisal v pravo bazo. */
@@ -112,6 +117,12 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
 
   /* obrazec (kontrolirano — predizpolnjevanje iz ponudbe) */
   const [stevilka, setStevilka] = useState('');
+  const [nastavitevStevilcenja, setNastavitevStevilcenja] = useState<NastavitevStevilcenja | null | undefined>(undefined);
+  const [prviRacunOdgovor, setPrviRacunOdgovor] = useState<'da' | 'ne' | null>(null);
+  const [zadnjiRacunVnos, setZadnjiRacunVnos] = useState('');
+  const [rocnaNaslednja, setRocnaNaslednja] = useState('');
+  const [oblikaPrikaza, setOblikaPrikaza] = useState<PrepoznanaStevilkaRacuna | null>(null);
+  const [stevilcenjeShranjujem, setStevilcenjeShranjujem] = useState(false);
   const [stranka, setStranka] = useState('');
   const [datumIzdaje, setDatumIzdaje] = useState(danesISO());
   const [datumStoritve, setDatumStoritve] = useState(danesISO());
@@ -151,11 +162,54 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const risanjeRef = useRef(false);
 
   useEffect(() => {
-    const data = podatkiZaPredogled(nacin, loadFlowData());
-    setOffers(data.offers.map(({ id, title, client, date, number, scope, agreedAmount }) => ({ id, title, client, date, number, scope, agreedAmount })));
-    setInvoices(data.invoices);
-    setClients(data.clients);
+    const osvezi = () => {
+      const data = podatkiZaPredogled(nacin, loadFlowData());
+      setOffers(data.offers.map(({ id, title, client, date, number, scope, agreedAmount }) => ({ id, title, client, date, number, scope, agreedAmount })));
+      setInvoices(data.invoices);
+      setClients(data.clients);
+      setLokalnoNalozeno(true);
+    };
+    osvezi();
+    window.addEventListener('pinart-flow-change', osvezi);
+    return () => window.removeEventListener('pinart-flow-change', osvezi);
   }, [nacin]);
+  const podatkiPripravljeni = lokalnoNalozeno && oblakPripravljen;
+
+  useEffect(() => {
+    let ziv = true;
+    const leto = new Date().getFullYear();
+    void preberiStevilcenje(leto).then(vrstice => {
+      if (!ziv) return;
+      setNastavitevStevilcenja(vrstice.find(v => v.vrsta === 'racun') || null);
+    }).catch(() => { if (ziv) setNastavitevStevilcenja(null); });
+    return () => { ziv = false; };
+  }, []);
+
+  const globokaPovezavaOdprta = useRef('');
+  useEffect(() => {
+    if (!initialId || globokaPovezavaOdprta.current === initialId) return;
+    const racun = invoices.find(v => v.id === initialId);
+    if (!racun) return;
+    globokaPovezavaOdprta.current = initialId;
+    setStevilka(racun.number || '');
+    setStranka(racun.client);
+    setDatumIzdaje(racun.date);
+    setDatumStoritve(racun.serviceDate || racun.date);
+    setRokDni(String(racun.dueDays ?? PRIVZETI_ROK_DNI));
+    setPlacano(racun.paid);
+    setPredracun(Boolean(racun.predracun));
+    setAvansPct(String(racun.avansPct ?? 100));
+    setOfferId(racun.sourceOfferId || '');
+    setVrstice((racun.items?.length ? racun.items : [{ opis: racun.title || L('Račun', 'Invoice'), kolicina: 1, cena: racun.net ?? racun.amount, popust: 0, ddv: 0 }]).map(v => ({ opis: v.opis, kolicina: String(v.kolicina), cena: String(v.cena), popust: String(v.popust || ''), ddv: String(v.ddv || '') })));
+    setDdvZavezanec(Boolean(racun.vatPayer));
+    setPodpisSlika(racun.signature?.image || '');
+    setPodpisIme(racun.signature?.name || '');
+    setPodpisKraj(racun.signature?.place || '');
+    setPodpisDatum(racun.signature?.date || racun.date);
+    setNogaOn(racun.footerOn !== false);
+    setNogaText(racun.footerText || NOGA_PRIVZETA);
+    setPogled('zakljucek');
+  }, [initialId, invoices]);
 
   useEffect(() => setKnjiznica(preberiPostavke()), []);
 
@@ -205,7 +259,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
   const avansJeDelni = avansOdstotek < 100;
   const zaPlaciloAvans = izracun.zaPlacilo * avansOdstotek / 100;
 
-  const nextNumber = () => { const year = new Date().getFullYear(); const count = invoices.filter(item => item.number?.startsWith(String(year))).length + 1; return `${year}-${String(count).padStart(4, '0')}`; };
+  const nextNumber = () => {
+    const leto = new Date().getFullYear();
+    if (nastavitevStevilcenja) return sestaviStevilko(nastavitevStevilcenja.vzorec, leto, nastavitevStevilcenja.zadnja + 1);
+    return `${leto}-0001`;
+  };
 
   /* "Pripravi racun →": ce ni izbrane ponudbe (samostojen racun), pocisti
      morebitno prejsnjo izbiro stranke/postavk; ce je izbrana ponudba, sta
@@ -213,6 +271,10 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
      izbiri na vstopu). */
   const odpriObrazec = () => {
     setStevilka(nextNumber());
+    const leto = new Date().getFullYear();
+    const zadnjaLokalna = invoices.find(item => item.number && item.date?.startsWith(String(leto)))?.number;
+    setOblikaPrikaza(zadnjaLokalna ? prepoznajStevilkoRacuna(zadnjaLokalna, leto) : null);
+    setPrviRacunOdgovor(null); setZadnjiRacunVnos(''); setRocnaNaslednja('');
     if (!offerId) { setStranka(''); setVrstice([novaVrstica()]); }
     setDatumStoritve(datumIzdaje || danesISO()); setRokDni(String(PRIVZETI_ROK_DNI));
     setPlacano(false); setPredracun(false); setAvansPct('100'); setNapaka('');
@@ -220,6 +282,28 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     setPodpisIme(''); setPodpisKraj(''); setPodpisDatum(datumIzdaje || danesISO()); setPodpisSlika(''); pocistiPlatno();
     setPogled('obrazec');
   };
+
+  const potrdiZacetekStevilcenja = async (prepoznana: PrepoznanaStevilkaRacuna, zadnja: number) => {
+    setStevilcenjeShranjujem(true); setNapaka('');
+    try {
+      await nastaviStevilcenje('racun', prepoznana.leto, zadnja, prepoznana.oblika);
+      setNastavitevStevilcenja({ vrsta: 'racun', leto: prepoznana.leto, zadnja, vzorec: prepoznana.oblika });
+      setOblikaPrikaza(prepoznana);
+      setStevilka(prepoznana.naslednja);
+      setPrviRacunOdgovor(null);
+    } catch (error) {
+      setNapaka(error instanceof Error ? error.message : L('Številčenja ni bilo mogoče nastaviti.', 'Numbering could not be set.'));
+    } finally { setStevilcenjeShranjujem(false); }
+  };
+
+  const potrdiPrviRacun = async () => {
+    const leto = new Date().getFullYear();
+    const prepoznana = prepoznajStevilkoRacuna(`${leto}-0000`, leto)!;
+    await potrdiZacetekStevilcenja(prepoznana, 0);
+  };
+
+  const prepoznanaZadnja = prepoznajStevilkoRacuna(zadnjiRacunVnos, new Date().getFullYear());
+  const prepoznanaRocnaNaslednja = prepoznajStevilkoRacuna(rocnaNaslednja, new Date().getFullYear());
 
   /* ob menjavi pogleda skok na vrh — KOPIJA vzorca iz ContractWorkspace
      (Lenis, ce obstaja; sicer window). Preskoci zacetni render. */
@@ -393,7 +477,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     let stevilkaDok = stevilka.trim();
     try {
       const dodeljena = await naslednjaStevilka(predracun ? 'predracun' : 'racun');
-      if (dodeljena && dodeljena.trim()) stevilkaDok = dodeljena.trim();
+      if (dodeljena && dodeljena.trim()) stevilkaDok = !predracun && oblikaPrikaza ? uporabiOblikoStevilke(dodeljena.trim(), oblikaPrikaza) : dodeljena.trim();
     } catch { /* strežniško številčenje trenutno ni na voljo → ostane ročna/provizorna */ }
     const invoice: FlowInvoice = {
       id: crypto.randomUUID(),
@@ -657,7 +741,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     {pogled === 'pregled' && <section className="rc-sek rc-stolpec rc-vstop">
       <p className="rc-kicker">{L('Računi', 'Invoices')}</p>
       <h1 className="rc-h1">{L('Od dogovora do plačila.', 'From agreement to payment.')}</h1>
-      <div className="rc-chat">
+      {!podatkiPripravljeni ? <Skeleton vrsta="kartice" stevilo={2} /> : <><div className="rc-chat">
         <span className="rc-mehur"><b>{L('Iz česa nastane račun?', 'What does an invoice come from?')}</b><small>{L('Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita v obrazcu. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje.', 'If an offer exists, select it — the client and item are pre-filled in the form. The issuer details (name, address, tax number, IBAN) are read from the My company settings.')}</small></span>
       </div>
       <div className="rc-vstop-panel">
@@ -703,7 +787,7 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
         </div>
-      </div>
+      </div></>}
     </section>}
 
     {/* ── POGLED: OBRAZEC (svoja stran, sredinski stolpec — view-swap kot pogodbe) ── */}
@@ -718,6 +802,11 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       <form id="rc-obrazec-form" className={poskus ? 'rc-poskus' : undefined} noValidate onSubmit={event => {
         event.preventDefault();
         const obrazec = event.currentTarget;
+        if (!predracun && nastavitevStevilcenja === null) {
+          setObvestilo(L('Najprej povej, kje naj Flow nadaljuje številčenje računov.', 'First tell Flow where to continue invoice numbering.'));
+          obrazec.querySelector<HTMLElement>('.rc-prvi-racun')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          return;
+        }
         const manjka = obrazec.querySelector<HTMLInputElement>(':invalid');
         if (manjka) {
           setPoskus(true);
@@ -737,6 +826,28 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
           <button type="button" aria-label={L('Predračun', 'Pro forma')} className={predracun ? 'on' : ''} onClick={() => { setPredracun(true); /* prvic izbran predracun -> predlagaj 50 % avansa (ce uporabnica ni ze sama spremenila) */ setAvansPct(current => current === '100' ? '50' : current); }}>{L('Predračun', 'Pro forma')}</button>
         </div>
         <div className={styles.invoiceMetaFields}>
+          {!predracun && nastavitevStevilcenja === null && <fieldset className="rc-prvi-racun">
+            <legend>{L('Je to tvoj prvi račun letos?', 'Is this your first invoice this year?')}</legend>
+            <div className="rc-prvi-izbira">
+              <button type="button" className={prviRacunOdgovor === 'da' ? 'on' : ''} onClick={() => { setPrviRacunOdgovor('da'); void potrdiPrviRacun(); }} disabled={stevilcenjeShranjujem}>{L('Da, prvi je', 'Yes, it is')}</button>
+              <button type="button" className={prviRacunOdgovor === 'ne' ? 'on' : ''} onClick={() => setPrviRacunOdgovor('ne')}>{L('Ne, že sem izdajala', 'No, I have issued invoices')}</button>
+            </div>
+            {prviRacunOdgovor === 'ne' && <div className="rc-prvi-vnos">
+              <label>{L('Prepiši številko zadnjega računa, ki si ga izdala', 'Enter the number of the last invoice you issued')}
+                <input value={zadnjiRacunVnos} onChange={event => setZadnjiRacunVnos(event.target.value)} placeholder={`${new Date().getFullYear()}-0014`} autoComplete="off" />
+              </label>
+              {prepoznanaZadnja
+                ? <p className="rc-prvi-predogled">✓ {L('Naslednji račun bo', 'The next invoice will be')} <strong>{prepoznanaZadnja.naslednja}</strong></p>
+                : zadnjiRacunVnos.trim() && <label>{L('Kako naj bo videti naslednja številka?', 'What should the next number look like?')}
+                  <input value={rocnaNaslednja} onChange={event => setRocnaNaslednja(event.target.value)} placeholder={`${new Date().getFullYear()}-0015`} autoComplete="off" />
+                </label>}
+              <p className="rc-prvi-opomba">{L('Številke ni mogoče nastaviti nazaj. Ko bo prvi račun izdan, se zaporedje lahko samo nadaljuje.', 'Numbering cannot be moved backwards. Once the first invoice is issued, the sequence can only continue.')}</p>
+              <button type="button" className="rc-prvi-potrdi" disabled={stevilcenjeShranjujem || (!prepoznanaZadnja && !prepoznanaRocnaNaslednja)} onClick={() => {
+                if (prepoznanaZadnja) void potrdiZacetekStevilcenja(prepoznanaZadnja, prepoznanaZadnja.zadnja);
+                else if (prepoznanaRocnaNaslednja && prepoznanaRocnaNaslednja.zadnja > 0) void potrdiZacetekStevilcenja({ ...prepoznanaRocnaNaslednja, zadnja: prepoznanaRocnaNaslednja.zadnja - 1, naslednja: rocnaNaslednja.trim() }, prepoznanaRocnaNaslednja.zadnja - 1);
+              }}>{stevilcenjeShranjujem ? L('Shranjujem …', 'Saving …') : L('Nadaljuj s to številko', 'Continue with this number')}</button>
+            </div>}
+          </fieldset>}
           <label>{L('Ponudba', 'Offer')}{jeMobilni
             ? <button type="button" className="rc-pon-polje" aria-haspopup="dialog" aria-expanded={ponSheet} aria-label={`${L('Ponudba', 'Offer')}: ${selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : L('Samostojen račun', 'Standalone invoice')} — ${L('izberi', 'select')}`} onClick={() => { setPonIskanje(''); setPonSheet(true); }}>
               <span>{selectedOffer ? `${selectedOffer.title} · ${selectedOffer.client}` : L('Samostojen račun', 'Standalone invoice')}</span>
@@ -1198,6 +1309,18 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
       /* ── number inputi: brez native spinnerjev, desna poravnava, numericna tipkovnica prek inputMode ── */
       .rc .rc-obrazec input[type='number']{-moz-appearance:textfield;appearance:textfield;text-align:right}
       .rc .rc-obrazec input[type='number']::-webkit-inner-spin-button,.rc .rc-obrazec input[type='number']::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+      .rc-prvi-racun{grid-column:1/-1;margin:0 0 .25rem;padding:1rem;border:1px solid var(--line);border-radius:.85rem;background:color-mix(in oklch,var(--accent) 5%,#fff)}
+      .rc-prvi-racun legend{padding:0 .35rem;color:var(--ink);font:750 .92rem var(--font-sans),sans-serif}
+      .rc-prvi-izbira{display:flex;gap:.55rem;flex-wrap:wrap}
+      .rc-prvi-izbira button,.rc-prvi-potrdi{min-height:2.75rem;padding:.55rem 1rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:700 .8rem var(--font-sans),sans-serif;cursor:pointer}
+      .rc-prvi-izbira button.on,.rc-prvi-potrdi{border-color:var(--ink);background:var(--ink);color:#fff}
+      .rc-prvi-vnos{display:grid;gap:.65rem;margin-top:.85rem;max-width:31rem}
+      .rc-prvi-vnos label{display:grid;gap:.35rem;color:var(--ink);font:650 .8rem var(--font-sans),sans-serif}
+      .rc-prvi-vnos input{min-height:2.75rem;padding:.55rem .7rem;border:1px solid var(--line);border-radius:.6rem;background:#fff;color:var(--ink);font:400 .9rem var(--font-sans),sans-serif}
+      .rc-prvi-predogled,.rc-prvi-opomba{margin:0;color:var(--ink);font:400 .78rem/1.45 var(--font-sans),sans-serif}
+      .rc-prvi-predogled strong{font-weight:800}
+      .rc-prvi-potrdi{justify-self:start}
+      .rc-prvi-potrdi:disabled,.rc-prvi-izbira button:disabled{opacity:.48;cursor:not-allowed}
 
       /* ── mobilna izbira ponudbe: gumb-polje (izgleda kot input) + slide-up sheet ── */
       .rc .rc-pon-polje{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-width:0;min-height:2.75rem;padding:.6rem .85rem;border:1px solid oklch(93% .006 82 / .55);border-radius:.65rem;background:oklch(100% 0 0/.8);font:500 16px var(--font-sans),sans-serif;color:var(--ink);text-align:left;cursor:pointer}

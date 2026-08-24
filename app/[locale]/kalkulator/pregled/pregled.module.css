@@ -252,7 +252,7 @@
 }
 /* mockup-slog panela: bež pasica (title bar) na vrhu → belo telo */
 .flowBand, .historyBand, .resultsBand, .eventsBand { padding: 0; overflow: hidden; }
-.bandTop { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .55rem 1.1rem; background: transparent; border-bottom: 1px solid oklch(22% .015 60 / .06); }
+.bandTop { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; min-height: 3.2rem; padding: .55rem 1.1rem; background: transparent; border-bottom: 1px solid oklch(22% .015 60 / .06); }
 .bandTop .eyebrow { margin: 0; }
 .bandBody { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 1rem 1.1rem 1.4rem; }
 .bandNaslov { margin: 0 0 1rem; padding: 0; display: block; font: 500 clamp(1.25rem, 1.55vw, 1.6rem)/1.05 var(--font-serif), Georgia, serif; }
@@ -442,32 +442,37 @@
 /* Dogodki & roki — seznam prihodnjih rokov */
 .eventList { flex: 1; list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
 .eventList li { flex: 1; display: flex; align-items: center; gap: .7rem; }
+/* Vrstica seznama DANES je klikljiva, zato je <a>, ne gola vsebina <li>.
+   Postavitev je ista kot pri prihodnjih dogodkih: datumski zeton levo,
+   kartica z ikono in besedilom desno. */
+.eventVrstica { flex: 1; min-width: 0; display: flex; align-items: center; gap: .7rem; color: inherit; text-decoration: none; border-radius: .95rem; transition: transform .14s ease; }
+.eventVrstica:hover { transform: translateX(2px); }
+.eventVrstica:hover .eventCard { background: oklch(97.4% .011 84); }
+.eventVrstica .eventBody strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 640px) {
+  .eventVrstica { gap: .55rem; }
+  .eventVrstica .eventDate { width: 2.9rem; }
+  .eventVrstica .eventBody strong { white-space: normal; line-height: 1.25; }
+}
 
-/* SEZNAM "DANES" -- vrstice kot pri nalogah in postah drugod na plosci:
-   ozadje sezje cez rob kartice ob prehodu z misko, pika levo pove nujnost.
-   Barve so iste kot pri statusih (.status_*), da se seznam ne uvede novega
-   barvnega jezika. */
-.danesVrstica { display: flex; align-items: center; gap: .65rem; width: calc(100% + 1.2rem); box-sizing: border-box; margin: 0 -.6rem; padding: .5rem .6rem; border-radius: 10px; color: var(--ink); text-decoration: none; transition: background .15s ease; }
-.danesVrstica:hover { background: color-mix(in oklch, var(--ink) 4%, transparent); }
-.danesPika { flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: color-mix(in oklch, var(--ink) 25%, transparent); }
-.danesPika[data-vrsta="zamujeno"] { background: oklch(58% .18 25); }
-.danesPika[data-vrsta="strankaCaka"] { background: oklch(66% .16 52); }
-.danesPika[data-vrsta="rokDanes"] { background: oklch(62% .17 297); }
-.danesPika[data-vrsta="dokumentCaka"] { background: oklch(64% .1 250); }
-.danesPika[data-vrsta="rokKmalu"] { background: oklch(62% .1 165); }
-.danesTekst { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .87rem; font-weight: 600; }
-.danesPripis { flex: none; font-size: .72rem; font-weight: 600; color: color-mix(in oklch, var(--ink) 55%, transparent); white-space: nowrap; }
-.danesPripis[data-nujno="1"] { color: oklch(52% .17 25); }
-@media (max-width: 700px) { .danesTekst { white-space: normal; } }
 .eventDate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .05rem; width: 3.4rem; aspect-ratio: 1; padding: .3rem; border-radius: .95rem; background: var(--edbg, #fff); border: 1px solid oklch(22% .015 60 / .1); line-height: .95; }
 .eventDate b { font: 700 .88rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; color: var(--ink); }
 .eventDate small { font-size: .4rem; font-weight: 700; letter-spacing: .09em; color: var(--ink); }
+/* Zamuda mora biti vidna ze na datumu — prej sta bila definirana samo tona
+   waiting in info, vse ostalo je ostalo belo in zamujeno se ni loclilo. */
 .eventDate[data-tone='waiting'] { --edbg: #fff; }
 .eventDate[data-tone='info'] { --edbg: #fff; }
+.eventDate[data-tone='neutral'] { --edbg: #fff; }
+.eventDate[data-tone='success'] { --edbg: #fff; }
+.eventDate[data-tone='danger'] { --edbg: oklch(96% .03 25); border-color: oklch(70% .12 25 / .45); }
+.eventDate[data-tone='danger'] b, .eventDate[data-tone='danger'] small { color: oklch(45% .17 25); }
 .eventCard { flex: 1; display: flex; align-items: center; gap: .6rem; min-width: 0; padding: .6rem .85rem; border-radius: .8rem; background: transparent; border: 1px solid color-mix(in oklch, var(--ink) 6%, transparent); }
 .eventIco { flex: none; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; background: none; color: var(--et, oklch(52% .13 300)); }
 .eventIco[data-tone='waiting'] { --et: oklch(60% .15 72); }
 .eventIco[data-tone='info'] { --et: oklch(58% .13 258); }
+.eventIco[data-tone='danger'] { --et: oklch(55% .18 25); }
+.eventIco[data-tone='success'] { --et: oklch(52% .12 165); }
+.eventIco[data-tone='neutral'] { --et: color-mix(in oklch, var(--ink) 45%, transparent); }
 .eventBody { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
 .eventBody strong { font: 600 .82rem var(--font-sans), sans-serif; }
 .eventBody small { font-size: .64rem; color: color-mix(in oklch, var(--ink) 68%, transparent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -475,6 +480,9 @@
 .eventDot { flex: none; margin-left: auto; width: .5rem; height: .5rem; border-radius: 50%; background: var(--et, oklch(62% .02 70)); }
 .eventDot[data-tone='waiting'] { --et: oklch(70% .16 75); }
 .eventDot[data-tone='info'] { --et: oklch(66% .13 258); }
+.eventDot[data-tone='danger'] { --et: oklch(58% .18 25); }
+.eventDot[data-tone='success'] { --et: oklch(60% .12 165); }
+.eventDot[data-tone='neutral'] { --et: color-mix(in oklch, var(--ink) 28%, transparent); }
 /* Podrobnosti rezultatov (premaknjeno pod tri panele) */
 .detailsGrid { display: grid; grid-template-columns: 1.35fr 1fr 1fr 1fr; gap: .7rem; }
 .detailsGrid > article { grid-column: auto; }
@@ -482,6 +490,7 @@
 @media (max-width: 620px) { .detailsGrid { grid-template-columns: 1fr; } }
 /* Zadnji projekti + Prihodki po mesecih (2 panela) */
 .detailRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
+.bandFull { grid-column: 1 / -1; }
 @media (max-width: 1000px) { .detailRow { grid-template-columns: 1fr; } }
 /* Prihodki po mesecih — stolpcni graf */
 /* Prihodki po mesecih — graf z Y-osjo (crte + stevilke levo) */

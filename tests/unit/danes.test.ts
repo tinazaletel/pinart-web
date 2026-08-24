@@ -100,9 +100,10 @@ const DANES = '2026-08-23';
 
 describe('sestaviDanes — naloge', () => {
   it('zamujena naloga je zamuda, ne opomba', () => {
-    const [r] = sestaviDanes({ naloge: [{ naslov: 'Prototip', stolpec: 'todo', rok: '2026-08-20' }] }, DANES);
+    const [r] = sestaviDanes({ naloge: [{ id: 'n/1', naslov: 'Prototip', stolpec: 'todo', rok: '2026-08-20' }] }, DANES);
     expect(r.vrsta).toBe('zamujeno');
     expect(r.pripis).toBe('zamuda 3 dni');
+    expect(r.kam).toBe('/kalkulator/naloge?id=n%2F1');
   });
 
   it('rok danes', () => {
@@ -133,6 +134,7 @@ describe('sestaviDanes — posta', () => {
     expect(r.vrsta).toBe('strankaCaka');
     expect(r.dejanje).toContain('Odgovori');
     expect(r.dejanje).toContain('ana@rokusklett.si');
+    expect(r.kam).toBe('/kalkulator/komunikacija?id=m1');
   });
 
   it('ce smo po njem odgovorili, vrstice ni', () => {
@@ -161,6 +163,12 @@ describe('sestaviDanes — racuni', () => {
     expect(r.vrsta).toBe('zamujeno');
     expect(r.dejanje).toContain('Pošlji opomnik');
     expect(r.dejanje).toContain('2026-014');
+    expect(r.kam).toBe('/kalkulator/racuni?id=r1');
+  });
+
+  it('naloga brez id-ja ostane povezava na seznam', () => {
+    const [r] = sestaviDanes({ naloge: [{ naslov: 'Brez id', stolpec: 'todo' }] }, DANES);
+    expect(r.kam).toBe('/kalkulator/naloge');
   });
 
   it('placan racun ne pride na seznam', () => {

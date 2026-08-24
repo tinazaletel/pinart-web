@@ -26,6 +26,8 @@ import AmbientBubbles from '@/components/AmbientBubbles';
 import SwapText from '@/components/SwapText';
 import { posljiMail } from '@/lib/posta';
 import Toast from '@/components/Toast';
+import Skeleton from '@/components/Skeleton';
+import { useOblakPripravljen } from '@/lib/oblakStanje';
 
 type Zavihek = 'projekti' | 'ponudbe' | 'pogodbe' | 'racuni';
 
@@ -129,9 +131,19 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [nacin] = usePredogled();
+  const [revizijaPodatkov, setRevizijaPodatkov] = useState(0);
+  useEffect(() => {
+    const osvezi = () => setRevizijaPodatkov(v => v + 1);
+    window.addEventListener('pinart-flow-change', osvezi);
+    return () => window.removeEventListener('pinart-flow-change', osvezi);
+  }, []);
   /* podatki iz skupne shrambe (upostevajo predogled: prazno/zacetek/moji/demo) */
-  const flow = useMemo(() => podatkiZaPredogled(nacin, loadFlowData()), [nacin]);
+  const flow = useMemo(() => podatkiZaPredogled(nacin, loadFlowData()), [nacin, revizijaPodatkov]);
   const { offers, contracts, invoices } = flow;
+  const [lokalnoNalozeno, setLokalnoNalozeno] = useState(false);
+  const oblakPripravljen = useOblakPripravljen();
+  useEffect(() => setLokalnoNalozeno(true), [nacin]);
+  const podatkiPripravljeni = lokalnoNalozeno && oblakPripravljen;
 
   /* Urejanje statusa (klik na pilulo -> spustni seznam). Samo v nacinu »Moji podatki«.
      Override daje takojsen UI odziv; sprememba se shrani v pravo shrambo. */
@@ -625,7 +637,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
             onDetajl: ko ProjectsWorkspace odpre detajl kot samostojno stran, skrije zgornjo glavo. ── */}
         {zavihek === 'projekti' && (
           <section className="arh-panel arh-projekti">
-            <ProjectsWorkspace
+            {!podatkiPripravljeni ? <Skeleton vrsta="stolpci" stevilo={3} /> : <ProjectsWorkspace
               base={base}
               zunanjiFilter
               iskanje={iskanje}
@@ -640,14 +652,14 @@ export default function ArhivWorkspace({ base }: { base: string }) {
               onPaket={izvoziPaketProjektov}
               pogled={pogledProjekti}
               onPogled={setPogledProjekti}
-            />
+            />}
           </section>
         )}
 
         {/* ── PONUDBE ── */}
         {zavihek === 'ponudbe' && (
           <section className="arh-panel">
-            {!offers.length ? (
+            {!podatkiPripravljeni ? <Skeleton vrsta="vrstice" stevilo={5} /> : !offers.length ? (
               <p className="arh-prazno">{L('Prva shranjena ponudba se bo prikazala tukaj.', 'Your first saved offer will appear here.')}</p>
             ) : !ponudbePrikaz.length ? (
               <p className="arh-prazno">{L('Ni ponudb za to iskanje ali filter.', 'No offers for this search or filter.')}</p>
@@ -677,7 +689,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {zavihek === 'pogodbe' && (
           <section className="arh-panel">
             {/* štetje statusov odstranjeno — status je že v dropdown filtru (zdaj v arh-glava) */}
-            {!contracts.length ? (
+            {!podatkiPripravljeni ? <Skeleton vrsta="vrstice" stevilo={5} /> : !contracts.length ? (
               <p className="arh-prazno">{L('Prva shranjena pogodba se bo prikazala tukaj.', 'Your first saved contract will appear here.')}</p>
             ) : !pogodbePrikaz.length ? (
               <p className="arh-prazno">{L('Ni pogodb za to iskanje ali filter.', 'No contracts for this search or filter.')}</p>
@@ -708,7 +720,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         {/* ── RACUNI ── */}
         {zavihek === 'racuni' && (
           <section className="arh-panel">
-            {!invoices.length ? (
+            {!podatkiPripravljeni ? <Skeleton vrsta="vrstice" stevilo={5} /> : !invoices.length ? (
               <p className="arh-prazno">{L('Prvi shranjeni račun se bo prikazal tukaj.', 'Your first saved invoice will appear here.')}</p>
             ) : !racuniPrikaz.length ? (
               <p className="arh-prazno">{L('Ni računov za to iskanje ali filter.', 'No invoices for this search or filter.')}</p>

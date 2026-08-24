@@ -1,0 +1,302 @@
+{
+  "naloge": [
+    {
+      "id": "prev-24a-01",
+      "naslov": "Ustvari ključ za Claudovo povezavo",
+      "opis": "Migracija je pognana. V docs/AGENT-API.md je ukaz za generiranje ključa in insert stavek. Ključ vidiš enkrat — shrani ga v geslovnik. Claude ga ne bo videl. Dokler ga ni, naloge lahko ustvarja samo Pupa.",
+      "stolpec": "todo",
+      "prioriteta": "visoka",
+      "oznake": [
+        "zaledje",
+        "agent"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-02",
+      "naslov": "Dodaj SUPABASE_SERVICE_ROLE_KEY na Vercel",
+      "opis": "Stara naloga 25. Lokalno je nastavljen, na Vercelu ga ni. Settings → Environment Variables → SUPABASE_SERVICE_ROLE_KEY, brez predpone NEXT_PUBLIC_. Brez tega je analitika na živi strani prazna.",
+      "stolpec": "todo",
+      "prioriteta": "visoka",
+      "oznake": [
+        "zaledje"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-03",
+      "naslov": "Ponovno objavi Cloudflare Worker za dohodno pošto",
+      "opis": "workers/mail-inbound/src/index.js je spremenjen, da priponke pridejo tudi v prejeti pošti. Dokler ni ponovno objavljen, prejeta pošta priponk ne prinese.",
+      "stolpec": "todo",
+      "prioriteta": "visoka",
+      "oznake": [
+        "posta"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-04",
+      "naslov": "Preveri Vercelov preview build",
+      "opis": "Push na demo je šel s 35 commiti, lokalnega next build nisem pognal, ker ti teče dev na 3456. Če je preview build padel, mi povej napako.",
+      "stolpec": "todo",
+      "prioriteta": "visoka",
+      "oznake": [
+        "deploy"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-05",
+      "naslov": "Pripni sliko na mail in ga pošlji",
+      "opis": "Komunikacija → Nova pošta → pripni 1–2 sliki ali PDF → pošlji sebi. Preveri, da sporočilo prispe S PRIPONKO in da se v Poslano vidi sponka s seznamom in gumbom Prenesi.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "posta",
+        "priponke",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-06",
+      "naslov": "Prilepi zaslonsko sliko s Cmd+V v komentar naloge",
+      "opis": "Naloge → odpri nalogo → v polje za komentar pritisni Cmd+V. Slika se mora pripeti sama. To je tisto, kar boš uporabljala vsak dan.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "naloge",
+        "priponke",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-07",
+      "naslov": "Priponke ostanejo po zaprtju naloge",
+      "opis": "Zapri nalogo in jo odpri znova — priponke morajo biti še tam. Preveri tudi Prenesi in ×.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "priponke",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-08",
+      "naslov": "Zavrnjene datoteke povedo, kaj naj narediš",
+      "opis": "Poskusi nekaj.exe (mora predlagati povezavo do prenosa, NE zipa), datoteko čez 10 MB, šesto datoteko in skupno čez 20 MB. Vsaka zavrnitev mora biti mirna in razumljiva.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "priponke",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-09",
+      "naslov": "SVG: pripni logotip",
+      "opis": "Pripni .svg. Mora se sprejeti, ob tem pa se pokaže opozorilo, da ga nekateri strežniki zavrnejo in da ga lahko stisneš v .zip. Predogleda NE sme dobiti — klik na Prenesi ga mora prenesti, ne odpreti v brskalniku.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "priponke",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-10",
+      "naslov": "Kvota prostora",
+      "opis": "Brezplačni račun ima 100 MB, Premium 1 GB, Pro 5 GB. Pri 80 % se mora pokazati mirno opozorilo. Ob polni kvoti se ustavi samo NOVO nalaganje — obstoječe datoteke morajo ostati dostopne.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "priponke",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-11",
+      "naslov": "»Kaj čaka nate« kaže tudi komunikacijo",
+      "opis": "Prej se stranka, ki čaka na odgovor, ni nikoli pokazala, ker demo pošta ni imela datumov. Zdaj mora biti med vrsticami tudi »Odgovori …«.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "plosca",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-12",
+      "naslov": "Klik na vrstico odpre TISTI zapis",
+      "opis": "Klikni vrstico o računu — odpreti se mora tisti račun, ne seznam vseh. Enako za sporočilo in nalogo. Če zapisa ni, se mora stran odpreti normalno, brez napake.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "plosca",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-13",
+      "naslov": "Zamuda je vidna, vrstice se ne podvajajo",
+      "opis": "Zamujeno mora biti rdeče označeno že na datumskem žetonu. Ista stranka pri istem viru sme dobiti samo eno vrstico.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "plosca",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-14",
+      "naslov": "Licence so med opozorili, ne v svojem pasu",
+      "opis": "Potekla ali kmalu potekla licenca se mora pokazati v »Kaj čaka nate«. Pasu Priložnosti ni več.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "plosca",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-15",
+      "naslov": "Pasovi tečejo 01–08 brez lukenj",
+      "opis": "01 Orodja · 02 Danes · 03 Poslovni · 04 Projekti · 05 Naloge · 06 Komunikacija · 07 Zgodovina · 08 Prihodki. Nikjer ne sme zijati prazen prostor.",
+      "stolpec": "waiting",
+      "prioriteta": "nizka",
+      "oznake": [
+        "plosca",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-16",
+      "naslov": "Panel naloge: komentarji zgoraj, Umestitev zložena",
+      "opis": "Odpri nalogo. Vrstni red: naslov, opis, prioriteta in čas, Komentarji, Priponke, na dnu zložena Umestitev s povzetkom (kdo, za koga, kje, koliko oznak).",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "naloge",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-17",
+      "naslov": "Nova naloga ima preklop Podrobno / Hitro",
+      "opis": "Hitro dodajanje ni več skrito za iskrico — je način znotraj »Nova naloga«. Iskrica odslej odpre Pupo.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "naloge",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-18",
+      "naslov": "Filter na namizju sta dva spustna seznama",
+      "opis": "Oznake in projekti LOČENO, ne ena dolga plošča. Na telefonu ostane spodnja plošča.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "naloge",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-19",
+      "naslov": "Pozabljena štoparica: pilula ostane, opozorilo pride ločeno",
+      "opis": "Ko štoparica teče predolgo, mora pilula v glavi ostati nedotaknjena, opozorilo pa prizdrsne z desne pod glavo — rdeče, z ikono štoparice, z gumboma Ustavi in shrani ter Teče naprej. Ne sme izginiti samo.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "stoparica",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-20",
+      "naslov": "Brezplačni kalkulator: dokumentna polja so zložena",
+      "opis": "V anonimnem oknu odpri kalkulator. Davčna, e-pošta, telefon, TRR in naslov morajo biti skriti pod povezavo »Dodaj podatke za ponudbo«. Vidna sta samo ime/podjetje in država.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "kalkulator",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-21",
+      "naslov": "Polna potrditev pogojev pred izvozom",
+      "opis": "Kot neprijavljena naredi ponudbo in klikni Prenesi PDF. Odpreti se mora okno s pogoji; kljukica je zaklenjena, dokler jih ne prelistaš. Po potrditvi se PDF prenese sam. Drugič se ne sme več vprašati.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "pravno",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-22",
+      "naslov": "Različica pogojev je vidna",
+      "opis": "Na dnu /kalkulator/pogoji in /zasebnost mora pisati »Različica 2026-08-23«. Nikjer ne sme biti več opomb OSNUTEK.",
+      "stolpec": "waiting",
+      "prioriteta": "srednja",
+      "oznake": [
+        "pravno",
+        "preveri"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-23",
+      "naslov": "Odloči: rdeč naslov v opozorilu ali tudi telo",
+      "opis": "Zdaj je rdeč naslov, telo in glavni gumb sta črna, ker se rdeče na rdečem slabše bere. Če hočeš več rdeče, povej.",
+      "stolpec": "todo",
+      "prioriteta": "nizka",
+      "oznake": [
+        "odlocitev",
+        "dizajn"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-24",
+      "naslov": "Odloči: opomba na računu, da je namenjen plačilu na TRR",
+      "opis": "Flow ni davčna blagajna. Račun že zdaj izpiše samo TRR, lahko pa dodamo tiho opombo, da je namenjen nakazilu — koristno, če ga stranka kdaj ponese na davčno.",
+      "stolpec": "todo",
+      "prioriteta": "srednja",
+      "oznake": [
+        "odlocitev",
+        "pravno"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    },
+    {
+      "id": "prev-24a-25",
+      "naslov": "Preberi dokument za odvetnika in dopiši skrbi",
+      "opis": "docs/PRAVNO-vprasanja-za-odvetnika.md. Notri so vse opombe z javnih strani, vprašanja o 4G, podlagi za Pupo, prenosih v ZDA, arbitraži 11d in prošnja za priporočilo odvetnika za SLO in ZDA.",
+      "stolpec": "waiting",
+      "prioriteta": "visoka",
+      "oznake": [
+        "pravno"
+      ],
+      "created": "2026-08-24T13:30:00.000Z"
+    }
+  ]
+}
