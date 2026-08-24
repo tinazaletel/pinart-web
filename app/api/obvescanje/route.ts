@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { Resend } from 'resend';
 import { omejiApi } from '@/lib/rate-limit';
 import { jeEmail, omejenNiz, preberiJson, sporociloValidacije } from '@/lib/validacija';
-import { posiljatelj } from '@/lib/posiljatelj';
+import { odgovorNaslov, posiljatelj } from '@/lib/posiljatelj';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { normalizirajEmail, potrditvenoPisemce, ustvariZeton } from '@/lib/obvescanje';
 
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     const pisemce = potrditvenoPisemce(`${osnova}/api/obvescanje/potrdi?zeton=${zeton}`, jezik);
     try {
       await new Resend(kljuc).emails.send({
-        from: posiljatelj(), to: email, subject: pisemce.zadeva, html: pisemce.html,
+        from: posiljatelj(), to: email, replyTo: odgovorNaslov(), subject: pisemce.zadeva, html: pisemce.html,
       });
     } catch (napaka) {
       console.error('Potrditveno pisemce ni odslo:', napaka instanceof Error ? napaka.message : napaka);

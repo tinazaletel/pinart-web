@@ -18,3 +18,15 @@ export function posiljatelj(privzeti = 'Pinart Flow <onboarding@resend.dev>'): s
   console.error('RESEND_FROM ni v veljavni obliki, uporabljam privzetega:', surov);
   return privzeti;
 }
+
+/* Naslov, na katerega pridejo ODGOVORI na sistemska sporocila (obvescanje,
+   vabila, potrditve). Brez tega gre odgovor na RESEND_FROM (noreply@...), ki
+   ga dohodni Cloudflare Worker ne pozna in ga ZAVRNE — posiljatelj dobi
+   "555 5.7.1 Neznan prejemnik" (Tina, 24. 8. 2026, odgovor prek Yahooja).
+   Ljudje na maile odgovarjajo, tudi na enovice; odboj izgleda kot pokvarjeno
+   podjetje. Projektna posta (app/api/posta) ima svoj, pametnejsi reply-to
+   (projektni token) in tega NE uporablja. */
+export function odgovorNaslov(privzeti = 'tina@pinart.si'): string {
+  const surov = (process.env.RESEND_REPLY_TO || '').trim();
+  return /^[^<>@\s]+@[^<>@\s]+$/.test(surov) ? surov : privzeti;
+}

@@ -22,17 +22,34 @@ import RotatingLaptop from '@/components/RotatingLaptop';
    ali v brezplacni kalkulator (funnel). Dizajn = naslovnica ponudbe:
    Bodoni, mreza, vijola/zelena blobi, pastelne gradientne kartice, lesk. */
 
-/* Hero naslov se vrti med 3 sporocili (ljudje ne skrolajo — naslov naj pove vec).
+/* Hero nosi CELO predstavitev: Tina je opazovala obiskovalce — nihce ne
+   scrolla, preberejo naslov in podnaslov ter gredo na prijavo. Zato pravila
+   (Tina + Codexova kritika, 24. 8. 2026):
+     1. vsak od treh naslovov mora SAM ZASE povedati, kaj Flow je — obiskovalec
+        vidi tistega, ki je pac na vrsti (trije koti ISTE obljube, ne trije
+        izdelki);
+     2. tretji je vprasanje — radovednost; je Tinina poved s kalkulatorjevega
+        landinga, obrnjena v vprasanje;
+     3. beseda "AI" v naslovih NIKOLI — orodje deluje tudi brez nje. Pupa
+        nastopi enkrat, z imenom, v podnaslovu; edina omemba AI je "povezes
+        svoj AI" (razlikovalec, ne okras).
    Vsaka razlicica ohrani per-word "flWordUp" animacijo ob menjavi (key={heroIdx}). */
 const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
-  { pre: ['Od', 'ponudbe', 'do', 'računa'], em: ['–', 'z', 'AI', 'asistentko.'] },
-  { pre: ['Vse', 'tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
-  { pre: ['AI,', 'ki', 'pozna', 'trg', 'in'], em: ['ceno', 'tvojega', 'dela.'] },
+  /* "Od ponudbe do racuna" je prodajal cevovod dokumentov; Flow je cel
+     business suite s PROJEKTI v sredini (Tina, 24. 8.). Projekt je enota,
+     tok je njegova vsebina — in konca se pri placilu, ne pri racunu. */
+  /* '\n' = prisilni prelom: Tina hoce tri cist odrezane vrstice
+     (Vsak projekt, / od ponudbe / do placila.) namesto nakljucnega loma. */
+  { pre: ['Vsak', 'projekt,'], em: ['\n', 'od', 'ponudbe', '\n', 'do', 'plačila.'] },
+  /* Brez "Vse" na zacetku: prvi naslov se zacne z "Vsak", in Vsak->Vse ob
+     vrtenju jeclja (Tina, 24. 8.). Zdaj se vsak zacne drugace: Vsak/Tvoje/A. */
+  { pre: ['Tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
+  { pre: ['A', 'veš,', 'koliko', 'je'], em: ['vredno', 'tvoje', 'delo?'] },
 ];
 const HERO_TITLES_EN: { pre: string[]; em: string[] }[] = [
-  { pre: ['From', 'proposal', 'to', 'invoice'], em: ['—', 'with', 'an', 'AI', 'assistant.'] },
+  { pre: ['Every', 'project,'], em: ['\n', 'from', 'proposal', '\n', 'to', 'payment.'] },
   { pre: ['Your', 'whole', 'creative', 'business'], em: ['in', 'one', 'place.'] },
-  { pre: ['AI', 'that', 'understands', 'the', 'market'], em: ['and', 'the', 'value', 'of', 'your', 'work.'] },
+  { pre: ['Do', 'you', 'know', 'what'], em: ['your', 'work', 'is', 'worth?'] },
 ];
 
 export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
@@ -46,7 +63,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const [heroIdx, setHeroIdx] = useState(0);
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const timer = window.setInterval(() => setHeroIdx(i => (i + 1) % heroTitles.length), 4000);
+    /* 7 s: pri 4 s je bil naslov zamenjan, preden ga je obiskovalec dojel. */
+    const timer = window.setInterval(() => setHeroIdx(i => (i + 1) % heroTitles.length), 7000);
     return () => window.clearInterval(timer);
   }, [heroTitles.length]);
 
@@ -1354,8 +1372,8 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         <section className="fl-hero">
           <p className="kicker"><b>Pinart Flow</b> · beta · {t('za samostojne kreativce in male studie', 'for independent creatives and small studios')}</p>
           <h1 className="fl-hero-title" key={heroIdx}>
-            {heroTitles[heroIdx].pre.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${i * 0.07}s` }}>{w}{' '}</span>)}
-            <em>{heroTitles[heroIdx].em.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${(heroTitles[heroIdx].pre.length + i) * 0.07}s` }}>{w}{' '}</span>)}</em>
+            {heroTitles[heroIdx].pre.map((w, i) => w === '\n' ? <br key={i} /> : <span key={i} className="w" style={{ animationDelay: `${i * 0.07}s` }}>{w}{' '}</span>)}
+            <em>{heroTitles[heroIdx].em.map((w, i) => w === '\n' ? <br key={i} /> : <span key={i} className="w" style={{ animationDelay: `${(heroTitles[heroIdx].pre.length + i) * 0.07}s` }}>{w}{' '}</span>)}</em>
           </h1>
           <p className="lead">
             {isEn ? <><b>One workspace instead of four:</b> proposals, contracts, invoices, projects, tasks and communication in one clear flow. <b>Pupa, your AI assistant,</b> understands the creative market and helps you value your work.</> : <><b>En program namesto štirih:</b> ponudbe, pogodbe, računi, projekti in naloge — z vso komunikacijo pregledno na enem mestu. Ob strani ti stoji <b>AI asistentka Pupa</b>, ki pozna trg in ti pove, koliko je vredno tvoje delo.</>}
