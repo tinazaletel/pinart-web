@@ -6479,9 +6479,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uv-forma label { font-size: .84rem; font-weight: 600; color: var(--ink); display: flex; align-items: baseline; gap: .5rem; }
         /* Povezava, ki odpre dokumentna polja pri brezplacnem vstopu. Ni gumb v
            polnem pomenu — je ponudba, ne zahteva, zato brez ozadja in obrobe. */
-        .cw .uv-forma .uv-vec { display: flex; flex-direction: column; align-items: flex-start; gap: .15rem; padding: .25rem 0; border: 0; background: none; color: var(--accent, #B25476); font: 700 .82rem var(--font-sans), sans-serif; text-align: left; cursor: pointer; text-decoration: underline; text-underline-offset: .22em; }
-        .cw .uv-forma .uv-vec:hover { color: var(--ink); }
-        .cw .uv-forma .uv-vec-pripis { font: 500 .72rem var(--font-sans), sans-serif; color: rgba(17,17,17,.62); text-decoration: none; }
+        .cw .uv-forma .uv-vec { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; margin: .2rem 0 .1rem; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.12)); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+        .cw .uv-forma .uv-vec:hover { border-color: rgba(17,17,17,.3); }
+        .cw .uv-forma .uv-vec-glava { width: 100%; display: flex; align-items: center; gap: .45rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
+        .cw .uv-forma .uv-vec-znak { font-size: 1rem; line-height: 1; }
+        .cw .uv-forma .uv-vec-naslov { flex: 1; }
+        .cw .uv-forma .uv-vec-puscica { flex: none; display: grid; place-items: center; transition: transform .18s ease; }
+        .cw .uv-forma .uv-vec-odprt .uv-vec-puscica { transform: rotate(180deg); }
+        .cw .uv-forma .uv-vec-pripis { font: 500 .74rem/1.4 var(--font-sans), sans-serif; color: rgba(17,17,17,.66); }
+        .cw .uv-forma .uv-mreza-naslov { grid-column: 1 / -1; margin: .2rem 0 -.3rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
         .cw .uv-forma .uv-neobvezno { font-size: .7rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .cw .uv-forma input, .cw .uv-forma select { width: 100%; background: rgba(255,255,255,.62); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid rgba(255,255,255,.6); border-radius: 12px; padding: .72rem .95rem; font-family: inherit; font-size: .98rem; font-weight: 500; color: var(--ink); outline: none; box-shadow: 0 4px 14px rgba(40,25,40,.05); transition: border-color .18s; box-sizing: border-box; }
         .cw .uv-forma input:focus, .cw .uv-forma select:focus { border-color: var(--accent); }
@@ -8454,12 +8460,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                  <span className="chat-mehur"><b>{L('V imenu katerega podjetja izdajaš ponudbo?', 'On behalf of which company are you issuing the quote?')}</b><small>{L('Podatki za glavo ponudbe. Obvezno je le ime — če nimaš podjetja, vpiši svoje ime. Ostalo izpolni, kar imaš (lahko dopolniš pozneje).', 'Details for the quote header. Only the name is required — if you don\'t have a company, enter your own name. Fill in the rest as you have it (you can complete it later).')}</small></span></div>
+                  <span className="chat-mehur"><b>{L('Kdo izdaja ponudbo?', 'Who is issuing the quote?')}</b><small>{L('Za izračun potrebujemo le ime in državo. Druge podatke lahko dodaš zdaj ali pozneje.', 'For the calculation we only need a name and a country. You can add the rest now or later.')}</small></span></div>
               )}
               {uvodChat && chatKorak === 2 && (
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pime">{L('Ime / podjetje', 'Name / company')} <span className="uv-neobvezno">{vFlow ? L('obvezno', 'required') : L('za glavo ponudbe — lahko dopolniš pozneje', 'for the quote header — you can add it later')}</span></label>
+                    <label htmlFor="uv-pime">{L('Ime ali naziv studia', 'Your name or studio')}{vFlow && <span className="uv-neobvezno">{L('obvezno', 'required')}</span>}</label>
                     <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
                       naVrednost={v => setPonudnik(prej => ({ ...prej, ime: v }))}
                       naIzbiro={pod => {
@@ -8481,20 +8487,31 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       value={custDrzavaMoj}
                       onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
                   </div>
-                  {!vFlow && !podatkiPodjetjaOdprti && (
-                    <button type="button" className="uv-vec" onClick={() => setPodatkiPodjetjaOdprti(true)}>
-                      {L('Dodaj podatke za ponudbo (davčna, TRR, kontakt)', 'Add details for the quote (tax number, IBAN, contact)')}
-                      <span className="uv-vec-pripis">{L('za ceno jih ne rabim — dopolniš lahko pozneje', 'not needed for the price — you can fill these in later')}</span>
-                    </button>
-                  )}
-                  <div className="uv-mreza" hidden={!vFlow && !podatkiPodjetjaOdprti}>
+                  {/* Zlozljiva vrstica: cela je klikljiva, puscica pove, da se
+                      razpre. Vijolicna oznacuje DEJANJE, razlaga pod njo je
+                      navadno besedilo — dve podcrtani vrstici sta prej izpadli
+                      kot dve povezavi. */}
+                  <button type="button" className={'uv-vec' + (podatkiPodjetjaOdprti ? ' uv-vec-odprt' : '')}
+                    aria-expanded={podatkiPodjetjaOdprti}
+                    onClick={() => setPodatkiPodjetjaOdprti(o => !o)}>
+                    <span className="uv-vec-glava">
+                      <span className="uv-vec-znak" aria-hidden>{podatkiPodjetjaOdprti ? '−' : '+'}</span>
+                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij dodatne podatke', 'Hide additional details') : L('Dodaj podatke za končno ponudbo', 'Add details for the final quote')}</span>
+                      <span className="uv-vec-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
+                    </span>
+                    {!podatkiPodjetjaOdprti && (
+                      <span className="uv-vec-pripis">{L('Davčna številka, kontakt, TRR in naslov · ne vplivajo na izračun cene', 'Tax number, contact, IBAN and address · they do not affect the price')}</span>
+                    )}
+                  </button>
+                  <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
+                    {podatkiPodjetjaOdprti && <p className="uv-mreza-naslov">{L('Podatki na dokumentu', 'Details shown on the document')}</p>}
                     <div className="uv-polje">
                       <label htmlFor="uv-pdavcna">{L('Davčna številka', 'Tax number')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
                       <input id="uv-pdavcna" type="text" placeholder={L('SI98765432', 'SI98765432')}
                         value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
                     </div>
                     <div className="uv-polje">
-                      <label htmlFor="uv-pemail">{L('Email', 'Email')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <label htmlFor="uv-pemail">{L('E-pošta', 'Email')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
                       <input id="uv-pemail" type="email" placeholder={L('kapica@gozd.si', 'kapica@gozd.si')}
                         value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
                     </div>
@@ -8511,7 +8528,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       </div>
                     </div>
                     <div className="uv-polje">
-                      <label htmlFor="uv-ptrr">{L('TRR (bančni račun)', 'Bank account (IBAN)')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <label htmlFor="uv-ptrr">{L('IBAN / TRR', 'IBAN')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
                       <input id="uv-ptrr" type="text" placeholder={L('SI56 1910 0001 2345 678', 'SI56 1910 0001 2345 678')}
                         value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
                     </div>
