@@ -7556,7 +7556,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
         .cw .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .cw .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
-        .cw .posl-vec-gumb, .cw .posl-sheet-glava, .cw .posl-sheet-back, .cw .posl-pretvori-m { display: none; }
+        .cw .posl-vec-gumb, .cw .posl-sheet-glava, .cw .posl-sheet-back { display: none; }
+          .cw .posl-pretvori-m { display: inline-flex; }
         /* Mobilni "Kaj s ponudbo?" sheet — PORTAL na body (nad vsem, full backdrop, prilepljen na dno). */
         .cw .pmsheet-back { position: fixed; inset: 0; z-index: 200; background: rgba(28,21,24,.42); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); animation: pmFade .2s ease both; }
         @keyframes pmFade { from { opacity: 0 } to { opacity: 1 } }
@@ -7613,8 +7614,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .zakljucek-sredina .sub-vrsta { justify-content: center; }
         .cw .zakljucek-sredina .btnvrsta { justify-content: center; }
         /* Racun panel na Zakljucku */
+        .cw .posl-naziv { display: flex; flex-direction: column; gap: .3rem; margin: 0 0 1.1rem; }
+        .cw .posl-naziv > span { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
+        .cw .posl-naziv input { width: 100%; box-sizing: border-box; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; color: var(--ink); font: 600 .95rem var(--font-sans), sans-serif; }
+        .cw .posl-naziv input:focus { outline: none; border-color: rgba(17,17,17,.42); }
         .cw .rac-panel { margin-top: 1.6rem; display: flex; justify-content: center; }
         .cw .rac-toggle { display: inline-flex; align-items: center; gap: .5rem; }
+        /* Na namizju pelje v racun rac-toggle; mobilna razlicica bi ga podvojila. */
+        .cw .posl-pretvori-m { display: none; }
         .cw .rac-box { text-align: left; width: 100%; max-width: 560px; border: 1px solid oklch(93% .006 82 / .55); border-radius: 16px; background: rgba(255,255,255,.55); padding: 1.3rem 1.5rem 1.5rem; }
         .cw .rac-box-glava { display: flex; align-items: center; gap: .55rem; color: var(--accent); margin-bottom: 1.1rem; }
         .cw .rac-box-glava b { font-size: 1.05rem; letter-spacing: .02em; color: var(--ink); }
@@ -10231,6 +10238,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             <>
             {/* PRIMARNI blok: komu + en sam gumb Pošlji (s potrditvijo). */}
             <div className="posl-blok">
+              {/* Ime ponudbe mora biti VIDNO in popravljivo, ne samo vprasano
+                  enkrat — po njem jo bos iskala v arhivu. */}
+              <label className="posl-naziv">
+                <span>{L('Naziv ponudbe', 'Quote name')}</span>
+                <input type="text" value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)}
+                  placeholder={predlogNaziva()} />
+              </label>
               <div className="posl-glava-vrsta">
                 <span className="posl-glava">{L('Pošiljanje ponudbe', 'Sending the quote')}</span>
                 {kontaktiNaVoljo.length > 0 && (
