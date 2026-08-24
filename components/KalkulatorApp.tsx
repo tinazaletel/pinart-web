@@ -8485,12 +8485,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                  <span className="chat-mehur"><b>{L('Kje posluješ?', 'Where do you work?')}</b><small>{L('Državo potrebujemo, da ceno prilagodimo tvojemu trgu.', 'We need the country so we can match the price to your market.')}</small></span></div>
+                  <span className="chat-mehur"><b>{L('Kje posluješ?', 'Where do you work?')}</b><small>{L('Ceno prilagodimo trgu, na katerem delaš. Če je stranka iz druge države, to poveš pozneje.', 'We match the price to the market you work in. If your client is from another country, you will tell us later.')}</small></span></div>
               )}
               {uvodChat && chatKorak === 2 && (
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pdrzava">{L('Tvoja država', 'Your country')} <span className="uv-neobvezno">{L('vpliva na raven cen', 'affects the price level')}</span></label>
+                    <label htmlFor="uv-pdrzava">{L('Država, kjer posluješ', 'Country where you work')} <span className="uv-neobvezno">{L('vpliva na raven cen', 'affects the price level')}</span></label>
                     <IzbirnikDrzave id="uv-pdrzava" placeholder={L('Izberi državo', 'Choose a country')}
                       moznosti={DRZAVE.map(d => locale === 'en' ? d.imeEn : d.ime)}
                       value={custDrzavaMoj}
