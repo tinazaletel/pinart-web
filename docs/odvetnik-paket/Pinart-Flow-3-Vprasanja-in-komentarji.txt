@@ -137,12 +137,9 @@ bistveno predelati.
   – mobilna aplikacija in naročnine prek trgovin
   – anonimna cenovna statistika kot javno dostopen ali plačljiv pregled trga
 
-ŠE DVOJE
+ŠE NEKAJ, KAR NI PRAVNO VPRAŠANJE
 
-Prosim tudi za priporočilo odvetnika za to področje (SaaS, GDPR, umetna
-inteligenca in avtorske pravice), po možnosti za slovenski in ameriški trg.
-Zanima me tudi, koga bi lahko priporočila svojim uporabnikom. V aplikaciji
-imam gumb, prek katerega se stranka lahko odloči za pravno pomoč pri pogodbi.
-
-Priložene so tudi evidenca dejavnosti obdelave (30. člen) in diagram
-podatkovnih tokov, če bi bila v pomoč.
+V orodju imam gumb, prek katerega se uporabnik lahko odloči za pravno pomoč,
+kadar želi pogodbo pregledati ali napisati bolj profesionalno. Za to iščem
+partnerja, ki bi take stranke prevzel. Če vas zanima, se o obliki sodelovanja
+rada pogovorim.
