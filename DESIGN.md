@@ -176,6 +176,18 @@ pozabljena, pilula v glavi ostane nedotaknjena in vprašanje pride ločeno — s
 uporabnica izgubi izpred oči prav tisto, o čemer jo sprašujemo.
 
 
+## 13b. `hidden` ne skrije elementa z `display`
+
+Atribut `hidden` postavi `display: none` na ravni brskalnika — vsak razred z
+`display: grid` ali `flex` ga premaga. Element ostane viden, koda pa je videti
+pravilno.
+
+```css
+.moja-mreza[hidden] { display: none; }
+```
+
+Če skrivaš pogojno, je varneje sploh ne izrisati (`{pogoj && <div>…</div>}`).
+
 ## 14. Nepovratna dejanja povej vnaprej
 
 Kar se ne da razveljaviti, mora biti povedano **preden** človek klikne, ne kot

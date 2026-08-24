@@ -6470,6 +6470,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* onboarding: forma s podatki podjetja (glava ponudbe) — vsi podatki zbrani tu */
         .cw .uv-forma { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: stretch; gap: 1rem; margin: 1.4rem 0 0 3.05rem; width: min(560px, 100%); }
         .cw .uv-forma .uv-mreza { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem .9rem; }
+        /* Atribut hidden sam po sebi ne skrije nicesar, kadar ima element
+           razred z display: grid — pravilo razreda premaga privzeto
+           display:none iz brskalnika. Zato izrecno. */
+        .cw .uv-forma .uv-mreza[hidden] { display: none; }
         .cw .uv-forma .uv-polje { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
         .cw .uv-forma .uv-polje-siroko { grid-column: 1 / -1; }
         .cw .uv-forma label { font-size: .84rem; font-weight: 600; color: var(--ink); display: flex; align-items: baseline; gap: .5rem; }
