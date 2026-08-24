@@ -6722,7 +6722,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .se-preklop em { font-style: normal; color: rgba(17,17,17,.72); font-weight: 400; }
         .cw .se-note { margin: .8rem 0 0; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.62); }
         .cw .soglasje-gumbi { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-        .cw .sg-potrdi { display: flex; align-items: flex-start; gap: .6rem; font-size: .95rem; line-height: 1.5; color: var(--ink); cursor: pointer; text-align: left; max-width: 34rem; }
+        .cw .sg-potrdi { margin: .7rem 0 .4rem; padding: .25rem 0; display: flex; align-items: flex-start; gap: .75rem; font-size: .95rem; line-height: 1.5; color: var(--ink); cursor: pointer; text-align: left; max-width: 34rem; }
         .cw .sg-potrdi input { flex: none; width: 1.15rem; height: 1.15rem; margin-top: .18rem; accent-color: var(--accent, #B25476); cursor: pointer; }
         .cw .sg-potrdi a { color: var(--accent, #B25476); text-decoration: underline; text-underline-offset: .2em; }
         /* Okno s pogoji v Flow razlicici — uporabnik jih preleti pred potrditvijo. */
@@ -6731,7 +6731,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Flow: pogoji so GLAVNA vsebina kartice — visoko okno, gumb ceka na dnu. */
         .cw .sg-pogoji-okvir { width: 100%; height: min(52vh, 560px); min-height: 260px; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; background: #fff; display: block; }
         .cw .sg-uvod { margin: 0; font-size: .95rem; line-height: 1.55; color: #4a4550; }
-        .cw .sg-pogoji-namig { margin: 0; font-size: .78rem; color: #6b655d; }
+        /* Namig in kljukica sta bila prilepljena na okvir pogojev — brez zraka
+           je zgledalo stisnjeno (Tina, 25. 8.). */
+        .cw .sg-pogoji-namig { margin: .85rem 0 0; font-size: .82rem; line-height: 1.5; color: #6b655d; }
+        .cw .sg-pogoji { gap: .7rem; }
         .cw .sg-vhod { margin: 0; font-size: .85rem; line-height: 1.5; color: #4a453f; text-align: center; max-width: 30rem; }
         .cw .sg-vhod a { color: var(--accent, #B25476); text-decoration: underline; text-underline-offset: .2em; }
         .cw .sg-potrdi-zaklenjen { opacity: .55; cursor: not-allowed; }
