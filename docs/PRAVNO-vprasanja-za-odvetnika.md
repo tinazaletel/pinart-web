@@ -308,3 +308,55 @@ kot dokaz po členu 7(1) GDPR?
 Glej enako točko v paketu: ali za anonimno rabo zadošča dvostopenjski pristop
 (kratka kartica ob vstopu, celotni pogoji ob prvem izvozu), ali priporočate
 ločene, krajše pogoje samo za brezplačni kalkulator?
+
+## 21. Kaj načrtujemo (prosimo za oceno vnaprej, da vas ne obremenjujemo večkrat)
+
+Spodaj je vse, kar je na načrtu za naslednje leto. Prosimo za **kratko oceno pri
+vsaki točki**: ali gre za regulirano dejavnost, kaj bo treba dodati v pogoje ali
+politiko in kaj je treba urediti, še preden funkcija zaživi. Raje enkrat
+pogledate celoto, kot da vam pošiljamo dopolnitve vsak mesec.
+
+**21.1 Davčna blagajna in davčno potrjevanje računov (FURS).** Danes Flow
+računov ne potrjuje (točka 1). Načrtujemo, da bo — izdaja računa in davčno
+potrjevanje z enim klikom, vključno s prodajnim mestom (POS). Zavedamo se, da
+je to najbolj regulirana stvar na seznamu. Vprašanja: kateri pogoji morajo biti
+izpolnjeni (namenska programska oprema, digitalno potrdilo, interni akt o
+oštevilčenju, povezava z blagajniško napravo), kdo nosi odgovornost ob napaki
+potrditve — ponudnik ali uporabnik — in kaj mora o tem pisati v pogojih.
+
+**21.2 Povezava z banko (odprto bančništvo, PSD2).** Cilj: uporabnik vidi
+plačila in oznaci račun kot plačan brez ročnega vnašanja, po možnosti tudi
+plačilo z enim klikom prek posrednika (npr. Tink, GoCardless). Vprašanje: ali s
+tem postanemo posrednik plačilnih storitev in kaj to pomeni za dovoljenja.
+
+**21.3 Sef avtorstva — kvalificirani časovni žig (eIDAS).** Danes uporabljamo
+FreeTSA po RFC 3161. Načrtujemo prehod na kvalificirano storitev. Vprašanje:
+kako se s tem spremeni dokazna vrednost in ali smemo to razliko oglaševati.
+
+**21.4 Večuporabniški dostop in ekipe.** Vabila sodelavcev, skupni projekti,
+prenos lastništva organizacije. Vprašanje: kako to spremeni pogodbo o obdelavi
+(točka 4g) — kdo je upravljavec, ko podatke vnaša povabljeni sodelavec.
+
+**21.5 Povezava lastnega AI in agenti.** Uporabnik bo lahko priklopil svojega
+ponudnika AI (API), agenti pa bodo opravljali naloge v njegovem imenu.
+Vprašanje: kdo je odgovoren za izhod tujega modela in kako to zapisati.
+
+**21.6 Elektronska pošta v aplikaciji.** Projektna pošta že deluje; načrtujemo
+povezavo z Gmailom prek OAuth. Vprašanje: ali branje uporabnikovega nabiralnika
+zahteva posebno privolitev in kaj to pomeni za podatke tretjih oseb v sporočilih.
+
+**21.7 Priporočila in donacije.** Program »povabi kolega« z nagrado ter možnost
+donacije. Vprašanje: davčna in potrošniška obravnava nagrade.
+
+**21.8 Tuji trgi.** Po Sloveniji EU, nato ZDA; cene v več valutah prek
+pooblaščenega ponudnika plačil (Merchant of Record). Vprašanje: kdaj postane
+nujna ločena različica pogojev za ZDA in kdaj lokalizacija za posamezne države EU.
+
+**21.9 Mobilna aplikacija.** Najprej spletna aplikacija (PWA), pozneje ovoj za
+App Store in Google Play. Vprašanje: kaj zahtevata trgovini glede pogojev,
+politike zasebnosti in obravnave naročnin (plačila v aplikaciji).
+
+**21.10 Anonimna cenovna statistika kot izdelek.** Ko bo baza dovolj velika,
+želimo zbirne podatke (mediane cen po storitvah in izkušnjah) pokazati
+uporabnikom, morda tudi kot plačljivo poročilo. Vprašanje: ali je to še vedno
+anonimna obdelava iz točke 5 pogojev in kaj moramo dodati, če postane izdelek.
