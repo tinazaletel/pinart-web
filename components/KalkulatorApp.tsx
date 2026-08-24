@@ -30,7 +30,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree, Paperclip, X, Microphone, SpeakerHigh, SpeakerSlash,
+  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree, Paperclip, X, Microphone, SpeakerHigh, SpeakerSlash,, Warning
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -7616,9 +7616,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Racun panel na Zakljucku */
         /* Vijolicna, ne jantarna: v aplikaciji nosita pomen samo dve barvi —
            vijolicna (pozornost, znamka) in rdeca (opozorilo). Tretje ni. */
-        .cw .pon-namig-glava { display: flex; flex-direction: column; gap: .2rem; margin: 0 0 1rem; padding: .8rem 1rem .8rem .95rem; border: 1px solid color-mix(in oklch, var(--accent, #6E4FA6) 38%, transparent); border-left: 5px solid var(--accent, #6E4FA6); border-radius: .6rem; background: color-mix(in oklch, var(--accent, #6E4FA6) 15%, #fff); color: oklch(34% .13 300); }
-        .cw .pon-namig-glava b { font: 800 .92rem/1.3 var(--font-sans), sans-serif; }
-        .cw .pon-namig-glava span { font: 500 .84rem/1.45 var(--font-sans), sans-serif; opacity: .88; }
+        /* Isti videz kot opozorila v components/Toast.tsx (DESIGN.md, 13):
+           rahlo rdece ozadje, rdeca crta levo, rdeca ikona in naslov, telo v
+           --ink. Tu je vgrajeno v stran, ne plavajoce, zato brez sence. */
+        .cw .pon-namig-glava { display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem; padding: .7rem .9rem; border: 1px solid oklch(76% .13 25 / .65); border-left: 4px solid oklch(58% .18 25); border-radius: .85rem; background: oklch(95.5% .05 25); }
+        .cw .pon-namig-glava > svg { flex: none; color: oklch(52% .17 25); }
+        .cw .pnm-tekst { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+        .cw .pon-namig-glava b { font: 800 .86rem/1.3 var(--font-sans), sans-serif; color: oklch(46% .17 25); }
+        .cw .pnm-tekst > span { font: 600 .82rem/1.45 var(--font-sans), sans-serif; color: var(--ink); }
         .cw .posl-naziv { display: flex; flex-direction: column; gap: .3rem; margin: 0 0 1.1rem; }
         .cw .posl-naziv > span { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
         .cw .posl-naziv input { width: 100%; box-sizing: border-box; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; color: var(--ink); font: 600 .95rem var(--font-sans), sans-serif; }
@@ -10068,10 +10073,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {/* Namig zivi v UREJEVALNIKU, ne v dokumentu: stranki ne sme
                   pasti v oci, uporabnica pa mora vedeti, da glave ni. */}
               {!ponudnik.ime.trim() && (
-                <div className="pon-namig-glava">
+                <div className="pon-namig-glava" role="status">
+                  <Warning size={19} weight="fill" aria-hidden />
+                  <span className="pnm-tekst">
                   <b>{L('Glave ponudbe še nisi izpolnila', 'You have not filled in the quote header')}</b>
                   <span>{L('Ponudba bo brez tvojega imena in kontakta. Dopiši jo ročno v dokumentu ali jo shrani v Profil → Moje podjetje, da se odslej izpolni sama.',
                      'The quote will go out without your name and contact. Type it into the document, or save it in Profile → My company so it fills in automatically from now on.')}</span>
+                  </span>
                 </div>
               )}
               {/* NAČIN + TON + AI */}
