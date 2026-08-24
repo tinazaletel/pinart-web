@@ -8459,7 +8459,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {uvodChat && chatKorak === 2 && (
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pime">{L('Ime / podjetje', 'Name / company')} <span className="uv-neobvezno">{L('obvezno', 'required')}</span></label>
+                    <label htmlFor="uv-pime">{L('Ime / podjetje', 'Name / company')} <span className="uv-neobvezno">{vFlow ? L('obvezno', 'required') : L('za glavo ponudbe — lahko dopolniš pozneje', 'for the quote header — you can add it later')}</span></label>
                     <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
                       naVrednost={v => setPonudnik(prej => ({ ...prej, ime: v }))}
                       naIzbiro={pod => {
@@ -8472,7 +8472,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           email: pod.email || prej.email,
                         }));
                       }}
-                      obvezno ime="uv-pime" jeEn={L('sl', 'en') === 'en'} />
+                      obvezno={vFlow} ime="uv-pime" jeEn={L('sl', 'en') === 'en'} />
                   </div>
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pdrzava">{L('Država', 'Country')} <span className="uv-neobvezno">{L('določi privzet trg / raven cen', 'sets the default market / price level')}</span></label>
@@ -8521,7 +8521,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
                     </div>
                   </div>
-                  <button type="submit" className="gumb" disabled={!ponudnik.ime.trim()}>{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button>
+                  {/* Ime podjetja NE sme zapirati poti do cene: je podatek
+                      dokumenta, ne izracuna. Prijavljeni ga ima shranjenega,
+                      brezplacni obiskovalec pa ga dopolni sele ob ponudbi. */}
+                  <button type="submit" className="gumb" disabled={vFlow && !ponudnik.ime.trim()}>{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button>
                 </form>
               )}
               {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime.trim() + (custDrzavaMoj.trim() ? ' · ' + custDrzavaMoj.trim() : '') || '—')}
