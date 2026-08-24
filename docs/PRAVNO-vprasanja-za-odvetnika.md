@@ -136,6 +136,6 @@ bistveno predelati.
 ## Še nekaj, kar ni pravno vprašanje
 
 V orodju imam gumb, prek katerega se uporabnik lahko odloči za pravno pomoč,
-kadar želi pogodbo pregledati ali napisati bolj profesionalno. Za to iščem
-partnerja, ki bi take stranke prevzel. Če vas zanima, se o obliki sodelovanja
-rada pogovorim.
+kadar želi pogodbo pregledati ali napisati bolj profesionalno. Iščem odvetnika
+ali pisarno, na katero bom lahko naslovila take stranke. Če koga poznate in bi
+ga to zanimalo, bom hvaležna za povezavo.
