@@ -2637,6 +2637,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         const m = /^(\+\d{1,4})\s*(.*)$/.exec(s.ponudnik.telefon || '');
         if (m) { setPredklic(m[1]); setPonudnik({ trr: '', ...s.ponudnik, telefon: m[2] }); }
       }
+      /* Prvic vprasamo VIDNO. Zaprt predal se ne vidi kot vprasanje — kdor
+         prvic pride, sploh ne ve, da smo po podatkih podjetja vprasali. Zato
+         je odprt, dokler imena nimamo; ko ga enkrat imamo, ostane zaprt, ker
+         po istih podatkih sprasujemo samo enkrat. */
+      if (!String(s.ponudnik?.ime || '').trim()) setPodatkiPodjetjaOdprti(true);
       if (s.urnePostavke?.length) setUrnePostavke(s.urnePostavke);
       else if (s.urnaPostavka) setUrnePostavke([{ ime: L('Dodatna dela', 'Additional work'), cena: String(s.urnaPostavka) }]);
       if (s.avansPct !== undefined) setAvansPct(String(s.avansPct));
