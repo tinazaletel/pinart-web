@@ -7917,7 +7917,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           ponavljajo. */}
       {zahtevaNaziv !== null && typeof document !== 'undefined' && createPortal(
         <div className="cw">
-        <div className="soglasje" role="dialog" aria-modal="true" aria-label={L('Naziv ponudbe', 'Quote name')}>
+        <div className="soglasje" role="dialog" aria-modal="true" aria-label={L('Ime ponudbe', 'Quote name')}>
           <div className="soglasje-kartica">
             <h2>{L('Kako se imenuje ta ponudba?', 'What is this quote called?')}</h2>
             <p className="sg-uvod">{L('Po tem imenu jo boš našla v arhivu. Predlagam ime po storitvah, lahko pa vpišeš svoje.', 'You will find it in the archive under this name. I suggest one based on the services; you can write your own.')}</p>
@@ -8602,7 +8602,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
                     <p className="uv-mreza-naslov">{L('Glava ponudbe', 'Quote header')} <span>{L('dodaj, kar želiš prikazati', 'add what you want to show')}</span></p>
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pime">{L('Ime ali naziv tvojega podjetja', 'Your name or business name')}</label>
+                    <label htmlFor="uv-pime">{L('Ime tvojega podjetja', 'Your business name')}</label>
                     <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
                       naVrednost={v => setPonudnik(prej => ({ ...prej, ime: v }))}
                       naIzbiro={pod => {
@@ -10271,7 +10271,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {/* Ime ponudbe mora biti VIDNO in popravljivo, ne samo vprasano
                   enkrat — po njem jo bos iskala v arhivu. */}
               <label className="posl-naziv">
-                <span>{L('Naziv ponudbe', 'Quote name')}</span>
+                <span>{L('Ime ponudbe', 'Quote name')}</span>
                 <input type="text" value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)}
                   placeholder={predlogNaziva()} />
               </label>
