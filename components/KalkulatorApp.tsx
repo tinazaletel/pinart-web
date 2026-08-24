@@ -2287,8 +2287,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* Naziv ponudbe se vprasa TIK PRED tem, ko ponudba zapusti kalkulator ali se
      shrani. Prej je bil neobvezen in vse ponudbe so se imenovale po storitvah v
      njih — v arhivu je bilo deset "Logotip, Spletna stran". */
-  const [zahtevaNaziv, setZahtevaNaziv] = useState<null | (() => void)>(null);
-  const [nazivVnos, setNazivVnos] = useState('');
   const predlogNaziva = () => {
     const osnova = (r ? r.sez.map(x => x.ime).join(', ') : '').slice(0, 60) || L('Ponudba', 'Quote');
     const zasedena = new Set(Object.values(arhiv || {}).map(a => (a?.nazivPonudbe || '').trim()).filter(Boolean));
@@ -2297,18 +2295,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     while (zasedena.has(`${osnova} ${n}`)) n += 1;
     return `${osnova} ${n}`;
   };
+  /* Polje "Ime ponudbe" stoji vidno na Zakljucku in ze kaze predlog kot namig.
+     Ce ga uporabnica pusti pri miru, predlog PREVZAMEMO — vprasati jo se enkrat
+     v oknu bi pomenilo isto vprasanje dvakrat na istem zaslonu. Predlog je
+     enolicen, ker preteje arhiv. */
   const zNazivom = (akcija: () => void) => () => {
-    if (nazivPonudbe.trim()) { akcija(); return; }
-    setNazivVnos(predlogNaziva());
-    setZahtevaNaziv(() => akcija);
-  };
-  const potrdiNaziv = () => {
-    const ime = nazivVnos.trim();
-    if (!ime) return;
-    setNazivPonudbe(ime);
-    const akcija = zahtevaNaziv;
-    setZahtevaNaziv(null);
-    if (akcija) akcija();
+    if (!nazivPonudbe.trim()) setNazivPonudbe(predlogNaziva());
+    akcija();
   };
   const potrdiPolnePogoje = () => {
     zapisiPotrditevPogojev('polno', new Date());
@@ -7931,31 +7924,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
             </div>
             )}
-          </div>
-        </div>
-        </div>,
-        document.body,
-      )}
-
-      {/* Naziv ponudbe: vprasamo TIK PRED tem, ko ponudba zapusti kalkulator.
-          Predlog je sestavljen iz storitev in ze presteje arhiv, da se imena ne
-          ponavljajo. */}
-      {zahtevaNaziv !== null && typeof document !== 'undefined' && createPortal(
-        <div className="cw">
-        <div className="soglasje" role="dialog" aria-modal="true" aria-label={L('Ime ponudbe', 'Quote name')}>
-          <div className="soglasje-kartica">
-            <h2>{L('Kako se imenuje ta ponudba?', 'What is this quote called?')}</h2>
-            <p className="sg-uvod">{L('Po tem imenu jo boš našla v arhivu. Predlagam ime po storitvah, lahko pa vpišeš svoje.', 'You will find it in the archive under this name. I suggest one based on the services; you can write your own.')}</p>
-            <form onSubmit={e => { e.preventDefault(); potrdiNaziv(); }}>
-              <div className="uv-polje uv-polje-siroko">
-                <input autoFocus type="text" value={nazivVnos} onChange={e => setNazivVnos(e.target.value)}
-                  placeholder={L('npr. Prenova spletne strani — Rokus Klett', 'e.g. Website redesign — Rokus Klett')} />
-              </div>
-              <div className="soglasje-gumbi">
-                <button type="submit" className="gumb" disabled={!nazivVnos.trim()}>{L('Shrani ime in nadaljuj →', 'Save the name and continue →')}</button>
-                <button type="button" className="povezava" onClick={() => setZahtevaNaziv(null)}>{L('Prekliči', 'Cancel')}</button>
-              </div>
-            </form>
           </div>
         </div>
         </div>,
