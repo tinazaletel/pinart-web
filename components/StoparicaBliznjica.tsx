@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Pause, Play, Stop } from '@phosphor-icons/react';
+import { Pause, Play, Stop, Timer } from '@phosphor-icons/react';
 import { jePozabljeno, potrdiTek, preklopiPavzo, useTekoceMerjenje, zahtevajUstavitev, zapisCasa } from '@/lib/tekoceMerjenje';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import Toast from '@/components/Toast';
@@ -41,6 +41,7 @@ export default function StoparicaBliznjica() {
       trajanje={0}
       sporocilo={`Štoparica teče že ${ur} ${ur === 1 ? 'uro' : ur === 2 ? 'uri' : ur < 5 ? 'ure' : 'ur'} — ${merjenje.projectName}. Si jo pozabila ustaviti?`}
       onClose={potrdiTek}
+      ikona={<Timer size={19} weight="fill" />}
       dejanja={<>
         <button type="button" onClick={ustavi}>Ustavi in shrani</button>
         <button type="button" onClick={potrdiTek}>Teče naprej</button>

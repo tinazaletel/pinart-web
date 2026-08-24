@@ -112,6 +112,43 @@ Vse besedilo je dvojezično prek `L('slovensko', 'english')`.
 - barvni storitveni mehurčki v kalkulatorju (Flow mehki mehurček je nekaj drugega)
 - onboarding — je samostojen modul, **ne** del ponudbe za prijavljene (`!vLupini`)
 
+
+## 13. Obvestila in opozorila
+
+Vsa obvestila gredo skozi `components/Toast.tsx`. Ne piši svojega.
+
+```tsx
+<Toast sporocilo="Shranjeno." onClose={() => setSporocilo('')} />
+<Toast ton="napaka" trajanje={0} sporocilo="…" dejanja={<><button/><button/></>} onClose={…} />
+```
+
+**Kje se pokaže:**
+
+| Vrsta | Mesto | Trajanje |
+|---|---|---|
+| info, uspeh | sredina zgoraj | 3,5 s |
+| **opozorilo (`ton="napaka"`)** | **desno, tik pod glavo** | 3,5 s ali trajno |
+| karkoli s `trajanje={0}` | desno, tik pod glavo | dokler se ne odloči |
+
+Opozorila prizdrsnejo **z desne proti levi** in stojijo pri zvoncu, kjer jih
+uporabnica išče — nikoli čez sredino glave, kjer zakrijejo orodno vrstico. Glava
+je visoka `3.25rem`, obvestilo stoji na `top: 4rem`.
+
+Na telefonu opozorilo pride **spodaj**, čez celo širino, nad varnim robom — tam
+je palec.
+
+**Ikona na začetku.** `ikona` nadomesti barvno piko in pove, o čem obvestilo
+govori, preden ga uporabnica prebere — štoparica dobi `<Timer />`. Pri obvestilih
+brez svoje ikone ostane pika.
+
+**Kaj zahteva odločitev, ne sme izginiti samo.** `trajanje={0}` pomeni, da
+obvestilo počaka. Gumbi gredo v `dejanja`; prvi je glavni (poln, vijoličen),
+drugi je izhod (obroba, bel).
+
+**Opozorilo ne sme predelati elementa, na katerega se nanaša.** Ko je štoparica
+pozabljena, pilula v glavi ostane nedotaknjena in vprašanje pride ločeno — sicer
+uporabnica izgubi izpred oči prav tisto, o čemer jo sprašujemo.
+
 ---
 
 ## Preden rečeš, da je narejeno
