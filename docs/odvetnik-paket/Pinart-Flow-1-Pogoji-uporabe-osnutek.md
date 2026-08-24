@@ -20,7 +20,7 @@ Vsi izračuni, cene, razponi in besedila ponudb so zgolj informativni in orienta
 
 ## 1a. Od kod priporočene cene
 
-Privzete cene in množitelji so strokovna ocena avtorice orodja na podlagi njenih izkušenj in javno dostopnih virov. Zaenkrat ne temeljijo na izmerjenih tržnih podatkih; anonimna statistika (točka 5) tako bazo šele gradi. Vse zneske lahko in naj prilagodiš svojim razmeram.
+Privzete cene in množitelji so nastali na podlagi AI raziskave trga — javno dostopnih cenikov, priporočil stanovskih združenj in primerjav objavljenih cen. Niso izmerjena tržna statistika: to bazo šele gradimo iz anonimnih izračunov (točka 5). Vse zneske lahko in naj prilagodiš svojim razmeram; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.
 
 ## 2. Davki
 
