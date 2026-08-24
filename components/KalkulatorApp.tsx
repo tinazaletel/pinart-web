@@ -8580,11 +8580,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     onClick={() => setPodatkiPodjetjaOdprti(o => !o)}>
                     <span className="uv-vec-glava">
                       <span className="uv-vec-znak" aria-hidden>{podatkiPodjetjaOdprti ? '−' : '+'}</span>
-                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij glavo ponudbe', 'Hide the quote header') : L('Pripravi tudi ponudbo', 'Prepare a quote as well')}</span>
+                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij podatke podjetja', 'Hide company details') : L('Dodaj podatke podjetja', 'Add company details')}</span>
                       <span className="uv-vec-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
                     </span>
                     {!podatkiPodjetjaOdprti && (
-                      <span className="uv-vec-pripis">{L('Dodaj podatke za izpis na ponudbi.', 'Add the details printed on the quote.')}</span>
+                      <span className="uv-vec-pripis">{L('Izpisali se bodo v glavi ponudbe.', 'They will be printed in the quote header.')}</span>
                     )}
                   </button>
                   <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
