@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { omejiApi } from '@/lib/rate-limit';
 import { jeEmail, preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { preberiClanstvo } from '@/lib/clanstvo';
+import { odgovorNaslov } from '@/lib/posiljatelj';
 
 type SendRequest = { recipient?: string; downloadUrl?: string; periodStart?: string; periodEnd?: string; demo?: boolean };
 
@@ -51,6 +52,9 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       from,
       to: [recipient],
+      /* Racunovodkinja bo na paket ODGOVORILA (vprasanja, manjkajoci racuni).
+         Odgovor mora do posiljatelja, ne na noreply, kjer ga Worker zavrne. */
+      reply_to: user.email || odgovorNaslov(),
       subject: `Računovodski paket ${body.periodStart}–${body.periodEnd}`,
       html: `<p>Pozdravljeni,</p><p>pripravljen je računovodski paket za obdobje <strong>${body.periodStart}–${body.periodEnd}</strong>.</p><p><a href="${downloadUrl.toString().replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">Varno prenesi ZIP paket</a></p><p>Povezava je časovno omejena.</p>`,
     }),
