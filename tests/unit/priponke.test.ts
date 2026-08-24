@@ -156,3 +156,27 @@ describe('predogled slike', () => {
     expect(jeSlika({})).toBe(false);
   });
 });
+
+describe('zavrnitev pove, kaj naj uporabnica naredi', () => {
+  it('SVG dobi svojo razlago in pot naprej (zip)', () => {
+    const izid = preveriPriponko({ ime: 'logotip.svg', velikost: 12_000 });
+    expect(izid.veljavno).toBe(false);
+    expect(izid.napaka).toContain('.zip');
+    expect(izid.napaka).not.toContain('izvršljiv');
+  });
+
+  it('svgz je obravnavan enako kot svg', () => {
+    expect(preveriPriponko({ ime: 'risba.svgz', velikost: 900 }).napaka).toContain('.zip');
+  });
+
+  it('izvrsljiva datoteka NE dobi nasveta, naj jo stisne', () => {
+    const izid = preveriPriponko({ ime: 'namesti.exe', velikost: 2_000 });
+    expect(izid.veljavno).toBe(false);
+    expect(izid.napaka).not.toContain('.zip');
+    expect(izid.napaka).toContain('povezavo');
+  });
+
+  it('zip s svg vsebino je dovoljen — nevarnost je izris, ne datoteka', () => {
+    expect(preveriPriponko({ ime: 'logotipi.zip', velikost: 200_000 }).veljavno).toBe(true);
+  });
+});

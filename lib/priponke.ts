@@ -14,6 +14,14 @@ export const NAJVEC_BAJTOV_SKUPAJ = 20 * 1024 * 1024;   /* 20 MB na sporočilo *
    se mu ne da verjeti, končnica je tisto, kar sistem dejansko zažene. */
 export const PREPOVEDANE_KONCNICE: readonly string[] = ['exe', 'bat', 'cmd', 'sh', 'js', 'msi'];
 
+/* SVG ni izvrsljiva datoteka in ni isti primer kot .exe: nevaren je samo zato,
+   ker ga brskalnik IZRISE in pri tem lahko pozene skripto v njem. Zato ga
+   zavrnemo kot priponko, uporabnici pa povemo pot naprej — v stisnjeni mapi se
+   ne izrise nikjer, zato je varen in ostane urejljiv. */
+export const SVG_KONCNICE: readonly string[] = ['svg', 'svgz'];
+
+export const jeSvg = (ime: string): boolean => SVG_KONCNICE.includes(koncnicaDatoteke(ime));
+
 export type Priponka = {
   ime: string;
   velikost: number;
@@ -88,8 +96,17 @@ export function preveriPriponko(priponka: { ime: string; velikost: number }): Iz
   if (velikost > NAJVEC_BAJTOV_DATOTEKA) {
     return { veljavno: false, napaka: `Datoteka »${ime}« meri ${berljivaVelikost(velikost)} — največ je ${berljivaVelikost(NAJVEC_BAJTOV_DATOTEKA)}.` };
   }
+  if (jeSvg(ime)) {
+    return {
+      veljavno: false,
+      napaka: `SVG ne moremo pripeti, ker se v brskalniku izriše in lahko nosi skripto. Stisni ga v .zip — tako ostane urejljiv in gre skozi. Če naj ga prejemnik samo pogleda, pripni PDF ali PNG.`,
+    };
+  }
   if (jePrepovedanaDatoteka(ime)) {
-    return { veljavno: false, napaka: `Datoteke .${koncnicaDatoteke(ime)} ni mogoče pripeti (izvršljiva datoteka).` };
+    return {
+      veljavno: false,
+      napaka: `Datoteke .${koncnicaDatoteke(ime)} ne pošiljamo po pošti — izvršljive datoteke so najpogostejša pot za zlonamerno kodo in jih večina poštnih strežnikov tako ali tako zavrne. Pošlji povezavo do prenosa (WeTransfer, Drive, Dropbox).`,
+    };
   }
   return { veljavno: true };
 }
