@@ -10065,8 +10065,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   pasti v oci, uporabnica pa mora vedeti, da glave ni. */}
               {!ponudnik.ime.trim() && (
                 <p className="pon-namig-glava">
-                  {L('Glave ponudbe še nisi izpolnila. Klikni v oglate oklepaje v dokumentu in vpiši svoje podatke — ali jih shrani v Profilu, da se odslej izpolnijo same.',
-                     'You have not filled in the quote header. Click the square brackets in the document and type your details — or save them in your Profile so they fill in automatically.')}
+                  {L('Glave ponudbe še nisi izpolnila — ponudba bo brez tvojega imena in kontakta. Dopiši jo ročno v dokumentu ali jo shrani v Profilu → Moje podjetje, da se odslej izpolni sama.',
+                     'You have not filled in the quote header — the quote will go out without your name and contact. Type it into the document, or save it in Profile → My company so it fills in automatically from now on.')}
                 </p>
               )}
               {/* NAČIN + TON + AI */}
