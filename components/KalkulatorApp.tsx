@@ -10219,6 +10219,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                    spremenilo ob vsakem znaku, kar je pri vsakem pritisku
                    prerisalo cel korak — od tod poskakovanje med tipkanjem. */
                 onInput={() => { if (!rocnoBesedilo) setRocnoBesedilo(true); }}
+                /* Tipke, ki se v urejevalniku uporabljajo za pisanje, ne smejo
+                   nikamor naprej. Enter je delal novo vrstico IN sprozil gumb
+                   Naprej, ker je dogodek zletel do noge koraka. */
+                onKeyDown={e => { e.stopPropagation(); }}
                 onBlur={sinhronizirajEditor}
               />
               {rocnoBesedilo && (
