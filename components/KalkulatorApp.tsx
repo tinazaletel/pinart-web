@@ -7848,9 +7848,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           <div className="soglasje-kartica">
             <h2>{vFlow ? L('Preden začneš', 'Before you begin') : L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
             <div className="soglasje-tocke">
-              {vFlow ? (
-              <p className="sg-uvod">{L('Preberi pogoje poslovanja in jih potrdi spodaj.', 'Read the terms of business and confirm below.')}</p>
-              ) : (<>
+              {vFlow ? (<>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Vse na enem mestu', 'Everything in one place')}</h3>
+                <p className="sg-t">{L('Flow ni samo kalkulator — ponudbe, računi, pogodbe, stranke, projekti, koledar in več. Ko se spoznava, te odložim na tvojo ploščo, kjer izbereš, kaj boš delal/-a.', 'Flow is more than a calculator — quotes, invoices, contracts, clients, projects, a calendar and more. Once we get to know each other, I drop you on your dashboard, where you choose what to do.')}</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Shranjeno v tvojem oblaku', 'Saved in your cloud')}</h3>
+                <p className="sg-t">{L('Ker si prijavljen/-a, se vse varno shrani v tvoj Flow oblak in je na voljo na vseh napravah.', 'Since you are signed in, everything is securely saved to your Flow cloud and available on all your devices.')}</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Tvoje ostane tvoje', 'Yours stays yours')}</h3>
+                <p className="sg-t">{L('Tvoja dela, cene in podatki so tvoji — ne delimo jih in jih lahko kadarkoli izvoziš.', 'Your work, prices and data are yours — we do not share them and you can export them any time.')}</p>
+              </div>
+              </>) : (<>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
                 <p className="sg-t">{L('So pametno izhodišče, ne uradni cenik — nastale so na podlagi AI raziskave trga, pravo podatkovno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.', 'They are a smart starting point, not an official price list — they are based on AI market research, and we are still building the real data-backed database. Adjust them freely; the final price in your quotes is always your decision and your responsibility.')}</p>
