@@ -10214,7 +10214,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 className="editor"
                 contentEditable
                 suppressContentEditableWarning
-                onInput={() => setRocnoBesedilo(true)}
+                /* Zastavico postavimo SAMO enkrat. Prej se je stanje
+                   spremenilo ob vsakem znaku, kar je pri vsakem pritisku
+                   prerisalo cel korak — od tod poskakovanje med tipkanjem. */
+                onInput={() => { if (!rocnoBesedilo) setRocnoBesedilo(true); }}
                 onBlur={sinhronizirajEditor}
               />
               {rocnoBesedilo && (
