@@ -3581,13 +3581,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     v.push(L('Velja do: ', 'Valid until: ') + dat(velja) + ` (${veljDni} ${L('dni', 'days')})`);
     v.push('');
     /* 3) TVOJI PODATKI (ponudnik) — v izvozu jih pokaze letterhead glava.
-       Kar ni izpolnjeno, se NE izpise: oglati oklepaji z navodilom ("izpolni v
-       razdelku 01") so v dokumentu, ki gre stranki, videti kot napaka. Ce glave
-       ni, je ponudba pac brez nje — to je odlocitev uporabnice, ne okvara. */
-    const glava = [ponudnik.ime.trim(), ponudnik.naslov.trim(), kontakt].filter(Boolean);
-    if (glava.length) { glava.forEach(vr => v.push(vr)); v.push(''); }
+       Prazna mesta ostanejo v oglatih oklepajih: besedilo je urejljivo, zato
+       oklepaj pove, KAM klikniti in pisati. Navodila ("izpolni v razdelku 01")
+       pa v njih ni — to je bilo videti kot napaka v dokumentu. */
+    v.push(ponudnik.ime.trim() || L('[Ime / podjetje]', '[Name / company]'));
+    v.push(ponudnik.naslov.trim() || L('[Naslov]', '[Address]'));
+    v.push(kontakt || L('[Davčna št. · TRR · Telefon · Email]', '[VAT No. · IBAN · Phone · Email]'));
+    v.push('');
     /* 4) NAROČNIK */
-    if (narocnikPonudbe.trim()) v.push(L('Naročnik: ', 'Client: ') + narocnikPonudbe.trim());
+    v.push(L('Naročnik: ', 'Client: ') + (narocnikPonudbe.trim() || L('[ime stranke]', '[client name]')));
     if (narocnikOseba.trim()) v.push(L('Kontaktna oseba: ', 'Contact person: ') + narocnikOseba.trim());
     if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
     if (narocnikKontakt) v.push(narocnikKontakt);
@@ -10066,8 +10068,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   pasti v oci, uporabnica pa mora vedeti, da glave ni. */}
               {!ponudnik.ime.trim() && (
                 <p className="pon-namig-glava">
-                  {L('Glave ponudbe še nisi izpolnila — ponudba bo brez tvojega imena in kontakta. Dodaš jo v Profilu ali levo v razdelku 01.',
-                     'You have not filled in the quote header — the quote will go out without your name and contact. Add it in your Profile or in section 01 on the left.')}
+                  {L('Glave ponudbe še nisi izpolnila. Klikni v oglate oklepaje v dokumentu in vpiši svoje podatke — ali jih shrani v Profilu, da se odslej izpolnijo same.',
+                     'You have not filled in the quote header. Click the square brackets in the document and type your details — or save them in your Profile so they fill in automatically.')}
                 </p>
               )}
               {/* NAČIN + TON + AI */}
