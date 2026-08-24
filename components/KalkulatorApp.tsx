@@ -6671,6 +6671,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           /* step-0 vsebina samo bledi (brez transforma), da fixed panel deluje na okno.
              visja specificnost (.korak-vsebina.siroko), da premaga kasnejsi .korak-vsebina */
           .cw .korak-vsebina.siroko { max-width: none; width: 100%; padding-right: calc(min(480px, 40vw) + clamp(1rem, 2.5vw, 2rem)); box-sizing: border-box; animation-name: cwFade; }
+          /* Ko je panel skrit, vsebina dobi prostor nazaj in se PRESREDISCI.
+             Brez tega ostane stisnjena v levi dve tretjini, na desni pa zija
+             prazen pas — sirina zaslona se ne odzove na zaprt panel. */
+          .cw:has(.ponudba0.skrit-desktop) .korak-vsebina.siroko { padding-right: clamp(1rem, 2.5vw, 2rem); }
           /* platno mehurckov poravnano s (centriranim) chatom — ne cisto ob levem robu */
           .cw .oder0 { display: block; width: auto; max-width: 800px; margin-left: auto; margin-right: auto; }
           .cw .ponudba0 { position: fixed; top: 3.05rem; right: 0; bottom: 0; width: min(480px, 40vw); border-radius: 22px 0 0 22px; margin: 0; z-index: 20; overflow-y: auto; animation: ponudbaVstop .5s cubic-bezier(.2,.8,.3,1) both; transition: width .34s cubic-bezier(.2,.8,.3,1); }
