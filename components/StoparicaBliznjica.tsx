@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Pause, Play, Stop } from '@phosphor-icons/react';
 import { jePozabljeno, potrdiTek, preklopiPavzo, useTekoceMerjenje, zahtevajUstavitev, zapisCasa } from '@/lib/tekoceMerjenje';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
+import Toast from '@/components/Toast';
 
 const IKONA = { fill: 'currentColor', stroke: 'none' } as const;
 
@@ -30,33 +31,26 @@ export default function StoparicaBliznjica() {
   const pozabljena = jePozabljeno(merjenje);
   const ur = Math.floor(sekunde / 3600);
 
-  /* Pozabljena štoparica: namesto pilule pokažemo vprašanje. Molčati bi
-     pomenilo pustiti napačno zaračunano uro. */
-  if (pozabljena) {
-    return (
-      <div className="sb-opomnik" role="status">
-        <span className="sb-opomnik-txt">
-          <b>Štoparica teče že {ur} {ur === 1 ? 'uro' : ur === 2 ? 'uri' : ur < 5 ? 'ure' : 'ur'}.</b>
-          {' '}Si jo pozabila ustaviti?
-          <small>{merjenje.projectName}</small>
-        </span>
-        <button type="button" className="sb-opomnik-glavni" onClick={ustavi}>Ustavi in shrani</button>
-        <button type="button" className="sb-opomnik-drugi" onClick={potrdiTek}>Teče naprej</button>
-
-        <style jsx>{`
-          .sb-opomnik { display: inline-flex; align-items: center; flex-wrap: wrap; gap: .5rem; padding: .4rem .5rem .4rem .8rem; border: 1px solid #a4342a; border-radius: 999px; background: #fbeeec; }
-          .sb-opomnik-txt { display: inline-flex; flex-direction: column; line-height: 1.25; font-size: .74rem; color: #7d281f; }
-          .sb-opomnik-txt b { font-weight: 700; }
-          .sb-opomnik-txt small { font-size: .66rem; opacity: .75; }
-          .sb-opomnik button { padding: .32rem .7rem; border-radius: 999px; font: 700 .7rem inherit; cursor: pointer; white-space: nowrap; }
-          .sb-opomnik-glavni { border: 0; background: #6E4FA6; color: #fff; }
-          .sb-opomnik-drugi { border: 1px solid rgba(17,17,17,.18); background: #fff; color: #4a453f; }
-        `}</style>
-      </div>
-    );
-  }
+  /* Pozabljena štoparica NE predela pilule — ta ostane, kakršna je. Vprašanje
+     pride kot ločeno rdeče obvestilo, po istem vzorcu kot druga opozorila v
+     aplikaciji (components/Toast). Molčati bi pomenilo pustiti napačno
+     zaračunano uro, predelati pilulo pa pomeni izgubiti štoparico izpred oči. */
+  const opomnik = pozabljena ? (
+    <Toast
+      ton="napaka"
+      trajanje={0}
+      sporocilo={`Štoparica teče že ${ur} ${ur === 1 ? 'uro' : ur === 2 ? 'uri' : ur < 5 ? 'ure' : 'ur'} — ${merjenje.projectName}. Si jo pozabila ustaviti?`}
+      onClose={potrdiTek}
+      dejanja={<>
+        <button type="button" onClick={ustavi}>Ustavi in shrani</button>
+        <button type="button" onClick={potrdiTek}>Teče naprej</button>
+      </>}
+    />
+  ) : null;
 
   return (
+    <>
+    {opomnik}
     <div className={styles.stoparicaBliznjica} data-pavza={!!merjenje.pavza}>
       <Link href={`${base}/kalkulator/cas`} title={`Odpri merjenje: ${merjenje.projectName}`}>
         <span aria-hidden="true" />
@@ -72,5 +66,6 @@ export default function StoparicaBliznjica() {
         <Stop size={12} weight="fill" style={IKONA} />
       </button>
     </div>
+    </>
   );
 }
