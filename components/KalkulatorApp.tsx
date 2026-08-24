@@ -3580,13 +3580,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     v.push(L('Datum: ', 'Date: ') + dat(danes));
     v.push(L('Velja do: ', 'Valid until: ') + dat(velja) + ` (${veljDni} ${L('dni', 'days')})`);
     v.push('');
-    /* 3) TVOJI PODATKI (ponudnik) — v izvozu jih pokaze letterhead glava */
-    v.push(ponudnik.ime.trim() || L('[Ime / podjetje — izpolni v razdelku 01]', '[Name / company — fill in section 01]'));
-    v.push(ponudnik.naslov.trim() || L('[Naslov]', '[Address]'));
-    v.push(kontakt || L('[Davčna št. · TRR · Telefon · Email]', '[VAT No. · IBAN · Phone · Email]'));
-    v.push('');
+    /* 3) TVOJI PODATKI (ponudnik) — v izvozu jih pokaze letterhead glava.
+       Kar ni izpolnjeno, se NE izpise: oglati oklepaji z navodilom ("izpolni v
+       razdelku 01") so v dokumentu, ki gre stranki, videti kot napaka. Ce glave
+       ni, je ponudba pac brez nje — to je odlocitev uporabnice, ne okvara. */
+    const glava = [ponudnik.ime.trim(), ponudnik.naslov.trim(), kontakt].filter(Boolean);
+    if (glava.length) { glava.forEach(vr => v.push(vr)); v.push(''); }
     /* 4) NAROČNIK */
-    v.push(L('Naročnik: ', 'Client: ') + (narocnikPonudbe.trim() || L('[ime podjetja]', '[company name]')));
+    if (narocnikPonudbe.trim()) v.push(L('Naročnik: ', 'Client: ') + narocnikPonudbe.trim());
     if (narocnikOseba.trim()) v.push(L('Kontaktna oseba: ', 'Contact person: ') + narocnikOseba.trim());
     if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
     if (narocnikKontakt) v.push(narocnikKontakt);
@@ -7614,6 +7615,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .zakljucek-sredina .sub-vrsta { justify-content: center; }
         .cw .zakljucek-sredina .btnvrsta { justify-content: center; }
         /* Racun panel na Zakljucku */
+        .cw .pon-namig-glava { margin: 0 0 .9rem; padding: .65rem .85rem; border-left: 3px solid oklch(72% .12 75); border-radius: .5rem; background: oklch(97% .025 80); font: 500 .82rem/1.45 var(--font-sans), sans-serif; color: oklch(40% .07 60); }
         .cw .posl-naziv { display: flex; flex-direction: column; gap: .3rem; margin: 0 0 1.1rem; }
         .cw .posl-naziv > span { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
         .cw .posl-naziv input { width: 100%; box-sizing: border-box; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; color: var(--ink); font: 600 .95rem var(--font-sans), sans-serif; }
@@ -10060,6 +10062,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           {korak === ponudbaStep && (
             <div className="priprava priprava-stran">
               <div className="priprava-telo">
+              {/* Namig zivi v UREJEVALNIKU, ne v dokumentu: stranki ne sme
+                  pasti v oci, uporabnica pa mora vedeti, da glave ni. */}
+              {!ponudnik.ime.trim() && (
+                <p className="pon-namig-glava">
+                  {L('Glave ponudbe še nisi izpolnila — ponudba bo brez tvojega imena in kontakta. Dodaš jo v Profilu ali levo v razdelku 01.',
+                     'You have not filled in the quote header — the quote will go out without your name and contact. Add it in your Profile or in section 01 on the left.')}
+                </p>
+              )}
               {/* NAČIN + TON + AI */}
               <div className="pon-vrh">
                 <div className="segpills segpills-pogled" role="group" aria-label={L('Pogled', 'View')}>
