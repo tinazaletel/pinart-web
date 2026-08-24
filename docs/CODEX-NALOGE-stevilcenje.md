@@ -16,7 +16,23 @@ tega ni mogoče nastaviti drugače kot z ročnim posegom v bazo.
 
 Uporabnik ima danes samo `select` pravico; pisati ne more.
 
-## Kaj naredi
+## ŽE NAREJENO (24. 8., commit 73e0d1c) — tega NE delaj znova
+
+Zaledje stoji in je pokrito s testi:
+
+- migracija `supabase/migrations/20260824140000_stevilcenje_nastavitev.sql` s
+  funkcijo `public.nastavi_stevilcenje(p_vrsta, p_leto, p_zadnja, p_vzorec)` —
+  ustvari ali posodobi vrstico, sme jo klicati **samo admin**, nova `zadnja` ne
+  more biti nižja od trenutne, oblika mora vsebovati `{zaporedna}`
+- `lib/stevilcenje.ts`: `napakaVzorca`, `sestaviStevilko`, `preberiStevilcenje`,
+  `nastaviStevilcenje`, `PRIVZETI_VZORCI`
+- `tests/unit/stevilcenje.test.ts` — 16 testov, vsi zeleni
+
+**Migracija še ni pognana v bazi.** To stori Tina; ti je ne poganjaj.
+
+## Kaj naredi — ostane samo VMESNIK
+
+## Kaj naredi (izvirni opis, za kontekst)
 
 1. **Migracija** `supabase/migrations/20260824140000_stevilcenje_nastavitev.sql`:
    - funkcija `public.nastavi_stevilcenje(p_vrsta text, p_leto integer,
