@@ -6479,6 +6479,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uv-forma label { font-size: .84rem; font-weight: 600; color: var(--ink); display: flex; align-items: baseline; gap: .5rem; }
         /* Povezava, ki odpre dokumentna polja pri brezplacnem vstopu. Ni gumb v
            polnem pomenu — je ponudba, ne zahteva, zato brez ozadja in obrobe. */
+        .cw .chat-preskoci { border: 0; background: none; color: rgba(17,17,17,.62); font: 600 .8rem var(--font-sans), sans-serif; text-decoration: underline; text-underline-offset: .22em; cursor: pointer; }
+        .cw .chat-preskoci:hover { color: var(--ink); }
         .cw .uv-forma .uv-vec { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; margin: .2rem 0 .1rem; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.12)); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
         .cw .uv-forma .uv-vec:hover { border-color: rgba(17,17,17,.3); }
         .cw .uv-forma .uv-vec-glava { width: 100%; display: flex; align-items: center; gap: .45rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
@@ -8460,26 +8462,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {/* O TEBI: podjetje + tvoja regija (na zacetku, kot dogovorjeno) */}
               {chatKorak >= 2 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                  <span className="chat-mehur"><b>{L('Kdo izdaja ponudbo?', 'Who is issuing the quote?')}</b><small>{L('Za izračun potrebujemo le ime in državo. Druge podatke lahko dodaš zdaj ali pozneje.', 'For the calculation we only need a name and a country. You can add the rest now or later.')}</small></span></div>
+                  <span className="chat-mehur"><b>{L('Kje posluješ?', 'Where do you work?')}</b><small>{L('Državo potrebujemo, da ceno prilagodimo tvojemu trgu.', 'We need the country so we can match the price to your market.')}</small></span></div>
               )}
               {uvodChat && chatKorak === 2 && (
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
-                  <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pime">{L('Ime ali naziv studia', 'Your name or studio')}{vFlow && <span className="uv-neobvezno">{L('obvezno', 'required')}</span>}</label>
-                    <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
-                      naVrednost={v => setPonudnik(prej => ({ ...prej, ime: v }))}
-                      naIzbiro={pod => {
-                        const naslov = [pod.naslov, [pod.posta_st, pod.posta].filter(Boolean).join(' ')].filter(Boolean).join(', ');
-                        setPonudnik(prej => ({
-                          ...prej,
-                          ime: pod.ime || prej.ime,
-                          davcna: pod.davcna || prej.davcna,
-                          naslov: naslov || prej.naslov,
-                          email: pod.email || prej.email,
-                        }));
-                      }}
-                      obvezno={vFlow} ime="uv-pime" jeEn={L('sl', 'en') === 'en'} />
-                  </div>
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pdrzava">{L('Država', 'Country')} <span className="uv-neobvezno">{L('določi privzet trg / raven cen', 'sets the default market / price level')}</span></label>
                     <IzbirnikDrzave id="uv-pdrzava" placeholder={L('npr. Slovenija', 'e.g. Slovenia')}
@@ -8496,15 +8482,32 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     onClick={() => setPodatkiPodjetjaOdprti(o => !o)}>
                     <span className="uv-vec-glava">
                       <span className="uv-vec-znak" aria-hidden>{podatkiPodjetjaOdprti ? '−' : '+'}</span>
-                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij dodatne podatke', 'Hide additional details') : L('Dodaj podatke za končno ponudbo', 'Add details for the final quote')}</span>
+                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij podatke za ponudbo', 'Hide quote details') : L('Želiš tudi ponudbo za stranko?', 'Would you also like a quote for a client?')}</span>
                       <span className="uv-vec-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
                     </span>
                     {!podatkiPodjetjaOdprti && (
-                      <span className="uv-vec-pripis">{L('Davčna številka, kontakt, TRR in naslov · ne vplivajo na izračun cene', 'Tax number, contact, IBAN and address · they do not affect the price')}</span>
+                      <span className="uv-vec-pripis">{L('Dodaj ime ali naziv studia in podatke, ki bodo prikazani na dokumentu.', 'Add your name or studio and the details shown on the document.')}</span>
                     )}
                   </button>
                   <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
                     {podatkiPodjetjaOdprti && <p className="uv-mreza-naslov">{L('Podatki na dokumentu', 'Details shown on the document')}</p>}
+                  <div className="uv-polje uv-polje-siroko">
+                    <label htmlFor="uv-pime">{L('Ime ali naziv studia', 'Your name or studio')}</label>
+                    <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
+                      naVrednost={v => setPonudnik(prej => ({ ...prej, ime: v }))}
+                      naIzbiro={pod => {
+                        const naslov = [pod.naslov, [pod.posta_st, pod.posta].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+                        setPonudnik(prej => ({
+                          ...prej,
+                          ime: pod.ime || prej.ime,
+                          davcna: pod.davcna || prej.davcna,
+                          naslov: naslov || prej.naslov,
+                          email: pod.email || prej.email,
+                        }));
+                      }}
+                      obvezno={vFlow} ime="uv-pime" jeEn={L('sl', 'en') === 'en'} />
+                  </div>
+
                     <div className="uv-polje">
                       <label htmlFor="uv-pdavcna">{L('Davčna številka', 'Tax number')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
                       <input id="uv-pdavcna" type="text" placeholder={L('SI98765432', 'SI98765432')}
@@ -8541,7 +8544,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   {/* Ime podjetja NE sme zapirati poti do cene: je podatek
                       dokumenta, ne izracuna. Prijavljeni ga ima shranjenega,
                       brezplacni obiskovalec pa ga dopolni sele ob ponudbi. */}
-                  <button type="submit" className="gumb" disabled={vFlow && !ponudnik.ime.trim()}>{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button>
+                  <button type="submit" className="gumb">{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button>
                 </form>
               )}
               {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime.trim() + (custDrzavaMoj.trim() ? ' · ' + custDrzavaMoj.trim() : '') || '—')}
@@ -8646,7 +8649,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <input autoFocus type="text" value={chatVnos}
                     onChange={e => setChatVnos(e.target.value)}
                     placeholder={chatKorak === 0 ? L('Ime ali vzdevek', 'Name or nickname') : L('Ime ponudbe', 'Quote name')} />
-                  <button type="submit" className="gumb" disabled={chatKorak === 0 && !chatVnos.trim()}>
+                  {/* Ime je prijaznost, ne pogoj. Anonimen izracun ga ne rabi,
+                      zato ima korak 0 izhod, gumb pa ni zaklenjen. */}
+                  {chatKorak === 0 && !chatVnos.trim() && (
+                    <button type="button" className="povezava chat-preskoci" onClick={() => { setChatVnos(''); setChatKorak(1); }}>
+                      {L('Preskoči', 'Skip')}
+                    </button>
+                  )}
+                  <button type="submit" className="gumb">
                     {chatKorak === 6 ? L('Začni', 'Start') : L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden />
                   </button>
                 </form>
