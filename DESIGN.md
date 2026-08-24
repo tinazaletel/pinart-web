@@ -206,6 +206,29 @@ sklepati, ali gre za isto.
 
 V dokumentu torej piše »Naročnik: Rokus Klett«, v vmesniku pa »Kdo je stranka?«.
 
+## 13d. Zaprt predal pove, da je neobvezno
+
+Zložena vrstica je obljuba: brez tega gre naprej. Karkoli skriješ v predal,
+s tem povemo, da ni nujno — in obratno, nujnega ne smemo skriti.
+
+Zato zaprta vrstica ne potrebuje ne naslova ne razlage, zakaj je tam. Potrebuje
+natanko dvoje: **kaj klik naredi** in **kam gre tisto, kar vpišeš.**
+
+```
++ Dodaj podatke podjetja
+  Izpisali se bodo v glavi ponudbe.
+```
+
+Znak `+` že pove, da se bo nekaj odprlo, zato naslovu tega ni treba ponavljati
+in ne rabi še puščice zraven — dva znaka za en klik sta eden preveč. Ko je
+odprto, isti naslov pove nasprotno pot: `− Skrij podatke podjetja`.
+
+Past: naslov, ki zveni kot dejanje (»Pripravi tudi ponudbo«), obljublja
+rezultat, dobiš pa obrazec. Nihče ne klikne na tipkanje. Naslov naj imenuje
+vsebino predala, ne izida, ki bo šele nastal — in naj pove, **čigavi** podatki
+so to, sicer uporabnik ne ve, ali sprašujemo po njem ali po njegovi stranki
+(glej [13c](#13c-stranka-v-vmesniku-naročnik-v-dokumentu)).
+
 ## 14. Nepovratna dejanja povej vnaprej
 
 Kar se ne da razveljaviti, mora biti povedano **preden** človek klikne, ne kot
