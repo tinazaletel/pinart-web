@@ -137,18 +137,39 @@ je visoka `3.25rem`, obvestilo stoji na `top: 4rem`.
 Na telefonu opozorilo pride **spodaj**, čez celo širino, nad varnim robom — tam
 je palec.
 
-**Rdeča pove, da je opozorilo. Ne pove pa vsega trikrat.** Opozorilo ima **rahlo
-rdeče ozadje**, **rdečo črto na levi** in **rdečo ikono** — na prvi pogled se
-loči od običajnega obvestila. **Naslov je rdeč**, telo sporočila in glavni gumb pa ostaneta `--ink`: rdeče besedilo na rdeči podlagi je težje brati, vijoličen gumb v rdečem
-obvestilu pa združi znamko in alarm, ki se med seboj izničita.
+**Rdeča pove, da je opozorilo — a ne pove vsega trikrat.**
+
+```css
+ozadje:  oklch(95.5% .05 25)        /* res rdečkasto, ne komaj načeto */
+obroba:  oklch(76% .13 25 / .65)
+črta levo: 4px solid oklch(58% .18 25)
+ikona:   oklch(52% .17 25)
+naslov:  oklch(46% .17 25)
+telo:    var(--ink)                  /* NE rdeče — mora se brati */
+```
+
+Prva različica je bila tako svetla, da je kartica izpadla bela. Če ni videti
+rdeča na prvi pogled, ni opozorilo.
+
+Telo sporočila in glavni gumb ostaneta `--ink`: rdeče besedilo na rdeči podlagi
+se slabše bere, vijoličen gumb v rdečem obvestilu pa združi znamko in alarm, ki
+se med seboj izničita.
 
 **Ikona na začetku.** `ikona` nadomesti barvno piko in pove, o čem obvestilo
 govori, preden ga uporabnica prebere — štoparica dobi `<Timer />`. Pri obvestilih
 brez svoje ikone ostane pika.
 
 **Kaj zahteva odločitev, ne sme izginiti samo.** `trajanje={0}` pomeni, da
-obvestilo počaka. Gumbi gredo v `dejanja`; prvi je glavni (poln, vijoličen),
+obvestilo počaka. Gumbi gredo v `dejanja`; prvi je glavni (**poln, `--ink`**),
 drugi je izhod (obroba, bel).
+
+**Naslov ob ikoni, sporočilo pod njim.** `naslov` je krepek, `sporocilo` pade v
+drugo vrstico. Dolgo obvestilo v enem kosu se prelomi kjer koli in je videti
+razmetano.
+
+**Ikona, gumbi in križec stojijo na sredini višine kartice** (`align-self:
+center`), ne poravnani z naslovom — pri dvovrstičnem obvestilu jih poravnava z
+naslovom potisne previsoko.
 
 **Opozorilo ne sme predelati elementa, na katerega se nanaša.** Ko je štoparica
 pozabljena, pilula v glavi ostane nedotaknjena in vprašanje pride ločeno — sicer
