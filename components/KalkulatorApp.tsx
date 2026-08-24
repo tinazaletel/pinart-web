@@ -3580,16 +3580,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     v.push(L('Datum: ', 'Date: ') + dat(danes));
     v.push(L('Velja do: ', 'Valid until: ') + dat(velja) + ` (${veljDni} ${L('dni', 'days')})`);
     v.push('');
-    /* 3) TVOJI PODATKI (ponudnik) — v izvozu jih pokaze letterhead glava.
-       Prazna mesta ostanejo v oglatih oklepajih: besedilo je urejljivo, zato
-       oklepaj pove, KAM klikniti in pisati. Navodila ("izpolni v razdelku 01")
-       pa v njih ni — to je bilo videti kot napaka v dokumentu. */
-    v.push(ponudnik.ime.trim() || L('[Ime / podjetje]', '[Name / company]'));
+    /* 3) TVOJI PODATKI (ponudnik) — v izvozu jih pokaze letterhead glava */
+    v.push(ponudnik.ime.trim() || L('[Ime / podjetje — izpolni v razdelku 01]', '[Name / company — fill in section 01]'));
     v.push(ponudnik.naslov.trim() || L('[Naslov]', '[Address]'));
     v.push(kontakt || L('[Davčna št. · TRR · Telefon · Email]', '[VAT No. · IBAN · Phone · Email]'));
     v.push('');
     /* 4) NAROČNIK */
-    v.push(L('Naročnik: ', 'Client: ') + (narocnikPonudbe.trim() || L('[ime stranke]', '[client name]')));
+    v.push(L('Naročnik: ', 'Client: ') + (narocnikPonudbe.trim() || L('[ime podjetja]', '[company name]')));
     if (narocnikOseba.trim()) v.push(L('Kontaktna oseba: ', 'Contact person: ') + narocnikOseba.trim());
     if (narocnikNaslov.trim()) v.push(narocnikNaslov.trim());
     if (narocnikKontakt) v.push(narocnikKontakt);
