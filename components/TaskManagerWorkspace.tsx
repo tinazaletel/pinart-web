@@ -35,6 +35,10 @@ import { loadFlowData, type FlowClient } from '@/lib/pinartFlowStore';
 import { Podrocje, preberiPodrocja, dodajPodrocje, izbrisiPodrocje } from '@/lib/podrocja';
 import { Oddelek, preberiOddelki, shraniOddelki, dodajOddelek, izbrisiOddelek } from '@/lib/oddelki';
 import { usePredogled } from '@/lib/predogled';
+import { PriponkeVnos, datotekeIzOdlozisca } from '@/components/Priponke';
+import { jePriponkeMogoce } from '@/lib/priponkeOblak';
+import type { Priponka } from '@/lib/priponke';
+import type { NalogaPriponka } from '@/lib/naloge';
 
 /* oznaka vloge avtorja opisa/komentarja — za barvno znacko (kdo je nekaj napisal) */
 const VLOGA_LABEL: Record<NalogaAvtorVloga, string> = { sef: 'Šef', sodelavec: 'Sodelavec', stranka: 'Stranka', jaz: 'Ti' };
@@ -499,6 +503,28 @@ export default function TaskManagerWorkspace() {
   }, [predogledNacin]);
 
   const posodobiInShrani = (noveNaloge: Naloga[]) => { setNaloge(noveNaloge); shraniNaloge(noveNaloge); };
+
+  /* --- priponke na nalogi (skupni sloj: lib/priponke, lib/priponkeOblak, components/Priponke) ---
+     Datoteke gredo v oblak, zato delujejo samo prijavljenim. null = se preverja. */
+  const [priponkeMozne, setPriponkeMozne] = useState<boolean | null>(null);
+  useEffect(() => { let ziv = true; void jePriponkeMogoce().then((ok) => { if (ziv) setPriponkeMozne(ok); }); return () => { ziv = false; }; }, []);
+  /* isto nalaganje kot gumb »Pripni datoteko« — samo sprozeno z lepljenjem (Cmd+V) */
+  const priponkeDodajRef = useRef<((datoteke: File[]) => void) | null>(null);
+  const nastaviPriponkeNaloge = (id: string, nove: Priponka[]) => {
+    if (samoOgled) return;
+    const cas = new Date().toISOString();
+    const prejsnje = naloge.find((n) => n.id === id)?.priponke || [];
+    const zZigom: NalogaPriponka[] = nove.map((p) => ({ ...p, cas: prejsnje.find((o) => o.pot === p.pot)?.cas || cas }));
+    posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, priponke: zZigom } : n)));
+  };
+  /* Zaslonska slika iz odlozisca: Tinin glavni nacin sporocanja. Lepljenje v
+     polje za komentar pripne datoteko namesto da bi vstavilo pot do slike. */
+  const prilepiVPriponke = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const datoteke = datotekeIzOdlozisca(e.clipboardData, Date.now());
+    if (!datoteke.length || !priponkeDodajRef.current) return;
+    e.preventDefault();
+    priponkeDodajRef.current(datoteke);
+  };
 
   /* --- Uvoz / izvoz nalog (prenos med orodji) --- */
   const [ieOdprt, setIeOdprt] = useState(false);            /* meni Uvoz/Izvoz */
@@ -1787,11 +1813,27 @@ export default function TaskManagerWorkspace() {
             </ul>
             {!samoOgled ? (
               <form className="tm-komentar-forma" onSubmit={(e) => { e.preventDefault(); dodajKomentar(odprtaNaloga.id, novKomentar); setNovKomentar(''); }}>
-                <textarea value={novKomentar} onChange={(e) => setNovKomentar(e.target.value)} placeholder="Dodaj komentar …" rows={2} />
+                <textarea value={novKomentar} onChange={(e) => setNovKomentar(e.target.value)} onPaste={prilepiVPriponke} placeholder="Dodaj komentar …" rows={2} />
+                {priponkeMozne !== false && <p className="tm-demo-namig">Sliko lahko prilepiš kar sem (Cmd+V) — pripne se med priponke.</p>}
                 <button type="submit" className="tm-shrani" disabled={!novKomentar.trim()}>Dodaj komentar</button>
               </form>
             ) : (
               <p className="tm-demo-namig">Dodajanje komentarjev ni na voljo v predogledu (demo).</p>
+            )}
+
+            <h3 className="tm-analitika-podnaslov">Priponke</h3>
+            {priponkeMozne === null ? (
+              <p className="tm-demo-namig">Preverjam prijavo …</p>
+            ) : (
+              <PriponkeVnos
+                sekcija="naloge"
+                sklic={odprtaNaloga.id}
+                priponke={odprtaNaloga.priponke || []}
+                onSpremeni={(nove) => nastaviPriponkeNaloge(odprtaNaloga.id, nove)}
+                omogoceno={priponkeMozne}
+                dodajRef={priponkeDodajRef}
+                razlogZakleneno="Priponke se shranijo v oblak, zato so na voljo prijavljenim. Prijavi se in pripni sliko ali datoteko."
+              />
             )}
 
             <details className="tm-umestitev">

@@ -12,6 +12,8 @@ import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, d
 import { usePredogled } from '@/lib/predogled';
 import { preberiVsePoste, premakniPosto, nastaviOznakePoste, nastaviPopravekPoste, dodajPosto, oznaciPostoPrebrano, oznaciPostoIzbrisano, izbrisiPostoTrajno, type PostaVnos } from '@/lib/postaDnevnik';
 import { pullAllMail, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent, updateProjectMailRevision } from '@/lib/pinartMailCloud';
+import { PriponkeSeznam, PriponkeVnos } from '@/components/Priponke';
+import type { Priponka } from '@/lib/priponke';
 import { oznaciNitVideno, javiSpremembo } from '@/lib/komObvestila';
 import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
 import { posljiMail } from '@/lib/posta';
@@ -103,6 +105,12 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
   const [pisiTelo, setPisiTelo] = useState('');
   const [pisiStatus, setPisiStatus] = useState('');
   const [pisiPosiljam, setPisiPosiljam] = useState(false);
+  /* priponke sestavka: datoteke se nalozijo TAKOJ ob izbiri (v Supabase Storage),
+     na streznik gredo potem samo poti — glej lib/priponke.ts in lib/posta.ts.
+     pisiSklic zdruzi priponke enega sestavka v svojo mapo. */
+  const [pisiPriponke, setPisiPriponke] = useState<Priponka[]>([]);
+  const [pisiSklic, setPisiSklic] = useState('');
+  const novSklic = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `m-${Date.now()}`);
   const [toast, setToast] = useState('');
   const [vabiOdprt, setVabiOdprt] = useState(false);
   const [vabiEmail, setVabiEmail] = useState('');
@@ -250,7 +258,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
     try { const r = await fetch('/api/pupa', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ vprasanje: vpr }) }); const d = await r.json(); const txt = String(d.odgovor || d.napaka || ''); const mp = txt.match(/POVZETEK:\s*([\s\S]*?)(?:\n\s*ODGOVOR:|$)/i); const mo = txt.match(/ODGOVOR:\s*([\s\S]*)$/i); setAiPovzetek((mp?.[1] || txt).trim()); setAiOdgovor((mo?.[1] || '').trim()); } catch { setAiPovzetek(L('Napaka pri klicu Pupe.', 'Pupa request failed.')); }
     setAiNalaganje(false);
   };
-  const odpriPisanje = (m: PostaVnos, vrsta: 'odgovor' | 'posreduj') => { setPisiVrsta(vrsta); setPisiZa(vrsta === 'odgovor' ? (m.prejemniki[0] || '') : ''); setPisiZadeva(`${vrsta === 'odgovor' ? 'Re' : 'Fwd'}: ${(m.zadeva || '').replace(/^(Re|Fwd):\s*/i, '')}`); setPisiTelo(vrsta === 'posreduj' ? `\n\n--- ${L('Posredovano', 'Forwarded')} ---\n${(m.telo || m.povzetek || '').replace(/<[^>]+>/g, ' ')}` : ''); setPisiStatus(''); };
+  const odpriPisanje = (m: PostaVnos, vrsta: 'odgovor' | 'posreduj') => { setPisiVrsta(vrsta); setPisiZa(vrsta === 'odgovor' ? (m.prejemniki[0] || '') : ''); setPisiZadeva(`${vrsta === 'odgovor' ? 'Re' : 'Fwd'}: ${(m.zadeva || '').replace(/^(Re|Fwd):\s*/i, '')}`); setPisiTelo(vrsta === 'posreduj' ? `\n\n--- ${L('Posredovano', 'Forwarded')} ---\n${(m.telo || m.povzetek || '').replace(/<[^>]+>/g, ' ')}` : ''); setPisiStatus(''); setPisiPriponke([]); setPisiSklic(novSklic()); };
   const posljiPisanje = async (e: React.FormEvent) => {
     e.preventDefault();
     if (demo) { setPisiVrsta(false); setToast(L('V predogledu se ne pošilja.', 'Not sent in preview.')); return; }
@@ -267,16 +275,16 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
       : beriMail?.projectId) || undefined);
     /* Brez izrecnega replyTo: strežnik nastavi inbox token (projektni ali skupni
        '__skupno__') -> odgovori strank pridejo NAZAJ v Flow (skupna Komunikacija). */
-    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, ...(projId ? { projectExternalId: projId } : {}) });
+    const rez = await posljiMail({ to: [za], subject: pisiZadeva.trim(), html, ...(projId ? { projectExternalId: projId } : {}), ...(pisiPriponke.length ? { priponke: pisiPriponke } : {}) });
     setPisiPosiljam(false);
     if (rez.ok) {
-      const nov = dodajPosto({ projectId: projId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo: pisiTelo, povzetek: pisiTelo.replace(/\s+/g, ' ').trim().slice(0, 160) });
+      const nov = dodajPosto({ projectId: projId, smer: 'poslano', prejemniki: [za], zadeva: pisiZadeva.trim(), telo: pisiTelo, povzetek: pisiTelo.replace(/\s+/g, ' ').trim().slice(0, 160), ...(pisiPriponke.length ? { priponke: pisiPriponke } : {}) });
       setPosta(prev => [nov, ...prev].sort((a, b) => b.datum.localeCompare(a.datum)));
       const flow = loadFlowData();
       const ponudba = projId ? flow.offers.find(o => o.id === projId) : undefined;
       const stranka = flow.clients.find(c => c.name.trim().toLocaleLowerCase('sl') === ponudba?.client.trim().toLocaleLowerCase('sl') || c.email?.toLocaleLowerCase() === za.toLocaleLowerCase() || c.kontakti?.some(k => k.email?.toLocaleLowerCase() === za.toLocaleLowerCase()));
       if (stranka) zabeleziInterakcijo(stranka.id, { tip: 'email', besedilo: `Poslana e-pošta: ${pisiZadeva.trim()}`, projektId: projId });
-      setPisiStatus(''); setPisiUspeh(true); setToast(L('Poslano ✓', 'Sent ✓'));
+      setPisiStatus(''); setPisiUspeh(true); setPisiPriponke([]); setPisiSklic(novSklic()); setToast(L('Poslano ✓', 'Sent ✓'));
       window.setTimeout(() => { setPisiVrsta(false); setPisiUspeh(false); }, 1400);
     } else { setPisiStatus(L('Napaka: ', 'Error: ') + (rez.napaka || '')); }
   };
@@ -351,7 +359,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
               {prejemnikiVsi.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
             <button type="button" className={'km-filter-krog' + (postaOseba ? ' aktiv' : '')} onClick={() => setFilterOdprt(true)} aria-label={L('Prejemniki', 'Recipients')} title={L('Prejemniki', 'Recipients')}><FunnelSimple size={16} weight={postaOseba ? 'fill' : 'bold'} /></button>
-            <button type="button" className="km-nova" disabled={pisiVrsta === 'nova'} onClick={() => { setBeriMail(null); setPisiVrsta('nova'); setPisiProjekt(''); setPisiZa(''); setPisiZadeva(''); setPisiTelo(''); setPisiStatus(''); }} title={L('Nova pošta: izbereš projekt (za odgovore v Flow), prejemnika in napišeš.', 'New mail: pick a project (for replies in Flow), a recipient and compose.')} aria-label={L('Nova pošta', 'New mail')}><Plus className="km-nova-ik" size={16} weight="bold" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
+            <button type="button" className="km-nova" disabled={pisiVrsta === 'nova'} onClick={() => { setBeriMail(null); setPisiVrsta('nova'); setPisiProjekt(''); setPisiZa(''); setPisiZadeva(''); setPisiTelo(''); setPisiStatus(''); setPisiPriponke([]); setPisiSklic(novSklic()); }} title={L('Nova pošta: izbereš projekt (za odgovore v Flow), prejemnika in napišeš.', 'New mail: pick a project (for replies in Flow), a recipient and compose.')} aria-label={L('Nova pošta', 'New mail')}><Plus className="km-nova-ik" size={16} weight="bold" /> <span className="km-nova-txt">{L('Nova pošta', 'New mail')}</span><Plus className="km-nova-plus" size={18} weight="bold" /></button>
           </div>
           {pisiVrsta === 'nova' && (
             <form className="km-pisi km-pisi-nova" onSubmit={posljiPisanje}>
@@ -362,6 +370,8 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
               <label>{L('Za', 'To')}<input type="email" list="km-prejemniki-list" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /><datalist id="km-prejemniki-list">{prejemnikiVsi.map(p => <option key={p} value={p} />)}</datalist></label>
               <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
               <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
+              <PriponkeVnos sekcija="mail" sklic={pisiSklic || 'osnutek'} priponke={pisiPriponke} onSpremeni={setPisiPriponke} jeEn={jeEn}
+                omogoceno={!demo} razlogZakleneno={L('V predogledu se priponke ne nalagajo.', 'Attachments are not uploaded in preview.')} />
               {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
               <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="km-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="km-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="km-send-ik" /></>}</button></div>
             </form>
@@ -426,6 +436,9 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
               </div>
               <div className="km-branje-glava"><b>{beriMail.zadeva || L('(brez zadeve)', '(no subject)')}</b><small>{beriMail.prejemniki.join(', ')} · {datum(beriMail.datum)}{cas(beriMail.datum) ? ` ${L('ob', 'at')} ${cas(beriMail.datum)}` : ''} · {beriMail.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</small>{beriMail.popravek && <label className="km-popravek-stanje"><input type="checkbox" checked={Boolean(beriMail.popravekResenAt)} onChange={e => nastaviPopravek(beriMail, true, e.target.checked ? new Date().toISOString() : undefined)} /><span>{L('Popravek', 'Revision')} · {beriMail.popravekResenAt ? L('rešeno', 'resolved') : L('nerešeno', 'unresolved')}</span></label>}{projIme(beriMail.projectId) && <span className="km-mail-proj" style={{ color: projBarva(beriMail.projectId), background: `color-mix(in oklch, ${projBarva(beriMail.projectId)} 12%, transparent)`, marginTop: '.4rem' }}><i aria-hidden style={{ background: projBarva(beriMail.projectId) }} />{projIme(beriMail.projectId)}</span>}{(beriMail.oznake || []).length > 0 && <span className="km-glava-oznake">{(beriMail.oznake || []).map((oz, i) => <span key={i} className="km-oznaka mala">{oz}</span>)}</span>}</div>
               {mapa === 'pogovori' && odprtaPostaNit ? <div className="km-nit-tok">{odprtaPostaNit.sporocila.map(sp => <article key={sp.id} className={`km-nit-sporocilo ${sp.smer}`}><header><b>{sp.smer === 'poslano' ? L('Ti', 'You') : (sp.prejemniki.join(', ') || L('Stranka', 'Client'))}</b><span>{datum(sp.datum)} · {cas(sp.datum)}</span></header><div>{beriTelo(sp) || L('(brez besedila)', '(no text)')}</div></article>)}</div> : <div className="km-branje-telo" style={{ whiteSpace: 'pre-wrap' }}>{beriTelo(beriMail) || L('(brez besedila)', '(no text)')}</div>}
+              {(beriMail.priponke || []).length > 0 && (
+                <div className="km-priloge"><PriponkeSeznam priponke={beriMail.priponke || []} jeEn={jeEn} /></div>
+              )}
               {aiOdprt && (
                 <div className="km-ai">
                   <div className="km-ai-glava"><Sparkle size={15} weight="fill" /> {L('Pupa o tem sporočilu', 'Pupa on this message')}<button type="button" aria-label={L('Zapri', 'Close')} onClick={() => setAiOdprt(false)}>×</button></div>
@@ -438,7 +451,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
                         <textarea className="km-ai-odg" value={aiOdgovor} onChange={e => setAiOdgovor(e.target.value)} rows={5} />
                         <div className="km-ai-akc">
                           <button type="button" onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText(aiOdgovor); setToast(L('Kopirano.', 'Copied.')); }}>{L('Kopiraj', 'Copy')}</button>
-                          <button type="button" className="prim" onClick={() => { setPisiVrsta('odgovor'); setPisiZa(beriMail.prejemniki[0] || ''); setPisiZadeva(`Re: ${(beriMail.zadeva || '').replace(/^Re:\s*/i, '')}`); setPisiTelo(aiOdgovor); setPisiStatus(''); setAiOdprt(false); }}>{L('Uporabi kot odgovor', 'Use as reply')}</button>
+                          <button type="button" className="prim" onClick={() => { setPisiVrsta('odgovor'); setPisiZa(beriMail.prejemniki[0] || ''); setPisiZadeva(`Re: ${(beriMail.zadeva || '').replace(/^Re:\s*/i, '')}`); setPisiTelo(aiOdgovor); setPisiStatus(''); setPisiPriponke([]); setPisiSklic(novSklic()); setAiOdprt(false); }}>{L('Uporabi kot odgovor', 'Use as reply')}</button>
                         </div>
                       </>)}
                     </>
@@ -451,6 +464,8 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
                   <label>{L('Za', 'To')}<input type="email" list="km-prejemniki-list" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /><datalist id="km-prejemniki-list">{prejemnikiVsi.map(p => <option key={p} value={p} />)}</datalist></label>
                   <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
                   <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
+                  <PriponkeVnos sekcija="mail" sklic={pisiSklic || 'osnutek'} priponke={pisiPriponke} onSpremeni={setPisiPriponke} jeEn={jeEn}
+                    omogoceno={!demo} razlogZakleneno={L('V predogledu se priponke ne nalagajo.', 'Attachments are not uploaded in preview.')} />
                   {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
                   <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="km-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="km-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="km-send-ik" /></>}</button></div>
                 </form>
@@ -470,7 +485,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
                 {prikaz.map(v => (
                   <div key={v.id} role="button" tabIndex={0} className={`km-mail-vrsta km-mail-btn${v.smer === 'prejeto' && !v.prebrano ? ' neprebran' : ''}${izbraniMaili.has(v.id) ? ' izbran' : ''}`} onClick={() => { setBeriMail(v); if (!v.prebrano) { if (!demo) oznaciPostoPrebrano(v.id); posodobiMail(v.id, { prebrano: true }); javiSpremembo(); } }} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setBeriMail(v); if (!v.prebrano) { if (!demo) oznaciPostoPrebrano(v.id); posodobiMail(v.id, { prebrano: true }); javiSpremembo(); } } }}>
                     <input type="checkbox" className="km-mail-chk" checked={izbraniMaili.has(v.id)} onClick={e => e.stopPropagation()} onChange={e => { const ch = e.target.checked; setIzbraniMaili(prev => { const n = new Set(prev); if (ch) n.add(v.id); else n.delete(v.id); return n; }); }} aria-label={L('Izberi sporočilo', 'Select message')} />
-                    <span className="km-mail-info"><b>{v.prejemniki.join(', ') || '—'}</b><span className="km-mail-zad">{v.zadeva || L('(brez zadeve)', '(no subject)')}{mapa === 'pogovori' && (() => { const n = postaNiti.find(x => x.sporocila.some(s => s.id === v.id)); return n && n.sporocila.length > 1 ? ` · ${n.sporocila.length}` : ''; })()}</span>{v.popravek && <span className="km-popravek-oznaka"><CheckSquare size={12} weight={v.popravekResenAt ? 'fill' : 'regular'} /> {L('Popravek', 'Revision')}</span>}{projIme(v.projectId) && <span className="km-mail-proj" style={{ color: projBarva(v.projectId), background: `color-mix(in oklch, ${projBarva(v.projectId)} 12%, transparent)` }}><i aria-hidden style={{ background: projBarva(v.projectId) }} />{projIme(v.projectId)}</span>}</span>
+                    <span className="km-mail-info"><b>{v.prejemniki.join(', ') || '—'}</b><span className="km-mail-zad">{v.zadeva || L('(brez zadeve)', '(no subject)')}{mapa === 'pogovori' && (() => { const n = postaNiti.find(x => x.sporocila.some(s => s.id === v.id)); return n && n.sporocila.length > 1 ? ` · ${n.sporocila.length}` : ''; })()}</span>{(v.priponke || []).length > 0 && <span className="km-mail-sponka" title={L('Ima priponko', 'Has an attachment')}><Paperclip size={12} weight="bold" aria-hidden /></span>}{v.popravek && <span className="km-popravek-oznaka"><CheckSquare size={12} weight={v.popravekResenAt ? 'fill' : 'regular'} /> {L('Popravek', 'Revision')}</span>}{projIme(v.projectId) && <span className="km-mail-proj" style={{ color: projBarva(v.projectId), background: `color-mix(in oklch, ${projBarva(v.projectId)} 12%, transparent)` }}><i aria-hidden style={{ background: projBarva(v.projectId) }} />{projIme(v.projectId)}</span>}</span>
                     <span className="km-mail-meta"><span className="km-mail-datum">{datum(v.datum)}</span><span className={`km-mail-smer ${v.smer}`}>{v.smer === 'poslano' ? L('Poslano', 'Sent') : L('Prejeto', 'Received')}</span></span>
                   </div>
                 ))}
@@ -835,6 +850,11 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-pri{align-self:flex-start;max-width:86%;background:#fff;border:1px solid color-mix(in oklch,var(--k-ink) 12%,transparent);border-left:3px solid var(--k-purple);border-radius:.7rem;padding:.5rem .7rem}
         .km-pri.jaz{align-self:flex-end}
         .km-pri-glava{display:inline-flex;align-items:center;gap:.3rem;font:700 .6rem var(--font-sans),sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--k-purple)}
+
+        /* priponke: videz je skupen (components/Priponke.tsx), tu je samo ovoj */
+        .km-priloge{margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--k-line)}
+        .km-mail-sponka{display:inline-flex;align-items:center;margin-left:.35rem;color:color-mix(in oklch,var(--k-ink) 55%,transparent)}
+
         .km-pri-zad{font:700 .84rem var(--font-sans),sans-serif;color:var(--k-ink);margin:.15rem 0}
         .km-pri-telo{font:500 .82rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 78%,transparent);line-height:1.45;white-space:pre-wrap;word-break:break-word}
         .km-vnos{flex:none;display:flex;align-items:center;gap:.5rem;padding:.75rem .9rem;border-top:1px solid var(--k-line)}

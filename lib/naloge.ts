@@ -1,4 +1,11 @@
+import type { Priponka } from '@/lib/priponke';
+
 export type NalogaStolpec = 'todo' | 'in_progress' | 'waiting' | 'done';
+
+/* Priponka na nalogi. Tip je ISTI kot pri posti (lib/priponke.ts: ime, velikost,
+   mime = tip datoteke, pot v Supabase Storage) — pravila, nalaganje in prikaz so
+   skupni, tu se doda le cas pripenjanja. Stari zapisi polja nimajo. */
+export type NalogaPriponka = Priponka & { cas: string };
 
 export type NalogaPrioriteta = 'nizka' | 'srednja' | 'visoka';
 
@@ -63,6 +70,9 @@ export interface Naloga {
   /* checklist podopravil znotraj naloge (detajlni panel) — vsako z lastnim done statusom
      in neobvezno dodeljeno osebo, loceno od dodeljenoOsebaId cele naloge */
   podopravila?: NalogaPodopravilo[];
+  /* pripete datoteke (zaslonske slike, PDF-i ...). Vsebina je v oblaku
+     (business-documents/naloge/<id>), tu so samo metapodatki. */
+  priponke?: NalogaPriponka[];
   /* cas zadnje spremembe (ISO) — nujen za sinhronizacijo z oblakom
      (lib/nalogeOblak): ob srecanju lokalne in oblacne razlicice zmaga novejsa.
      Stari zapisi ga nimajo; takrat velja created. Zig postavi shraniNaloge sam,

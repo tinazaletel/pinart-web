@@ -1,5 +1,9 @@
 import { createClient } from '@/utils/supabase/client';
 import { getOrganizationContext } from '@/lib/pinartFlowCloud';
+import { varnoImePriponke, type Priponka } from '@/lib/priponke';
+
+/* Nalaganje priponk in podpisane povezave so v SKUPNEM sloju lib/priponkeOblak.ts
+   (uporabljata ga posta in naloge). Tu ostane samo branje iz vrstice. */
 
 /* Projektna posta v oblaku (tabela project_mail + project_inbox).
    Oblacni ekvivalent lib/postaDnevnik.ts — poslano (zdaj) in prejeto (korak 2).
@@ -23,6 +27,24 @@ export type ProjectMail = {
   deletedAt?: string;
   popravek?: boolean;
   popravekResenAt?: string;
+  priponke?: Priponka[];
+};
+
+/* Priponke pridejo iz baze kot jsonb. Stari zapisi stolpca nimajo (null) —
+   takrat je seznam prazen, nic se ne zrusi. Vsak element prefiltriramo, da v
+   vmesnik ne pride smet (manjkajoce ime, negativna velikost ...). */
+const priponkeIzVrstice = (surovo: unknown): Priponka[] => {
+  if (!Array.isArray(surovo)) return [];
+  return surovo.slice(0, 5).map((el) => {
+    const o = (el || {}) as Record<string, unknown>;
+    const velikost = Number(o.velikost);
+    return {
+      ime: varnoImePriponke(String(o.ime || '')) || 'priponka',
+      velikost: Number.isFinite(velikost) && velikost > 0 ? velikost : 0,
+      mime: o.mime ? String(o.mime) : undefined,
+      pot: o.pot ? String(o.pot) : undefined,
+    };
+  });
 };
 
 const fromRow = (row: Record<string, unknown>): ProjectMail => ({
@@ -43,6 +65,7 @@ const fromRow = (row: Record<string, unknown>): ProjectMail => ({
   deletedAt: row.deleted_at ? String(row.deleted_at) : undefined,
   popravek: row.is_revision === true,
   popravekResenAt: row.revision_resolved_at ? String(row.revision_resolved_at) : undefined,
+  priponke: priponkeIzVrstice(row.attachments),
 });
 
 /* Vsa posta enega projekta, najnovejsa prva. [] brez prijave/tabele. */
@@ -91,6 +114,7 @@ export async function pushProjectMail(entry: ProjectMail): Promise<void> {
     summary: entry.summary || null,
     message_id: entry.messageId || null,
     in_reply_to: entry.inReplyTo || null,
+    attachments: entry.priponke || [],
     occurred_at: entry.occurredAt || new Date().toISOString(),
   });
   if (error) throw error;
@@ -137,6 +161,7 @@ export async function saveDraft(entry: ProjectMail & { id: string }): Promise<vo
     subject: entry.subject || null,
     body_html: entry.bodyHtml || null,
     body_text: entry.bodyText || null,
+    attachments: entry.priponke || [],
     occurred_at: entry.occurredAt || new Date().toISOString(),
   });
   if (error) throw error;

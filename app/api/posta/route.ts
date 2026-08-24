@@ -7,6 +7,84 @@ import { jeEmail, omejenNiz, preberiJson, sporociloValidacije } from '@/lib/vali
 import { zagotoviInboxToken } from '@/lib/inboxToken';
 import { posiljatelj } from '@/lib/posiljatelj';
 import { preberiClanstvo } from '@/lib/clanstvo';
+import { NAJVEC_PRIPONK, preveriPriponke, varnoImePriponke, type Priponka } from '@/lib/priponke';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+/* ── Priponke ────────────────────────────────────────────────────────────────
+   Odjemalec posilja SAMO poti v Supabase Storage (vsebine nikoli skozi JSON —
+   telo zahtevka ostane majhno). Tu jih preverimo se enkrat, ker je zaledje
+   vratar: brskalniska preverba je vljudnost, ta pa odloca.
+
+   Zakaj Resendu damo `content` (base64) in ne `path` (URL): vedro
+   business-documents je ZASEBNO. `path` bi zahteval javno dosegljiv naslov —
+   torej podpisano povezavo, ki bi jo bilo treba izpostaviti zunanjemu servisu
+   in ki lahko potece, preden jo Resend prebere. Cel projekt to vedro bere samo
+   prek kratkozivih podpisanih povezav v brskalniku (getBusinessDocumentUrl);
+   z base64 ta vzorec obdrzimo — datoteka ne zapusti nasega streznika drugace
+   kot v samem mailu. */
+type ResendPriponka = { filename: string; content: string };
+
+async function pripraviPriponke(
+  admin: SupabaseClient,
+  organizationId: string,
+  surove: unknown,
+): Promise<{ napaka?: string; zapisi: Priponka[]; resend: ResendPriponka[] }> {
+  const prazno = { zapisi: [] as Priponka[], resend: [] as ResendPriponka[] };
+  if (surove === undefined || surove === null) return prazno;
+  if (!Array.isArray(surove)) return { ...prazno, napaka: 'Priponke niso veljavne.' };
+  if (!surove.length) return prazno;
+  if (surove.length > NAJVEC_PRIPONK) {
+    return { ...prazno, napaka: `Največ ${NAJVEC_PRIPONK} priponk na sporočilo.` };
+  }
+
+  /* 1) poti: morajo pripadati TEJ organizaciji in ne smejo bezati iz mape */
+  const poti: string[] = [];
+  for (const el of surove) {
+    const pot = String((el as { pot?: unknown })?.pot || '').trim();
+    if (!pot || pot.length > 500 || pot.includes('..') || !pot.startsWith(`${organizationId}/`)) {
+      return { ...prazno, napaka: 'Priponka ne pripada temu podjetju.' };
+    }
+    if (poti.includes(pot)) return { ...prazno, napaka: 'Ista priponka je dodana dvakrat.' };
+    poti.push(pot);
+  }
+
+  /* 2) resnica je BAZA, ne odjemalec: ime, velikost in mime preberemo iz
+        document_files, tako da lagana velikost ne pomaga. */
+  const { data: vrstice, error } = await admin
+    .from('document_files')
+    .select('bucket,path,original_name,mime,size_bytes,scan_status,deleted_at')
+    .eq('organization_id', organizationId)
+    .in('path', poti);
+  if (error) return { ...prazno, napaka: 'Priponk ni bilo mogoče prebrati.' };
+
+  const poPoti = new Map((vrstice || []).map((v) => [String(v.path), v]));
+  const zapisi: Priponka[] = [];
+  for (const pot of poti) {
+    const v = poPoti.get(pot);
+    if (!v || v.deleted_at) return { ...prazno, napaka: 'Priponka ne obstaja ali je arhivirana.' };
+    if (v.scan_status !== 'clean') return { ...prazno, napaka: 'Priponka še ni varnostno potrjena.' };
+    zapisi.push({
+      ime: varnoImePriponke(String(v.original_name || '')) || 'priponka',
+      velikost: Number(v.size_bytes) || 0,
+      mime: v.mime ? String(v.mime) : undefined,
+      pot,
+    });
+  }
+
+  /* 3) meje (stevilo, 10 MB na datoteko, 20 MB skupaj) — ista funkcija kot v brskalniku */
+  const meje = preveriPriponke(zapisi);
+  if (!meje.veljavno) return { ...prazno, napaka: meje.napaka };
+
+  /* 4) prenos iz zasebnega vedra -> base64 za Resend */
+  const resend: ResendPriponka[] = [];
+  for (const zapis of zapisi) {
+    const vedro = String(poPoti.get(zapis.pot!)?.bucket || 'business-documents');
+    const { data, error: prenosNapaka } = await admin.storage.from(vedro).download(zapis.pot!);
+    if (prenosNapaka || !data) return { ...prazno, napaka: `Priponke »${zapis.ime}« ni bilo mogoče prebrati.` };
+    resend.push({ filename: zapis.ime, content: Buffer.from(await data.arrayBuffer()).toString('base64') });
+  }
+  return { zapisi, resend };
+}
 
 /* Strežniško pošiljanje e-pošte prek Resend. Ključ RESEND_API_KEY bere SAMO
    strežnik (nikoli klient). "From" naslov nastavi RESEND_FROM (npr.
@@ -36,6 +114,7 @@ export async function POST(request: Request) {
     clientId?: string;
     idempotencyKey?: string;
     demo?: boolean;
+    priponke?: unknown;
   };
   try {
     body = await preberiJson(request, 100_000);
@@ -97,6 +176,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Stranka ni povezana s tem podjetjem.' }, { status: 403 });
     }
   }
+  /* Priponke pripravimo PRED prevzemom mail_log zapisa: ce je katera sporna,
+     naj se posiljanje ne "zatakne" v stanju pending. */
+  const priponke = await pripraviPriponke(admin, organizationId, body.priponke);
+  if (priponke.napaka) {
+    return NextResponse.json({ error: priponke.napaka }, { status: 400 });
+  }
+
   const { data: existing } = await admin
     .from('mail_log')
     .select('id,status,provider_id')
@@ -180,6 +266,7 @@ export async function POST(request: Request) {
       subject: body.subject,
       html: body.html,
       ...(replyTo ? { replyTo } : {}),
+      ...(priponke.resend.length ? { attachments: priponke.resend } : {}),
     });
     if (error) {
       await zakljuciDnevnik('failed', undefined, 'provider_rejected');
@@ -192,7 +279,7 @@ export async function POST(request: Request) {
     /* Zapiši POSLANO v project_mail (projektni ali skupni), da se prikaže v
        Komunikaciji. Fail-soft: če zapis ne uspe, mail je že poslan — ne rušimo. */
     try {
-      const { error: projectMailError } = await admin.from('project_mail').insert({
+      const zapis = {
         organization_id: organizationId,
         project_external_id: projRef,
         client_id: body.clientId || null,
@@ -204,7 +291,14 @@ export async function POST(request: Request) {
         body_text: body.html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
         message_id: messageId,
         occurred_at: new Date().toISOString(),
-      });
+      };
+      let { error: projectMailError } = await admin.from('project_mail').insert({ ...zapis, attachments: priponke.zapisi });
+      /* 42703 = stolpca attachments ni: migracija 20260824031000_posta_priponke.sql
+         se ni pognana. Mail je ze poslan — zapisimo ga vsaj brez priponk,
+         namesto da bi izginil iz Komunikacije. */
+      if (projectMailError?.code === '42703') {
+        ({ error: projectMailError } = await admin.from('project_mail').insert(zapis));
+      }
       if (projectMailError && projectMailError.code !== '23505') {
         console.error('Poslanega maila ni bilo mogoče zapisati:', projectMailError.message);
       }

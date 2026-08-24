@@ -8,6 +8,8 @@
    razvrsti od najnovejšega. Zapis nastane, ko pošiljanje uspe (glej
    PosljiBlok) — druge klicatelje (pogodbe/računi/kalkulator) poveže kdo drug. */
 
+import type { Priponka } from '@/lib/priponke';
+
 export type PostaSmer = 'poslano' | 'prejeto';
 
 export type PostaVnos = {
@@ -25,6 +27,8 @@ export type PostaVnos = {
   zvezda?: boolean;        // neobvezno: oznaceno z zvezdico (pomembno)
   oznake?: string[];       // neobvezno: labele/oznake na sporocilu
   prebrano?: boolean;      // neobvezno: je bilo prebrano (za stevec neprebranih na Komunikaciji)
+  priponke?: Priponka[];   // neobvezno: pripete datoteke (ime, velikost, mime, pot v Storage).
+                           // Stari zapisi ga nimajo in delujejo naprej — zato ?.
   messageId?: string;
   inReplyTo?: string;
   references?: string[];
