@@ -80,7 +80,10 @@ export default function Toast({
         @keyframes pwToastVstranOff{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(115%)}}
         .pw-toast-pika{flex:none;width:.5rem;height:.5rem;border-radius:999px}
         .pw-toast-ikona{flex:none;display:grid;place-items:center;width:1.6rem;height:1.6rem}
-        .pw-toast-vztrajen .pw-toast-ikona,.pw-toast-vztrajen .pw-toast-dejanja,.pw-toast-vztrajen .pw-toast-x{margin-top:.05rem}
+        .pw-toast-vztrajen .pw-toast-dejanja,.pw-toast-vztrajen .pw-toast-x{margin-top:.05rem}
+        /* Ikona se poravna na sredino visine kartice, ne z naslovom — pri
+           dvovrsticnem obvestilu je videti bolj mirno. */
+        .pw-toast-vztrajen .pw-toast-ikona{align-self:center;margin-top:0}
         .pw-toast-napaka .pw-toast-ikona{color:oklch(52% .17 25)}
         .pw-toast-napaka{background:#fff;border-color:color-mix(in oklch,var(--ink, #2a2620) 12%,transparent)}
         .pw-toast-napaka .pw-toast-txt{color:var(--ink, #2a2620)}
