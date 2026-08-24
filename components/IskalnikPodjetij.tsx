@@ -29,9 +29,11 @@ export type Podjetje = {
 };
 
 export default function IskalnikPodjetij({
-  vrednost, naVrednost, naIzbiro, lastne = [], jeEn = false, id, ime = 'ime', obvezno = false,
+  vrednost, naVrednost, naIzbiro, lastne = [], jeEn = false, id, ime = 'ime', obvezno = false, namig,
 }: {
   vrednost: string;
+  /* Namig naj bo PRIMER, ne ponovitev oznake nad poljem. */
+  namig?: string;
   naVrednost: (v: string) => void;
   /* klic ob izbiri iz seznama — starš napolni naslov in davčno */
   naIzbiro: (p: Podjetje) => void;
@@ -135,7 +137,7 @@ export default function IskalnikPodjetij({
         onChange={e => { setIzbrano(false); naVrednost(e.target.value); setOdprt(true); }}
         onFocus={() => setOdprt(true)}
         onKeyDown={naTipko}
-        placeholder={L('Tvoje ime ali naziv podjetja …', 'Your name or business name …')}
+        placeholder={namig || L('Začni tipkati ime …', 'Start typing a name …')}
       />
       {pokazi && (karKoli || iscem) && (
         <div className="ip-seznam" role="listbox">

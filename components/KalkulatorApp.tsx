@@ -8518,7 +8518,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
                     <p className="uv-mreza-naslov">{L('Glava ponudbe', 'Quote header')} <span>{L('dodaj, kar želiš prikazati', 'add what you want to show')}</span></p>
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pime">{L('Ime ali naziv', 'Name or business name')}</label>
+                    <label htmlFor="uv-pime">{L('Ime ali naziv tvojega podjetja', 'Your name or business name')}</label>
                     <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
                       naVrednost={v => setPonudnik(prej => ({ ...prej, ime: v }))}
                       naIzbiro={pod => {
@@ -8531,7 +8531,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           email: pod.email || prej.email,
                         }));
                       }}
-                      obvezno={vFlow} ime="uv-pime" jeEn={L('sl', 'en') === 'en'} />
+                      obvezno={vFlow} ime="uv-pime" namig={L('npr. Rdeča kapica s.p.', 'e.g. Little Red Studio')} jeEn={L('sl', 'en') === 'en'} />
                   </div>
 
                     <div className="uv-polje">
