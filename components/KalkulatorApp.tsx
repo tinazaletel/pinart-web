@@ -8467,8 +8467,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {uvodChat && chatKorak === 2 && (
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pdrzava">{L('Država', 'Country')} <span className="uv-neobvezno">{L('določi privzet trg / raven cen', 'sets the default market / price level')}</span></label>
-                    <IzbirnikDrzave id="uv-pdrzava" placeholder={L('npr. Slovenija', 'e.g. Slovenia')}
+                    <label htmlFor="uv-pdrzava">{L('Država', 'Country')} <span className="uv-neobvezno">{L('vpliva na raven cen', 'affects the price level')}</span></label>
+                    <IzbirnikDrzave id="uv-pdrzava" placeholder={L('Izberi državo', 'Choose a country')}
                       moznosti={DRZAVE.map(d => locale === 'en' ? d.imeEn : d.ime)}
                       value={custDrzavaMoj}
                       onChange={v => { setCustDrzavaMoj(v); const t = trgIzDrzave(v); if (t) setMojTrg(t); }} />
@@ -8482,11 +8482,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     onClick={() => setPodatkiPodjetjaOdprti(o => !o)}>
                     <span className="uv-vec-glava">
                       <span className="uv-vec-znak" aria-hidden>{podatkiPodjetjaOdprti ? '−' : '+'}</span>
-                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij podatke za ponudbo', 'Hide quote details') : L('Želiš tudi ponudbo za stranko?', 'Would you also like a quote for a client?')}</span>
+                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij podatke za ponudbo', 'Hide quote details') : L('Pripravi tudi ponudbo', 'Prepare a quote as well')}</span>
                       <span className="uv-vec-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
                     </span>
                     {!podatkiPodjetjaOdprti && (
-                      <span className="uv-vec-pripis">{L('Dodaj ime ali naziv studia in podatke, ki bodo prikazani na dokumentu.', 'Add your name or studio and the details shown on the document.')}</span>
+                      <span className="uv-vec-pripis">{L('Dodaj podatke, ki bodo prikazani na dokumentu.', 'Add the details shown on the document.')}</span>
                     )}
                   </button>
                   <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
