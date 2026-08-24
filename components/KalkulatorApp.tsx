@@ -6725,7 +6725,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .sg-potrdi-zaklenjen input { cursor: not-allowed; }
         .cw .soglasje-gumbi .gumb:disabled { opacity: .45; cursor: not-allowed; transform: none; }
         .cw .napredek { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(17,17,17,.1); z-index: 40; }
-        .cw .napredek i { display: block; height: 100%; background: var(--ink); transition: width .5s cubic-bezier(.16,1,.3,1); }
+        /* Vijolicna, ne crna: napredek je Flowov jezik, poleg tega crna crta
+           tik pod naslovno vrstico izpade kot rob okna, ne kot napredek.
+           Isti preliv kot progress v FlowTopBar. */
+        .cw .napredek i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent, #6E4FA6), oklch(72% .14 165)); transition: width .5s cubic-bezier(.16,1,.3,1); }
 
         /* locen bez pas nad prelivom (njen mockup: header ima svoje ozadje) */
         .cw .glava { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: calc(1rem + env(safe-area-inset-top, 0px)) clamp(1.2rem, 4vw, 3rem) 1rem; z-index: 32; pointer-events: none; background: var(--paper); border-bottom: 1px solid rgba(17,17,17,.08); }
