@@ -10495,7 +10495,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             {korak === 0 && uvodChat && !klasicnaOblika ? null : korak < KORAKOV - 1 ? (
               <button type="button" className="gumb"
                 disabled={korak === 0 && !r}
-                onClick={() => {
+                onClick={e => {
+                  /* Gumb po kliku SPUSTI fokus. Sicer ostane na njem tudi po
+                     prehodu na naslednji korak in prvi Enter — na primer nova
+                     vrstica v ponudbi — spet sprozi Naprej in te vrze naprej. */
+                  e.currentTarget.blur();
                   /* v chatu: vsak Naprej razkrije naslednje NAVZDOL (o stranki -> trg -> raba -> pravice -> posebnosti -> CENA), nato priprava ponudbe */
                   if (vChatu && poMeh < 5) {
                     setPoMeh(poMeh + 1);
