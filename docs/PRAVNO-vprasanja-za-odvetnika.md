@@ -18,7 +18,15 @@ k vam vsak mesec posebej.
 potrjuje pri FURS. Namenjeni so plačilu na transakcijski račun. Bojim se
 primera, ko uporabnik izda račun pri meni, plačilo prejme v gotovini in misli,
 da je davčno vse urejeno. Kako naj to omejitev zapišem, da je odgovornost jasno
-na uporabniku? Osnutek člena imam pripravljen in ga priložim spodaj.
+na uporabniku? Tako sem ga zaenkrat zapisala sama, prosim, popravite ga po
+svoje:
+
+> Pinart Flow ni davčna blagajna in ne izvaja davčnega potrjevanja računov pri
+> FURS. Računi, izdani v Flowu, so namenjeni plačilu z nakazilom na
+> transakcijski račun. Če uporabnik prejema plačila v gotovini, s plačilno
+> kartico na prodajnem mestu ali na drug način, ki se šteje za gotovinsko
+> poslovanje, mora za izdajo računov uporabiti ustrezno davčno blagajno. Za
+> skladnost s predpisi o davčnem potrjevanju računov odgovarja uporabnik.
 
 **2. Podatki strank mojih uporabnikov.** V Flow vnašajo imena, naslove, davčne
 številke in vsebino komunikacije svojih strank. Razumem, da sem pri tem
@@ -98,17 +106,6 @@ pristop v redu ali potrebujem ločene, krajše pogoje samo za kalkulator?
 **17. Odstavki za funkcije, ki še ne delujejo.** Nekaj določb (plačljivi trezor,
 naročnina, arbitraža) je pisanih vnaprej. Je bolje imeti jih zapisane in
 neuporabljene ali jih dodati šele, ko funkcija zaživi?
-
-## Osnutek člena o davčnem potrjevanju (točka 1)
-
-> Pinart Flow ni davčna blagajna in ne izvaja davčnega potrjevanja računov pri
-> FURS. Računi, izdani v Flowu, so namenjeni plačilu z nakazilom na transakcijski
-> račun. Če uporabnik prejema plačila v gotovini, s plačilno kartico na prodajnem
-> mestu ali na drug način, ki se šteje za gotovinsko poslovanje, mora za izdajo
-> računov uporabiti ustrezno davčno blagajno. Za skladnost s predpisi o davčnem
-> potrjevanju računov odgovarja uporabnik.
-
-Prosim, popravite ga po svoje.
 
 ## Kam grem naprej
 
