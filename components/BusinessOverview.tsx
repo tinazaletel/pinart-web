@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { Handshake, Receipt, Wallet, Tag, Clock, FileText, CheckCircle, TrendUp, Stack, Scroll, Suitcase, EnvelopeSimple, PaperPlaneRight, Play, Pause } from '@phosphor-icons/react';
+import { Handshake, Receipt, Wallet, Tag, Clock, FileText, CheckCircle, TrendUp, Stack, Scroll, Suitcase, EnvelopeSimple, PaperPlaneRight } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferAmount, saveOfferStatus } from '@/lib/pinartFlowStore';
 import { recordAccountingExport, saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
 import { demoPodatki, usePredogled } from '@/lib/predogled';
-import { preberiNaloge, shraniNaloge, preklopiStoparico, tekocaNaloga, zadnjeMerjene, type Naloga } from '@/lib/naloge';
+import { preberiNaloge } from '@/lib/naloge';
 import { preberiVsePoste, type PostaVnos } from '@/lib/postaDnevnik';
 import { jeLicencaKmalu, jeLicencaPotekla } from '@/lib/licencePotek';
 import { sestaviDanes, urediDanes } from '@/lib/danes';
@@ -26,14 +26,6 @@ const DASH_DEMO_NALOGE: { naslov: string; stolpec: string; oseba?: string }[] = 
 /* Pet vrstic, ne osem: vrstica je zdaj dvovrsticna (naslov + stranka), zato je
    osem vrstic stolpec raztegnilo visje od sosedov. */
 const DANES_VRSTIC = 5;
-
-/* "6 h 20 min" iz minut. */
-const ureMin = (m: number, jeEn: boolean): string => {
-  const u = Math.floor(m / 60);
-  const min = m % 60;
-  if (!u) return `${min} min`;
-  return min ? `${u} h ${min} min` : `${u} h`;
-};
 
 const DANES_TON: Record<string, 'danger' | 'waiting' | 'info' | 'neutral' | 'success'> = {
   zamujeno: 'danger',
@@ -124,30 +116,6 @@ export default function BusinessOverview({ base }: { base: string }) {
   const [preview, setPreview] = usePredogled();
   const [dashNaloge, setDashNaloge] = useState<{ naslov: string; stolpec: string; oseba?: string; rok?: string }[]>([]);
   const [dashPosta, setDashPosta] = useState<{ smer: 'poslano' | 'prejeto'; kdo: string; zadeva: string; datum?: string }[]>([]);
-  /* "Nadaljuj": naloge, na katerih je stoparica nazadnje tekla. Bere se sele po
-     montazi — branje shrambe med renderjem razbije hidracijo (DESIGN.md, 10). */
-  const [zadnje, setZadnje] = useState<Naloga[]>([]);
-  const [tece, setTece] = useState<Naloga | undefined>(undefined);
-  const [utrip, setUtrip] = useState(0);
-  const osveziStoparico = () => {
-    try {
-      const vse = preberiNaloge();
-      setZadnje(zadnjeMerjene(vse));
-      setTece(tekocaNaloga(vse));
-    } catch { setZadnje([]); setTece(undefined); }
-  };
-  useEffect(() => { if (preview === 'mine') osveziStoparico(); else { setZadnje([]); setTece(undefined); } }, [preview]);
-  /* ziv izpis sekund samo, kadar cas res tece */
-  useEffect(() => {
-    if (!tece) return;
-    const id = window.setInterval(() => setUtrip(v => v + 1), 1000);
-    return () => window.clearInterval(id);
-  }, [tece]);
-  const preklopiCas = (id: string) => {
-    const izid = preklopiStoparico(preberiNaloge(), id, new Date());
-    shraniNaloge(izid.naloge);
-    osveziStoparico();
-  };
   useEffect(() => {
     if (preview === 'empty') { setDashNaloge([]); setDashPosta([]); return; }
     if (preview !== 'mine') {
@@ -573,37 +541,9 @@ export default function BusinessOverview({ base }: { base: string }) {
         </section>
 
 
-        <section className={styles.historyBand} aria-labelledby="cas-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · ŠTOPARICA', '06 · TIMER')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/cas`}><span className={styles.abTxt}>{L('Odpri štoparico', 'Open the timer')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
-          <div className={styles.bandBody}>
-          <h2 id="cas-title" className={styles.bandNaslov}>{tece ? L('Zdaj delaš', 'Working now') : L('Nadaljuj', 'Pick up where you left off')}</h2>
-          {zadnje.length ? (
-            <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-              {zadnje.map(n => {
-                const jeTa = tece?.id === n.id;
-                const zbrano = (n.porabljeniCasMinute || 0) + (jeTa && n.timerStartTime ? Math.max(0, Math.round((Date.now() - new Date(n.timerStartTime).getTime()) / 60000)) : 0);
-                return (
-                  <li key={n.id} className={styles.dashRow} style={{ cursor: 'default' }}>
-                    <button type="button" onClick={() => preklopiCas(n.id)} aria-label={jeTa ? L('Ustavi štoparico', 'Stop the timer') : L('Zaženi štoparico', 'Start the timer')} title={jeTa ? L('Ustavi', 'Stop') : L('Zaženi', 'Start')} style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: '2rem', height: '2rem', borderRadius: '50%', border: 0, cursor: 'pointer', background: jeTa ? 'var(--ink)' : 'oklch(95% .01 87)', color: jeTa ? 'var(--paper)' : 'var(--ink)' }}>
-                      {jeTa ? <Pause size={14} weight="fill" /> : <Play size={14} weight="fill" />}
-                    </button>
-                    <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                      <b style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.naslov}</b>
-                      <small style={{ fontSize: '.72rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.projectId || L('brez projekta', 'no project')}</small>
-                    </span>
-                    <span className={`${styles.statusPill} ${styles[jeTa ? 'status_info' : 'status_neutral']}`} data-utrip={jeTa ? utrip : undefined}>{ureMin(zbrano, locale === 'en')}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Štoparica še ni tekla.', 'The timer has not run yet.')}</strong><p>{L('Zaženi jo pri nalogi in tu boš lahko nadaljevala z enim klikom.', 'Start it on a task and you will be able to continue here with one click.')}</p></div></div>}
-          </div>
-        </section>
 
-        {/* V vrstici so trije pasovi, stolpca pa dva: Naloge in Štoparica
-            zasedeta prvo vrsto, Komunikacija tece cez oba stolpca. */}
-        <section className={`${styles.historyBand} ${styles.bandFull}`} aria-labelledby="comm-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · KOMUNIKACIJA', '07 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <section className={styles.historyBand} aria-labelledby="comm-title">
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('06 · KOMUNIKACIJA', '06 · COMMUNICATION')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/komunikacija`}><span className={styles.abTxt}>{L('Odpri komunikacijo', 'Open communication')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="comm-title" className={styles.bandNaslov}>{L('Zadnja pošta', 'Recent mail')}</h2>
           {dashPosta.length ? <ul className={styles.dashList} style={{ listStyle: 'none', margin: '.3rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
@@ -615,7 +555,7 @@ export default function BusinessOverview({ base }: { base: string }) {
 
       <div className={styles.detailRow}>
         <section className={styles.historyBand} id="accounting">
-        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('08 · ZGODOVINA', '08 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+        <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · ZGODOVINA', '07 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
         <h2 className={styles.bandNaslov}>{L('Zadnji dokumenti', 'Recent documents')}</h2>
         {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable} ${styles.accTable}`}><table><thead><tr><th>{L('Dokument', 'Document')}</th><th>{L('Stranka', 'Client')}</th><th>{L('Datum', 'Date')}</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={L(`Odpri ${item.title}`, `Open ${item.title}`)} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString(dl)}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? L('To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.', 'This is demo data — the status cannot be changed. Switch to »My data«.') : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še nimaš dokumentov.', 'You have no documents yet.')}</strong><p>{L('Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.', 'Offers, contracts, invoices and costs will appear here.')}</p></div></div>}
@@ -623,7 +563,7 @@ export default function BusinessOverview({ base }: { base: string }) {
       </section>
 
         <section className={styles.eventsBand} aria-labelledby="rev-title">
-          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('09 · PRIHODKI', '09 · REVENUE')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsa poročila', 'All reports')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
+          <div className={styles.bandTop}><p className={styles.eyebrow}>{L('08 · PRIHODKI', '08 · REVENUE')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsa poročila', 'All reports')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
           <div className={styles.bandBody}>
           <h2 id="rev-title" className={styles.bandNaslov}>{L('Prihodki po mesecih', 'Revenue by month')}</h2>
           {(() => {
