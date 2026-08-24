@@ -7597,7 +7597,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           /* FlowTopBar je zunaj .cw; 100dvh bi zato zaključku dodal še višino
              glave in ustvaril prazen scroll. */
           .cw.cw-lupina.cw-zakljucek { min-height: calc(100dvh - 3.25rem); }
-          .cw.cw-zakljucek .oder { padding-top: 1rem; padding-bottom: 5.5rem; }
+          /* Glava kalkulatorja je fixed; 1rem je premalo in ilustracijo na
+             vrhu Zakljucka odreze. V lupini glavo riše FlowTopBar zunaj .cw,
+             zato tam zadostuje manj. */
+          .cw.cw-zakljucek .oder { padding-top: 4.2rem; padding-bottom: 5.5rem; }
+          .cw.cw-lupina.cw-zakljucek .oder { padding-top: 1rem; }
           .cw .zakljucek-sredina { padding-bottom: .5rem; }
           /* Povezave ostanejo vizualno lahke, celotna vrstica okoli napisa pa
              je dovolj velika za zanesljiv dotik s prstom. */
