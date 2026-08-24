@@ -1926,7 +1926,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     if (zeliEmail && imamKontakt) posljiKontakt('prijava na obveščanje ob vstopu');
     try { localStorage.setItem('pinart-kalk-pogoji-ok', '1'); } catch { /* ignoriraj */ }
     /* Zapisemo, KAJ je potrdil in KDAJ — potrditev brez razlicice ne dokaze nicesar. */
-    const zapis = zapisiPotrditevPogojev(vFlow && pogojiPotrjeni ? 'polno' : 'vstop', new Date());
+    const zapis = zapisiPotrditevPogojev(vLupini && pogojiPotrjeni ? 'polno' : 'vstop', new Date());
     if (zapis.nacin === 'polno') setPolnaPotrditev(true);
     /* Uvodni pogovor zazenemo TU, v istem kliku, ne sele v useEffect: sicer se
        med sprejemom in ucinkom za en okvir izrise korak 0 (mehurcki) in slika
@@ -2261,6 +2261,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     })();
     return () => { ziv = false; };
   }, []);
+  /* KARTICA POGOJEV sledi MESTU, ne prijavi: na brezplacnem kalkulatorju
+     (/kalkulator, brez lupine) VEDNO velja lahka razlicica "Samo troje ..."
+     s "S klikom potrjujes" — tudi ce je clovek slucajno prijavljen v Flow.
+     25. 8.: prijavljena Tina je na brezplacnem kalkulatorju dobila Flow
+     kartico s kljukico; vecer izgubljen, ker sva gledala vsak svojo sliko.
+     vFlow (prijava) ostane za druge namene (npr. obvezna polja profila). */
   /* vFlow = uporabnik je v Flow ogrodju ALI je prijavljen. vLupini je SINHRON (prop),
      jePrijavljen pa pride sele po asinhronem klicu na Supabase — brez vLupini se je
      kartica pogojev pri vstopu v Flow lahko izrisala v razlicici za neprijavljene
@@ -2275,7 +2281,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   useEffect(() => { setPolnaPotrditev(jePolnaPotrditev(preberiPotrditevPogojev())); }, []);
   /* true = dejanje se ustavi in odpre se okno s pogoji; po potrditvi se izvede samo. */
   const rabiPogoje = (znova: () => void) => {
-    if (vFlow || polnaPotrditev) return false;
+    if (vLupini || polnaPotrditev) return false;
     setPogojiPrebrani(false);
     setPogojiPotrjeni(false);
     setPogojiZahteva(() => znova);
@@ -7846,9 +7852,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         <div className="cw">
         <div className={`soglasje${pogojiOdhaja ? ' soglasje-odhaja' : ''}`} role="dialog" aria-modal="true" aria-label={L('Pogoji uporabe', 'Terms of use')}>
           <div className="soglasje-kartica">
-            <h2>{vFlow ? L('Preden začneš', 'Before you begin') : L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
+            <h2>{vLupini ? L('Preden začneš', 'Before you begin') : L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
             <div className="soglasje-tocke">
-              {vFlow ? (<>
+              {vLupini ? (<>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Vse na enem mestu', 'Everything in one place')}</h3>
                 <p className="sg-t">{L('Flow ni samo kalkulator — ponudbe, računi, pogodbe, stranke, projekti, koledar in več. Ko se spoznava, te odložim na tvojo ploščo, kjer izbereš, kaj boš delal/-a.', 'Flow is more than a calculator — quotes, invoices, contracts, clients, projects, a calendar and more. Once we get to know each other, I drop you on your dashboard, where you choose what to do.')}</p>
@@ -7876,13 +7882,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               </div>
               </>)}
             </div>
-            {!vFlow && (
+            {!vLupini && (
             <div className="sg-motiv">
               <span className="sg-motiv-ozn">{L('★ Kaj imaš od tega', '★ What\'s in it for you')}</span>
               <p>{L('Skupaj gradimo', 'Together we\'re building')} <b>{L('prvo statistiko cen za kreativce', 'the first pricing statistics for creatives')}</b>{L(': ko bo baza dovolj velika, boš videl,', ': once the database is big enough, you\'ll see')} <b>{L('koliko kolegi s tvojimi izkušnjami dejansko računajo', 'how much peers with your experience actually charge')}</b> {L('— česar danes ne pove nihče.', '— which nobody tells you today.')}</p>
             </div>
             )}
-            {!vFlow && (
+            {!vLupini && (
             <div className="soglasje-email">
               <label className="se-preklop">
                 <span className="se-tekst">
@@ -7915,13 +7921,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                pogoji in brez drsenja do dna. Cel dokument z drsenjem ostane
                SAMO ob prvem izvozu/posiljanju ("Se pogoji, pa gre"). */}
             <div className="soglasje-gumbi">
-              {vFlow && (
+              {vLupini && (
                 <label className="sg-potrdi">
                   <input type="checkbox" checked={pogojiPotrjeni} onChange={e => setPogojiPotrjeni(e.target.checked)} />
                   <span>{L('Prebral/-a sem in sprejemam ', 'I have read and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
                 </label>
               )}
-              {!vFlow && (
+              {!vLupini && (
                 <p className="sg-vhod">
                   {L('S klikom potrjuješ ', 'By clicking you accept the ')}
                   <a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje uporabe', 'terms of use')}</a>
@@ -7929,7 +7935,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <a href={localePath(locale, `/zasebnost`)} target="_blank" rel="noopener noreferrer">{L('politiko zasebnosti', 'privacy policy')}</a>.
                 </p>
               )}
-              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vFlow && !pogojiPotrjeni} title={vFlow && !pogojiPotrjeni ? L('Najprej preberi in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vFlow ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
+              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vLupini && !pogojiPotrjeni} title={vLupini && !pogojiPotrjeni ? L('Najprej preberi in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vFlow ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
             </div>
           </div>
         </div>
