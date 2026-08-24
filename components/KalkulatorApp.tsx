@@ -7600,7 +7600,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           /* Glava kalkulatorja je fixed; 1rem je premalo in ilustracijo na
              vrhu Zakljucka odreze. V lupini glavo riše FlowTopBar zunaj .cw,
              zato tam zadostuje manj. */
-          .cw.cw-zakljucek .oder { padding-top: 4.2rem; padding-bottom: 5.5rem; }
+          .cw.cw-zakljucek .oder { padding-top: 7rem; padding-bottom: 5.5rem; }
           .cw.cw-lupina.cw-zakljucek .oder { padding-top: 1rem; }
           .cw .zakljucek-sredina { padding-bottom: .5rem; }
           /* Povezave ostanejo vizualno lahke, celotna vrstica okoli napisa pa
