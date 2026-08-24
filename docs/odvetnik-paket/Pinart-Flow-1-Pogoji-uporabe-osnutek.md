@@ -114,7 +114,7 @@ Pupa je naša izbirna AI pomočnica (umetna inteligenca), ki deluje strežniško
 
 V Pupo ne vnašaj zaupnih podatkov, poslovnih skrivnosti ali osebnih podatkov svojih strank. Če Pupe ne uporabljaš, se podatki ne pošiljajo družbi Anthropic ali kateremu koli drugemu zunanjemu ponudniku AI. Orodja Pinart Flow delujejo brez AI, cene pa se izračunajo s formulami in pravili lokalno oziroma na zaledju Pinart Flow.
 
-Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje modelov, hramba pa sledi njegovim aktualnim pogojem. Morebitni prenos v ZDA mora biti urejen z DPA z družbo Anthropic in ustreznimi standardnimi pogodbenimi klavzulami (SCC). Pravno podlago (privolitev ali zakoniti interes) mora pred objavo določiti odvetnik. Seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.
+Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje modelov, hramba pa sledi njegovim aktualnim pogojem. Morebitni prenos v ZDA mora biti urejen z DPA z družbo Anthropic in ustreznimi standardnimi pogodbenimi klavzulami (SCC). Seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.
 
 ## 8. Intelektualna lastnina
 
