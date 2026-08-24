@@ -116,6 +116,9 @@ export function usePriponke(nastavitve: {
         void preberiKvoto().then(setKvota).catch(() => undefined);
         setNapaka('');
       } catch (e) {
+        /* Cel predmet v konzolo: Supabase napake nosijo statusCode in ime
+           politike, ki je zavrnila — sporocilo samo tega ne pove. */
+        console.error('Priponka — nalaganje ni uspelo:', e);
         /* Supabase vrne napako kot navaden predmet, ne kot Error — brez tega je
            sporocilo prazno in uporabnica dobi "Priponke ni bilo mogoce
            nalozitI" brez razloga, mi pa nimamo cesa popraviti. */
