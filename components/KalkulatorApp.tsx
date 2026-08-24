@@ -2283,6 +2283,33 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   };
   /* ovoj za onClick: <button onClick={zPogoji(() => { ... })}> */
   const zPogoji = (akcija: () => void) => () => { if (!rabiPogoje(akcija)) akcija(); };
+
+  /* Naziv ponudbe se vprasa TIK PRED tem, ko ponudba zapusti kalkulator ali se
+     shrani. Prej je bil neobvezen in vse ponudbe so se imenovale po storitvah v
+     njih — v arhivu je bilo deset "Logotip, Spletna stran". */
+  const [zahtevaNaziv, setZahtevaNaziv] = useState<null | (() => void)>(null);
+  const [nazivVnos, setNazivVnos] = useState('');
+  const predlogNaziva = () => {
+    const osnova = (r ? r.sez.map(x => x.ime).join(', ') : '').slice(0, 60) || L('Ponudba', 'Quote');
+    const zasedena = new Set(Object.values(arhiv || {}).map(a => (a?.nazivPonudbe || '').trim()).filter(Boolean));
+    if (!zasedena.has(osnova)) return osnova;
+    let n = 2;
+    while (zasedena.has(`${osnova} ${n}`)) n += 1;
+    return `${osnova} ${n}`;
+  };
+  const zNazivom = (akcija: () => void) => () => {
+    if (nazivPonudbe.trim()) { akcija(); return; }
+    setNazivVnos(predlogNaziva());
+    setZahtevaNaziv(() => akcija);
+  };
+  const potrdiNaziv = () => {
+    const ime = nazivVnos.trim();
+    if (!ime) return;
+    setNazivPonudbe(ime);
+    const akcija = zahtevaNaziv;
+    setZahtevaNaziv(null);
+    if (akcija) akcija();
+  };
   const potrdiPolnePogoje = () => {
     zapisiPotrditevPogojev('polno', new Date());
     setPolnaPotrditev(true);
@@ -7867,6 +7894,31 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         document.body,
       )}
 
+      {/* Naziv ponudbe: vprasamo TIK PRED tem, ko ponudba zapusti kalkulator.
+          Predlog je sestavljen iz storitev in ze presteje arhiv, da se imena ne
+          ponavljajo. */}
+      {zahtevaNaziv !== null && typeof document !== 'undefined' && createPortal(
+        <div className="cw">
+        <div className="soglasje" role="dialog" aria-modal="true" aria-label={L('Naziv ponudbe', 'Quote name')}>
+          <div className="soglasje-kartica">
+            <h2>{L('Kako se imenuje ta ponudba?', 'What is this quote called?')}</h2>
+            <p className="sg-uvod">{L('Po tem imenu jo boš našla v arhivu. Predlagam ime po storitvah, lahko pa vpišeš svoje.', 'You will find it in the archive under this name. I suggest one based on the services; you can write your own.')}</p>
+            <form onSubmit={e => { e.preventDefault(); potrdiNaziv(); }}>
+              <div className="uv-polje uv-polje-siroko">
+                <input autoFocus type="text" value={nazivVnos} onChange={e => setNazivVnos(e.target.value)}
+                  placeholder={L('npr. Prenova spletne strani — Rokus Klett', 'e.g. Website redesign — Rokus Klett')} />
+              </div>
+              <div className="soglasje-gumbi">
+                <button type="submit" className="gumb" disabled={!nazivVnos.trim()}>{L('Shrani ime in nadaljuj →', 'Save the name and continue →')}</button>
+                <button type="button" className="povezava" onClick={() => setZahtevaNaziv(null)}>{L('Prekliči', 'Cancel')}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        </div>,
+        document.body,
+      )}
+
       {/* Polni pogoji: brezplacnega obiskovalca ne ustavimo na vhodu, ampak sele
           tam, kjer nekaj nastane — izvoz, posiljanje, shranjevanje. Prelistati
           jih mora do konca, potrditev pa zapisemo skupaj z razlicico. */}
@@ -10001,14 +10053,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           {korak === ponudbaStep && (
             <div className="priprava priprava-stran">
               <div className="priprava-telo">
-              {/* Naziv ponudbe se vprasa TU, ne pred ceno: ime dokumenta rabis
-                  sele, ko dokument nastaja. Prazno polje ni napaka — ponudba se
-                  takrat imenuje po storitvah, ki so v njej. */}
-              <label className="pon-naziv">
-                <span>{L('Naziv ponudbe', 'Quote name')}</span>
-                <input type="text" value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)}
-                  placeholder={r ? r.sez.map(x => x.ime).join(', ').slice(0, 60) : L('npr. Prenova spletne strani', 'e.g. Website redesign')} />
-              </label>
               {/* NAČIN + TON + AI */}
               <div className="pon-vrh">
                 <div className="segpills segpills-pogled" role="group" aria-label={L('Pogled', 'View')}>
@@ -10256,7 +10300,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <button type="button"
                       className={'posl-gumb' + (posiljamMail ? ' je-poslano' : '') + (posljiUspeh ? ' je-uspeh' : '')}
                       disabled={posiljamMail || posljiUspeh}
-                      onClick={zPogoji(() => { posljiPonudbo(); proslaviKonfeti(); })}>
+                      onClick={zPogoji(zNazivom(() => { posljiPonudbo(); proslaviKonfeti(); }))}>
                       {posljiUspeh ? (
                         <><Check size={17} weight="bold" /> {L('Poslano naročniku', 'Sent to client')}</>
                       ) : posiljamMail ? (
@@ -10287,7 +10331,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
                 <CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}
               </button>
-              <button type="button" className="povezava" disabled={pdfNalaganje} onClick={zPogoji(() => { prenesiPdf(); proslaviKonfeti(); })} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
+              <button type="button" className="povezava" disabled={pdfNalaganje} onClick={zPogoji(zNazivom(() => { prenesiPdf(); proslaviKonfeti(); }))} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
                 <FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}
               </button>
               <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}>
@@ -10296,7 +10340,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <button type="button" className="povezava" onClick={() => { prenesiCsv(); proslaviKonfeti(); }}>
                 <FileText size={16} /> {L('Izvozi postavke (CSV)', 'Export items (CSV)')}
               </button>
-              <button type="button" className="povezava" onClick={zPogoji(() => { shraniVArhiv(); proslaviKonfeti(); })}>
+              <button type="button" className="povezava" onClick={zPogoji(zNazivom(() => { shraniVArhiv(); proslaviKonfeti(); }))}>
                 <FloppyDisk size={16} /> {L('Shrani v arhiv', 'Save to archive')}
               </button>
               {dolgorocno && ret && (
@@ -10315,10 +10359,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <div className="pmsheet" role="dialog" aria-modal="true" aria-label={L('Kaj s ponudbo?', 'What next?')}>
                   <div className="pmsheet-glava"><span>{L('Kaj s ponudbo?', 'What next?')}</span><button type="button" onClick={() => setVecMoznosti(false)} aria-label={L('Zapri', 'Close')}>✕</button></div>
                   <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}><CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}</button>
-                  <button type="button" className="povezava" disabled={pdfNalaganje} onClick={zPogoji(() => { prenesiPdf(); proslaviKonfeti(); })}><FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}</button>
+                  <button type="button" className="povezava" disabled={pdfNalaganje} onClick={zPogoji(zNazivom(() => { prenesiPdf(); proslaviKonfeti(); }))}><FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}</button>
                   <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}><DownloadSimple size={16} /> {L('Prenesi besedilo', 'Download text')}</button>
                   <button type="button" className="povezava" onClick={() => { prenesiCsv(); proslaviKonfeti(); }}><FileText size={16} /> {L('Izvozi postavke (CSV)', 'Export items (CSV)')}</button>
-                  <button type="button" className="povezava" onClick={zPogoji(() => { shraniVArhiv(); proslaviKonfeti(); })}><FloppyDisk size={16} /> {L('Shrani v arhiv', 'Save to archive')}</button>
+                  <button type="button" className="povezava" onClick={zPogoji(zNazivom(() => { shraniVArhiv(); proslaviKonfeti(); }))}><FloppyDisk size={16} /> {L('Shrani v arhiv', 'Save to archive')}</button>
                   <button type="button" className="povezava" onClick={() => { setVecMoznosti(false); odpriRacun(); }}><Receipt size={16} /> {L('Pretvori v račun', 'Convert to invoice')}</button>
                 </div>
               </div>,
