@@ -2948,7 +2948,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const uvodOdgovorMehur = (step: number, vsebina: string) => (
     urejamKorak === step ? uvodUrejevalnik(step) : (
       <div className="chat-jaz">
-        <button type="button" className="chat-mehur chat-mehur-ured" onClick={() => uvodUredi(step)} title={L('Klikni za popravek', 'Click to edit')}>
+        <button type="button" className="chat-mehur chat-mehur-ured" onClick={() => uvodUredi(step)} title={L('Izberi za popravek', 'Select to edit')}>
           <span>{vsebina}</span>
           <PencilSimple size={13} weight="bold" aria-hidden />
         </button>
@@ -8221,7 +8221,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   onClick={() => {
                     if (cenaResetPotrdi) { setOsnove({}); setCenaResetPotrdi(false); }
                     else { setCenaResetPotrdi(true); window.setTimeout(() => setCenaResetPotrdi(false), 3500); }
-                  }}>↺ {cenaResetPotrdi ? L('Res ponastavim vse cene? Klikni še enkrat', 'Reset all prices? Click again') : L('Ponastavi cene na privzete', 'Reset prices to defaults')}</button>
+                  }}>↺ {cenaResetPotrdi ? L('Res ponastavim vse cene? Potrdi še enkrat', 'Reset all prices? Click again') : L('Ponastavi cene na privzete', 'Reset prices to defaults')}</button>
 
                 {/* DELOVNI (aktivni) cenik — naslov je UREDLJIV (preimenuješ ga kar tu); cene notri */}
                 <details ref={delovniCenikRef} className="cenik-card cenik-aktiven" open={delovniCenikOdprt}
@@ -8229,7 +8229,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <summary>
                     <span className="cenik-ime-ovoj" role="button" tabIndex={0} onClick={e => { e.stopPropagation(); (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.focus(); }} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.focus(); } }}>
                       <input className="cenik-ime-vnos" key={aktivniCenik || '__osnovni'}
-                        defaultValue={aktivniCenik || ''} placeholder={L('Osnovni cenik', 'Base price list')} aria-label={L('Ime cenika — klikni za urejanje', 'Price list name — click to edit')}
+                        defaultValue={aktivniCenik || ''} placeholder={L('Osnovni cenik', 'Base price list')} aria-label={L('Ime cenika — izberi za urejanje', 'Price list name — select to edit')}
                         onClick={e => e.stopPropagation()}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitCenikIme(e.currentTarget.value); e.currentTarget.blur(); } }}
                         onBlur={e => commitCenikIme(e.currentTarget.value)} />
@@ -8630,7 +8630,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="chat-bot"><span className="chat-obraz" aria-hidden />
                     <span className="chat-mehur chat-mehur-namig">
                       <button type="button" className="namig-zapri" aria-label={L('Zapri namig', 'Close hint')} title={L('Zapri (znova le ob ponastavitvi)', 'Close (shows again only after a reset)')} onClick={() => setNamigSkrit(true)}>✕</button>
-                      {L('S klikom na storitev jo dodaš v ponudbo.', 'Click a service to add it to the quote.')}
+                      {L('S klikom na storitev jo dodaš v ponudbo.', 'Select a service to add it to the quote.')}
                     </span></div>
                 </>
               )}
@@ -8860,7 +8860,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         </g>
                       </svg>
                     </div>
-                    <p><b>{L('Klikni storitev', 'Click a service')}</b>{L(', da začneš.', 'to start.')}<br /><span className="vprasanja-vijola"><b>{L('Vsaka storitev ima svoja vprašanja', 'Each service has its own questions')}</b> {L('— ko jo dodaš, klikni postavko v seznamu in izpolni podrobnosti za točno ceno.', '— once you add it, click the item in the list and fill in the details for an exact price.')}</span><br /><b>{L('Enaka cena, več kosov:', 'Same price, more units:')}</b> {L('pritisni', 'press')} <b>+</b> {L('ob vrstici.', 'next to the row.')} <b>{L('Različne izvedbe/cene:', 'Different versions/prices:')}</b> {L('klikni mehurček še enkrat.', 'click the bubble again.')}</p>
+                    <p><b>{L('Izberi storitev', 'Select a service')}</b>{L(', da začneš.', 'to start.')}<br /><span className="vprasanja-vijola"><b>{L('Vsaka storitev ima svoja vprašanja', 'Each service has its own questions')}</b> {L('— ko jo dodaš, klikni postavko v seznamu in izpolni podrobnosti za točno ceno.', '— once you add it, click the item in the list and fill in the details for an exact price.')}</span><br /><b>{L('Enaka cena, več kosov:', 'Same price, more units:')}</b> {L('pritisni', 'press')} <b>+</b> {L('ob vrstici.', 'next to the row.')} <b>{L('Različne izvedbe/cene:', 'Different versions/prices:')}</b> {L('klikni mehurček še enkrat.', 'click the bubble again.')}</p>
                   </div>
                 )}
 
@@ -9147,7 +9147,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <div className="uredi-telo">
                         {/* "Pogled mehurčkov" prenesen VEN, med pilule nad platnom (Mehurčki / Mreža / Tabela) */}
                         <div className="uredi-sekcija">
-                          <div className="uredi-naslov">{L('Področja dela', 'Fields of work')} <span className="vec">{L('kaj ponujaš — klikni za vklop/izklop', 'what you offer — click to toggle on/off')}</span></div>
+                          <div className="uredi-naslov">{L('Področja dela', 'Fields of work')} <span className="vec">{L('vklopi tisto, kar ponujaš', 'turn on what you offer')}</span></div>
                           <div className="chat-podrocja">
                             {PODROCJA.map(p => {
                               const bar = PODROCJE_BARVA[p.id] || '#7C3AED';
@@ -9173,7 +9173,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </div>
                           {skrite.length > 0 && (
                             <>
-                              <p className="hint" style={{ margin: '1rem 0 .5rem' }}>{L('Skrite storitve — klikni za ponoven prikaz:', 'Hidden services — click to show again:')}</p>
+                              <p className="hint" style={{ margin: '1rem 0 .5rem' }}>{L('Skrite storitve — izberi za ponoven prikaz:', 'Hidden services — select to show again:')}</p>
                               <div className="opts">
                                 {skrite.map(id => { const s = vseStoritve.find(x => x.id === id); if (!s) return null; return (
                                   <button key={id} type="button" className="pill" onClick={() => setSkrite(skrite.filter(x => x !== id))}>
@@ -9554,7 +9554,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               </span>
                             ) : (
                               <button type="button" className={'prav-cena prav-cena-gumb' + (row.rocno ? ' rocno' : '')}
-                                title={L('Klikni za ročni popravek zneska', 'Click to edit the amount manually')} aria-label={L('Ročno popravi znesek: ', 'Edit amount manually: ') + row.ime}
+                                title={L('Izberi za ročni popravek zneska', 'Select to edit the amount manually')} aria-label={L('Ročno popravi znesek: ', 'Edit amount manually: ') + row.ime}
                                 onClick={() => setUrejamPravSid(row.sid)}>{val(row.znesek)}</button>
                             )}
                             <button type="button" className="prav-podr" onClick={() => setPraviceOdprt(row.sid)} title={L('Podrobnosti — trajanje, klavzule', 'Details — duration, clauses')} aria-label={'Podrobnosti: ' + row.ime}><DotsThree size={20} weight="bold" /></button>
