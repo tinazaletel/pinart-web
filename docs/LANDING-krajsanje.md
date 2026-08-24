@@ -14,11 +14,16 @@ Vizualni jezik ostane nespremenjen; krajša se samo dolžina in ponavljanje.
 | 7 | Kaj dela Flow drugače | **združi s Showcase** | 3 | razliko pokaže delovanje, ne nov seznam obljub |
 | 8 | Zaupanje | ostane, skrajšan | 6 | podatki so tvoji, pogoji povedani odkrito |
 | 9 | Cenik | ostane | 7 | kalkulator brezplačen, paket poveže poslovanje |
-| 10 | FAQ | ostane, **5–6 vprašanj** | 8 | samo ovire pred začetkom ali nakupom |
+| 10 | FAQ | **ostane cel** (Tinina odločitev 24. 8.) | 8 | samo ovire pred začetkom ali nakupom |
 | 11 | O nas | kratek podpis ustanoviteljice | 9 | Flow je nastal iz resničnih težav |
 | 12 | Zaključni poziv | en ozek zaključek | 10 | samo naslednji korak |
 
 Dva samostojna dolga sklopa izgineta, trije se občutno skrajšajo.
+
+> **Odločitev (Tina, 24. 8.): FAQ ostane cel.** Vprašanj ne krajšamo. Dolg FAQ
+> lovi dolge iskalne poizvedbe, zato ni le okus. Skrajšajo se lahko posamezni
+> **odgovori**, ki ponavljajo, kar je že povedano drugje — stran se skrajša,
+> vprašanje pa ne izgine.
 
 ## Hero — priporočena različica
 
