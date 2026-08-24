@@ -185,7 +185,7 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       dejanje: `${L('Poskrbi za', 'Take care of')} ${n.naslov}`,
       pripis: dni == null ? L('brez roka', 'no deadline') : pripisRoka(dni, jeEn),
       datum: n.rok,
-      kam: '/kalkulator/naloge',
+      kam: n.id ? `/kalkulator/naloge?id=${encodeURIComponent(n.id)}` : '/kalkulator/naloge',
       dniDoRoka: dni ?? undefined,
     });
   }
@@ -220,7 +220,7 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       podnaslov: kdo && v.zadeva ? v.zadeva : undefined,
       pripis: L(`čaka ${cakaDni} dni`, `waiting ${cakaDni} days`),
       datum: v.datum,
-      kam: '/kalkulator/komunikacija',
+      kam: `/kalkulator/komunikacija?id=${encodeURIComponent(v.id)}`,
       dniDoRoka: dni,
     });
   }
@@ -243,7 +243,7 @@ export function sestaviDanes(viri: DanesViri, danes: string | Date, jeEn = false
       podnaslov: r.client,
       pripis: pripisRoka(dni, jeEn),
       datum: rok.toISOString().slice(0, 10),
-      kam: '/kalkulator/racuni',
+      kam: `/kalkulator/racuni?id=${encodeURIComponent(r.id)}`,
       dniDoRoka: dni,
     });
   }

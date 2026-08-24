@@ -50,7 +50,7 @@ const DEMO_SPOROCILA: Record<string, OblacnoSporocilo[]> = {
   ],
 };
 
-export default function KomunikacijaWorkspace({ jeEn = false, projektId, projektNaziv, vgrajeno = false }: { jeEn?: boolean; projektId?: string; projektNaziv?: string; vgrajeno?: boolean }) {
+export default function KomunikacijaWorkspace({ jeEn = false, projektId, projektNaziv, vgrajeno = false, initialId }: { jeEn?: boolean; projektId?: string; projektNaziv?: string; vgrajeno?: boolean; initialId?: string }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [nacin] = usePredogled();
   /* demo ostane 'nacin !== mine' (samo-za-ogled: gating pisanja v pravo shrambo).
@@ -191,6 +191,21 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
   }, [izbrana, demo]);
 
   useEffect(() => { dnoRef.current?.scrollIntoView({ block: 'end' }); }, [sporocila]);
+
+  const globokaPovezavaOdprta = useRef('');
+  useEffect(() => {
+    if (!initialId || globokaPovezavaOdprta.current === initialId) return;
+    const mail = posta.find(v => v.id === initialId);
+    if (mail) {
+      globokaPovezavaOdprta.current = initialId;
+      setZavihek('posta'); setMapa('pogovori'); setBeriMail(mail);
+      return;
+    }
+    if (niti.some(v => v.threadId === initialId)) {
+      globokaPovezavaOdprta.current = initialId;
+      setZavihek('klepet'); setIzbrana(initialId);
+    }
+  }, [initialId, posta, niti]);
 
   const poslji = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -6,8 +6,9 @@ import styles from '../pregled/pregled.module.css';
 
 export const metadata: Metadata = { title: 'Računi | Pinart Flow', robots: { index: false, follow: false } };
 
-export default async function RacuniPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function RacuniPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ id?: string }> }) {
   const { locale } = await params; setRequestLocale(locale); const base = locale === 'sl' ? '' : `/${locale}`;
+  const { id } = await searchParams;
   return <main className={styles.shell}><DashboardSidebar base={base} active="invoices" />{/* naslov izrise InvoiceWorkspace v ozkem stolpcu (kot pogodbe/retainer), ne full-width */}
-    <section className={styles.workspace}><InvoiceWorkspace base={base} /></section></main>;
+    <section className={styles.workspace}><InvoiceWorkspace base={base} initialId={id} /></section></main>;
 }

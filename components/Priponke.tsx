@@ -20,6 +20,8 @@ import {
   type Priponka,
 } from '@/lib/priponke';
 import { datotekeIzOdlozisca, jeSlika, naloziPriponko, povezavaPriponke, type PriponkaSekcija } from '@/lib/priponkeOblak';
+import { preberiKvoto, type PodatekKvote } from '@/lib/priponkeOblak';
+import { besediloKvote } from '@/lib/kvota';
 
 export { datotekeIzOdlozisca };
 
@@ -85,6 +87,12 @@ export function usePriponke(nastavitve: {
   const [nalagam, setNalagam] = useState(false);
   const [napaka, setNapaka] = useState('');
   const [opozorilo, setOpozorilo] = useState('');
+  const [kvota, setKvota] = useState<PodatekKvote | null>(null);
+  useEffect(() => {
+    let ziv = true;
+    void preberiKvoto().then(v => { if (ziv) setKvota(v); }).catch(() => undefined);
+    return () => { ziv = false; };
+  }, []);
 
   const dodajDatoteke = async (datoteke: File[]) => {
     if (!datoteke.length) return;
@@ -105,6 +113,7 @@ export function usePriponke(nastavitve: {
         const nova = await naloziPriponko(datoteka, sekcija, sklic);
         zbrane = [...zbrane, nova];
         onSpremeni(zbrane);
+        void preberiKvoto().then(setKvota).catch(() => undefined);
         setNapaka('');
       } catch (e) {
         const sporocilo = e instanceof Error ? e.message : '';
@@ -117,7 +126,7 @@ export function usePriponke(nastavitve: {
     setNalagam(false);
   };
 
-  return { nalagam, napaka, setNapaka, opozorilo, setOpozorilo, dodajDatoteke };
+  return { nalagam, napaka, setNapaka, opozorilo, setOpozorilo, kvota, dodajDatoteke };
 }
 
 /* Vnos: gumb »Pripni datoteko« + seznam že pripetih (z odstranjevanjem).
@@ -138,7 +147,7 @@ export function PriponkeVnos({
 }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const vhodRef = useRef<HTMLInputElement | null>(null);
-  const { nalagam, napaka, opozorilo, dodajDatoteke } = usePriponke({ sekcija, sklic, priponke, onSpremeni, jeEn });
+  const { nalagam, napaka, opozorilo, kvota, dodajDatoteke } = usePriponke({ sekcija, sklic, priponke, onSpremeni, jeEn });
   if (dodajRef) dodajRef.current = omogoceno ? (d: File[]) => { void dodajDatoteke(d); } : null;
 
   if (!omogoceno) {
@@ -155,7 +164,7 @@ export function PriponkeVnos({
   return (
     <div className="pri">
       <div className="pri-vrh">
-        <button type="button" className="pri-gumb" disabled={nalagam || !jeSeProstor(priponke)} onClick={() => vhodRef.current?.click()}>
+        <button type="button" className="pri-gumb" disabled={nalagam || kvota?.stanje === 'polno' || !jeSeProstor(priponke)} onClick={() => vhodRef.current?.click()}>
           <Paperclip size={15} weight="bold" /> {nalagam ? L('Nalagam …', 'Uploading …') : L('Pripni datoteko', 'Attach file')}
         </button>
         <input
@@ -171,6 +180,7 @@ export function PriponkeVnos({
         </span>
         {napaka && <p className="pri-napaka">{napaka}</p>}
         {!napaka && opozorilo && <p className="pri-opozorilo">{opozorilo}</p>}
+        {kvota && kvota.stanje !== 'ok' && <p className="pri-mirno">{besediloKvote(kvota.porabljeno, kvota.kvota, jeEn)}</p>}
         {priponke.length > 0 && (
           <PriponkeSeznam
             priponke={priponke}

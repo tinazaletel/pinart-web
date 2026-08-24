@@ -1,5 +1,6 @@
 import { getBusinessDocumentUrl, getOrganizationContext, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { preveriPriponko, varnoImePriponke, type Priponka } from '@/lib/priponke';
+import { jeSeProstora } from '@/lib/kvota';
 
 /* jeSlika je cisto pravilo in zato zivi v lib/priponke.ts; tu ga le podamo naprej,
    da klicatelji uvazajo vse o priponkah z enega mesta. */
@@ -15,6 +16,19 @@ export { jeSlika } from '@/lib/priponke';
    oziroma naloge, da so priponke ene stvari skupaj v svoji mapi. */
 
 export type PriponkaSekcija = 'mail' | 'naloge';
+export type PodatekKvote = { porabljeno: number; kvota: number; stanje: 'ok' | 'opozorilo' | 'polno' };
+
+export async function preberiKvoto(): Promise<PodatekKvote | null> {
+  const kontekst = await getOrganizationContext();
+  if (!kontekst) return null;
+  const odgovor = await fetch(`/api/kvota?organizationId=${encodeURIComponent(kontekst.organizationId)}`, { cache: 'no-store' });
+  if (!odgovor.ok) throw new Error('Porabe prostora trenutno ni mogoče preveriti. Poskusi znova.');
+  const podatek = await odgovor.json() as Partial<PodatekKvote>;
+  if (typeof podatek.porabljeno !== 'number' || typeof podatek.kvota !== 'number' || !podatek.stanje) {
+    throw new Error('Porabe prostora trenutno ni mogoče preveriti. Poskusi znova.');
+  }
+  return podatek as PodatekKvote;
+}
 
 /* Je uporabnik prijavljen (in ima organizacijo)? Priponke gredo v oblak, zato
    brez prijave ne gre — vmesnik naj to pove mirno, ne z napako. */
@@ -27,6 +41,10 @@ export async function jePriponkeMogoce(): Promise<boolean> {
 export async function naloziPriponko(datoteka: File, sekcija: PriponkaSekcija, sklic: string): Promise<Priponka> {
   const izid = preveriPriponko({ ime: datoteka.name, velikost: datoteka.size });
   if (!izid.veljavno) throw new Error(izid.napaka || 'Priponka ni veljavna.');
+  const stanje = await preberiKvoto();
+  if (!stanje || !jeSeProstora(stanje.porabljeno, stanje.kvota, datoteka.size)) {
+    throw new Error('Prostor za priponke je zapolnjen. Obstoječe datoteke ostajajo dostopne, nove pa trenutno ni mogoče naložiti.');
+  }
   const pot = await uploadBusinessDocument(datoteka, sekcija, sklic);
   return {
     ime: varnoImePriponke(datoteka.name) || 'priponka',

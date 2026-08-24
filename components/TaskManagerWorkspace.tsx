@@ -375,7 +375,7 @@ const isoTedenStevilka = (d: Date): number => {
 /* inicialke imena za okrogel avatar-krog (npr. "Matej Novak" -> "MN") */
 const initialke = (ime: string) => ime.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
-export default function TaskManagerWorkspace() {
+export default function TaskManagerWorkspace({ initialId }: { initialId?: string }) {
   const [naloge, setNaloge] = useState<Naloga[]>([]);
   const [novNaslov, setNovNaslov] = useState('');
   const [novOpis, setNovOpis] = useState('');
@@ -501,6 +501,14 @@ export default function TaskManagerWorkspace() {
     setPrazniProjekti(preberiPrazneProjekte());
     setPodrocja(preberiPodrocja());
   }, [predogledNacin]);
+
+  const globokaPovezavaOdprta = useRef('');
+  useEffect(() => {
+    if (!initialId || globokaPovezavaOdprta.current === initialId || !naloge.some(v => v.id === initialId)) return;
+    globokaPovezavaOdprta.current = initialId;
+    setPogled('kanban'); setOdprtaNalogaId(initialId);
+    setNovKomentar(''); setNovaOznaka(''); setNovoPodopraviloBesedilo(''); setOdpriDodelitevPodId(null);
+  }, [initialId, naloge]);
 
   const posodobiInShrani = (noveNaloge: Naloga[]) => { setNaloge(noveNaloge); shraniNaloge(noveNaloge); };
 

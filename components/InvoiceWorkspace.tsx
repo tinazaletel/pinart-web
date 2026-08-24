@@ -51,7 +51,7 @@ const danesISO = () => { const d = new Date(); return `${d.getFullYear()}-${Stri
 /* znesek vrstice: kolicina x cena (brez DDV) minus popust % */
 const vrsticaZnesek = (i: FlowInvoiceItem) => i.kolicina * i.cena * (1 - clamp(i.popust || 0, 0, 100) / 100);
 
-export default function InvoiceWorkspace({ base }: { base: string }) {
+export default function InvoiceWorkspace({ base, initialId }: { base: string; initialId?: string }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const docLocale = jeEn ? 'en-GB' : 'sl-SI';
@@ -156,6 +156,32 @@ export default function InvoiceWorkspace({ base }: { base: string }) {
     setInvoices(data.invoices);
     setClients(data.clients);
   }, [nacin]);
+
+  const globokaPovezavaOdprta = useRef('');
+  useEffect(() => {
+    if (!initialId || globokaPovezavaOdprta.current === initialId) return;
+    const racun = invoices.find(v => v.id === initialId);
+    if (!racun) return;
+    globokaPovezavaOdprta.current = initialId;
+    setStevilka(racun.number || '');
+    setStranka(racun.client);
+    setDatumIzdaje(racun.date);
+    setDatumStoritve(racun.serviceDate || racun.date);
+    setRokDni(String(racun.dueDays ?? PRIVZETI_ROK_DNI));
+    setPlacano(racun.paid);
+    setPredracun(Boolean(racun.predracun));
+    setAvansPct(String(racun.avansPct ?? 100));
+    setOfferId(racun.sourceOfferId || '');
+    setVrstice((racun.items?.length ? racun.items : [{ opis: racun.title || L('Račun', 'Invoice'), kolicina: 1, cena: racun.net ?? racun.amount, popust: 0, ddv: 0 }]).map(v => ({ opis: v.opis, kolicina: String(v.kolicina), cena: String(v.cena), popust: String(v.popust || ''), ddv: String(v.ddv || '') })));
+    setDdvZavezanec(Boolean(racun.vatPayer));
+    setPodpisSlika(racun.signature?.image || '');
+    setPodpisIme(racun.signature?.name || '');
+    setPodpisKraj(racun.signature?.place || '');
+    setPodpisDatum(racun.signature?.date || racun.date);
+    setNogaOn(racun.footerOn !== false);
+    setNogaText(racun.footerText || NOGA_PRIVZETA);
+    setPogled('zakljucek');
+  }, [initialId, invoices]);
 
   useEffect(() => setKnjiznica(preberiPostavke()), []);
 
