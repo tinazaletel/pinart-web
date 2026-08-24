@@ -8508,7 +8508,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     onClick={() => setPodatkiPodjetjaOdprti(o => !o)}>
                     <span className="uv-vec-glava">
                       <span className="uv-vec-znak" aria-hidden>{podatkiPodjetjaOdprti ? '−' : '+'}</span>
-                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij podatke na dokumentu', 'Hide document details') : L('Pripravi tudi ponudbo', 'Prepare a quote as well')}</span>
+                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij glavo ponudbe', 'Hide the quote header') : L('Pripravi tudi ponudbo', 'Prepare a quote as well')}</span>
                       <span className="uv-vec-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
                     </span>
                     {!podatkiPodjetjaOdprti && (
@@ -8516,7 +8516,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     )}
                   </button>
                   <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
-                    <p className="uv-mreza-naslov">{L('Podatki na ponudbi', 'Details on the quote')} <span>{L('dodaj, kar želiš prikazati', 'add what you want to show')}</span></p>
+                    <p className="uv-mreza-naslov">{L('Glava ponudbe', 'Quote header')} <span>{L('dodaj, kar želiš prikazati', 'add what you want to show')}</span></p>
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pime">{L('Ime ali naziv', 'Name or business name')}</label>
                     <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
