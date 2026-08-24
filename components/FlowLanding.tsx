@@ -39,7 +39,9 @@ const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
      business suite s PROJEKTI v sredini (Tina, 24. 8.). Projekt je enota,
      tok je njegova vsebina — in konca se pri placilu, ne pri racunu. */
   { pre: ['Vsak', 'projekt,'], em: ['od', 'ponudbe', 'do', 'plačila.'] },
-  { pre: ['Vse', 'tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
+  /* Brez "Vse" na zacetku: prvi naslov se zacne z "Vsak", in Vsak->Vse ob
+     vrtenju jeclja (Tina, 24. 8.). Zdaj se vsak zacne drugace: Vsak/Tvoje/A. */
+  { pre: ['Tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
   { pre: ['A', 'veš,', 'koliko', 'je'], em: ['vredno', 'tvoje', 'delo?'] },
 ];
 const HERO_TITLES_EN: { pre: string[]; em: string[] }[] = [
