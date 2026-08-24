@@ -224,7 +224,7 @@ export default function ProjectDetailModern({
               {urejaEkipo ? (
                 <button type="button" className="pm-raven" disabled={dostop.delam === c.userId || !dostop.polniMozen}
                   title={dostop.polniMozen
-                    ? L('Klikni za preklop Partner ⇄ Lead', 'Click to switch Partner ⇄ Lead')
+                    ? L('Izberi za preklop Partner ⇄ Lead', 'Select to switch Partner ⇄ Lead')
                     : L('Polni dostop rabi pripeto stranko.', 'Full access needs a client attached.')}
                   onClick={() => dostop.nastavi(c.userId, c.raven === 'polni' ? 'sodelavec' : 'polni')}>
                   {c.raven === 'polni' ? L('Lead', 'Lead') : L('Partner', 'Partner')}
@@ -381,7 +381,7 @@ export default function ProjectDetailModern({
                   {cilji.map(c => (
                     <li key={c.id}><span className="pm-goal-b">{c.besedilo}</span>{(c.metrika || c.tarca) && <span className="pm-goal-t">{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</span>}</li>
                   ))}
-                  {cilji.length === 0 && <li className="pm-muted">{L('Ni ciljev — klikni Uredi za dodajanje.', 'No goals — click Edit to add.')}</li>}
+                  {cilji.length === 0 && <li className="pm-muted">{L('Ni ciljev — dodaj jih z Uredi.', 'No goals — add them with Edit.')}</li>}
                 </ul>
               )}
             </section>

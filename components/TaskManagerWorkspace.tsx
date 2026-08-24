@@ -9,6 +9,8 @@ import DokPanel from '@/components/DokPanel';
 import { Pause, Play, ChartBar, ChatCircleDots, Sparkle, UploadSimple, DownloadSimple, CaretLeft, CaretRight, CaretDown, Buildings, Circle, CheckCircle, UserPlus, Calendar, Plus, X, FunnelSimple } from '@phosphor-icons/react';
 import { createPortal } from 'react-dom';
 import Toast from '@/components/Toast';
+import Skeleton from '@/components/Skeleton';
+import { useOblakPripravljen } from '@/lib/oblakStanje';
 import {
   Naloga,
   NalogaStolpec,
@@ -414,6 +416,8 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
      in klientski render se razlikujeta = hidracijski crash v produkciji. Poln render šele po
      montaži, da sta SSR in prvi klient render enaka (kot Koledar). */
   const [montiran, setMontiran] = useState(false);
+  const [lokalnoNalozeno, setLokalnoNalozeno] = useState(false);
+  const oblakPripravljen = useOblakPripravljen();
   useEffect(() => { setMontiran(true); }, []);
   /* prosto besedilo za novo oznako v panelu Podrobnosti naloge */
   const [novaOznaka, setNovaOznaka] = useState('');
@@ -492,15 +496,22 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
   const jeVodjaAliAdmin = trenutni.vloga === 'vodja' || trenutni.vloga === 'admin';
 
   useEffect(() => {
-    setNaloge(predogledNacin === 'empty' ? [] : preberiNaloge());
-    setZgodovina(preberiZgodovino());
-    setSodelavci(preberiSodelavci());
-    setStranke(loadFlowData().clients);
-    setDodelitve(preberiDodelitve());
-    setOddelki(preberiOddelki());
-    setPrazniProjekti(preberiPrazneProjekte());
-    setPodrocja(preberiPodrocja());
+    const osvezi = () => {
+      setNaloge(predogledNacin === 'empty' ? [] : preberiNaloge());
+      setZgodovina(preberiZgodovino());
+      setSodelavci(preberiSodelavci());
+      setStranke(loadFlowData().clients);
+      setDodelitve(preberiDodelitve());
+      setOddelki(preberiOddelki());
+      setPrazniProjekti(preberiPrazneProjekte());
+      setPodrocja(preberiPodrocja());
+      setLokalnoNalozeno(true);
+    };
+    osvezi();
+    window.addEventListener('pinart-flow-change', osvezi);
+    return () => window.removeEventListener('pinart-flow-change', osvezi);
   }, [predogledNacin]);
+  const podatkiPripravljeni = lokalnoNalozeno && oblakPripravljen;
 
   const globokaPovezavaOdprta = useRef('');
   useEffect(() => {
@@ -1288,10 +1299,10 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
           const nalogeVStolpcu = prikazaneNaloge.filter((n) => n.stolpec === s.id).sort((a, b) => (PRIO_RED[a.prioriteta ?? ''] ?? 3) - (PRIO_RED[b.prioriteta ?? ''] ?? 3));
           return (
             <section key={s.id} className="tm-stolpec" data-stolpec={s.id} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, s.id)}>
-              <header className="tm-stolpec-glava"><span className="tm-pika" aria-hidden /><h3>{s.naziv}</h3><span className="tm-st">{nalogeVStolpcu.length}</span></header>
+              <header className="tm-stolpec-glava"><span className="tm-pika" aria-hidden /><h3>{s.naziv}</h3><span className="tm-st">{podatkiPripravljeni ? nalogeVStolpcu.length : ''}</span></header>
               <div className="tm-kartice">
-                {nalogeVStolpcu.length === 0 && <p className="tm-prazno">Povleci nalogo sem.</p>}
-                {nalogeVStolpcu.map((naloga) => {
+                {!podatkiPripravljeni ? <Skeleton vrsta="kartice" stevilo={2} /> : nalogeVStolpcu.length === 0 && <p className="tm-prazno">Povleci nalogo sem.</p>}
+                {podatkiPripravljeni && nalogeVStolpcu.map((naloga) => {
                   const porabljene = porabljeneMinute(naloga);
                   const ocena = naloga.ocenjeniCasUre;
                   const dodeljenoIme = naloga.dodeljenoOsebaIme || naloga.dodeljenoOseba || '';
@@ -1419,9 +1430,9 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
             </div>
           )}
 
-          {vrsticeProjektov.length === 0 && <p className="tm-prazno">Ni še projektov v tem obdobju{jeVodjaAliAdmin ? ' — dodaj s »+ projekt«.' : '.'}</p>}
+          {!podatkiPripravljeni ? <Skeleton vrsta="vrstice" stevilo={4} /> : vrsticeProjektov.length === 0 && <p className="tm-prazno">Ni še projektov v tem obdobju{jeVodjaAliAdmin ? ' — dodaj s »+ projekt«.' : '.'}</p>}
 
-          {vrsticeProjektov.length > 0 && (
+          {podatkiPripravljeni && vrsticeProjektov.length > 0 && (
             <div className="tm-matrika-drs">
               <table className="tm-matrika">
                 <thead>

@@ -12,6 +12,7 @@ import { DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, nastaviLogoAktivne, aktivniLogo 
 import { type PodpisPodatki, podpisHtml, podpisPrazen } from '@/lib/podpis';
 import styles from './SettingsWorkspace.module.css';
 import PriporociFlow from '@/components/PriporociFlow';
+import StevilcenjeNastavitve from '@/components/StevilcenjeNastavitve';
 
 /* Nastavitve videza (stran "Dizajn"). Vsebina je PRENESENA iz profila
    kalkulatorja (videz dokumentov, logotip), da ni na dveh mestih razlicno.
@@ -166,6 +167,8 @@ export default function SettingsWorkspace({ base }: { base: string }) {
 
         {nalozeno && <VidezDokumentov barva={barva} font={font} onBarva={setBarva} onFont={setFont} logo={logo} onLogo={setLogo} />}
       </section>
+
+      {zavihek === 'dokumenti' && <StevilcenjeNastavitve jeEn={base === '/en'} />}
 
       <section className={styles.card} style={{ display: zavihek === 'dokumenti' ? undefined : 'none' }}>
         <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem' }}><EnvelopeSimple size={20} weight="regular" /> Podpis pošte</h2>

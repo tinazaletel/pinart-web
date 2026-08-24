@@ -19,6 +19,8 @@ import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
 import { posljiMail } from '@/lib/posta';
 import { loadFlowData } from '@/lib/pinartFlowStore';
 import Toast from '@/components/Toast';
+import Skeleton from '@/components/Skeleton';
+import { useOblakPripravljen } from '@/lib/oblakStanje';
 import { zdruziPostoVNiti } from '@/lib/postaNiti';
 import { zabeleziInterakcijo } from '@/lib/dnevnik';
 
@@ -72,6 +74,8 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
   const [sporocila, setSporocila] = useState<OblacnoSporocilo[]>([]);
   const [vnos, setVnos] = useState('');
   const [nalaganje, setNalaganje] = useState(true);
+  const [postaNalozena, setPostaNalozena] = useState(false);
+  const oblakPripravljen = useOblakPripravljen();
   const [zavihek, setZavihek] = useState<'klepet' | 'posta'>('posta');
   const [posta, setPosta] = useState<PostaVnos[]>([]);
   const [mapa, setMapa] = useState<'pogovori' | 'popravki' | 'prejeto' | 'poslano' | 'osnutki' | 'kos'>('pogovori');
@@ -125,9 +129,10 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
   const [vabiEmail, setVabiEmail] = useState('');
   const [vabiTece, setVabiTece] = useState(false);
   useEffect(() => {
-    if (prazno) { setPosta([]); setProjMapa({}); return; }
+    if (prazno) { setPosta([]); setProjMapa({}); setPostaNalozena(true); return; }
     const lokalni = demo ? DEMO_POSTA : preberiVsePoste();
     setPosta([...lokalni].sort((a, b) => b.datum.localeCompare(a.datum)));
+    setPostaNalozena(true);
     if (demo) { setProjMapa({ 'demo-portal': 'Prenova portala · Rokus Klett' }); return; }
     try {
       const m: Record<string, string> = {};
@@ -521,13 +526,13 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
                   <button type="button" disabled={stran >= strani} onClick={() => setPostaStran(stran + 1)} aria-label={L('Naslednja', 'Next')}>›</button>
                 </nav>
               )}
-            </>) : <div className="km-prazno-box"><EnvelopeSimple size={30} weight="light" /><b>{L('Prazno', 'Empty')}</b><p>{mapa === 'pogovori' ? L('Ni še pogovorov s strankami.', 'No client threads yet.') : mapa === 'popravki' ? L('Ni nerešenih popravkov.', 'No unresolved revisions.') : mapa === 'prejeto' ? L('Ni prejete pošte v tej mapi.', 'No received mail in this folder.') : mapa === 'poslano' ? L('Ni poslane pošte.', 'No sent mail.') : mapa === 'osnutki' ? L('Ni osnutkov.', 'No drafts.') : L('Koš je prazen.', 'Trash is empty.')}</p></div>;
+            </>) : !(postaNalozena && oblakPripravljen) ? <Skeleton vrsta="vrstice" stevilo={5} /> : <div className="km-prazno-box"><EnvelopeSimple size={30} weight="light" /><b>{L('Prazno', 'Empty')}</b><p>{mapa === 'pogovori' ? L('Ni še pogovorov s strankami.', 'No client threads yet.') : mapa === 'popravki' ? L('Ni nerešenih popravkov.', 'No unresolved revisions.') : mapa === 'prejeto' ? L('Ni prejete pošte v tej mapi.', 'No received mail in this folder.') : mapa === 'poslano' ? L('Ni poslane pošte.', 'No sent mail.') : mapa === 'osnutki' ? L('Ni osnutkov.', 'No drafts.') : L('Koš je prazen.', 'Trash is empty.')}</p></div>;
           })()}
             </div>
           </div>
         </div>
-      ) : nalaganje ? (
-        <p className="km-prazno">{L('Nalagam …', 'Loading …')}</p>
+      ) : nalaganje || !oblakPripravljen ? (
+        <Skeleton vrsta="vrstice" stevilo={5} />
       ) : !niti.length ? (
         <div className="km-prazno-box">
           <ChatsCircle size={34} weight="light" />

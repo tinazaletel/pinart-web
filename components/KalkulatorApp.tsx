@@ -6509,11 +6509,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Glavni gumb v jeziku aplikacije: crn, pilulast, po meri vsebine —
            poln vijolicen cez celo sirino je bil tezji od samih ploscic. */
         .cw .uredi-shrani { display: inline-flex; margin-top: 1.4rem; }
+        .cw .uredi-plosca .uredi-shrani:hover { transform: scale(1.06); box-shadow: 0 8px 22px rgba(35,18,45,.18); }
+        .cw .uredi-plosca .uredi-shrani:active { transform: scale(.97); }
         .cw .chip-podrocje .pi-pod { width: 2.15rem; height: 2.15rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
         .cw .chip-podrocje .pi-pod svg { width: 1.15rem; height: 1.15rem; }
         .cw .chip-podrocje b { font-weight: 700; }
         .cw .chip-podrocje b { flex: 1; min-width: 0; text-align: left; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
-        .cw .chip-podrocje .chip-kljuk { flex: none; align-self: center; width: 1.35rem; min-width: 1.35rem; height: 1.35rem; min-height: 1.35rem; max-height: 1.35rem; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; margin-left: auto; flex: none; transition: background .18s, border-color .18s; }
+        /* Krogec mora biti KVADRAT, sicer border-radius:50% naredi elipso.
+           Prej je manjkal max-width, zato ga je dolg naziv lahko raztegnil;
+           aspect-ratio se je pri tem tepel z min/max in ni pomagal. */
+        .cw .chip-podrocje .chip-kljuk { flex: 0 0 1.35rem; align-self: center; box-sizing: border-box; width: 1.35rem; min-width: 1.35rem; max-width: 1.35rem; height: 1.35rem; min-height: 1.35rem; max-height: 1.35rem; border-radius: 50%; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 900; line-height: 1; margin-left: auto; transition: background .18s, border-color .18s; }
         @media (max-width: 700px) {
           .cw .chat-podrocja { display: grid; grid-template-columns: minmax(0, 1fr); margin-left: 0; width: 100%; }
           .cw .chat-podrocja > * { width: 100%; justify-self: stretch; white-space: normal; }
@@ -9147,7 +9152,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <div className="uredi-telo">
                         {/* "Pogled mehurčkov" prenesen VEN, med pilule nad platnom (Mehurčki / Mreža / Tabela) */}
                         <div className="uredi-sekcija">
-                          <div className="uredi-naslov">{L('Področja dela', 'Fields of work')} <span className="vec">{L('vklopi tisto, kar ponujaš', 'turn on what you offer')}</span></div>
+                          <div className="uredi-naslov">{L('Izberi področja dela', 'Choose your fields of work')}</div>
                           <div className="chat-podrocja">
                             {PODROCJA.map(p => {
                               const bar = PODROCJE_BARVA[p.id] || '#7C3AED';

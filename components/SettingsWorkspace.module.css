@@ -20,8 +20,19 @@
 .gumb:focus-visible, .gumbTih:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 3px; }
 
 .opomba { margin: .8rem 0 0; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .8rem; }
+.naslovZIkono { display: inline-flex; align-items: center; gap: .5rem; }
+.stevilcenjePolja { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+.stevilcenjePolja label { display: flex; flex-direction: column; gap: .35rem; color: var(--ink); font: 600 .8rem var(--font-sans), sans-serif; }
+.stevilcenjePolja input { min-height: 2.75rem; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: .6rem; background: #fff; color: var(--ink); font: 400 .9rem var(--font-sans), sans-serif; }
+.stevilcenjePolja input[aria-invalid="true"] { border-color: #a4342a; }
+.stevilcenjePolja small { min-height: 1.1rem; color: color-mix(in oklch, var(--ink) 72%, transparent); font-weight: 400; line-height: 1.4; }
+.stevilcenjePredogled { margin: 1rem 0; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--paper); color: var(--ink) !important; }
+.stevilcenjePredogled strong { font-size: 1.05rem; }
+.mirnaRazlaga { margin: 0 !important; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: .7rem; color: var(--ink) !important; }
+.nastavitevSkelet { height: 9rem; border-radius: .8rem; background: color-mix(in oklch, var(--ink) 5%, transparent); }
 
 @media (max-width: 560px) {
   .logoRow { gap: .8rem; }
   .gumb, .gumbTih { width: 100%; }
+  .stevilcenjePolja { grid-template-columns: 1fr; }
 }

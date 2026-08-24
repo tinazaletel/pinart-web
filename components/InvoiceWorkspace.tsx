@@ -21,6 +21,8 @@ import { naslednjaStevilka } from '@/lib/stevilcenje';
 import PosljiBlok from '@/components/PosljiBlok';
 import { posljiMail } from '@/lib/posta';
 import { dodajPostavko, izbrisiPostavko, preberiPostavke, type Postavka, type PostavkaEnota } from '@/lib/postavke';
+import Skeleton from '@/components/Skeleton';
+import { useOblakPripravljen } from '@/lib/oblakStanje';
 
 const K_NAST = 'pinart-kalkulator-v2';
 
@@ -67,6 +69,8 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
 
   const [offers, setOffers] = useState<Offer[]>([]);
   const [invoices, setInvoices] = useState<FlowInvoice[]>([]);
+  const [lokalnoNalozeno, setLokalnoNalozeno] = useState(false);
+  const oblakPripravljen = useOblakPripravljen();
   const [clients, setClients] = useState<FlowClient[]>([]);
   /* Demo/Prazno velja za VSE strani (lib/predogled.ts). V teh nacinih je
      urejanje onemogoceno — sicer bi popravek izmisljenega zapisa pisal v pravo bazo. */
@@ -151,11 +155,18 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
   const risanjeRef = useRef(false);
 
   useEffect(() => {
-    const data = podatkiZaPredogled(nacin, loadFlowData());
-    setOffers(data.offers.map(({ id, title, client, date, number, scope, agreedAmount }) => ({ id, title, client, date, number, scope, agreedAmount })));
-    setInvoices(data.invoices);
-    setClients(data.clients);
+    const osvezi = () => {
+      const data = podatkiZaPredogled(nacin, loadFlowData());
+      setOffers(data.offers.map(({ id, title, client, date, number, scope, agreedAmount }) => ({ id, title, client, date, number, scope, agreedAmount })));
+      setInvoices(data.invoices);
+      setClients(data.clients);
+      setLokalnoNalozeno(true);
+    };
+    osvezi();
+    window.addEventListener('pinart-flow-change', osvezi);
+    return () => window.removeEventListener('pinart-flow-change', osvezi);
   }, [nacin]);
+  const podatkiPripravljeni = lokalnoNalozeno && oblakPripravljen;
 
   const globokaPovezavaOdprta = useRef('');
   useEffect(() => {
@@ -683,7 +694,7 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
     {pogled === 'pregled' && <section className="rc-sek rc-stolpec rc-vstop">
       <p className="rc-kicker">{L('Računi', 'Invoices')}</p>
       <h1 className="rc-h1">{L('Od dogovora do plačila.', 'From agreement to payment.')}</h1>
-      <div className="rc-chat">
+      {!podatkiPripravljeni ? <Skeleton vrsta="kartice" stevilo={2} /> : <><div className="rc-chat">
         <span className="rc-mehur"><b>{L('Iz česa nastane račun?', 'What does an invoice come from?')}</b><small>{L('Če obstaja ponudba, jo izberi — stranka in postavka se predizpolnita v obrazcu. Podatki izdajatelja (naziv, naslov, davčna, TRR) se berejo iz nastavitev Moje podjetje.', 'If an offer exists, select it — the client and item are pre-filled in the form. The issuer details (name, address, tax number, IBAN) are read from the My company settings.')}</small></span>
       </div>
       <div className="rc-vstop-panel">
@@ -729,7 +740,7 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
             <input type="date" value={datumIzdaje} onChange={event => setDatumIzdaje(event.target.value)} />
           </label>
         </div>
-      </div>
+      </div></>}
     </section>}
 
     {/* ── POGLED: OBRAZEC (svoja stran, sredinski stolpec — view-swap kot pogodbe) ── */}

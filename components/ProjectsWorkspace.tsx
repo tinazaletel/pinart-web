@@ -1937,7 +1937,7 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                   </div>
                 ) : (
                   <div key={m.id} className={`pw-klepet-b${m.avtor === 'jaz' ? ' pw-klepet-b-jaz' : ''}`}>{m.besedilo}</div>
-                )) : <p className="pw-klepet-prazno">{L('Izberi sodelavca in začni pogovor — ali v mailu označi del besedila in klikni »Deli v klepet«.', 'Choose a collaborator and start chatting — or highlight text in a mail and click “Share in chat”.')}</p>}
+                )) : <p className="pw-klepet-prazno">{L('Izberi sodelavca in začni pogovor — ali v mailu označi del besedila in izberi »Deli v klepet«.', 'Choose a collaborator and start chatting — or highlight text in a mail and click “Share in chat”.')}</p>}
               </div>
               <form className="pw-klepet-vnos" onSubmit={posljiKlepet}>
                 <input value={klepetVnos} onChange={e => setKlepetVnos(e.target.value)} placeholder={klepetIzbrani.length ? L('Napiši sporočilo …', 'Write a message …') : L('Najprej izberi sodelavca (+)', 'First choose a collaborator (+)')} aria-label={L('Sporočilo', 'Message')} disabled={!klepetIzbrani.length} />
