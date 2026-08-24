@@ -35,3 +35,8 @@ create index if not exists obvescanje_prijave_nepotrjene_idx
 -- Dostop SAMO prek service_role (strezniske poti). Brez politik = brez
 -- javnega branja in pisanja, tudi ce bi kdo dobil anon kljuc.
 alter table public.obvescanje_prijave enable row level security;
+
+-- RLS strezniskega kljuca ne ovira, dovoljenja na tabeli pa ga. Brez tega
+-- vrne "permission denied for table" tudi service_role. Isto kot pri
+-- agent_kljuci, beta_vstopi in ostalih.
+grant all on public.obvescanje_prijave to service_role;
