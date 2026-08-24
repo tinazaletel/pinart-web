@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { loadFlowData, writeFlowDataLocally } from '@/lib/pinartFlowStore';
 import { loadCloudSettings, loadOrganizationProfile, mergeFlowData, pullFlowData, pushFlowData, saveCloudSettings, saveOrganizationProfile } from '@/lib/pinartFlowCloud';
 import { pushProjekti, sinhronizirajProjekte } from '@/lib/projektiOblak';
@@ -222,18 +223,28 @@ export default function FlowCloudBridge() {
     };
   }, []);
 
-  if (!sinhronizira) return null;
-  return (
+  if (!sinhronizira || typeof document === 'undefined') return null;
+  /* PORTAL na <body>: bridge zivi v stranskem meniju, ki s svojim slogom
+     ujame position: fixed — prekrivalo je zato pokrilo SAMO meni, vsebina
+     desno pa je bila vidna in je nato ob osvezitvi izginila in prisla nazaj
+     (Tina, 24. 8.: "izpade kot napaka in vzbuja nezaupanje"). Isti vzorec
+     kot DokPanel: fixed rabi portal. */
+  return createPortal(
     <div aria-live="polite" style={{
-      /* Najvisji mozni sloj: cez prekrivalo je gledala Pupina ikona iz
-         glave, ki ima svoj z-index. Med pripravo podatkov ne sme biti
-         vidno nic — zaslon je takrat se prazen. */
       position: 'fixed', inset: 0, zIndex: 2147483647,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#F5F2EA', color: '#8a8177',
-      font: '500 .9rem/1.5 system-ui, -apple-system, sans-serif', letterSpacing: '.02em',
+      display: 'flex', flexDirection: 'column', gap: '1.1rem',
+      alignItems: 'center', justifyContent: 'center',
+      background: '#F5F2EA', color: '#6f675e',
+      font: '500 .95rem/1.5 system-ui, -apple-system, sans-serif', letterSpacing: '.02em',
     }}>
+      <style>{`@keyframes pwPripravaUtrip { 0%, 100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.12); opacity: 1; } }`}</style>
+      <span aria-hidden style={{
+        width: '2.6rem', height: '2.6rem', borderRadius: '50%',
+        background: 'conic-gradient(from 210deg, #f6b73c, #ef6553, #c65e8f, #7c6bd6, #4fa5c9, #64b98c, #f6b73c)',
+        filter: 'saturate(1.15)', animation: 'pwPripravaUtrip 1.6s ease-in-out infinite',
+      }} />
       Pripravljam tvoje podatke …
-    </div>
+    </div>,
+    document.body,
   );
 }

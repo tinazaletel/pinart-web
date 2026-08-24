@@ -440,8 +440,11 @@
 .panelMore { align-self: flex-start; margin-top: auto; padding-top: 1.6rem; display: inline-flex; align-items: center; gap: .4rem; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: 0; text-transform: none; color: oklch(52% .16 300); text-decoration: none; }
 .panelMore:hover { color: oklch(45% .18 300); }
 /* Dogodki & roki — seznam prihodnjih rokov */
-.eventList { flex: 1; list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
-.eventList li { flex: 1; display: flex; align-items: center; gap: .7rem; }
+.eventList { list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
+/* Vrstice se NE raztezajo cez vso visino kartice: z eno samo nalogo je
+   ta lebdela na sredini, kot da je nekaj narobe. Zacnejo se pod
+   naslovom in tecejo navzdol. */
+.eventList li { display: flex; align-items: center; gap: .7rem; }
 /* Vrstica seznama DANES je klikljiva, zato je <a>, ne gola vsebina <li>.
    Postavitev je ista kot pri prihodnjih dogodkih: datumski zeton levo,
    kartica z ikono in besedilom desno. */
