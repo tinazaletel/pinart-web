@@ -5327,7 +5327,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
   const naslovKoraka = korak === 0 ? L('Kaj boš danes ustvarila?', 'What will you create today?')
     : korak === narocnikStep ? L('Kdo je stranka?', 'Who is the client?')
-      : korak === trgNarocnikaStep ? L('Od kod je naročnik?', 'Where is the client from?')
+      : korak === trgNarocnikaStep ? L('Od kod je stranka?', 'Where is the client from?')
         : korak === praviceStep ? L('Avtorske pravice', 'Copyright')
           : korak === posebnostiStep ? L('Posebnosti projekta?', 'Project specifics?')
             : korak === cenaStep ? L('Tvoja cena.', 'Your price.')

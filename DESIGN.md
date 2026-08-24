@@ -188,6 +188,18 @@ pravilno.
 
 Če skrivaš pogojno, je varneje sploh ne izrisati (`{pogoj && <div>…</div>}`).
 
+## 13c. Stranka v vmesniku, naročnik v dokumentu
+
+Aplikacija je uporabljala oba izraza pomešano — v meniju »Stranke«, v čarovniku
+pa »Od kod je naročnik?«. Za uporabnico sta to dve besedi za isto stvar in mora
+sklepati, ali gre za isto.
+
+- **vmesnik, meni, gumbi, navodila → »stranka«**
+- **besedilo dokumentov (ponudba, pogodba, račun) → »naročnik«**, ker je to
+  pravni izraz za pogodbeno stranko in tam mora stati
+
+V dokumentu torej piše »Naročnik: Rokus Klett«, v vmesniku pa »Kdo je stranka?«.
+
 ## 14. Nepovratna dejanja povej vnaprej
 
 Kar se ne da razveljaviti, mora biti povedano **preden** človek klikne, ne kot
