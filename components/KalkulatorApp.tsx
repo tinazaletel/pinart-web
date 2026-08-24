@@ -2560,7 +2560,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [kazemValutaIzbira, setKazemValutaIzbira] = useState(false);
   /* Poljubna drzava (prikazni label poleg 6 sirsih regij, ki ostajajo
      edine z dejanskim cenovnim mnozitelijem). */
-  const [custDrzavaMoj, setCustDrzavaMoj] = useState('');
+  /* Na slovenski strani je Slovenija privzeta — vprasati nekoga, ki bere
+     slovensko, kje posluje, in mu ponuditi prazno polje, je odvecen korak.
+     Na /en pustimo prazno, ker je lahko kjer koli. Polje ostane vidno in se
+     da spremeniti. */
+  const [custDrzavaMoj, setCustDrzavaMoj] = useState(locale === 'en' ? '' : 'Slovenija');
   const [custDrzavaNarocnik, setCustDrzavaNarocnik] = useState('');
   const [dodajanjeDrzaveNarocnik, setDodajanjeDrzaveNarocnik] = useState(false);
 
@@ -8486,7 +8490,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {uvodChat && chatKorak === 2 && (
                 <form className="uv-forma" onSubmit={e => { e.preventDefault(); uvodNaprej(); }}>
                   <div className="uv-polje uv-polje-siroko">
-                    <label htmlFor="uv-pdrzava">{L('Država', 'Country')} <span className="uv-neobvezno">{L('vpliva na raven cen', 'affects the price level')}</span></label>
+                    <label htmlFor="uv-pdrzava">{L('Tvoja država', 'Your country')} <span className="uv-neobvezno">{L('vpliva na raven cen', 'affects the price level')}</span></label>
                     <IzbirnikDrzave id="uv-pdrzava" placeholder={L('Izberi državo', 'Choose a country')}
                       moznosti={DRZAVE.map(d => locale === 'en' ? d.imeEn : d.ime)}
                       value={custDrzavaMoj}
