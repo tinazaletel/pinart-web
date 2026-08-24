@@ -2235,6 +2235,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [pogojiPotrjeni, setPogojiPotrjeni] = useState(false);
   /* pogojiPrebrani: kljukica se odklene sele, ko uporabnik preleti pogoje do dna. */
   const [pogojiPrebrani, setPogojiPrebrani] = useState(false);
+  /* Flow kartica ima DVA koraka na ISTEM zaslonu (Tina, 25. 8.):
+     1 = "Samo troje" po flowovsko, 2 = pogoji + kljukica + gremo. */
+  const [pogojiKorak, setPogojiKorak] = useState<1 | 2>(1);
   /* Ime NALOZENE (lastne) pisave — da je na voljo tudi v orodni vrstici ponudbe,
      ne le v Nastavitvah. Pisavo hkrati registriramo kot @font-face 'DokLastna',
      da se v urejevalniku res izrise (urejevalnik uporablja fontName ukaz). */
@@ -7851,10 +7854,26 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         <div className="cw">
         <div className={`soglasje${pogojiOdhaja ? ' soglasje-odhaja' : ''}`} role="dialog" aria-modal="true" aria-label={L('Pogoji uporabe', 'Terms of use')}>
           <div className="soglasje-kartica">
-            <h2>{vLupini ? L('Preden začneš', 'Before you begin') : L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
+            <h2>{vLupini && pogojiKorak === 2
+              ? L('Še pogoji poslovanja', 'Now the terms of business')
+              : L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
             <div className="soglasje-tocke">
-              {vLupini ? (
-              <p className="sg-uvod">{L('Preberi pogoje poslovanja do konca — gumb za potrditev te čaka na dnu.', 'Read the terms of business to the end — the confirmation button is waiting at the bottom.')}</p>
+              {vLupini ? (pogojiKorak === 1 ? (<>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Vse na enem mestu', 'Everything in one place')}</h3>
+                <p className="sg-t">{L('Flow ni samo kalkulator — ponudbe, pogodbe, računi, stranke, projekti in koledar. Ko se spoznava, te odložim na tvojo ploščo, kjer izbereš, kaj boš delala.', 'Flow is more than a calculator — proposals, contracts, invoices, clients, projects and a calendar. Once we are acquainted I leave you on your dashboard to choose what to work on.')}</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Shranjeno v tvojem oblaku', 'Saved in your cloud')}</h3>
+                <p className="sg-t">{L('Ker si prijavljena, se vse varno shrani v tvoj Flow oblak in je na voljo na vseh napravah.', 'Since you are signed in, everything is securely saved to your Flow cloud and available on all your devices.')}</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Tvoje ostane tvoje', 'Yours stays yours')}</h3>
+                <p className="sg-t">{L('Tvoja dela, cene in podatki so tvoji — ne delimo jih in jih lahko kadarkoli izvoziš.', 'Your work, prices and data are yours — we never share them and you can export them any time.')}</p>
+              </div>
+              </>) : (
+              <p className="sg-uvod">{L('Preberi pogoje do konca, potem spodaj potrdi in gremo.', 'Read the terms to the end, then confirm below and off we go.')}</p>
+              )
               ) : (<>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
@@ -7905,7 +7924,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
             </div>
             )}
-            {vLupini && (
+            {vLupini && pogojiKorak === 2 && (
               <div className="sg-pogoji">
                 <span className="sg-pogoji-ozn">{L('Pogoji poslovanja', 'Terms of business')}</span>
                 <iframe className="sg-pogoji-okvir" title={L('Pogoji poslovanja', 'Terms of business')}
@@ -7918,7 +7937,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               </div>
             )}
             <div className="soglasje-gumbi">
-              {vLupini && (
+              {vLupini && pogojiKorak === 2 && (
                 <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}>
                   <input type="checkbox" checked={pogojiPotrjeni} disabled={!pogojiPrebrani} onChange={e => setPogojiPotrjeni(e.target.checked)} />
                   <span>{L('Prebral/-a sem in sprejemam ', 'I have read and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
@@ -7932,7 +7951,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <a href={localePath(locale, `/zasebnost`)} target="_blank" rel="noopener noreferrer">{L('politiko zasebnosti', 'privacy policy')}</a>.
                 </p>
               )}
-              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vLupini && !pogojiPotrjeni} title={vLupini && !pogojiPotrjeni ? L('Najprej preberi in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vLupini ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
+              {vLupini && pogojiKorak === 1 ? (
+                <button type="button" className="gumb" onClick={() => setPogojiKorak(2)}>
+                  {L('Naprej →', 'Next →')}
+                </button>
+              ) : (
+                <button type="button" className="gumb" onClick={sprejmiPogoje}
+                  disabled={vLupini && !pogojiPotrjeni}
+                  title={vLupini && !pogojiPotrjeni ? L('Najprej preberi in potrdi pogoje poslovanja.', 'First read and accept the terms of business.') : undefined}>
+                  {L('Se strinjam, gremo →', 'I agree, let\u2019s go →')}
+                </button>
+              )}
             </div>
           </div>
         </div>
