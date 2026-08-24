@@ -6805,6 +6805,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .pill.on .pi { background: var(--accent); color: var(--paper); }
         .cw .pill .pi svg { width: 22px; height: 22px; }
         .cw .pill-tekst { position: relative; z-index: 1; transition: color .3s cubic-bezier(0.16,1,0.3,1); }
+        /* Dodatek: naziv in odstotek v ENI vrsti. Odstotek je znacka, ker pove,
+           koliko te izbira stane — to ni drobna opomba pod naslovom. */
+        .cw .pill-dodatek { display: inline-flex; align-items: center; gap: .55rem; }
+        .cw .pill-znacka { flex: none; padding: .12rem .5rem; border-radius: 999px; background: color-mix(in oklch, var(--ink) 8%, transparent); font: 700 .78rem var(--font-sans), sans-serif; letter-spacing: .01em; transition: background .3s cubic-bezier(0.16,1,0.3,1), color .3s; }
+        .cw .pill.on .pill-znacka { background: rgba(255,255,255,.22); color: #fff; }
         .cw .pill.dodaj { border-style: dashed; border-color: rgba(17,17,17,.72); font-weight: 500; }
         .cw .pill.dodaj .pi { background: var(--ink); }
         .cw .pill-cust { background: var(--accent); border-color: var(--accent); color: var(--paper); font-weight: 500; }
@@ -9833,7 +9838,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       className={'pill' + (dodatki.has(d.id) ? ' on' : '')}
                       onClick={() => preklopi(dodatki, d.id, setDodatki)}>
                       <span className="pill-fill" aria-hidden />
-                      <span className="pill-tekst">{d.ime}<small>{d.opis}</small></span>
+                      <span className="pill-tekst pill-dodatek">{d.ime}<b className="pill-znacka">{d.opis}</b></span>
                     </button>
                   ))}
                 </div>
