@@ -1374,9 +1374,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
             <em>{heroTitles[heroIdx].em.map((w, i) => <span key={i} className="w" style={{ animationDelay: `${(heroTitles[heroIdx].pre.length + i) * 0.07}s` }}>{w}{' '}</span>)}</em>
           </h1>
           <p className="lead">
-            {isEn
-              ? <>Flow helps you set a <b>fair price</b> and carries it through proposal, contract and invoice. Whenever you want, your assistant <b>Pupa</b> is at your side — or connect your own AI.</>
-              : <>Flow ti pomaga postaviti <b>pošteno ceno</b> in jo spelje do ponudbe, pogodbe in računa. Ko želiš, ti ob strani stoji asistentka <b>Pupa</b> — ali pa povežeš svoj AI.</>}
+            {isEn ? <><b>One workspace instead of four:</b> proposals, contracts, invoices, projects, tasks and communication in one clear flow. <b>Pupa, your AI assistant,</b> understands the creative market and helps you value your work.</> : <><b>En program namesto štirih:</b> ponudbe, pogodbe, računi, projekti in naloge — z vso komunikacijo pregledno na enem mestu. Ob strani ti stoji <b>AI asistentka Pupa</b>, ki pozna trg in ti pove, koliko je vredno tvoje delo.</>}
           </p>
           <div className="cta-vrsta">
             <a className="cta" href={prijava}>{t('Vstopi v Flow', 'Enter Flow')} <ArrowRight size={17} weight="bold" /></a>
