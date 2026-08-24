@@ -2447,6 +2447,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      seedno napolni z narocnikovim mailom, uporabnica lahko doda se kontakte. */
   const [prejemniki, setPrejemniki] = useState<string[]>([]);
   const [prejemnikVnos, setPrejemnikVnos] = useState('');
+  /* napacen e-naslov: polje pordeci, sporocilo pa pade POD njega */
+  const [emailNapaka, setEmailNapaka] = useState(false);
   const [kontaktiOdprt, setKontaktiOdprt] = useState(false);
   /* Varovalka pred enoklik-nesreco: klik »Pošlji« najprej odpre inline
      potrditev s seznamom prejemnikov; sele drugi klik dejansko poslje. */
@@ -7565,7 +7567,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .cw .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
         .cw .posl-vec-gumb, .cw .posl-sheet-glava, .cw .posl-sheet-back { display: none; }
-          .cw .posl-pretvori-m { display: inline-flex; }
         /* Mobilni "Kaj s ponudbo?" sheet — PORTAL na body (nad vsem, full backdrop, prilepljen na dno). */
         .cw .pmsheet-back { position: fixed; inset: 0; z-index: 200; background: rgba(28,21,24,.42); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); animation: pmFade .2s ease both; }
         @keyframes pmFade { from { opacity: 0 } to { opacity: 1 } }
@@ -7637,6 +7638,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .pnm-tekst { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
         .cw .pon-namig-glava b { font: 800 .86rem/1.3 var(--font-sans), sans-serif; color: oklch(38% .13 300); }
         .cw .pnm-tekst > span { font: 600 .82rem/1.45 var(--font-sans), sans-serif; color: var(--ink); }
+        /* Napacen vnos: pordeci CELO polje — obroba, ozadje in besedilo —
+           z istim radijem kot sicer. Sporocilo pade pod polje, ne v okvir. */
+        .cw .posl-blok:has(.posl-napaka) .posl-cipi { border-color: oklch(58% .18 25); background: oklch(97% .03 25); }
+        .cw .posl-blok:has(.posl-napaka) .posl-cipi input { color: oklch(42% .17 25); }
+        .cw .posl-blok:has(.posl-napaka) .posl-cipi input::placeholder { color: oklch(58% .12 25); }
+        .cw .posl-napaka { margin: .4rem 0 0; font: 650 .8rem var(--font-sans), sans-serif; color: oklch(46% .17 25); }
         .cw .posl-naziv { display: flex; flex-direction: column; gap: .3rem; margin: 0 0 1.1rem; }
         .cw .posl-naziv > span { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
         .cw .posl-naziv input { width: 100%; box-sizing: border-box; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; color: var(--ink); font: 600 .95rem var(--font-sans), sans-serif; }
@@ -7644,7 +7651,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .rac-panel { margin-top: 1.6rem; display: flex; justify-content: center; }
         .cw .rac-toggle { display: inline-flex; align-items: center; gap: .5rem; }
         /* Na namizju pelje v racun rac-toggle; mobilna razlicica bi ga podvojila. */
-        .cw .posl-pretvori-m { display: none; }
         .cw .rac-box { text-align: left; width: 100%; max-width: 560px; border: 1px solid oklch(93% .006 82 / .55); border-radius: 16px; background: rgba(255,255,255,.55); padding: 1.3rem 1.5rem 1.5rem; }
         .cw .rac-box-glava { display: flex; align-items: center; gap: .55rem; color: var(--accent); margin-bottom: 1.1rem; }
         .cw .rac-box-glava b { font-size: 1.05rem; letter-spacing: .02em; color: var(--ink); }
@@ -10346,10 +10352,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         odstraniPrejemnika(prejemniki[prejemniki.length - 1]);
                       }
                     }}
-                    onBlur={() => { if (dodajPrejemnika(prejemnikVnos)) setPrejemnikVnos(''); }}
+                    onBlur={() => { if (dodajPrejemnika(prejemnikVnos)) setPrejemnikVnos(''); else if (prejemnikVnos.trim()) setEmailNapaka(true); }}
+                    onFocus={() => setEmailNapaka(false)}
                     placeholder={L('dodaj email', 'add email')}
                     aria-label={L('Dodaj prejemnika', 'Add recipient')} />
                 </div>
+                {emailNapaka && (
+                  <p className="posl-napaka" role="alert">{L('Email naslov ni pravilno napisan.', 'That email address is not written correctly.')}</p>
+                )}
               </div>
               <div className="posl-akcija">
                 <span className={'posl-potrdi-txt' + (potrdiPosiljanje ? '' : ' je-skrit')} aria-hidden={!potrdiPosiljanje}>
@@ -10419,9 +10429,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <FileText size={16} /> {L('Ustvari pogodbo (PDF)', 'Create contract (PDF)')}
                 </button>
               )}
-              <button type="button" className="povezava posl-pretvori-m" onClick={() => { setVecMoznosti(false); odpriRacun(); }}>
-                <Receipt size={16} /> {L('Pretvori v račun', 'Convert to invoice')}
-              </button>
             </div>
             {vecMoznosti && typeof document !== 'undefined' && createPortal(
               <div className="cw">
