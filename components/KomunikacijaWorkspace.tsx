@@ -386,7 +386,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
               <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
               <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
               <PriponkeVnos sekcija="mail" sklic={pisiSklic || 'osnutek'} priponke={pisiPriponke} onSpremeni={setPisiPriponke} jeEn={jeEn}
-                omogoceno={!demo} razlogZakleneno={L('V predogledu se priponke ne nalagajo.', 'Attachments are not uploaded in preview.')} />
+                omogoceno={!demo} razlogZakleneno={L('V predogledu se priponke ne nalagajo — zgoraj preklopi na »Moji podatki«.', 'Attachments are not uploaded in preview — switch to “My data” above.')} />
               {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
               <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="km-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="km-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="km-send-ik" /></>}</button></div>
             </form>
@@ -480,7 +480,7 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
                   <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
                   <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
                   <PriponkeVnos sekcija="mail" sklic={pisiSklic || 'osnutek'} priponke={pisiPriponke} onSpremeni={setPisiPriponke} jeEn={jeEn}
-                    omogoceno={!demo} razlogZakleneno={L('V predogledu se priponke ne nalagajo.', 'Attachments are not uploaded in preview.')} />
+                    omogoceno={!demo} razlogZakleneno={L('V predogledu se priponke ne nalagajo — zgoraj preklopi na »Moji podatki«.', 'Attachments are not uploaded in preview — switch to “My data” above.')} />
                   {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
                   <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="km-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="km-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="km-send-ik" /></>}</button></div>
                 </form>
