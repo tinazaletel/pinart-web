@@ -9,7 +9,10 @@ import styles from './SettingsWorkspace.module.css';
 
 export default function StevilcenjeNastavitve({ jeEn = false }: { jeEn?: boolean }) {
   const L = (sl: string, en: string) => jeEn ? en : sl;
-  const leto = new Date().getFullYear();
+  /* Leto se izracuna sele PO montazi: new Date() med renderjem da na
+     strezniku in v brskalniku lahko razlicen izid (DESIGN.md, tocka 10). */
+  const [leto, setLeto] = useState(0);
+  useEffect(() => setLeto(new Date().getFullYear()), []);
   const [vloga, setVloga] = useState<string | null | undefined>(undefined);
   const [zadnja, setZadnja] = useState(0);
   const [najmanjsa, setNajmanjsa] = useState(0);
@@ -36,6 +39,10 @@ export default function StevilcenjeNastavitve({ jeEn = false }: { jeEn?: boolean
     if (vzorecNapaka || stevilkaNapaka) return '—';
     try { return sestaviStevilko(vzorec, leto, zadnja + 1); } catch { return '—'; }
   }, [vzorec, leto, zadnja, vzorecNapaka, stevilkaNapaka]);
+  const trenutna = useMemo(() => {
+    if (!najmanjsa || vzorecNapaka) return L('še ni izdane številke', 'no number has been issued yet');
+    try { return sestaviStevilko(vzorec, leto, najmanjsa); } catch { return '—'; }
+  }, [vzorec, leto, najmanjsa, vzorecNapaka]);
 
   const shrani = async () => {
     if (vzorecNapaka || stevilkaNapaka) return;
@@ -58,7 +65,9 @@ export default function StevilcenjeNastavitve({ jeEn = false }: { jeEn?: boolean
       <div className={styles.stevilcenjePolja}>
         <label>{L('Zadnja izdana številka', 'Last issued number')}
           <input type="number" min={najmanjsa} step="1" value={zadnja} onChange={e => setZadnja(Number(e.target.value))} aria-invalid={stevilkaNapaka} />
-          {stevilkaNapaka && <small>{L(`Vrednost ne sme biti manjša od ${najmanjsa}.`, `The value cannot be lower than ${najmanjsa}.`)}</small>}
+          <small>{stevilkaNapaka
+            ? L(`Trenutna zadnja številka je ${trenutna}. Nižje ni mogoče nastaviti, ker bi se številka ponovila. Ponovljena številka je hujša od preskočene.`, `The current last number is ${trenutna}. It cannot be lowered because a number could repeat. A repeated number is worse than a skipped one.`)
+            : L(`Trenutna zadnja: ${trenutna}. Številke ni mogoče nastaviti nazaj.`, `Current last number: ${trenutna}. Numbering cannot be moved backwards.`)}</small>
         </label>
         <label>{L('Oblika številke', 'Number format')}
           <input value={vzorec} onChange={e => setVzorec(e.target.value)} aria-invalid={Boolean(vzorecNapaka)} />
