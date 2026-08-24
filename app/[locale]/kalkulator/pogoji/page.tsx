@@ -95,7 +95,7 @@ export default async function KalkulatorPogojiPage({
                 brezplačnim kalkulatorjem cen in orodji; <strong>ti</strong> (ali »uporabnik«) pomeni
                 osebo, ki uporablja platformo; <strong>Pupa</strong> pomeni našo AI pomočnico (umetno
                 inteligenco), vgrajeno v platformo; <strong>izhod AI</strong> pomeni vsebino, ki jo ustvari
-                Pupa; <strong>sef</strong> pomeni funkcijo Sef avtorstva; <strong>podobdelovalec</strong>
+                Pupa; <strong>sef</strong> pomeni funkcijo Sef avtorstva; <strong>podobdelovalec</strong>{' '}
                 pomeni tretjo osebo, ki obdeluje podatke po navodilih ponudnika.
               </>
             )}
@@ -436,7 +436,7 @@ export default async function KalkulatorPogojiPage({
                 Sef avtorstva izračuna kriptografski odtis (SHA-256) tvoje datoteke in ga skupaj z
                 datumom ter podatki o delu zabeleži kot dokaz o obstoju in prioriteti dela. Odtis je
                 enolični »prstni odtis« datoteke; iz njega ni mogoče rekonstruirati vsebine. Za
-                neodvisen časovni žig uporabljamo overitelja po standardu RFC 3161 (trenutno FreeTSA), ki prejme
+                neodvisen časovni žig uporabljamo overitelja po standardu RFC 3161 (trenutno FreeTSA), ki prejme{' '}
                 <strong>samo odtis, nikoli datoteke</strong>. Če se odločiš za oblačni trezor
                 (plačljivo), se izvirna datoteka shrani v zasebno oblačno shrambo ponudnika (EU).
               </>
@@ -833,7 +833,8 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Supabase</strong> — cloud database and storage (servers in the EU)<br />
                 — <strong>Vercel</strong> — hosting and delivery of the web application<br />
                 — <strong>Resend</strong> — sending email<br />
-                — <strong>Google</strong> — sign-in with a Google account (OAuth)<br />
+                — <strong>Google</strong> — sign-in with a Google account (OAuth) and a Google Sheets spreadsheet for contact-form inquiries<br />
+                — <strong>Cloudflare</strong> — receiving and forwarding inbound email on @pinartflow.com addresses<br />
                 — <strong>Anthropic</strong> — the AI assistant Pupa (only when used)<br />
                 — <strong>FreeTSA (RFC 3161)</strong> — independent timestamp for the vault (receives only the fingerprint)<br />
                 — an authorised payment provider (Merchant of Record) — subscription payment processing
@@ -843,7 +844,8 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Supabase</strong> — oblačna baza in shramba (strežniki v EU)<br />
                 — <strong>Vercel</strong> — gostovanje in dostava spletne aplikacije<br />
                 — <strong>Resend</strong> — pošiljanje e-pošte<br />
-                — <strong>Google</strong> — prijava z Google računom (OAuth)<br />
+                — <strong>Google</strong> — prijava z Google računom (OAuth) in preglednica Google Sheets za povpraševanja s kontaktnega obrazca<br />
+                — <strong>Cloudflare</strong> — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com<br />
                 — <strong>Anthropic</strong> — AI asistentka Pupa (samo ob uporabi)<br />
                 — <strong>FreeTSA (RFC 3161)</strong> — neodvisni časovni žig sefa (prejme samo odtis)<br />
                 — pooblaščeni ponudnik plačil (Merchant of Record) — obdelava plačil naročnine

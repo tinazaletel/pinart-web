@@ -305,6 +305,13 @@ kot dokaz po členu 7(1) GDPR?
 
 ## 20. Pogoji za brezplačni kalkulator (brez računa)
 
-Glej enako točko v paketu: ali za anonimno rabo zadošča dvostopenjski pristop
-(kratka kartica ob vstopu, celotni pogoji ob prvem izvozu), ali priporočate
-ločene, krajše pogoje samo za brezplačni kalkulator?
+Brezplačni kalkulator deluje brez prijave: podatki ostanejo v obiskovalčevem
+brskalniku, pri nas se zapiše le anonimna cenovna statistika (točka 5 pogojev).
+Trenutni tok: ob vstopu kratka kartica s tremi ključnimi točkami in »S klikom
+potrjuješ pogoje uporabe in politiko zasebnosti« (povezavi); ob prvem izvozu,
+pošiljanju ali shranjevanju pa celotni pogoji s potrditvijo in zapisom
+različice.
+
+Vprašanje: ali za anonimno rabo zadošča tak dvostopenjski pristop, ali
+priporočate ločene, krajše pogoje samo za brezplačni kalkulator (in če ja,
+katere točke obstoječih pogojev morajo vsebovati)?

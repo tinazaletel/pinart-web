@@ -39,7 +39,10 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
   }, [open]);
 
   const flow = localePath(locale, '/flow');
-  const kalk = localePath(locale, '/kalkulator/orodje');
+  /* ?od=flow = brezplacni/marketinski vstop: VEDNO samostojen kalkulator z
+     lahko kartico, tudi ce je obiskovalec slucajno prijavljen. Brez tega je
+     menijska povezava prijavljene metala v Flow zaslon s pogoji (25. 8.). */
+  const kalk = localePath(locale, '/kalkulator/orodje') + '?od=flow';
   const prijava = localePath(locale, '/kalkulator/prijava');
   const languageHref = localePath(isEn ? 'sl' : 'en', '/flow');
 

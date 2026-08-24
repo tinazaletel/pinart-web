@@ -1,0 +1,120 @@
+# Pinart Flow — Politika zasebnosti (osnutek za pravni pregled)
+
+**Različica:** 2026-08-23 (posodobljena 25. 8. 2026 — podobdelovalca Google Sheets
+in Cloudflare) · **Živo besedilo:** https://www.pinartflow.com/zasebnost
+**Stanje:** objavljeno in v uporabi; pisano brez pravne pomoči. Dvojezično (SL/EN).
+**Kako brati:** najprej celotno besedilo, na koncu komentarji s kazalci na
+oštevilčena vprašanja v datoteki 3 (Vprašanja in komentarji).
+
+---
+
+## 1. Upravljavec osebnih podatkov
+
+Pinart d.o.o., Mladinska ulica 63, 1000 Ljubljana, Slovenija
+E-pošta: tina@pinart.si
+
+## 2. Kateri podatki se zbirajo
+
+Glede na to, kako uporabljate storitev, obdelujemo:
+
+– Kontaktni obrazec: ime in priimek, e-naslov, vsebino sporočila (na vašo pobudo).
+– Uporabniški račun: e-naslov in ime, ki ju prejmemo od ponudnika prijave (npr. Google) ob prijavi.
+– Poslovni podatki v aplikaciji: ponudbe, pogodbe, računi, stranke, projekti, stroški in naloge, ki jih vnesete med uporabo (shranjeni na vaš račun).
+– Komunikacije: vsebina projektnega klepeta in projektne pošte, če te funkcije uporabljate.
+– Sef avtorstva: ime datoteke, kriptografski odtis (SHA-256), datum in podatki o delu; ob plačljivem trezorju tudi sama datoteka.
+– Podatki o uporabi (prijavljeni): število obiskov in dni aktivnosti vašega računa ter čas zadnjega vpisa — za spremljanje in izboljševanje storitve. To ni anonimno (vezano na vaš račun); ni v povezavi z anonimno cenovno statistiko.
+– Anonimna statistika cen: brez osebnih podatkov in je ni mogoče povezati z vami (glejte spodaj).
+
+## 3. Namen in pravna podlaga obdelave
+
+Podatke obdelujemo za: (a) odgovor na povpraševanje in poslovno komunikacijo; (b) zagotavljanje in delovanje platforme (račun, shranjevanje dokumentov, komunikacije, sef); (c) obračun naročnine; (d) izboljševanje storitve.
+
+Pravne podlage: izvajanje pogodbe oz. ukrepi pred sklenitvijo (člen 6(1)(b) GDPR) za delovanje platforme in naročnino; vaše soglasje (člen 6(1)(a) GDPR) npr. za obveščanje; zakoniti interes (člen 6(1)(f) GDPR) za varnost in izboljšave.
+
+## 4. Hramba podatkov
+
+Podatke hranimo le toliko časa, kot je potrebno za namen obdelave, oz. dokler traja vaš račun. Po izbrisu računa ali na vašo zahtevo podatke izbrišemo, razen kadar jih moramo hraniti po zakonu (npr. računovodski predpisi za izdane račune).
+
+## 5. Kje se podatki hranijo
+
+Poslovni podatki prijavljenih uporabnikov se hranijo v oblačni bazi in shrambi (Supabase, strežniki v Evropski uniji). Podatki so vezani na vaš račun in zaščiteni s pravili dostopa na ravni baze, tako da do njih dostopate le vi in osebe, s katerimi vsebino izrecno delite.
+
+## 5a. Podobdelovalci
+
+Vaših podatkov ne prodajamo in ne dajemo v najem. Za delovanje storitve jih obdelujejo naslednji podobdelovalci, izključno po naših navodilih:
+
+– Supabase — oblačna baza in shramba (EU)
+– Vercel — gostovanje in dostava aplikacije
+– Resend — pošiljanje e-pošte
+– Google — prijava z Google računom (OAuth) in preglednica Google Sheets, v katero se zapišejo povpraševanja s kontaktnega obrazca in prijave iz kalkulatorja (ime, e-naslov, sporočilo)
+– Cloudflare — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com
+– Anthropic — AI asistentka Pupa (samo ob uporabi; glejte točko 9)
+– FreeTSA (freetsa.org) — neodvisni overitelj časovnega žiga sefa po standardu RFC 3161 (prejme samo 32-bajtni odtis, nikoli datoteke, njenega imena ali opisa dela)
+– pooblaščeni ponudnik plačil (Merchant of Record) — obdelava plačil naročnine
+
+Podatke posredujemo tretjim tudi, kadar to zahteva zakon. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.
+
+## 5b. Sef avtorstva
+
+Sef avtorstva shrani kriptografski odtis (SHA-256) vašega dela, datum in podatke o delu (npr. ime datoteke, orodje). Odtis je enolični »prstni odtis«; iz njega ni mogoče rekonstruirati vsebine. Za neodvisen časovni žig uporabljamo storitev FreeTSA (freetsa.org) po standardu RFC 3161: overitelju se pošlje izključno 32-bajtni odtis, ta pa vrne časovni žeton, podpisan s svojim certifikatom. Vaša datoteka, njeno ime in opis dela overitelja nikoli ne dosežejo — ta ne izve, kaj ste žigosali, potrdi le, da je bil ta odtis znan ob določenem času. Žeton lahko preveri kdorkoli, tudi brez Pinart Flowa. Overitelja lahko zamenjamo (na primer za kvalificirano storitev po uredbi eIDAS); aktualnega sporočimo na zahtevo.
+
+Če izberete plačljivi oblačni trezor, se izvirna datoteka (in morebitne izvorne datoteke) shrani v zasebni oblačni shrambi (Supabase, EU), dostopni le vam. Sef dokazuje obstoj in prioriteto dela na določen dan, ne pa absolutnega avtorstva, in ni nadomestilo za uradno registracijo pravic.
+
+## 5c. Varnost
+
+Podatke varujemo s tehničnimi in organizacijskimi ukrepi: šifriran prenos (TLS), šifrirana hramba pri ponudniku baze, dostop na ravni baze (vsak uporabnik vidi le svoje podatke), prijava prek zaupanja vrednega ponudnika (Google OAuth) in samodejne dnevne varnostne kopije baze, ki omogočajo povrnitev podatkov ob incidentu (člen 32(1)(c) GDPR). Noben sistem ni popolnoma neprebojen; za varovanje dostopa do svojega računa (npr. naprave in prijave) odgovarjate tudi sami.
+
+## 6. Google Analytics
+
+Spletna stran uporablja Google Analytics za analizo obiskanosti. Google Analytics zbira anonimne podatke o obisku (tip naprave, država, strani). Podatki se ne povežejo z vašo osebno identiteto. Zbiranje podatkov lahko onemogočite z namestitvijo Google Analytics Opt-out Browser Add-on ali s prilagoditev nastavitev piškotkov v vašem brskalniku.
+
+## 7. Vaše pravice
+
+V skladu z GDPR imate pravico do:
+– dostopa do svojih podatkov
+– popravka netočnih podatkov
+– izbrisa podatkov
+– omejitve obdelave
+– prenosljivosti podatkov
+– ugovora obdelavi
+
+Zahtevo pošljite na tina@pinart.si. Pravico imate tudi do pritožbe pri Informacijskem pooblaščencu RS (ip-rs.si).
+
+## 8. Piškotki
+
+Spletna stran uporablja funkcionalne piškotke za delovanje in analitične piškotke (Google Analytics). Ob prvem obisku imate možnost upravljanja s piškotki.
+
+## 9. Umetna inteligenca (Pupa) in varnost podatkov
+
+Pupa je izbirna pomočnica, ki deluje prek Anthropic Claude API. Obdelava poteka strežniško, zato API ključ ni izpostavljen v uporabnikovem brskalniku. Anthropic prejme samo vsebino, ki jo uporabnik vnese v Pupo, in minimalen kontekst odprtega orodja ali ponudbe, potreben za odgovor; nič drugega. Anthropic nima dostopa do baze Pinart Flow — vidi le besedilo posamezne zahteve in baze ne more brati ali izvoziti.
+
+V Pupo ne vnašajte zaupnih podatkov, poslovnih skrivnosti ali osebnih podatkov strank. Če Pupe ne uporabljate, se podatki ne pošiljajo družbi Anthropic ali kateremu koli drugemu zunanjemu ponudniku AI. Orodja Pinart Flow delujejo brez AI, cene pa se izračunajo s formulami in pravili lokalno oziroma na zaledju Pinart Flow.
+
+Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje modelov. Obdobje hrambe velja po aktualnih pogojih Anthropic. Ker se podatki lahko obdelujejo v ZDA, mora biti prenos urejen z DPA z družbo Anthropic in ustreznimi standardnimi pogodbenimi klavzulami (SCC).
+
+Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si. Več: https://privacy.anthropic.com/en/collections/10663361-commercial-customers.
+
+## 10. Spremembe politike
+
+Politiko zasebnosti lahko kadar koli posodobimo. Datum zadnje posodobitve je naveden na vrhu te strani.
+
+---
+
+## Komentarji za pregled tega dokumenta
+
+| Točka politike | Vprašanje v datoteki 3 |
+|---|---|
+| 2, 3 — nabor podatkov in podlage | 2 (vloga po GDPR), 10 (odpoved, izbris, izvoz) |
+| 5a — podobdelovalci | 19 (Google Sheets in Cloudflare — 25. 8. popravljeno; prosimo potrdite, ali popravek zadošča in ali je treba obvestiti tiste, ki so obrazec izpolnili prej) |
+| 5b — sef | 6 (dokazna vrednost časovnega žiga) |
+| 9 — Pupa / Anthropic | 12 (pravna podlaga), 13 (prenosi v ZDA — DPA in SCC za vsakega ponudnika) |
+| celotni dokument | 5 (podatki iz javnih registrov — AJPES/FURS iskalnik), 17 (priponke in naložene datoteke) |
+
+**Prijava na obveščanje (novo, 24. 8. 2026):** dela z dvojno privolitvijo —
+prijava se zapiše kot nepotrjena, potrditveno pisemce gre prek Resenda, seznam
+nastane šele ob kliku, nepotrjene prijave se po 14 dneh izbrišejo, odjava zapis
+izbriše, IP-naslova ne hranimo. Zapiše se čas, vir in različica pogojev.
+Vprašanje 19.3: ali tak zapis zadošča kot dokaz privolitve po členu 7(1) GDPR?
+
+**Priloženi še:** evidenca dejavnosti obdelave (30. člen) in diagram podatkovnih
+tokov — glej prilogi v datoteki 3.

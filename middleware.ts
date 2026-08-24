@@ -175,7 +175,10 @@ export default async function middleware(request: NextRequest) {
      spodaj ostane, da je ponovno odprtje ena beseda in ne nova presoja.
      Zaprto 21. 8. 2026 na Tinino zahtevo — cenovni izracun se ni pravilen in
      obiskovalec ne sme videti napacnih stevilk. */
-  const ODPRT_JAVNI_DEL = false;
+  /* ODPRTO 25. 8. 2026 na Tinino odlocitev: stran gre v eter z brezplacnim
+     kalkulatorjem — odvetnik, tehnoloski park in prvi obiskovalci morajo do
+     javnega dela brez gesla. Aplikacija ostane zaklenjena (beta). */
+  const ODPRT_JAVNI_DEL = true;
   const pot = request.nextUrl.pathname.replace(/^\/(?:sl|en)(?=\/|$)/, '') || '/';
   const jeJavnaPot =
     pot === '/'
