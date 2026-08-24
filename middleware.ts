@@ -186,14 +186,20 @@ export default async function middleware(request: NextRequest) {
     || pot === '/dostopnost'
     || pot === '/ai-politika'
     || /^\/povprasevanje(?:\/|$)/.test(pot)
-    || /^\/p\//.test(pot);
+    || /^\/p\//.test(pot)
+    || pot === '/obvescanje';
 
   /* Pred-launch geslo-zid — skrijemo VES Flow do launcha:
        - pinartflow.com: cela domena;
        - druge domene (pinart.si ...): SAMO Flow poti (/flow, /kalkulator); portfolio ostane odprt.
      Brez SITE_GESLO se pinartflow pokaze kot "Kmalu"; Flow poti drugod (dev/localhost brez
      gesla) pa NE blokiramo, da razvoj tece normalno. */
-  if ((jePinartflow || jeFlowPot) && !(ODPRT_JAVNI_DEL && jeJavnaPot)) {
+  /* Potrditev in odjava od obvescanja gresta MIMO zaklepa, vedno — tudi ko je
+     pinartflow cel za geslom. Povezava iz pisemca, ki zadene geslo, pomeni
+     odjavo, ki je ni mogoce izvesti; to je huje od tega, da odjave ne bi
+     ponujali. Stran nima nicesar obcutljivega: pove le izid klika. */
+  const jeObvescanje = pot === '/obvescanje';
+  if ((jePinartflow || jeFlowPot) && !jeObvescanje && !(ODPRT_JAVNI_DEL && jeJavnaPot)) {
     const geslo = process.env.SITE_GESLO;
     if (!geslo) {
       if (jePinartflow) {
