@@ -155,6 +155,12 @@ Telo sporočila in glavni gumb ostaneta `--ink`: rdeče besedilo na rdeči podla
 se slabše bere, vijoličen gumb v rdečem obvestilu pa združi znamko in alarm, ki
 se med seboj izničita.
 
+**Postavitev je ena, barvi sta dve.** Ikona, krepek naslov, sporočilo pod njim,
+črta levo — ta zgradba velja za vsa obvestila v strani in v Toastu. Barva pa
+loči težo: **rdeča pomeni ustavi se** (nekaj je narobe ali bo šlo narobe),
+**vijolična pomeni to je vredno opaziti** (lahko nadaljuješ, samo vedeti moraš).
+Neizpolnjena glava ponudbe je vijolična, ne rdeča.
+
 **Ikona na začetku.** `ikona` nadomesti barvno piko in pove, o čem obvestilo
 govori, preden ga uporabnica prebere — štoparica dobi `<Timer />`. Pri obvestilih
 brez svoje ikone ostane pika.

@@ -7616,13 +7616,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Racun panel na Zakljucku */
         /* Vijolicna, ne jantarna: v aplikaciji nosita pomen samo dve barvi —
            vijolicna (pozornost, znamka) in rdeca (opozorilo). Tretje ni. */
-        /* Isti videz kot opozorila v components/Toast.tsx (DESIGN.md, 13):
-           rahlo rdece ozadje, rdeca crta levo, rdeca ikona in naslov, telo v
-           --ink. Tu je vgrajeno v stran, ne plavajoce, zato brez sence. */
-        .cw .pon-namig-glava { display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem; padding: .7rem .9rem; border: 1px solid oklch(76% .13 25 / .65); border-left: 4px solid oklch(58% .18 25); border-radius: .85rem; background: oklch(95.5% .05 25); }
-        .cw .pon-namig-glava > svg { flex: none; color: oklch(52% .17 25); }
+        /* POSTAVITEV je ista kot pri opozorilih (Toast, DESIGN.md 13): ikona,
+           naslov, sporocilo pod njim, crta levo. BARVA pa je vijolicna, ne
+           rdeca — rdeca pomeni "ustavi se", to pa je opazka: ponudbo brez glave
+           smes poslati, samo vedeti moras. */
+        .cw .pon-namig-glava { display: flex; align-items: center; gap: .7rem; margin: 0 0 1rem; padding: .7rem .9rem; border: 1px solid color-mix(in oklch, var(--accent, #6E4FA6) 38%, transparent); border-left: 4px solid var(--accent, #6E4FA6); border-radius: .85rem; background: color-mix(in oklch, var(--accent, #6E4FA6) 14%, #fff); }
+        .cw .pon-namig-glava > svg { flex: none; color: var(--accent, #6E4FA6); }
         .cw .pnm-tekst { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
-        .cw .pon-namig-glava b { font: 800 .86rem/1.3 var(--font-sans), sans-serif; color: oklch(46% .17 25); }
+        .cw .pon-namig-glava b { font: 800 .86rem/1.3 var(--font-sans), sans-serif; color: oklch(38% .13 300); }
         .cw .pnm-tekst > span { font: 600 .82rem/1.45 var(--font-sans), sans-serif; color: var(--ink); }
         .cw .posl-naziv { display: flex; flex-direction: column; gap: .3rem; margin: 0 0 1.1rem; }
         .cw .posl-naziv > span { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
