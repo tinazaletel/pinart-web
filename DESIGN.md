@@ -244,6 +244,11 @@ tudi to.
 --accent:     oklch(66% 0.2 297);  /* vijolična, poudarek */
 ```
 
+**Pomen nosita samo dve barvi: vijolična in rdeča.** Vijolična pomeni pozornost
+in dejanje, rdeča opozorilo. Tretje barve za »skoraj opozorilo« (jantarna,
+oranžna) ni — če je nekaj vredno omeniti, je vijolično; če je vredno ustaviti,
+je rdeče.
+
 Vijolična ima dva odtenka v rabi: `#6E4FA6` (fokus obris, polni gumbi) in
 `oklch(52% .2 297)` (hover na povezavah v panelu). Ne dodajaj tretjega.
 

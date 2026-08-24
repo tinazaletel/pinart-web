@@ -7614,7 +7614,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .zakljucek-sredina .sub-vrsta { justify-content: center; }
         .cw .zakljucek-sredina .btnvrsta { justify-content: center; }
         /* Racun panel na Zakljucku */
-        .cw .pon-namig-glava { margin: 0 0 .9rem; padding: .65rem .85rem; border-left: 3px solid oklch(72% .12 75); border-radius: .5rem; background: oklch(97% .025 80); font: 500 .82rem/1.45 var(--font-sans), sans-serif; color: oklch(40% .07 60); }
+        /* Vijolicna, ne jantarna: v aplikaciji nosita pomen samo dve barvi —
+           vijolicna (pozornost, znamka) in rdeca (opozorilo). Tretje ni. */
+        .cw .pon-namig-glava { margin: 0 0 .9rem; padding: .65rem .85rem; border-left: 3px solid var(--accent, #6E4FA6); border-radius: .5rem; background: color-mix(in oklch, var(--accent, #6E4FA6) 8%, #fff); font: 500 .82rem/1.45 var(--font-sans), sans-serif; color: oklch(38% .1 300); }
         .cw .posl-naziv { display: flex; flex-direction: column; gap: .3rem; margin: 0 0 1.1rem; }
         .cw .posl-naziv > span { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
         .cw .posl-naziv input { width: 100%; box-sizing: border-box; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; color: var(--ink); font: 600 .95rem var(--font-sans), sans-serif; }
