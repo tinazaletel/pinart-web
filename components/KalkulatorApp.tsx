@@ -6807,6 +6807,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .pill-tekst { position: relative; z-index: 1; transition: color .3s cubic-bezier(0.16,1,0.3,1); }
         /* Dodatek: naziv in odstotek v ENI vrsti. Odstotek je znacka, ker pove,
            koliko te izbira stane — to ni drobna opomba pod naslovom. */
+        .cw .pon-naziv { display: flex; flex-direction: column; gap: .3rem; margin: 0 0 1rem; }
+        .cw .pon-naziv > span { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
+        .cw .pon-naziv input { width: 100%; box-sizing: border-box; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; color: var(--ink); font: 600 .95rem var(--font-sans), sans-serif; }
+        .cw .pon-naziv input:focus { outline: none; border-color: rgba(17,17,17,.42); }
         .cw .pill-dodatek { display: inline-flex; align-items: center; gap: .55rem; }
         .cw .pill-znacka { flex: none; padding: .12rem .5rem; border-radius: 999px; background: color-mix(in oklch, var(--ink) 8%, transparent); font: 700 .78rem var(--font-sans), sans-serif; letter-spacing: .01em; transition: background .3s cubic-bezier(0.16,1,0.3,1), color .3s; }
         .cw .pill.on .pill-znacka { background: rgba(255,255,255,.22); color: #fff; }
@@ -9992,6 +9996,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           {korak === ponudbaStep && (
             <div className="priprava priprava-stran">
               <div className="priprava-telo">
+              {/* Naziv ponudbe se vprasa TU, ne pred ceno: ime dokumenta rabis
+                  sele, ko dokument nastaja. Prazno polje ni napaka — ponudba se
+                  takrat imenuje po storitvah, ki so v njej. */}
+              <label className="pon-naziv">
+                <span>{L('Naziv ponudbe', 'Quote name')}</span>
+                <input type="text" value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)}
+                  placeholder={r ? r.sez.map(x => x.ime).join(', ').slice(0, 60) : L('npr. Prenova spletne strani', 'e.g. Website redesign')} />
+              </label>
               {/* NAČIN + TON + AI */}
               <div className="pon-vrh">
                 <div className="segpills segpills-pogled" role="group" aria-label={L('Pogled', 'View')}>
