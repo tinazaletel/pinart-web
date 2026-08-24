@@ -2134,6 +2134,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      pri njem zloženi pod povezavo. Prijavljeni jih vidi takoj — on ponudbo res
      dela in podatki so ze predizpolnjeni. */
   const [podatkiPodjetjaOdprti, setPodatkiPodjetjaOdprti] = useState(false);
+  /* Odgovor o podrocjih se je prej pokazal sele pri koraku 5. Odkar gremo po
+     podrocjih naravnost v kalkulator, korak 5 ne nastopi vec in odgovor je
+     izginil iz pogovora — videti je bilo, kot da vprasanja nisi odgovorila. */
+  const [podrocjaPotrjena, setPodrocjaPotrjena] = useState(false);
   const [uvodOdhaja, setUvodOdhaja] = useState(false);   /* mehak prehod chat -> izbira (brez preskoka) */
   /* nacin: chat (privzeto) ali klasicen vprasalnik (nastavitve) */
   const [klasicnaOblika, setKlasicnaOblika] = useState(false);
@@ -2968,6 +2972,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      se vprasa sele, ko uporabnica ponudbo res dela — ime dokumenta ni pogoj
      za izracun. */
   const uvodPotrdiPodrocja = () => {
+    setPodrocjaPotrjena(true);
     if (Object.keys(arhiv).length) { setChatKorak(5); return; }
     zakljuciUvod();
   };
@@ -8609,7 +8614,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button></div>
                 </>
               )}
-              {chatKorak > 4 && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => { const p = PODROCJA.find(x => x.id === id); return p ? podIme(p) : null; }).filter(Boolean).join(', '))}
+              {(chatKorak > 4 || podrocjaPotrjena) && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => { const p = PODROCJA.find(x => x.id === id); return p ? podIme(p) : null; }).filter(Boolean).join(', '))}
 
               {chatKorak >= 5 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
