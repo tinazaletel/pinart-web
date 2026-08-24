@@ -6503,6 +6503,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .uv-forma .uv-vec-odprt .uv-vec-puscica { transform: rotate(180deg); }
         .cw .uv-forma .uv-vec-pripis { font: 500 .74rem/1.4 var(--font-sans), sans-serif; color: rgba(17,17,17,.66); }
         .cw .uv-forma .uv-mreza-naslov { grid-column: 1 / -1; margin: .2rem 0 -.3rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
+        .cw .uv-forma .uv-mreza-naslov span { font-weight: 600; color: rgba(17,17,17,.45); }
+        .cw .uv-forma .uv-mreza-naslov span::before { content: ' · '; }
+        .cw .uv-forma .uv-mreza-opomba { grid-column: 1 / -1; margin: .1rem 0 0; font: 500 .74rem/1.4 var(--font-sans), sans-serif; color: rgba(17,17,17,.62); }
         .cw .uv-forma .uv-neobvezno { font-size: .7rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .cw .uv-forma input, .cw .uv-forma select { width: 100%; background: rgba(255,255,255,.62); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid rgba(255,255,255,.6); border-radius: 12px; padding: .72rem .95rem; font-family: inherit; font-size: .98rem; font-weight: 500; color: var(--ink); outline: none; box-shadow: 0 4px 14px rgba(40,25,40,.05); transition: border-color .18s; box-sizing: border-box; }
         .cw .uv-forma input:focus, .cw .uv-forma select:focus { border-color: var(--accent); }
@@ -8505,7 +8508,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     onClick={() => setPodatkiPodjetjaOdprti(o => !o)}>
                     <span className="uv-vec-glava">
                       <span className="uv-vec-znak" aria-hidden>{podatkiPodjetjaOdprti ? '−' : '+'}</span>
-                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij podatke za ponudbo', 'Hide quote details') : L('Pripravi tudi ponudbo', 'Prepare a quote as well')}</span>
+                      <span className="uv-vec-naslov">{podatkiPodjetjaOdprti ? L('Skrij podatke na dokumentu', 'Hide document details') : L('Pripravi tudi ponudbo', 'Prepare a quote as well')}</span>
                       <span className="uv-vec-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
                     </span>
                     {!podatkiPodjetjaOdprti && (
@@ -8513,6 +8516,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     )}
                   </button>
                   <div className="uv-mreza" hidden={!podatkiPodjetjaOdprti}>
+                    <p className="uv-mreza-naslov">{L('Podatki na ponudbi', 'Details on the quote')} <span>{L('dodaj, kar želiš prikazati', 'add what you want to show')}</span></p>
                   <div className="uv-polje uv-polje-siroko">
                     <label htmlFor="uv-pime">{L('Ime ali naziv', 'Name or business name')}</label>
                     <IskalnikPodjetij id="uv-pime" vrednost={ponudnik.ime}
@@ -8531,17 +8535,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </div>
 
                     <div className="uv-polje">
-                      <label htmlFor="uv-pdavcna">{L('Davčna številka', 'Tax number')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <label htmlFor="uv-pdavcna">{L('Davčna številka', 'Tax number')}</label>
                       <input id="uv-pdavcna" type="text" placeholder={L('SI98765432', 'SI98765432')}
                         value={ponudnik.davcna} onChange={e => setPonudnik({ ...ponudnik, davcna: e.target.value })} />
                     </div>
                     <div className="uv-polje">
-                      <label htmlFor="uv-pemail">{L('E-pošta', 'Email')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <label htmlFor="uv-pemail">{L('E-pošta', 'Email')}</label>
                       <input id="uv-pemail" type="email" placeholder={L('kapica@gozd.si', 'kapica@gozd.si')}
                         value={ponudnik.email} onChange={e => setPonudnik({ ...ponudnik, email: e.target.value })} />
                     </div>
                     <div className="uv-polje">
-                      <label htmlFor="uv-ptelefon">{L('Telefon', 'Phone')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <label htmlFor="uv-ptelefon">{L('Telefon', 'Phone')}</label>
                       <div className="tel-vrsta">
                         <select aria-label={L('Klicna koda države', 'Country calling code')} value={predklic} onChange={e => setPredklic(e.target.value)}>
                           {['+386', '+385', '+43', '+49', '+39', '+44', '+33', '+1', '+971', '+20'].map(k => (
@@ -8553,15 +8557,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       </div>
                     </div>
                     <div className="uv-polje">
-                      <label htmlFor="uv-ptrr">{L('IBAN / TRR', 'IBAN')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <label htmlFor="uv-ptrr">{L('IBAN / TRR', 'IBAN')}</label>
                       <input id="uv-ptrr" type="text" placeholder={L('SI56 1910 0001 2345 678', 'SI56 1910 0001 2345 678')}
                         value={ponudnik.trr} onChange={e => setPonudnik({ ...ponudnik, trr: e.target.value })} />
                     </div>
                     <div className="uv-polje uv-polje-siroko">
-                      <label htmlFor="uv-pnaslov">{L('Naslov', 'Address')} <span className="uv-neobvezno">{L('neobvezno', 'optional')}</span></label>
+                      <label htmlFor="uv-pnaslov">{L('Naslov', 'Address')}</label>
                       <input id="uv-pnaslov" type="text" placeholder={L('Gozdna pot 13, 4000 Kranj', 'Forest Road 13, 4000 Kranj')}
                         value={ponudnik.naslov} onChange={e => setPonudnik({ ...ponudnik, naslov: e.target.value })} />
                     </div>
+                    <p className="uv-mreza-opomba">{L('Ti podatki ne vplivajo na izračun cene.', 'These details do not affect the price calculation.')}</p>
                   </div>
                   {/* Ime podjetja NE sme zapirati poti do cene: je podatek
                       dokumenta, ne izracuna. Prijavljeni ga ima shranjenega,
