@@ -7641,9 +7641,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Napacen vnos: pordeci CELO polje — obroba, ozadje in besedilo —
            z istim radijem kot sicer. Sporocilo pade pod polje, ne v okvir. */
         .cw .posl-blok:has(.posl-napaka) .posl-cipi { border-color: oklch(58% .18 25); background: oklch(97% .03 25); }
-        .cw .posl-blok:has(.posl-napaka) .posl-cipi input { color: oklch(42% .17 25); }
-        .cw .posl-blok:has(.posl-napaka) .posl-cipi input::placeholder { color: oklch(58% .12 25); }
-        .cw .posl-napaka { margin: .4rem 0 0; font: 650 .8rem var(--font-sans), sans-serif; color: oklch(46% .17 25); }
+        /* Notranje polje NE sme risati svojega okvirja — sicer je v rdecem polju
+           se en kvadrat. Sirina se ob napaki ne spremeni. */
+        .cw .posl-blok:has(.posl-napaka) .posl-vnos { border: 0; background: transparent; box-shadow: none; color: oklch(42% .17 25); }
+        .cw .posl-blok:has(.posl-napaka) .posl-vnos::placeholder { color: oklch(58% .12 25); }
+        .cw .posl-napaka { margin: .35rem 0 0; padding-left: 2.4rem; font: 600 .74rem var(--font-sans), sans-serif; color: oklch(46% .17 25); }
         .cw .posl-naziv { display: flex; flex-direction: column; gap: .3rem; margin: 0 0 1.1rem; }
         .cw .posl-naziv > span { font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.6); }
         .cw .posl-naziv input { width: 100%; box-sizing: border-box; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; color: var(--ink); font: 600 .95rem var(--font-sans), sans-serif; }
@@ -10357,10 +10359,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     placeholder={L('dodaj email', 'add email')}
                     aria-label={L('Dodaj prejemnika', 'Add recipient')} />
                 </div>
-                {emailNapaka && (
-                  <p className="posl-napaka" role="alert">{L('Email naslov ni pravilno napisan.', 'That email address is not written correctly.')}</p>
-                )}
               </div>
+              {emailNapaka && (
+                <p className="posl-napaka" role="alert">{L('Email naslov ni pravilno napisan.', 'That email address is not written correctly.')}</p>
+              )}
               <div className="posl-akcija">
                 <span className={'posl-potrdi-txt' + (potrdiPosiljanje ? '' : ' je-skrit')} aria-hidden={!potrdiPosiljanje}>
                   {L('Pošiljam ' + prejemniki.length + (prejemniki.length === 1 ? ' prejemniku:' : ' prejemnikom:'),
