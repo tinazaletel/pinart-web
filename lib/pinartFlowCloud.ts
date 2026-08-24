@@ -438,15 +438,28 @@ export function mergeFlowData(cloud: FlowData, local: FlowData): FlowData {
 const BUSINESS_DOCUMENT_BUCKET = 'business-documents';
 const MAX_BUSINESS_DOCUMENT_BYTES = 25 * 1024 * 1024;
 const MAX_SIGNED_URL_SECONDS = 3600;
+/* Seznam mora biti usklajen z vedrom (allowed_mime_types) in z lib/priponke.ts.
+   Prej je bil ožji od obojega, zato je datoteka, ki jo je vmesnik sprejel, tu
+   tiho padla — SVG, GIF, TXT in Officeove starejše oblike sploh niso prišle
+   skozi, sporočilo pa je govorilo o PDF, PNG in ZIP. */
 const ALLOWED_BUSINESS_DOCUMENT_TYPES: Record<string, readonly string[]> = {
   pdf: ['application/pdf'],
   png: ['image/png'],
   jpg: ['image/jpeg'],
   jpeg: ['image/jpeg'],
   webp: ['image/webp'],
+  gif: ['image/gif'],
+  heic: ['image/heic', 'image/heif'],
+  svg: ['image/svg+xml'],
+  txt: ['text/plain'],
+  rtf: ['application/rtf', 'text/rtf'],
+  ics: ['text/calendar'],
+  doc: ['application/msword'],
+  xls: ['application/vnd.ms-excel'],
   docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
   xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-  csv: ['text/csv', 'application/csv'],
+  pptx: ['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+  csv: ['text/csv', 'application/csv', 'text/plain'],
   zip: ['application/zip', 'application/x-zip-compressed'],
 };
 
@@ -483,7 +496,7 @@ function validateBusinessDocument(file: File): { safeName: string; mime: string 
   const allowedMime = ALLOWED_BUSINESS_DOCUMENT_TYPES[extension];
   const mime = file.type.trim().toLowerCase();
   if (!allowedMime || !mime || !allowedMime.includes(mime)) {
-    throw new Error('Dovoljene so datoteke PDF, PNG, JPG, WEBP, DOCX, XLSX, CSV in ZIP.');
+    throw new Error(`Te vrste datoteke ne sprejmemo: »${originalName}« (${mime || 'neznana vrsta'}). Dovoljeni so PDF, slike, Word, Excel, PowerPoint, CSV, TXT in ZIP.`);
   }
   const safeName = originalName.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^\.+/, '').slice(0, 180);
   if (!safeName || safeName.includes('..')) throw new Error('Ime datoteke ni veljavno.');

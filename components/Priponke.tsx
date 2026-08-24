@@ -116,7 +116,12 @@ export function usePriponke(nastavitve: {
         void preberiKvoto().then(setKvota).catch(() => undefined);
         setNapaka('');
       } catch (e) {
-        const sporocilo = e instanceof Error ? e.message : '';
+        /* Supabase vrne napako kot navaden predmet, ne kot Error — brez tega je
+           sporocilo prazno in uporabnica dobi "Priponke ni bilo mogoce
+           nalozitI" brez razloga, mi pa nimamo cesa popraviti. */
+        const sporocilo = e instanceof Error
+          ? e.message
+          : (typeof e === 'object' && e && 'message' in e ? String((e as { message: unknown }).message) : '');
         setNapaka(sporocilo.includes('Prijava')
           ? L('Priponke se shranijo v oblak, zato so na voljo prijavljenim. Prijavi se in poskusi znova.',
               'Attachments are stored in the cloud, so they need a signed-in account. Sign in and try again.')
