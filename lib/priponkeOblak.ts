@@ -18,16 +18,22 @@ export { jeSlika } from '@/lib/priponke';
 export type PriponkaSekcija = 'mail' | 'naloge';
 export type PodatekKvote = { porabljeno: number; kvota: number; stanje: 'ok' | 'opozorilo' | 'polno' };
 
+/* Vrne null, kadar porabe NI MOGOČE izmeriti (ni organizacije, pot ne odgovori,
+   odgovor je nesmiseln). Namenoma ne vrže napake: neuspela MERITEV ne sme
+   ustaviti dela. Trde meje — 10 MB na datoteko in 20 MB na sporočilo — veljajo
+   naprej, zaledje pa priponko tako ali tako preveri še enkrat. */
 export async function preberiKvoto(): Promise<PodatekKvote | null> {
-  const kontekst = await getOrganizationContext();
-  if (!kontekst) return null;
-  const odgovor = await fetch(`/api/kvota?organizationId=${encodeURIComponent(kontekst.organizationId)}`, { cache: 'no-store' });
-  if (!odgovor.ok) throw new Error('Porabe prostora trenutno ni mogoče preveriti. Poskusi znova.');
-  const podatek = await odgovor.json() as Partial<PodatekKvote>;
-  if (typeof podatek.porabljeno !== 'number' || typeof podatek.kvota !== 'number' || !podatek.stanje) {
-    throw new Error('Porabe prostora trenutno ni mogoče preveriti. Poskusi znova.');
+  try {
+    const kontekst = await getOrganizationContext();
+    if (!kontekst) return null;
+    const odgovor = await fetch(`/api/kvota?organizationId=${encodeURIComponent(kontekst.organizationId)}`, { cache: 'no-store' });
+    if (!odgovor.ok) return null;
+    const podatek = await odgovor.json() as Partial<PodatekKvote>;
+    if (typeof podatek.porabljeno !== 'number' || typeof podatek.kvota !== 'number' || !podatek.stanje) return null;
+    return podatek as PodatekKvote;
+  } catch {
+    return null;
   }
-  return podatek as PodatekKvote;
 }
 
 /* Je uporabnik prijavljen (in ima organizacijo)? Priponke gredo v oblak, zato
@@ -41,8 +47,11 @@ export async function jePriponkeMogoce(): Promise<boolean> {
 export async function naloziPriponko(datoteka: File, sekcija: PriponkaSekcija, sklic: string): Promise<Priponka> {
   const izid = preveriPriponko({ ime: datoteka.name, velikost: datoteka.size });
   if (!izid.veljavno) throw new Error(izid.napaka || 'Priponka ni veljavna.');
+  /* Ustavimo SAMO, kadar imamo resnično meritev in ta pove, da je polno.
+     Če kvote ni mogoče izmeriti, gre datoteka skozi — bolje naložiti brez
+     meritve kot ustaviti delo zaradi okvarjenega merilnika. */
   const stanje = await preberiKvoto();
-  if (!stanje || !jeSeProstora(stanje.porabljeno, stanje.kvota, datoteka.size)) {
+  if (stanje && !jeSeProstora(stanje.porabljeno, stanje.kvota, datoteka.size)) {
     throw new Error('Prostor za priponke je zapolnjen. Obstoječe datoteke ostajajo dostopne, nove pa trenutno ni mogoče naložiti.');
   }
   const pot = await uploadBusinessDocument(datoteka, sekcija, sklic);
