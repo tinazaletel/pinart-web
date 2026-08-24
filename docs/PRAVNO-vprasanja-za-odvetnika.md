@@ -302,3 +302,9 @@ v politiki že naveden), seznam za pošiljanje nastane šele ob kliku, nepotrjen
 prijave se izbrišejo po 14 dneh. Odjava izbriše zapis. IP-naslova ne hranimo.
 Vprašanje: ali je tak zapis privolitve (čas, vir, različica pogojev) dovolj
 kot dokaz po členu 7(1) GDPR?
+
+## 20. Pogoji za brezplačni kalkulator (brez računa)
+
+Glej enako točko v paketu: ali za anonimno rabo zadošča dvostopenjski pristop
+(kratka kartica ob vstopu, celotni pogoji ob prvem izvozu), ali priporočate
+ločene, krajše pogoje samo za brezplačni kalkulator?
