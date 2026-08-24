@@ -6708,6 +6708,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .se-toggle input:checked + .se-slider::before { transform: translateX(calc(2.6rem - 1.5rem)); }
         .cw .se-preklop em { font-style: normal; color: rgba(17,17,17,.72); font-weight: 400; }
         .cw .se-note { margin: .8rem 0 0; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.62); }
+        /* Za gumbom: "Kaj imas od tega" in prijava na obvescanje sta
+           dodatka, ne pogoja. Prej sta stala NAD gumbom in na prenosniku
+           si morala drsati, preden si sploh lahko zacela. */
+        .cw .soglasje-kartica .sg-po-gumbu { margin-top: 1.6rem; }
+        .cw .soglasje-kartica .soglasje-email { margin-top: 1.1rem; margin-bottom: 0; }
         .cw .soglasje-gumbi { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
         .cw .sg-potrdi { display: flex; align-items: flex-start; gap: .6rem; font-size: .95rem; line-height: 1.5; color: var(--ink); cursor: pointer; text-align: left; max-width: 34rem; }
         .cw .sg-potrdi input { flex: none; width: 1.15rem; height: 1.15rem; margin-top: .18rem; accent-color: var(--accent, #B25476); cursor: pointer; }
@@ -7854,8 +7859,37 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               </div>
               </>)}
             </div>
+            {vFlow && (
+              <div className="sg-pogoji">
+                <span className="sg-pogoji-ozn">{L('Pogoji poslovanja', 'Terms of business')}</span>
+                <iframe className="sg-pogoji-okvir" title={L('Pogoji poslovanja', 'Terms of business')}
+                  src={localePath(locale, `/kalkulator/pogoji`)} onLoad={naloziPogoje} />
+                <p className="sg-pogoji-namig">
+                  {pogojiPrebrani
+                    ? L('Hvala — zdaj lahko potrdiš spodaj.', 'Thank you — you can confirm below.')
+                    : L('Preleti pogoje do konca, da jih lahko potrdiš.', 'Scroll through the terms to the end to confirm them.')}
+                </p>
+              </div>
+            )}
+            <div className="soglasje-gumbi">
+              {vFlow && (
+                <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}>
+                  <input type="checkbox" checked={pogojiPotrjeni} disabled={!pogojiPrebrani} onChange={e => setPogojiPotrjeni(e.target.checked)} />
+                  <span>{L('Preletel/-a sem in potrjujem ', 'I have reviewed and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
+                </label>
+              )}
+              {!vFlow && (
+                <p className="sg-vhod">
+                  {L('S klikom potrjuješ ', 'By clicking you accept the ')}
+                  <a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje uporabe', 'terms of use')}</a>
+                  {L(' in ', ' and the ')}
+                  <a href={localePath(locale, `/zasebnost`)} target="_blank" rel="noopener noreferrer">{L('politiko zasebnosti', 'privacy policy')}</a>.
+                </p>
+              )}
+              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vFlow && !pogojiPotrjeni} title={vFlow && !pogojiPotrjeni ? L('Najprej preleti in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vFlow ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
+            </div>
             {!vFlow && (
-            <div className="sg-motiv">
+            <div className="sg-motiv sg-po-gumbu">
               <span className="sg-motiv-ozn">{L('★ Kaj imaš od tega', '★ What\'s in it for you')}</span>
               <p>{L('Skupaj gradimo', 'Together we\'re building')} <b>{L('prvo statistiko cen za kreativce', 'the first pricing statistics for creatives')}</b>{L(': ko bo baza dovolj velika, boš videl,', ': once the database is big enough, you\'ll see')} <b>{L('koliko kolegi s tvojimi izkušnjami dejansko računajo', 'how much peers with your experience actually charge')}</b> {L('— česar danes ne pove nihče.', '— which nobody tells you today.')}</p>
             </div>
@@ -7889,35 +7923,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
             </div>
             )}
-            {vFlow && (
-              <div className="sg-pogoji">
-                <span className="sg-pogoji-ozn">{L('Pogoji poslovanja', 'Terms of business')}</span>
-                <iframe className="sg-pogoji-okvir" title={L('Pogoji poslovanja', 'Terms of business')}
-                  src={localePath(locale, `/kalkulator/pogoji`)} onLoad={naloziPogoje} />
-                <p className="sg-pogoji-namig">
-                  {pogojiPrebrani
-                    ? L('Hvala — zdaj lahko potrdiš spodaj.', 'Thank you — you can confirm below.')
-                    : L('Preleti pogoje do konca, da jih lahko potrdiš.', 'Scroll through the terms to the end to confirm them.')}
-                </p>
-              </div>
-            )}
-            <div className="soglasje-gumbi">
-              {vFlow && (
-                <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}>
-                  <input type="checkbox" checked={pogojiPotrjeni} disabled={!pogojiPrebrani} onChange={e => setPogojiPotrjeni(e.target.checked)} />
-                  <span>{L('Preletel/-a sem in potrjujem ', 'I have reviewed and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
-                </label>
-              )}
-              {!vFlow && (
-                <p className="sg-vhod">
-                  {L('S klikom potrjuješ ', 'By clicking you accept the ')}
-                  <a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje uporabe', 'terms of use')}</a>
-                  {L(' in ', ' and the ')}
-                  <a href={localePath(locale, `/zasebnost`)} target="_blank" rel="noopener noreferrer">{L('politiko zasebnosti', 'privacy policy')}</a>.
-                </p>
-              )}
-              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vFlow && !pogojiPotrjeni} title={vFlow && !pogojiPotrjeni ? L('Najprej preleti in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vFlow ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
-            </div>
           </div>
         </div>
         </div>,
