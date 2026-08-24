@@ -225,6 +225,11 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     return () => {
       gsap.ticker.remove(tickerFn);
       lenis.destroy();
+      /* Globalno referenco MORAMO pobrisati, ne le unicit instance. Landing in
+         kalkulator Lenisa ne uporabljata; ce tu ostane kazalec na unicen
+         predmet, gre skok na vrh ob menjavi strani nanj, tam pa ne naredi
+         nicesar — in obiskovalec pristane sredi strani, kjer je bil prej. */
+      delete (window as unknown as { __pinartLenis?: unknown }).__pinartLenis;
       history.pushState = origPushState;
       window.removeEventListener('pinart-snap',        onSnap);
       window.removeEventListener('pinart-lenis-stop',  onStop);
