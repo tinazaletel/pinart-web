@@ -14,10 +14,16 @@ export const NAJVEC_BAJTOV_SKUPAJ = 20 * 1024 * 1024;   /* 20 MB na sporočilo *
    se mu ne da verjeti, končnica je tisto, kar sistem dejansko zažene. */
 export const PREPOVEDANE_KONCNICE: readonly string[] = ['exe', 'bat', 'cmd', 'sh', 'js', 'msi'];
 
-/* SVG ni izvrsljiva datoteka in ni isti primer kot .exe: nevaren je samo zato,
-   ker ga brskalnik IZRISE in pri tem lahko pozene skripto v njem. Zato ga
-   zavrnemo kot priponko, uporabnici pa povemo pot naprej — v stisnjeni mapi se
-   ne izrise nikjer, zato je varen in ostane urejljiv. */
+/* SVG ni izvrsljiva datoteka in ni isti primer kot .exe. Nevaren je samo, ce ga
+   brskalnik IZRISE — takrat lahko pozene skripto v njem. HRANITI ga je varno.
+--
+   Oblikovalka logotipe v SVG dobiva ves cas (agencija posije znak), zato ga ne
+   smemo zavrniti — s tem bi ji vzeli material za delo. Namesto prepovedi:
+     1. shranimo ga,
+     2. NIKOLI ga ne izrisemo (jeSlika ga namenoma ne prizna za sliko),
+     3. povezava je vedno PRENOS, ne odpiranje v brskalniku,
+     4. ob posiljanju opozorimo, da ga nekateri postni strezniki zavrnejo.
+   Odlocitev, ali ga posije ali stisne v zip, ostane uporabnicina. */
 export const SVG_KONCNICE: readonly string[] = ['svg', 'svgz'];
 
 export const jeSvg = (ime: string): boolean => SVG_KONCNICE.includes(koncnicaDatoteke(ime));
@@ -32,7 +38,9 @@ export type Priponka = {
   pot?: string;
 };
 
-export type Izid = { veljavno: boolean; napaka?: string };
+/* opozorilo: datoteka je sprejeta, uporabnica pa mora nekaj vedeti. Ni napaka
+   in ne sme blokirati posiljanja. */
+export type Izid = { veljavno: boolean; napaka?: string; opozorilo?: string };
 
 /* Končnica malih črk, brez pike. Odreže zaključne pike in presledke
    ("virus.exe." se na Windows zažene kot .exe) in vrne '' za datoteke brez nje. */
@@ -98,8 +106,8 @@ export function preveriPriponko(priponka: { ime: string; velikost: number }): Iz
   }
   if (jeSvg(ime)) {
     return {
-      veljavno: false,
-      napaka: `SVG ne moremo pripeti, ker se v brskalniku izriše in lahko nosi skripto. Stisni ga v .zip — tako ostane urejljiv in gre skozi. Če naj ga prejemnik samo pogleda, pripni PDF ali PNG.`,
+      veljavno: true,
+      opozorilo: `SVG je pripet in shranjen. Nekateri poštni strežniki ga zavrnejo — če je pomembno, da pride, ga raje stisni v .zip. V Flowu se nikoli ne odpre v brskalniku, samo prenese.`,
     };
   }
   if (jePrepovedanaDatoteka(ime)) {

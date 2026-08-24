@@ -34,6 +34,7 @@ function Slog() {
       .pri-gumb:hover:not(:disabled){background:var(--pri-ink);color:#fff;border-color:transparent}
       .pri-gumb:disabled{opacity:.45;cursor:not-allowed}
       .pri-meja{font:600 .72rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--pri-ink) 60%,transparent);text-transform:none;letter-spacing:0}
+      .pri-opozorilo{flex:1 0 100%;margin:.1rem 0 0;padding:.55rem .75rem;border:1px solid oklch(82% .09 75);border-radius:.6rem;background:oklch(97% .03 80);color:oklch(42% .09 60);font:600 .78rem var(--font-sans),sans-serif;text-transform:none;letter-spacing:0;line-height:1.45}
       .pri-napaka{flex:1 0 100%;margin:.1rem 0 0;padding:.55rem .75rem;border:1px solid oklch(78% .13 25);border-radius:.6rem;background:oklch(96% .04 25);color:oklch(45% .18 25);font:700 .78rem var(--font-sans),sans-serif;text-transform:none;letter-spacing:0}
       .pri-mirno{flex:1 0 100%;margin:0;font:500 .78rem/1.5 var(--font-sans),sans-serif;color:color-mix(in oklch,var(--pri-ink) 70%,transparent);text-transform:none;letter-spacing:0}
       .pri-glava{display:inline-flex;align-items:center;gap:.3rem;margin:0 0 .5rem;font:700 .66rem var(--font-sans),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in oklch,var(--pri-ink) 62%,transparent)}
@@ -83,6 +84,7 @@ export function usePriponke(nastavitve: {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [nalagam, setNalagam] = useState(false);
   const [napaka, setNapaka] = useState('');
+  const [opozorilo, setOpozorilo] = useState('');
 
   const dodajDatoteke = async (datoteke: File[]) => {
     if (!datoteke.length) return;
@@ -91,6 +93,7 @@ export function usePriponke(nastavitve: {
     for (const datoteka of datoteke) {
       const izid = preveriPriponko({ ime: datoteka.name, velikost: datoteka.size });
       if (!izid.veljavno) { setNapaka(izid.napaka || ''); continue; }
+      if (izid.opozorilo) setOpozorilo(izid.opozorilo);
       if (!jeSeProstor(zbrane, datoteka.size)) {
         setNapaka(L(
           `Največ ${NAJVEC_PRIPONK} priponk in ${berljivaVelikost(NAJVEC_BAJTOV_SKUPAJ)} skupaj.`,
@@ -114,7 +117,7 @@ export function usePriponke(nastavitve: {
     setNalagam(false);
   };
 
-  return { nalagam, napaka, setNapaka, dodajDatoteke };
+  return { nalagam, napaka, setNapaka, opozorilo, setOpozorilo, dodajDatoteke };
 }
 
 /* Vnos: gumb »Pripni datoteko« + seznam že pripetih (z odstranjevanjem).
@@ -135,7 +138,7 @@ export function PriponkeVnos({
 }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const vhodRef = useRef<HTMLInputElement | null>(null);
-  const { nalagam, napaka, dodajDatoteke } = usePriponke({ sekcija, sklic, priponke, onSpremeni, jeEn });
+  const { nalagam, napaka, opozorilo, dodajDatoteke } = usePriponke({ sekcija, sklic, priponke, onSpremeni, jeEn });
   if (dodajRef) dodajRef.current = omogoceno ? (d: File[]) => { void dodajDatoteke(d); } : null;
 
   if (!omogoceno) {
@@ -167,6 +170,7 @@ export function PriponkeVnos({
           {priponke.length}/{NAJVEC_PRIPONK} · {berljivaVelikost(skupnaVelikost(priponke))} {L('od', 'of')} {berljivaVelikost(NAJVEC_BAJTOV_SKUPAJ)}
         </span>
         {napaka && <p className="pri-napaka">{napaka}</p>}
+        {!napaka && opozorilo && <p className="pri-opozorilo">{opozorilo}</p>}
         {priponke.length > 0 && (
           <PriponkeSeznam
             priponke={priponke}
@@ -195,7 +199,7 @@ export function PriponkeSeznam({
   if (!priponke.length) return null;
   const prenesi = async (p: Priponka) => {
     if (!p.pot) return;
-    try { window.open(await povezavaPriponke(p.pot, 300), '_blank', 'noopener,noreferrer'); }
+    try { window.open(await povezavaPriponke(p.pot, 300, p.ime), '_blank', 'noopener,noreferrer'); }
     catch { /* povezava je potekla ali datoteke ni — gumb preprosto ne stori nič */ }
   };
   return (

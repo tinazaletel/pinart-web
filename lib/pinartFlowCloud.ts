@@ -525,7 +525,7 @@ export async function uploadBusinessDocument(file: File, section: string, extern
   return path;
 }
 
-export async function getBusinessDocumentUrl(path: string, expiresIn = 60): Promise<string> {
+export async function getBusinessDocumentUrl(path: string, expiresIn = 60, prenesiKot?: string): Promise<string> {
   const context = await getOrganizationContext();
   if (!context) throw new Error('Prijava je potekla.');
   if (!path.startsWith(`${context.organizationId}/`) || path.includes('..')) {
@@ -542,7 +542,11 @@ export async function getBusinessDocumentUrl(path: string, expiresIn = 60): Prom
   if (!document || document.deleted_at) throw new Error('Datoteka ne obstaja ali je arhivirana.');
   if (document.scan_status !== 'clean') throw new Error('Datoteka še ni varnostno potrjena.');
   const seconds = Math.min(MAX_SIGNED_URL_SECONDS, Math.max(1, Number.isFinite(expiresIn) ? Math.floor(expiresIn) : 60));
-  const { data, error } = await supabase.storage.from(document.bucket).createSignedUrl(path, seconds);
+  /* prenesiKot postavi Content-Disposition: attachment. Za SVG je to varnostna
+     zahteva — brskalnik ga tako ne izrise in skripta v njem ne stece. */
+  const { data, error } = await supabase.storage
+    .from(document.bucket)
+    .createSignedUrl(path, seconds, prenesiKot ? { download: prenesiKot } : undefined);
   if (error) throw error;
   return data.signedUrl;
 }

@@ -36,9 +36,11 @@ export async function naloziPriponko(datoteka: File, sekcija: PriponkaSekcija, s
   };
 }
 
-/* Kratkoživa podpisana povezava za prenos ali predogled (vedro je zasebno). */
-export async function povezavaPriponke(pot: string, sekund = 300): Promise<string> {
-  return getBusinessDocumentUrl(pot, sekund);
+/* Kratkoživa podpisana povezava (vedro je zasebno).
+   prenesiKot = ime datoteke -> povezava PRENESE namesto odpre. Za SVG to ni
+   udobje, ampak varnost: v brskalniku se ne izriše in skripta v njem ne steče. */
+export async function povezavaPriponke(pot: string, sekund = 300, prenesiKot?: string): Promise<string> {
+  return getBusinessDocumentUrl(pot, sekund, prenesiKot);
 }
 
 /* Datoteke iz odložišča (Cmd+V). Zaslonska slika pride brez imena, zato ga tu

@@ -157,26 +157,42 @@ describe('predogled slike', () => {
   });
 });
 
-describe('zavrnitev pove, kaj naj uporabnica naredi', () => {
-  it('SVG dobi svojo razlago in pot naprej (zip)', () => {
+describe('SVG: sprejet, a z opozorilom — logotipe dobiva ves cas', () => {
+  it('SVG je sprejet in ne vrne napake', () => {
     const izid = preveriPriponko({ ime: 'logotip.svg', velikost: 12_000 });
-    expect(izid.veljavno).toBe(false);
-    expect(izid.napaka).toContain('.zip');
-    expect(izid.napaka).not.toContain('izvršljiv');
+    expect(izid.veljavno).toBe(true);
+    expect(izid.napaka).toBeUndefined();
+  });
+
+  it('SVG opozori, da ga nekateri strezniki zavrnejo, in ponudi zip', () => {
+    const izid = preveriPriponko({ ime: 'logotip.svg', velikost: 12_000 });
+    expect(izid.opozorilo).toContain('.zip');
   });
 
   it('svgz je obravnavan enako kot svg', () => {
-    expect(preveriPriponko({ ime: 'risba.svgz', velikost: 900 }).napaka).toContain('.zip');
+    expect(preveriPriponko({ ime: 'risba.svgz', velikost: 900 }).veljavno).toBe(true);
+    expect(preveriPriponko({ ime: 'risba.svgz', velikost: 900 }).opozorilo).toBeTruthy();
   });
 
-  it('izvrsljiva datoteka NE dobi nasveta, naj jo stisne', () => {
+  it('SVG se NIKOLI ne steje za sliko — predogleda ne sme dobiti', () => {
+    expect(jeSlika({ ime: 'logotip.svg', mime: 'image/svg+xml' })).toBe(false);
+    expect(jeSlika({ ime: 'logotip.svg' })).toBe(false);
+  });
+
+  it('SVG prevelik pade na velikosti, ne na vrsti', () => {
+    const izid = preveriPriponko({ ime: 'ogromen.svg', velikost: 11 * 1024 * 1024 });
+    expect(izid.veljavno).toBe(false);
+    expect(izid.napaka).toContain('največ');
+  });
+
+  it('izvrsljiva datoteka ostane prepovedana in NE dobi nasveta za zip', () => {
     const izid = preveriPriponko({ ime: 'namesti.exe', velikost: 2_000 });
     expect(izid.veljavno).toBe(false);
     expect(izid.napaka).not.toContain('.zip');
     expect(izid.napaka).toContain('povezavo');
   });
 
-  it('zip s svg vsebino je dovoljen — nevarnost je izris, ne datoteka', () => {
-    expect(preveriPriponko({ ime: 'logotipi.zip', velikost: 200_000 }).veljavno).toBe(true);
+  it('navadna datoteka nima opozorila', () => {
+    expect(preveriPriponko({ ime: 'ponudba.pdf', velikost: 50_000 }).opozorilo).toBeUndefined();
   });
 });
