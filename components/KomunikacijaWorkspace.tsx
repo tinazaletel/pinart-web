@@ -12,7 +12,7 @@ import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, d
 import { usePredogled } from '@/lib/predogled';
 import { preberiVsePoste, premakniPosto, nastaviOznakePoste, nastaviPopravekPoste, dodajPosto, oznaciPostoPrebrano, oznaciPostoIzbrisano, izbrisiPostoTrajno, type PostaVnos } from '@/lib/postaDnevnik';
 import { pullAllMail, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent, updateProjectMailRevision } from '@/lib/pinartMailCloud';
-import { PriponkeSeznam, PriponkeVnos } from '@/components/Priponke';
+import { PriponkeSeznam, PriponkeVnos, datotekeIzOdlozisca } from '@/components/Priponke';
 import type { Priponka } from '@/lib/priponke';
 import { oznaciNitVideno, javiSpremembo } from '@/lib/komObvestila';
 import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
@@ -57,6 +57,15 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
      prazno = nov uporabnik: nobenih demo mailov/klepetov — vse prazno. */
   const prazno = nacin === 'empty';
   const demo = nacin !== 'mine';
+  /* Cmd+V v polje za sporocilo pripne zaslonsko sliko — isto kot pri komentarju
+     naloge. Brez tega mora uporabnica sliko najprej shraniti na namizje. */
+  const dodajPriponkeRef = useRef<((d: File[]) => void) | null>(null);
+  const prilepiVPriponke = (e: React.ClipboardEvent) => {
+    const datoteke = datotekeIzOdlozisca(e.clipboardData, Date.now());
+    if (!datoteke.length || !dodajPriponkeRef.current) return;
+    e.preventDefault();
+    dodajPriponkeRef.current(datoteke);
+  };
   const [email, setEmail] = useState<string | null>(null);
   const [niti, setNiti] = useState<OblacnaNit[]>([]);
   const [izbrana, setIzbrana] = useState<string | null>(null);
@@ -384,8 +393,8 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
               </label>
               <label>{L('Za', 'To')}<input type="email" list="km-prejemniki-list" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /><datalist id="km-prejemniki-list">{prejemnikiVsi.map(p => <option key={p} value={p} />)}</datalist></label>
               <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
-              <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
-              <PriponkeVnos sekcija="mail" sklic={pisiSklic || 'osnutek'} priponke={pisiPriponke} onSpremeni={setPisiPriponke} jeEn={jeEn}
+              <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} onPaste={prilepiVPriponke} rows={6} /></label>
+              <PriponkeVnos sekcija="mail" sklic={pisiSklic || 'osnutek'} priponke={pisiPriponke} onSpremeni={setPisiPriponke} jeEn={jeEn} dodajRef={dodajPriponkeRef}
                 omogoceno={!demo} razlogZakleneno={L('V predogledu se priponke ne nalagajo — zgoraj preklopi na »Moji podatki«.', 'Attachments are not uploaded in preview — switch to “My data” above.')} />
               {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
               <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="km-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="km-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="km-send-ik" /></>}</button></div>
@@ -478,8 +487,8 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
                   <div className="km-pisi-glava"><b>{pisiVrsta === 'odgovor' ? L('Odgovori', 'Reply') : L('Posreduj', 'Forward')}</b><button type="button" aria-label={L('Zapri', 'Close')} onClick={() => setPisiVrsta(false)}>×</button></div>
                   <label>{L('Za', 'To')}<input type="email" list="km-prejemniki-list" value={pisiZa} onChange={e => setPisiZa(e.target.value)} placeholder="ime@domena.si" /><datalist id="km-prejemniki-list">{prejemnikiVsi.map(p => <option key={p} value={p} />)}</datalist></label>
                   <label>{L('Zadeva', 'Subject')}<input value={pisiZadeva} onChange={e => setPisiZadeva(e.target.value)} /></label>
-                  <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} rows={6} /></label>
-                  <PriponkeVnos sekcija="mail" sklic={pisiSklic || 'osnutek'} priponke={pisiPriponke} onSpremeni={setPisiPriponke} jeEn={jeEn}
+                  <label>{L('Sporočilo', 'Message')}<textarea value={pisiTelo} onChange={e => setPisiTelo(e.target.value)} onPaste={prilepiVPriponke} rows={6} /></label>
+                  <PriponkeVnos sekcija="mail" sklic={pisiSklic || 'osnutek'} priponke={pisiPriponke} onSpremeni={setPisiPriponke} jeEn={jeEn} dodajRef={dodajPriponkeRef}
                     omogoceno={!demo} razlogZakleneno={L('V predogledu se priponke ne nalagajo — zgoraj preklopi na »Moji podatki«.', 'Attachments are not uploaded in preview — switch to “My data” above.')} />
                   {pisiStatus && <p className="km-pisi-status">{pisiStatus}</p>}{pisiUspeh && <p className="km-pisi-uspeh">✓ {L('Poslano', 'Sent')}</p>}
                   <div className="km-pisi-akc"><button type="button" onClick={() => setPisiVrsta(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="prim" disabled={pisiPosiljam || pisiUspeh}>{pisiPosiljam ? <>{L('Pošiljam …', 'Sending …')} <PaperPlaneRight size={15} weight="fill" className="km-send-leti" /></> : pisiUspeh ? <><Check size={16} weight="bold" className="km-send-ok" /> {L('Poslano', 'Sent')}</> : <>{L('Pošlji', 'Send')} <PaperPlaneRight size={15} weight="fill" className="km-send-ik" /></>}</button></div>
