@@ -216,8 +216,8 @@ vrnitvi po prekinitvi?
 KAJ SMO ŽE POPRAVILI
 
 Omenjamo zato, ker so bili to primeri, kjer je dokument trdil nekaj drugega kot
-koda. Radi bi, da za celoto velja: **politika opisuje resnično obdelavo, ne
-želene.**
+koda. Radi bi, da za celoto velja: politika opisuje resnično obdelavo, ne
+želene.
 
   – Časovni žig. Politika in pogoji so navajali različna mehanizma (FreeTSA po
   RFC 3161 proti OpenTimestamps/Bitcoin). Poenoteno po tem, kar koda res
@@ -262,8 +262,8 @@ V aplikaciji je tudi gumb, prek katerega se stranka lahko odloči za odvetnika
 
 ──────────────────────────────────────────────────────────────
 
-Prošnja. Zanima nas predvsem, kaj je **nujno popraviti pred javnim
-zagonom** in kaj lahko počaka. Zagon je predviden v začetku septembra 2026.
+Prošnja. Zanima nas predvsem, kaj je nujno popraviti pred javnim
+zagonom in kaj lahko počaka. Zagon je predviden v začetku septembra 2026.
 
 Prosimo tudi za priporočilo odvetnika za to vrsto vprašanj — SaaS, GDPR, AI
 in avtorske pravice — za slovenski in za ameriški trg. Flow načrtujemo tudi
@@ -283,8 +283,8 @@ PRILOGE
 19. DVA PODOBDELOVALCA, KI JU POLITIKA PREJ NI NAVAJALA (24.–25. 8. 2026)
 
 Med urejanjem prijave na obveščanje sta se pokazali dve neskladji med tem, kar
-je politika zasebnosti navajala, in tem, kar koda dejansko počne. **Obe smo
-  25. 8. 2026 popravili** — v točki 5a politike in točki 8a pogojev — prosimo pa
+je politika zasebnosti navajala, in tem, kar koda dejansko počne. Obe smo
+  25. 8. 2026 popravili — v točki 5a politike in točki 8a pogojev — prosimo pa
 za potrditev, da popravka zadoščata, in za oceno, ali je treba obvestiti tiste,
 ki so obrazec izpolnili pred popravkom.
 
@@ -311,8 +311,8 @@ ločene, krajše pogoje samo za brezplačni kalkulator?
 
 21. KAJ NAČRTUJEMO (PROSIMO ZA OCENO VNAPREJ, DA VAS NE OBREMENJUJEMO VEČKRAT)
 
-Spodaj je vse, kar je na načrtu za naslednje leto. Prosimo za **kratko oceno pri
-vsaki točki**: ali gre za regulirano dejavnost, kaj bo treba dodati v pogoje ali
+Spodaj je vse, kar je na načrtu za naslednje leto. Prosimo za kratko oceno pri
+vsaki točki: ali gre za regulirano dejavnost, kaj bo treba dodati v pogoje ali
 politiko in kaj je treba urediti, še preden funkcija zaživi. Raje enkrat
 pogledate celoto, kot da vam pošiljamo dopolnitve vsak mesec.
 
