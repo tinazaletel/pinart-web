@@ -491,7 +491,17 @@ export default function BusinessOverview({ base }: { base: string }) {
               </li>
             ))}
           </ul>
-        ) : <p className={styles.tipText}>{danes ? L('Danes te nič ne čaka.', 'Nothing needs you today.') : ''}</p>}
+        ) : danes ? (
+          /* Isti vzorec praznega stanja kot Aktivne naloge in Zadnja posta —
+             drobna siva vrstica je izpadla kot pomota, ne kot mirno stanje. */
+          <div className={styles.emptyState}>
+            <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span>
+            <div>
+              <strong>{L('Danes te nič ne čaka.', 'Nothing needs you today.')}</strong>
+              <p>{L('Roki, računi in opomniki se prikažejo tukaj.', 'Deadlines, invoices and reminders appear here.')}</p>
+            </div>
+          </div>
+        ) : null}
         </div>
       </section>
 

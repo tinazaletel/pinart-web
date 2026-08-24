@@ -76,7 +76,11 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
               if (cilj) {
                 e.preventDefault();
                 cilj.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                if (typeof history !== 'undefined') history.replaceState(null, '', `${flow}#orodja`);
+                /* Sidra NE pisemo v naslovno vrstico. Naslov je ostal
+                   /flow#orodja za vedno, zato je vsaka poznejsa vrnitev na
+                   landing (tudi "x zapri" iz aplikacije) pristala pri orodjih
+                   namesto na vrhu. Premik se zgodi tu in zdaj; naslov naj
+                   ostane /flow. */
               }
               close();
             }}><strong>{isEn ? 'All tools' : 'Vsa orodja'}</strong><span>{isEn ? 'Every tool a creative business needs' : 'Vse za poslovanje kreativca na enem mestu'}</span></a>
