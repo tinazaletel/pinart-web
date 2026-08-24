@@ -35,12 +35,15 @@ import RotatingLaptop from '@/components/RotatingLaptop';
         svoj AI" (razlikovalec, ne okras).
    Vsaka razlicica ohrani per-word "flWordUp" animacijo ob menjavi (key={heroIdx}). */
 const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
-  { pre: ['Od', 'ponudbe'], em: ['do', 'računa.'] },
+  /* "Od ponudbe do racuna" je prodajal cevovod dokumentov; Flow je cel
+     business suite s PROJEKTI v sredini (Tina, 24. 8.). Projekt je enota,
+     tok je njegova vsebina — in konca se pri placilu, ne pri racunu. */
+  { pre: ['Vsak', 'projekt,'], em: ['od', 'ponudbe', 'do', 'plačila.'] },
   { pre: ['Vse', 'tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
   { pre: ['A', 'veš,', 'koliko', 'je'], em: ['vredno', 'tvoje', 'delo?'] },
 ];
 const HERO_TITLES_EN: { pre: string[]; em: string[] }[] = [
-  { pre: ['From', 'proposal'], em: ['to', 'invoice.'] },
+  { pre: ['Every', 'project,'], em: ['from', 'proposal', 'to', 'payment.'] },
   { pre: ['Your', 'whole', 'creative', 'business'], em: ['in', 'one', 'place.'] },
   { pre: ['Do', 'you', 'know', 'what'], em: ['your', 'work', 'is', 'worth?'] },
 ];
