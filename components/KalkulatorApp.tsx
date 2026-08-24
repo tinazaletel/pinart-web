@@ -6029,6 +6029,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @keyframes sgOdhod { from { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
         @media (prefers-reduced-motion: reduce) { .cw .soglasje-odhaja { animation: none; opacity: 0; } }
         .cw .soglasje-kartica { max-width: 540px; max-height: calc(100dvh - 2.5rem); overflow-y: auto; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
+        /* Okvir s pogoji sega BLIZE robu kartice, da so vrstice daljse in
+           besedilo berljivejse (Tina, 25. 8.: "manjsi left in right margin").
+           Ostala vsebina kartice obdrzi svoj rob. */
+        .cw .sg-pogoji { margin-inline: calc(-1 * clamp(.7rem, 2.2vw, 1.4rem)); }
+        .cw .sg-pogoji-ozn, .cw .sg-pogoji-namig { padding-inline: clamp(.7rem, 2.2vw, 1.4rem); }
         .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
         .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
