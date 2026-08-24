@@ -1263,6 +1263,14 @@ textarea:user-invalid {
   border-color: #e5484d !important;
   box-shadow: 0 0 0 1px rgba(229, 72, 77, 0.35) !important;
 }
+/* Izjema: polja BREZ lastnega okvirja, ki zivijo znotraj obrobljene skatle
+   (npr. vnos prejemnikov med znackami). Tam bi rdeci okvir narisal se en
+   kvadrat v kvadratu — rdeca pripada zunanji skatli, ne vnosu. */
+input.posl-vnos:user-invalid {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
 input:user-invalid::placeholder,
 textarea:user-invalid::placeholder {
   color: #cf8b8b;

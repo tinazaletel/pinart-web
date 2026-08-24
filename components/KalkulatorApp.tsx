@@ -10431,6 +10431,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <FileText size={16} /> {L('Ustvari pogodbo (PDF)', 'Create contract (PDF)')}
                 </button>
               )}
+              {/* Pretvori v racun sodi med ostale moznosti — kot svoj blok je
+                  delal tretjo vrsto s samim seboj. */}
+              {!racunOdprt && (
+                <button type="button" className="povezava" onClick={odpriRacun}>
+                  <Receipt size={16} /> {L('Pretvori v račun', 'Convert to invoice')}
+                </button>
+              )}
             </div>
             {vecMoznosti && typeof document !== 'undefined' && createPortal(
               <div className="cw">
@@ -10449,9 +10456,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             )}
             <div className="rac-panel">
               {!racunOdprt ? (
-                <button type="button" className="povezava rac-toggle" onClick={odpriRacun}>
-                  <Receipt size={17} /> {L('Pretvori v račun', 'Convert to invoice')}
-                </button>
+                <span />
               ) : (
                 <div className="rac-box">
                   <div className="rac-box-glava">
