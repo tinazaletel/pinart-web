@@ -130,17 +130,20 @@ export default async function KalkulatorPogojiPage({
           <p style={P}>
             {en ? (
               <>
-                The default prices and multipliers are the expert estimate of the tool&apos;s author based on
-                her experience and publicly available sources. <strong>For now they are not based on
-                measured market data</strong>; the anonymous statistics (section 5) are only now building
-                that database. You can and should adjust all amounts to your own circumstances.
+                The default prices and multipliers come from <strong>AI market research</strong> —
+                publicly available price lists, professional association guidelines and comparisons of
+                published rates. <strong>They are not measured market statistics</strong>: we are only now
+                building that database from anonymous calculations (section 5). You can and should adjust
+                all amounts to your own circumstances; the final price in your proposals is always your
+                decision and your responsibility.
               </>
             ) : (
               <>
-                Privzete cene in množitelji so strokovna ocena avtorice orodja na podlagi
-                njenih izkušenj in javno dostopnih virov. <strong>Zaenkrat ne temeljijo na
-                izmerjenih tržnih podatkih</strong>; anonimna statistika (točka 5) tako
-                bazo šele gradi. Vse zneske lahko in naj prilagodiš svojim razmeram.
+                Privzete cene in množitelji so nastali na podlagi <strong>AI raziskave trga</strong> —
+                javno dostopnih cenikov, priporočil stanovskih združenj in primerjav objavljenih cen.
+                <strong>Niso izmerjena tržna statistika</strong>: to bazo šele gradimo iz anonimnih
+                izračunov (točka 5). Vse zneske lahko in naj prilagodiš svojim razmeram; končna cena
+                v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.
               </>
             )}
           </p>

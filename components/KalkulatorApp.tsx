@@ -2235,6 +2235,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [pogojiPotrjeni, setPogojiPotrjeni] = useState(false);
   /* pogojiPrebrani: kljukica se odklene sele, ko uporabnik preleti pogoje do dna. */
   const [pogojiPrebrani, setPogojiPrebrani] = useState(false);
+  /* Flow kartica ima DVA koraka na ISTEM zaslonu (Tina, 25. 8.):
+     1 = "Samo troje" po flowovsko, 2 = pogoji + kljukica + gremo. */
+  const [pogojiKorak, setPogojiKorak] = useState<1 | 2>(1);
   /* Ime NALOZENE (lastne) pisave — da je na voljo tudi v orodni vrstici ponudbe,
      ne le v Nastavitvah. Pisavo hkrati registriramo kot @font-face 'DokLastna',
      da se v urejevalniku res izrise (urejevalnik uporablja fontName ukaz). */
@@ -6026,6 +6029,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @keyframes sgOdhod { from { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
         @media (prefers-reduced-motion: reduce) { .cw .soglasje-odhaja { animation: none; opacity: 0; } }
         .cw .soglasje-kartica { max-width: 540px; max-height: calc(100dvh - 2.5rem); overflow-y: auto; background: var(--paper); border: 1px solid rgba(17,17,17,.25); border-radius: 16px; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 24px 80px rgba(17,17,17,.12); }
+        /* Okvir s pogoji sega BLIZE robu kartice, da so vrstice daljse in
+           besedilo berljivejse (Tina, 25. 8.: "manjsi left in right margin").
+           Ostala vsebina kartice obdrzi svoj rob. */
+        .cw .sg-pogoji { margin-inline: calc(-1 * clamp(.7rem, 2.2vw, 1.4rem)); }
+        .cw .sg-pogoji-ozn, .cw .sg-pogoji-namig { padding-inline: clamp(.7rem, 2.2vw, 1.4rem); }
         .cw .soglasje-kartica h2 { font-family: var(--font-serif), Didot, serif; font-weight: 500; font-size: clamp(1.7rem, 4.5vw, 2.4rem); line-height: 1.05; margin: 0 0 1.1rem; }
         .cw .soglasje-kartica ul { margin: 0 0 1.8rem; padding-left: 0; list-style: none; }
         .cw .soglasje-kartica li { font-size: 1.02rem; font-weight: 400; line-height: 1.65; color: var(--ink); margin-bottom: .8rem; }
@@ -6719,7 +6727,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .se-preklop em { font-style: normal; color: rgba(17,17,17,.72); font-weight: 400; }
         .cw .se-note { margin: .8rem 0 0; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.62); }
         .cw .soglasje-gumbi { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-        .cw .sg-potrdi { display: flex; align-items: flex-start; gap: .6rem; font-size: .95rem; line-height: 1.5; color: var(--ink); cursor: pointer; text-align: left; max-width: 34rem; }
+        .cw .sg-potrdi { margin: .7rem 0 .4rem; padding: .25rem 0; display: flex; align-items: flex-start; gap: .75rem; font-size: .95rem; line-height: 1.5; color: var(--ink); cursor: pointer; text-align: left; max-width: 34rem; }
         .cw .sg-potrdi input { flex: none; width: 1.15rem; height: 1.15rem; margin-top: .18rem; accent-color: var(--accent, #B25476); cursor: pointer; }
         .cw .sg-potrdi a { color: var(--accent, #B25476); text-decoration: underline; text-underline-offset: .2em; }
         /* Okno s pogoji v Flow razlicici — uporabnik jih preleti pred potrditvijo. */
@@ -6728,7 +6736,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Flow: pogoji so GLAVNA vsebina kartice — visoko okno, gumb ceka na dnu. */
         .cw .sg-pogoji-okvir { width: 100%; height: min(52vh, 560px); min-height: 260px; border: 1px solid rgba(17,17,17,.14); border-radius: 12px; background: #fff; display: block; }
         .cw .sg-uvod { margin: 0; font-size: .95rem; line-height: 1.55; color: #4a4550; }
-        .cw .sg-pogoji-namig { margin: 0; font-size: .78rem; color: #6b655d; }
+        /* Namig in kljukica sta bila prilepljena na okvir pogojev — brez zraka
+           je zgledalo stisnjeno (Tina, 25. 8.). */
+        .cw .sg-pogoji-namig { margin: .85rem 0 0; font-size: .82rem; line-height: 1.5; color: #6b655d; }
+        .cw .sg-pogoji { gap: .7rem; }
         .cw .sg-vhod { margin: 0; font-size: .85rem; line-height: 1.5; color: #4a453f; text-align: center; max-width: 30rem; }
         .cw .sg-vhod a { color: var(--accent, #B25476); text-decoration: underline; text-underline-offset: .2em; }
         .cw .sg-potrdi-zaklenjen { opacity: .55; cursor: not-allowed; }
@@ -7851,10 +7862,26 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         <div className="cw">
         <div className={`soglasje${pogojiOdhaja ? ' soglasje-odhaja' : ''}`} role="dialog" aria-modal="true" aria-label={L('Pogoji uporabe', 'Terms of use')}>
           <div className="soglasje-kartica">
-            <h2>{vLupini ? L('Preden začneš', 'Before you begin') : L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
+            <h2>{vLupini && pogojiKorak === 2
+              ? L('Še pogoji poslovanja', 'Now the terms of business')
+              : L('Samo troje, preden začneš', 'Just three things before you start')}</h2>
             <div className="soglasje-tocke">
-              {vLupini ? (
-              <p className="sg-uvod">{L('Preberi pogoje poslovanja do konca — gumb za potrditev te čaka na dnu.', 'Read the terms of business to the end — the confirmation button is waiting at the bottom.')}</p>
+              {vLupini ? (pogojiKorak === 1 ? (<>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Vse na enem mestu', 'Everything in one place')}</h3>
+                <p className="sg-t">{L('Flow ni samo kalkulator — ponudbe, pogodbe, računi, stranke, projekti in koledar. Ko se spoznava, te odložim na tvojo ploščo, kjer izbereš, kaj boš delala.', 'Flow is more than a calculator — proposals, contracts, invoices, clients, projects and a calendar. Once we are acquainted I leave you on your dashboard to choose what to work on.')}</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Shranjeno v tvojem oblaku', 'Saved in your cloud')}</h3>
+                <p className="sg-t">{L('Ker si prijavljena, se vse varno shrani v tvoj Flow oblak in je na voljo na vseh napravah.', 'Since you are signed in, everything is securely saved to your Flow cloud and available on all your devices.')}</p>
+              </div>
+              <div className="sg-blok">
+                <h3 className="sg-h">{L('Tvoje ostane tvoje', 'Yours stays yours')}</h3>
+                <p className="sg-t">{L('Tvoja dela, cene in podatki so tvoji — ne delimo jih in jih lahko kadarkoli izvoziš.', 'Your work, prices and data are yours — we never share them and you can export them any time.')}</p>
+              </div>
+              </>) : (
+              <p className="sg-uvod">{L('Preberi pogoje do konca, potem spodaj potrdi in gremo.', 'Read the terms to the end, then confirm below and off we go.')}</p>
+              )
               ) : (<>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
@@ -7905,7 +7932,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               )}
             </div>
             )}
-            {vLupini && (
+            {vLupini && pogojiKorak === 2 && (
               <div className="sg-pogoji">
                 <span className="sg-pogoji-ozn">{L('Pogoji poslovanja', 'Terms of business')}</span>
                 <iframe className="sg-pogoji-okvir" title={L('Pogoji poslovanja', 'Terms of business')}
@@ -7918,7 +7945,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               </div>
             )}
             <div className="soglasje-gumbi">
-              {vLupini && (
+              {vLupini && pogojiKorak === 2 && (
                 <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}>
                   <input type="checkbox" checked={pogojiPotrjeni} disabled={!pogojiPrebrani} onChange={e => setPogojiPotrjeni(e.target.checked)} />
                   <span>{L('Prebral/-a sem in sprejemam ', 'I have read and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
@@ -7932,7 +7959,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <a href={localePath(locale, `/zasebnost`)} target="_blank" rel="noopener noreferrer">{L('politiko zasebnosti', 'privacy policy')}</a>.
                 </p>
               )}
-              <button type="button" className="gumb" onClick={sprejmiPogoje} disabled={vLupini && !pogojiPotrjeni} title={vLupini && !pogojiPotrjeni ? L('Najprej preberi in potrdi pogoje poslovanja.', 'First review and accept the terms of business.') : undefined}>{vLupini ? L('Se strinjam, gremo →', 'I agree, let\'s go →') : L('Razumem, gremo →', 'Got it, let\'s go →')}</button>
+              {vLupini && pogojiKorak === 1 ? (
+                <button type="button" className="gumb" onClick={() => setPogojiKorak(2)}>
+                  {L('Naprej →', 'Next →')}
+                </button>
+              ) : (
+                <button type="button" className="gumb" onClick={sprejmiPogoje}
+                  disabled={vLupini && !pogojiPotrjeni}
+                  title={vLupini && !pogojiPotrjeni ? L('Najprej preberi in potrdi pogoje poslovanja.', 'First read and accept the terms of business.') : undefined}>
+                  {L('Se strinjam, gremo →', 'I agree, let\u2019s go →')}
+                </button>
+              )}
             </div>
           </div>
         </div>

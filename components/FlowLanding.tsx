@@ -43,7 +43,9 @@ const HERO_NASLOVI: { pre: string[]; em: string[] }[] = [
   { pre: ['Vsak', 'projekt,'], em: ['\n', 'od', 'ponudbe', '\n', 'do', 'plačila.'] },
   /* Brez "Vse" na zacetku: prvi naslov se zacne z "Vsak", in Vsak->Vse ob
      vrtenju jeclja (Tina, 24. 8.). Zdaj se vsak zacne drugace: Vsak/Tvoje/A. */
-  { pre: ['Tvoje', 'poslovanje'], em: ['na', 'enem', 'mestu.'] },
+  /* Prisilni prelom v TRI vrstice, kot prvi naslov: dvovrsticni je pustil pod
+     sabo veliko luknjo, ker je visina rezervirana za tri (Tina, 25. 8.). */
+  { pre: ['Tvoje'], em: ['\n', 'poslovanje', '\n', 'na', 'enem', 'mestu.'] },
   { pre: ['A', 'veš,', 'koliko', 'je'], em: ['vredno', 'tvoje', 'delo?'] },
 ];
 const HERO_TITLES_EN: { pre: string[]; em: string[] }[] = [

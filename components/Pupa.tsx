@@ -243,6 +243,10 @@ export default function Pupa() {
   /* Pupa dom JE Pupa (cel pogovorni vmesnik) — plavajoč orb bi bil odveč in podvojen. */
   if (/\/kalkulator\/dom(\/|$)/.test(pathname)) return null;
 
+  /* V OKVIRJU (iframe pogojev v kartici) Pupinega sprozilca NI: fiksni sparkle
+     je plaval cez besedilo pogojev in izgledal kot napaka — ravno na zaslonu,
+     ki prodaja zaupanje (Tina, 25. 8.: "ai ikonica je tu po pomoti"). */
+  if (typeof window !== 'undefined' && window.self !== window.top) return null;
   return createPortal(
     <>
       {/* Pupa OB STRANI (plavajoči orb) OSTANE — osnovni paket. Na /dom je ni (dom JE Pupa,
