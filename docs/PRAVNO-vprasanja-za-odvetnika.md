@@ -247,11 +247,15 @@ strankam, zato so zdaj tukaj.
 
 ## Kje si lahko ogledate produkt
 
-- **brezplačni kalkulator cene** — odprt, brez registracije; pokaže logiko
-  izračuna in je edini del, ki gre morda v javni zagon prvi
-- **celotna platforma** — dostop uredimo posebej (zaprta beta)
+Od 25. 8. 2026 je javni del strani odprt, brez gesla:
 
-Povezavi pošljemo v spremnem sporočilu.
+- **predstavitev:** https://www.pinartflow.com
+- **brezplačni kalkulator** (brez registracije): https://www.pinartflow.com/kalkulator
+- **pogoji uporabe:** https://www.pinartflow.com/kalkulator/pogoji
+- **politika zasebnosti:** https://www.pinartflow.com/zasebnost
+
+Celotna platforma (prijavljeni del) ostaja v zaprti beti — dostop uredimo
+posebej, če ga potrebujete.
 
 V aplikaciji je tudi **gumb, prek katerega se stranka lahko odloči za odvetnika**
 — torej uporabnika napotimo na pravno pomoč, ko jo pri pogodbi potrebuje.
@@ -276,21 +280,21 @@ lahko priporočili našim uporabnikom prek gumba, omenjenega zgoraj.
 - `docs/PRAVNI-PREGLEDI-AI.md` — pregledi jezikovnih orodij; niso pravno mnenje,
   so pa vir vprašanj v tem dokumentu
 
-## 19. Dva podobdelovalca, ki ju politika ne navaja (najdeno 24. 8. 2026)
+## 19. Dva podobdelovalca, ki ju politika prej ni navajala (24.–25. 8. 2026)
 
 Med urejanjem prijave na obveščanje sta se pokazali dve neskladji med tem, kar
-politika zasebnosti navaja, in tem, kar koda dejansko počne. Prosim za oceno,
-kako težki sta in ali zahtevata obveščanje že prijavljenih.
+je politika zasebnosti navajala, in tem, kar koda dejansko počne. **Obe smo
+25. 8. 2026 popravili** — v točki 5a politike in točki 8a pogojev — prosimo pa
+za potrditev, da popravka zadoščata, in za oceno, ali je treba obvestiti tiste,
+ki so obrazec izpolnili pred popravkom.
 
-**19.1 Google Sheets.** Povpraševanja s spletne strani gredo prek
-`GOOGLE_SHEETS_WEBHOOK_URL` v Google Sheet, torej Google obdeluje imena,
-e-naslove in vsebino sporočil. Politika zasebnosti pa Google navaja izključno
-kot »prijava z Google računom (OAuth)«. Vprašanje: ali zadostuje razširitev
-opisa podobdelovalca, ali je treba spremeniti tudi pravno podlago in obvestiti
-tiste, ki so obrazec že izpolnili?
+**19.1 Google Sheets.** Povpraševanja s spletne strani se zapisujejo v Google
+Sheet, torej Google obdeluje imena, e-naslove in vsebino sporočil. Politika je
+Google prej navajala izključno kot »prijava z Google računom (OAuth)«; zdaj
+navaja tudi preglednico.
 
-**19.2 Cloudflare.** Za pošto je v uporabi Cloudflare Worker; Cloudflare v
-politiki ni omenjen niti enkrat. Vprašanje enako kot zgoraj.
+**19.2 Cloudflare.** Dohodno pošto na @pinartflow.com sprejema in posreduje
+Cloudflare; prej ni bil naveden nikjer, zdaj je v obeh seznamih.
 
 **19.3 Prijava na obveščanje.** Od 24. 8. 2026 dela z dvojno privolitvijo:
 prijava se zapiše kot nepotrjena, potrditveno pisemce gre prek Resenda (ki je
