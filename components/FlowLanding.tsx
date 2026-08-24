@@ -252,8 +252,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
   const izberiZavihek = (id: string) => {
     setTaZavihek(id);
     if (!jeMob()) return;
-    const panel = scTrackRef.current?.querySelector(`[data-sc="${id}"]`) as HTMLElement | null;
-    panel?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    const track = scTrackRef.current;
+    const panel = track?.querySelector(`[data-sc="${id}"]`) as HTMLElement | null;
+    /* Premikamo IZKLJUCNO trak (vodoravno), nikoli strani — glej opombo pri pillih. */
+    if (track && panel) track.scrollTo({ left: panel.offsetLeft - (track.clientWidth - panel.clientWidth) / 2, behavior: 'smooth' });
   };
   /* drs carousela -> aktiven postane najbližji panel (samo mobilno) */
   useEffect(() => {
@@ -276,15 +278,17 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     track.addEventListener('scroll', onScroll, { passive: true });
     return () => { track.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
   }, []);
-  /* Aktiven pill naj bo viden v drseci vrsti pillov — a SELE, ko zavihek res
-     zamenjas. Ob prvem izrisu je vrstica pillov se pod vidnim poljem in
-     scrollIntoView potegne CELO stran navzdol do nje: obiskovalec je vsakic
-     pristal sredi strani pri vrtiljaku orodij, namesto na vrhu. */
-  const pillPrviIzris = useRef(true);
+  /* Aktiven pill centriramo IZKLJUCNO znotraj svoje vodoravne vrstice.
+     scrollIntoView je tu PREPOVEDAN: premakne tudi STRAN do vrstice, ce ta se
+     ni v vidnem polju. Tocno to se je zgodilo ob prehodu iz aplikacije na
+     landing (ucinek tece ob montazi, v dev nacinu celo dvakrat, zato varovalka
+     s ref ni dovolj) — stran se je sama odpeljala do vrtiljaka orodij.
+     Dokazano s sledjo klicev 24. 8. 2026. Vodoravni scrollTo na vrstici strani
+     ne more premakniti nikoli. */
   useEffect(() => {
-    if (pillPrviIzris.current) { pillPrviIzris.current = false; return; }
-    const active = scPillsRef.current?.querySelector('.fl-sc-pill.on') as HTMLElement | null;
-    active?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    const vrsta = scPillsRef.current;
+    const active = vrsta?.querySelector('.fl-sc-pill.on') as HTMLElement | null;
+    if (vrsta && active) vrsta.scrollTo({ left: active.offsetLeft - (vrsta.clientWidth - active.clientWidth) / 2, behavior: 'smooth' });
   }, [taZavihek]);
 
   const VPRASANJA = isEn ? [
