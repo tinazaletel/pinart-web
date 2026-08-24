@@ -1275,3 +1275,11 @@ input:user-invalid::placeholder,
 textarea:user-invalid::placeholder {
   color: #cf8b8b;
 }
+
+/* Izid potrditve ali odjave od obveščanja. Samostojna stran (ni v .cw/.fl/.shell),
+   zato serif prek --font-serif-flow — sicer pade nazaj na Bodoni. */
+.obv-stran { min-height: 100dvh; display: grid; place-items: center; padding: 2rem 1.2rem; }
+.obv-karta { width: min(34rem, 100%); text-align: center; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: clamp(1.6rem, 5vw, 2.8rem); }
+.obv-karta h1 { margin: 0 0 .7rem; font-family: var(--font-serif-flow), Georgia, serif; font-size: clamp(1.5rem, 4vw, 2rem); line-height: 1.15; }
+.obv-karta p { margin: 0 0 1.4rem; color: var(--ink); font-size: 1rem; line-height: 1.55; }
+.obv-karta a { font-weight: 600; color: var(--purple, oklch(66% 0.2 297)); }

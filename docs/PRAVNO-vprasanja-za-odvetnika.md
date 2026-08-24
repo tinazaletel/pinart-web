@@ -275,3 +275,26 @@ lahko priporočili našim uporabnikom prek gumba, omenjenega zgoraj.
 - pogoji uporabe in politika zasebnosti — objavljena, dvojezično
 - `docs/PRAVNI-PREGLEDI-AI.md` — pregledi jezikovnih orodij; niso pravno mnenje,
   so pa vir vprašanj v tem dokumentu
+
+## 19. Dva podobdelovalca, ki ju politika ne navaja (najdeno 24. 8. 2026)
+
+Med urejanjem prijave na obveščanje sta se pokazali dve neskladji med tem, kar
+politika zasebnosti navaja, in tem, kar koda dejansko počne. Prosim za oceno,
+kako težki sta in ali zahtevata obveščanje že prijavljenih.
+
+**19.1 Google Sheets.** Povpraševanja s spletne strani gredo prek
+`GOOGLE_SHEETS_WEBHOOK_URL` v Google Sheet, torej Google obdeluje imena,
+e-naslove in vsebino sporočil. Politika zasebnosti pa Google navaja izključno
+kot »prijava z Google računom (OAuth)«. Vprašanje: ali zadostuje razširitev
+opisa podobdelovalca, ali je treba spremeniti tudi pravno podlago in obvestiti
+tiste, ki so obrazec že izpolnili?
+
+**19.2 Cloudflare.** Za pošto je v uporabi Cloudflare Worker; Cloudflare v
+politiki ni omenjen niti enkrat. Vprašanje enako kot zgoraj.
+
+**19.3 Prijava na obveščanje.** Od 24. 8. 2026 dela z dvojno privolitvijo:
+prijava se zapiše kot nepotrjena, potrditveno pisemce gre prek Resenda (ki je
+v politiki že naveden), seznam za pošiljanje nastane šele ob kliku, nepotrjene
+prijave se izbrišejo po 14 dneh. Odjava izbriše zapis. IP-naslova ne hranimo.
+Vprašanje: ali je tak zapis privolitve (čas, vir, različica pogojev) dovolj
+kot dokaz po členu 7(1) GDPR?

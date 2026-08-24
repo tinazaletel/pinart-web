@@ -4251,15 +4251,17 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const imamKontakt = leadIme.trim().length > 1 && /\S+@\S+\.\S+/.test(leadEmail);
 
   const posljiKontakt = (namen: string) => {
-    /* fire-and-forget: kontakt pade v isti Google Sheet kot povprasevanja */
+    /* Prijava na obvescanje NI povprasevanje. Prej je padla v isti Google
+       Sheet in odjave od tam nihce ni znal izvesti. Zdaj gre v svojo tabelo,
+       kot NEPOTRJENA — seznam nastane sele, ko clovek klikne v pisemcu. */
     try {
       localStorage.setItem(K_LEAD, JSON.stringify({ ime: leadIme, email: leadEmail }));
-      fetch('/api/inquiry', {
+      fetch('/api/obvescanje', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: leadIme, email: leadEmail,
-          brief: `Kalkulator cen: ${namen}`, source: 'kalkulator',
+          ime: leadIme, email: leadEmail, jezik: locale === 'en' ? 'en' : 'sl',
+          vir: namen.slice(0, 40), pogojiRazlicica: POGOJI_RAZLICICA,
         }),
       }).catch(() => {});
     } catch { /* ignoriraj */ }
@@ -7893,7 +7895,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <input id="cw-sglemail" type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} placeholder={L('ti@primer.si', 'you@example.com')} />
                     </div>
                   </div>
-                  <p className="se-note">{L('Ločeno od anonimne statistike zgoraj. Email uporabimo samo za obvestila; kadar koli se lahko odjaviš.', 'Separate from the anonymous statistics above. We use your email only for notifications; you can unsubscribe at any time.')}</p>
+                  <p className="se-note">{L('Ločeno od anonimne statistike zgoraj. Poslali ti bomo pisemce za potrditev — brez klika ne pošljemo ničesar. Naslov hranimo pri sebi, odjava je v vsakem pisemcu in naslov izbriše.', 'Separate from the anonymous statistics above. We will send you a confirmation message — without that click we send nothing. We keep the address ourselves; every message carries an unsubscribe link that deletes it.')}</p>
                 </>
               )}
             </div>
@@ -8416,6 +8418,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <p className="ob-sub" style={{ margin: '0 0 1.2rem', fontSize: '1.05rem' }}>{L('Res se želiš odjaviti od obveščanja? 😢', 'Are you sure you want to unsubscribe? 😢')}</p>
                     <div className="onboarding-noga">
                       <button type="button" className="gumb" onClick={() => {
+                        /* Odjava mora izbrisati naslov PRI NAS, ne le v tem
+                           brskalniku — sicer obljubimo nekaj, kar se ne zgodi. */
+                        const naslov = leadEmail.trim();
+                        if (naslov) {
+                          fetch('/api/obvescanje/odjava', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: naslov }),
+                          }).catch(() => {});
+                        }
                         setLeadIme(''); setLeadEmail('');
                         try { localStorage.removeItem(K_LEAD); } catch { /* prazno */ }
                         setPotrdiOdjavo(false);
