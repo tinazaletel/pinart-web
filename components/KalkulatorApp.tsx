@@ -2958,7 +2958,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const uvodIzberiIzkusnje = (id: string) => { setIzkusnje(id); setChatKorak(2); };
   /* tvoja regija / trg (o tebi) -> privzeta raven cen */
   const uvodPotrdiRegijo = (id: string) => { setMojTrg(id); setTrgNarocnika(id); setChatKorak(4); };
-  const uvodPotrdiPodrocja = () => setChatKorak(5);   /* po izbiri podrocij */
+  /* Po izbiri podrocij gremo NARAVNOST v kalkulator. Vprasanje "nova ali
+     obstojeca" ima smisel samo, ce je v arhivu kaj za nadaljevati; sicer sta
+     obe poti isti in vprasanje samo stoji pred ceno. Naziv ponudbe (korak 6)
+     se vprasa sele, ko uporabnica ponudbo res dela — ime dokumenta ni pogoj
+     za izracun. */
+  const uvodPotrdiPodrocja = () => {
+    if (Object.keys(arhiv).length) { setChatKorak(5); return; }
+    zakljuciUvod();
+  };
   /* preklop podrocja v Moji podatki -> takoj posodobi tudi mojSet (kateri mehurcki so v ospredju) */
   const preklopiPodrocje = (id: string) => {
     const nov = new Set(obIzbor);
@@ -2970,16 +2978,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   };
   const uvodNovaObstojeca = (nova: boolean) => {
     setChatNova(nova);
-    if (nova) { setChatKorak(6); return; }
+    if (nova) { zakljuciUvod(); return; }
     /* obstoječa: naloži zadnjo iz arhiva, če obstaja, sicer nadaljuj kot nova */
     const kljuci = Object.keys(arhiv);
     if (kljuci.length) {
       const zadnji = kljuci.sort((a, b) => (arhiv[b].datum || '').localeCompare(arhiv[a].datum || ''))[0];
       naloziIzArhiva(zadnji);
-      zakljuciUvod();
-    } else {
-      setChatKorak(6);
     }
+    zakljuciUvod();
   };
 
   /* odjavni potrditveni koraki ne smejo lebdeti, ko zapustimo Obvescanja */
