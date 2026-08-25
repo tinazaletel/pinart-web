@@ -355,7 +355,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
                 }
               }} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" aria-label="Naslov projekta" />
               {obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim() && (
-                <span className="np-ime-duh" aria-hidden><i>{obrazec.naslov}</i><em>{enolicnoIme(obrazec.naslov).slice(obrazec.naslov.trim().length)}</em></span>
+                <span className="np-ime-duh" aria-hidden><i>{obrazec.naslov}</i><em>{enolicnoIme(obrazec.naslov).slice(obrazec.naslov.trim().length).replace(/ /g, '\u00A0')}</em></span>
               )}
             </span>
             {obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim() && (
