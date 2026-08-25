@@ -604,3 +604,22 @@
   transition: border-color .15s ease-out, background .15s ease-out;
 }
 .timerForm > .vecGumb:hover, .vecGumb:hover { border-color: var(--ink); background: oklch(100% 0 0); }
+
+/* Prehod med mirujoco in tekoco stoparico: kartica se ob zagonu skrci (polja
+   izginejo), zato naj se to zgodi mehko in ne s poskokom (Tina, 25. 8.).
+   Visina se animira prek grid-template-rows, vsebina pa se nezno prelije. */
+.timer { transition: min-height .32s cubic-bezier(.22, 1, .36, 1); }
+.running, .timerForm { animation: casPrelij .34s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes casPrelij {
+  from { opacity: 0; transform: translateY(6px) scale(.995); }
+  to   { opacity: 1; transform: none; }
+}
+/* ura ob zagonu nezno utripne, da je jasno, da zdaj tece */
+.running .uraVrstica b { animation: casUraVstop .45s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes casUraVstop {
+  from { opacity: 0; letter-spacing: .06em; }
+  to   { opacity: 1; letter-spacing: -.015em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .running, .timerForm, .running .uraVrstica b { animation: none; }
+}
