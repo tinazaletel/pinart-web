@@ -719,7 +719,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         border:1px solid var(--line);border-radius:12px;background:#fff}
       .np-pod-naslov{margin:0 0 -.2rem;font:700 .76rem var(--font-sans),sans-serif;
         letter-spacing:.15em;text-transform:uppercase;color:rgba(17,17,17,.55)}
-      .np-pupa-predlog{justify-self:start;padding:.5rem .9rem;border:1px solid rgba(124,58,237,.4);
+      .np-pupa-predlog{justify-self:end;padding:.5rem .9rem;border:1px solid rgba(124,58,237,.4);
         border-radius:999px;background:oklch(97.5% .025 297);color:#7C3AED;cursor:pointer;
         font:650 .8rem var(--font-sans),sans-serif;transition:border-color .15s ease}
       .np-pupa-predlog:hover{border-color:#7C3AED}
