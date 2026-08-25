@@ -3,7 +3,7 @@
 import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { PencilSimple, Timer } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, PencilSimple, Timer } from '@phosphor-icons/react';
 import {
   calculatePlan, DEFAULT_BUSINESS_PLAN, deleteCloudPresence, deleteCloudTimeEntry, loadCloudBusinessPlan,
   loadCloudPresence, loadCloudTimeEntries, loadLocalPlan, loadLocalTimeEntries, type BusinessPlan,
@@ -912,7 +912,10 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               izpolnis — dolocis ju lahko ob zakljucku. Zato pod gumb "Vec"
               (Tina, 25. 8.), da je pot do zagona kratka. */}
           <button type="button" className={styles.vecGumb} onClick={() => setVecOdprt(v => !v)} aria-expanded={vecOdprt}>
-            {vecOdprt ? L('Manj', 'Less') : L('Več', 'More')}
+            {/* isti vzorec kot drugod na sajtu (Arhiv, Pogodbe): napis ostane
+                enak, smer pove puscica — "Manj" ne uporabljamo nikjer. */}
+            {L('Več', 'More')}
+            <span aria-hidden>{vecOdprt ? <CaretUp size={13} weight="bold" /> : <CaretDown size={13} weight="bold" />}</span>
           </button>
           {vecOdprt && <>
           <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /></label>
