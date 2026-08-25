@@ -494,6 +494,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
              pogovor z rokom in statusom tece naprej nemoteno — klik prej je
              uporabnico vrgel nazaj na cilje in ji "izgubil" rok (Tina). */
           <div className="np-podrobnosti">
+            <p className="np-pod-naslov">Cilji in brief</p>
             <button type="button" className="np-pupa-predlog" onClick={pupaPredlaga} disabled={pupaPolni}>
               ✨ {pupaPolni ? 'Pupa razmišlja …' : 'Ne veš, kaj bi? Naj Pupa predlaga'}
             </button>
@@ -716,6 +717,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-podrobnosti{display:grid;gap:.8rem;width:min(34rem,calc(100% - 1rem));
         margin:-.1rem 0 .4rem .3rem;padding:1rem .95rem;
         border:1px solid var(--line);border-radius:12px;background:#fff}
+      .np-pod-naslov{margin:0 0 -.2rem;font:700 .76rem var(--font-sans),sans-serif;
+        letter-spacing:.15em;text-transform:uppercase;color:rgba(17,17,17,.55)}
       .np-pupa-predlog{justify-self:start;padding:.5rem .9rem;border:1px solid rgba(124,58,237,.4);
         border-radius:999px;background:oklch(97.5% .025 297);color:#7C3AED;cursor:pointer;
         font:650 .8rem var(--font-sans),sans-serif;transition:border-color .15s ease}
