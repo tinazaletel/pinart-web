@@ -184,7 +184,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     const projekt: Projekt = {
       id: urejam?.id || crypto.randomUUID(),
       stevilka: urejam?.stevilka || naslednjaStevilka(realProjekti),
-      naslov,
+      naslov: enolicnoIme(naslov),
       strankaId: stranka?.id,
       strankaIme: stranka?.name,
       opisStranke: obrazec.opisStranke.trim() || undefined,
@@ -233,6 +233,20 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
 
   /* mehurcek bota (vprasanje) + moj odgovor (klikljiv, odpre urejanje v mestu) — isti
      vzorec kot chat-bot/chat-jaz v KalkulatorApp.tsx/ProjectsWorkspace, tu s predpono np- */
+  /* Enaka imena projektov: samodejna stevilka + opozorilo (Tina, 25. 8.,
+     "oboje A in B") — isti vzorec kot pri imenih ponudb. "Smeg" ze obstaja ->
+     novi se shrani kot "Smeg 2", uporabnica pa to izve ze pod poljem. */
+  const enolicnoIme = (zeljeno: string): string => {
+    const ime = zeljeno.trim();
+    if (!ime) return ime;
+    const zasedena = new Set(realProjekti
+      .filter(pr => !pr.deletedAt && pr.id !== urejam?.id)
+      .map(pr => pr.naslov.trim().toLocaleLowerCase('sl')));
+    if (!zasedena.has(ime.toLocaleLowerCase('sl'))) return ime;
+    let n = 2;
+    while (zasedena.has(`${ime} ${n}`.toLocaleLowerCase('sl'))) n += 1;
+    return `${ime} ${n}`;
+  };
   const prikazan = (i: number) => novKorak >= i;
   const aktiven = (i: number) => novKorak === i || urejamKorak === i;
   const odgovorjen = (i: number) => novKorak > i && urejamKorak !== i;
@@ -284,6 +298,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {aktiven(0) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); if (obrazec.naslov.trim()) potrdiKorak(urejamKorak !== 0); }}>
             <input className="np-chat-polje" type="text" autoFocus value={obrazec.naslov} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" aria-label="Naslov projekta" />
+            {obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim() && (
+              <p className="np-ime-opomba">Projekt »{obrazec.naslov.trim()}« že obstaja — shranil se bo kot »{enolicnoIme(obrazec.naslov)}«.</p>
+            )}
             <button type="submit" className="np-chat-naprej" disabled={!obrazec.naslov.trim()}>{urejamKorak === 0 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
@@ -558,6 +575,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font:inherit;
         text-align:left;transition:border-color .15s ease}
       .np-okvir-vec:hover{border-color:rgba(17,17,17,.4)}
+      .np-ime-opomba{margin:-.25rem 0 0 .3rem;max-width:min(34rem,calc(100% - 1rem));
+        font-size:.8rem;font-weight:600;color:#7C3AED;line-height:1.45}
       .np-okvir-vec-glava{display:inline-flex;gap:.45rem;align-items:center;font-weight:700;font-size:.84rem}
       .np-okvir-vec small{font-size:.74rem;font-weight:500;color:rgba(17,17,17,.66);line-height:1.4}
       .np-chat-opcija{display:flex;align-items:center;gap:.8rem;width:min(380px,100%);padding:.8rem 1rem;border:1px solid var(--line);border-radius:14px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
