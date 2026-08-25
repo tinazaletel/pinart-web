@@ -686,3 +686,8 @@
 .znesekVrsta { display: flex; gap: .5rem; align-items: stretch; }
 .znesekVrsta input { flex: 1; min-width: 0; }
 .znesekVrsta select { flex: none; width: 4.6rem; }
+
+/* Zgodovina je poravnana na VRH svoje celice: grid stretch je vrstice razpotegnil
+   cez vso visino stolpca in med dnevi so zazijale luknje (Tina, 25. 8.).
+   Spodaj naj ostane prazno. */
+.casPogled .history { align-content: start; align-self: start; }
