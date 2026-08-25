@@ -560,3 +560,11 @@
   cursor: pointer; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: .12em;
   text-transform: uppercase; transition: transform .16s ease, box-shadow .16s ease; }
 .startGumb:hover { transform: translateY(-2px); box-shadow: 0 10px 26px oklch(22% .015 60 / .18); }
+
+/* "Vec": neobvezni polji (vrednost, obseg) sta privzeto skriti, da je pot do
+   zagona merjenja kratka. */
+.vecGumb { justify-self: start; margin: .1rem 0 .2rem; padding: .4rem .9rem;
+  border: 1px solid var(--line); border-radius: 999px; background: transparent;
+  color: color-mix(in oklch, var(--ink) 78%, transparent); cursor: pointer;
+  font: 650 .78rem var(--font-sans), sans-serif; }
+.vecGumb:hover { border-color: var(--ink); color: var(--ink); }

@@ -824,6 +824,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   /* Datum ob uri: stoparica naj pove, za KATERI dan meri. Racunamo po montazi
      (ne med izrisom), sicer se streznik in brskalnik ne ujemata in React javi
      napako hidracije. */
+  const [vecOdprt, setVecOdprt] = useState(false);
   const [danesIzpis, setDanesIzpis] = useState('');
   useEffect(() => {
     setDanesIzpis(new Date().toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long' }));
@@ -904,8 +905,16 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
           </div>
           <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required list="seznam-projektov" placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>
           <label><span>{L('Storitev', 'Service')}</span><input name="service" placeholder={L('npr. oblikovanje logotipa', 'e.g. logo design')} /></label>
+          {/* Vrednost in obseg sta neobvezna in ju pri zagonu vecinoma ne
+              izpolnis — dolocis ju lahko ob zakljucku. Zato pod gumb "Vec"
+              (Tina, 25. 8.), da je pot do zagona kratka. */}
+          <button type="button" className={styles.vecGumb} onClick={() => setVecOdprt(v => !v)} aria-expanded={vecOdprt}>
+            {vecOdprt ? L('Manj', 'Less') : L('Več', 'More')}
+          </button>
+          {vecOdprt && <>
           <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /></label>
           <label><span>{L('Obseg', 'Scope')}</span><select name="scope"><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
+          </>}
           {/* ure, ki si jih zapisala drugam — dodaj jih na poljuben (tudi pretekli) dan.
               Naslov je besedilo, gumb ostane kratek (prej je bil cel stavek na gumbu). */}
           <div className={styles.rocniVrstica}>
