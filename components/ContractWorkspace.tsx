@@ -56,14 +56,38 @@ const VRSTE_LABEL_EN: Record<VrstaPog, string> = {
 
 /* posamezen clen dokumenta; opcijski cleni se dajo vklopiti/izklopiti, stevilcenje se prilagodi samo */
 type Clen = { id: string; naslov: string; telo: string; opcijski?: boolean };
-/* opcijski cleni, ki so ob preklopu na vrsto PRIVZETO IZKLOPLJENI */
+/* NOBEN opcijski clen ni vkljucen tiho (ChatGPT/Codex tocka 1): uporabnica
+   vsakega vklopi zavestno, ob vsakem pa prebere, kaksno posledico prinese. */
 const PRIVZETO_IZKLOP: Record<VrstaPog, string[]> = {
-  sodelovanje: ['sod-konkurenca', 'sod-kazen'],
-  podjemna: ['pod-kazen'],
-  avtorska: ['avt-tantieme'],
-  licencna: ['lic-podlicence', 'lic-porocanje'],
-  nda: [],
-  dpa: ['dpa-prenos'],
+  sodelovanje: ['sod-varovanje', 'sod-avtorske', 'sod-konkurenca', 'sod-kazen'],
+  podjemna: ['pod-avtorske', 'pod-varovanje', 'pod-kazen'],
+  avtorska: ['avt-atribucija', 'avt-portfelj', 'avt-tantieme'],
+  licencna: ['lic-teritorij', 'lic-ekskl', 'lic-podlicence', 'lic-porocanje'],
+  nda: ['nda-odgovornost'],
+  dpa: ['dpa-podobdelovalci', 'dpa-prenos'],
+};
+
+/* Ena poved o POSLEDICI za vsak opcijski clen — v isti velikosti kot ime,
+   ne v drobnem tisku. Gole oznake ("Konkurencna prepoved") ne povejo, koga
+   clen omeji. */
+const POSLEDICE: Record<string, { sl: string; en: string }> = {
+  'sod-varovanje':      { sl: 'Obe strani zavezuje k varovanju zaupnih podatkov tudi po koncu sodelovanja.', en: 'Binds both parties to keep confidential information secret, also after the engagement ends.' },
+  'sod-avtorske':       { sl: 'Ureja, katere avtorske pravice in v kakšnem obsegu preidejo na naročnika.', en: 'Defines which rights transfer to the client and to what extent.' },
+  'sod-konkurenca':     { sl: 'Izvajalcu za 12 mesecev omeji delo za konkurente naročnika.', en: 'Restricts the contractor from working for the client\u2019s competitors for 12 months.' },
+  'sod-kazen':          { sl: 'Ob zamudi se obračuna 0,5 % na dan, največ 10 % vrednosti.', en: 'Late delivery accrues 0.5% per day, capped at 10% of the value.' },
+  'pod-avtorske':       { sl: 'Ureja, katere avtorske pravice in v kakšnem obsegu preidejo na naročnika.', en: 'Defines which rights transfer to the client and to what extent.' },
+  'pod-varovanje':      { sl: 'Obe strani zavezuje k varovanju zaupnih podatkov tudi po koncu sodelovanja.', en: 'Binds both parties to keep confidential information secret, also after the engagement ends.' },
+  'pod-kazen':          { sl: 'Ob zamudi se obračuna 0,5 % na dan, največ 10 % vrednosti.', en: 'Late delivery accrues 0.5% per day, capped at 10% of the value.' },
+  'avt-atribucija':     { sl: 'Naročnika zavezuje, da ob javni objavi navede avtorja.', en: 'Requires the client to credit the author when publishing.' },
+  'avt-portfelj':       { sl: 'Avtorju dovoli prikaz dela v lastnem portfelju in referencah.', en: 'Lets the author show the work in their portfolio and references.' },
+  'avt-tantieme':       { sl: 'Ob rabi čez dogovorjeni obseg avtorju pripada dodatno nadomestilo.', en: 'Use beyond the agreed scope entitles the author to additional payment.' },
+  'lic-teritorij':      { sl: 'Veljavnost licence omeji na dogovorjeno ozemlje.', en: 'Limits the licence to the agreed territory.' },
+  'lic-ekskl':          { sl: 'Določi, ali sme enako licenco dobiti tudi kdo drug.', en: 'States whether anyone else may receive the same licence.' },
+  'lic-podlicence':     { sl: 'Pridobitelju dovoli prenos pravic naprej tretjim osebam.', en: 'Allows the licensee to pass the rights on to third parties.' },
+  'lic-porocanje':      { sl: 'Pridobitelja zavezuje k poročanju o obsegu rabe.', en: 'Obliges the licensee to report how much the work is used.' },
+  'nda-odgovornost':    { sl: 'Kršitev zaupnosti pomeni odškodninsko odgovornost.', en: 'A breach of confidentiality creates liability for damages.' },
+  'dpa-podobdelovalci': { sl: 'Ureja vključevanje zunanjih izvajalcev pri obdelavi podatkov.', en: 'Governs bringing external sub-processors into data processing.' },
+  'dpa-prenos':         { sl: 'Prepove prenos osebnih podatkov izven EU brez ustreznih jamstev.', en: 'Bars transfers of personal data outside the EU without safeguards.' },
 };
 const privzetoIzklop = (v: VrstaPog) => new Set<string>(PRIVZETO_IZKLOP[v]);
 
@@ -986,10 +1010,17 @@ export default function ContractWorkspace({ base }: { base: string }) {
           return (
             <div className="pg-klavzule">
               <span className="pg-klavzule-label">{L('Dodatni pogoji', 'Additional terms')}</span>
-              <div className="pg-klavzule-pilule" role="group" aria-label={L('Opcijski členi', 'Optional clauses')}>
+              <div className="pg-klavzule-seznam" role="group" aria-label={L('Opcijski členi', 'Optional clauses')}>
                 {opcijski.map(c => {
                   const vkljucen = !izklKlavzule.has(c.id);
-                  return <button key={c.id} type="button" aria-pressed={vkljucen} className={'pg-segpills-mini' + (vkljucen ? ' on' : '')} onClick={() => prekloviKlavzulo(c.id)}>{c.naslov}</button>;
+                  const posledica = POSLEDICE[c.id];
+                  return <button key={c.id} type="button" aria-pressed={vkljucen} className={'pg-klavzula' + (vkljucen ? ' on' : '')} onClick={() => prekloviKlavzulo(c.id)}>
+                    <span className="pg-klavzula-kv" aria-hidden>{vkljucen ? '✓' : '+'}</span>
+                    <span className="pg-klavzula-txt">
+                      <strong>{c.naslov}</strong>
+                      {posledica && <span>{jeEn ? posledica.en : posledica.sl}</span>}
+                    </span>
+                  </button>;
                 })}
               </div>
             </div>
@@ -1436,6 +1467,19 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-klavzule{margin:0 0 1rem}
       .pg-klavzule-label{display:block;font-size:.95rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .5rem}
       .pg-klavzule-pilule{display:flex;flex-wrap:wrap;gap:.4rem}
+      /* Cleni kot vrstice s POSLEDICO v isti velikosti kot ime (ne drobni tisk) */
+      .pg-klavzule-seznam{display:grid;gap:.45rem}
+      .pg-klavzula{display:flex;gap:.7rem;align-items:flex-start;width:100%;text-align:left;
+        padding:.7rem .85rem;border:1px solid rgba(17,17,17,.14);border-radius:12px;
+        background:#fff;cursor:pointer;font:inherit;transition:border-color .15s ease,background .15s ease}
+      .pg-klavzula:hover{border-color:rgba(17,17,17,.4)}
+      .pg-klavzula.on{border-color:#7C3AED;background:oklch(97.5% .025 297)}
+      .pg-klavzula-kv{flex:none;display:grid;place-items:center;width:1.3rem;height:1.3rem;margin-top:.05rem;
+        border:1.5px solid rgba(17,17,17,.35);border-radius:7px;font-size:.85rem;line-height:1;color:rgba(17,17,17,.55)}
+      .pg-klavzula.on .pg-klavzula-kv{background:#7C3AED;border-color:#7C3AED;color:#fff}
+      .pg-klavzula-txt{display:grid;gap:.15rem;min-width:0}
+      .pg-klavzula-txt strong{font-size:.92rem;font-weight:700}
+      .pg-klavzula-txt span{font-size:.92rem;font-weight:400;line-height:1.45;color:rgba(17,17,17,.78)}
       .pg-segpills-mini{border:1px solid rgba(17,17,17,.18);background:rgba(255,255,255,.5);color:var(--ink);font-family:inherit;font-weight:600;font-size:.72rem;letter-spacing:.01em;padding:.34rem .72rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .16s,color .16s,border-color .16s}
       .pg-segpills-mini:hover{border-color:var(--ink)}
       .pg-segpills-mini.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
