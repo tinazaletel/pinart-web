@@ -735,7 +735,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-ime-ovoj .np-ime-vnos{position:relative;background:transparent;z-index:1}
       .np-ime-duh{position:absolute;inset:0;z-index:0;display:flex;align-items:center;
         padding:.75rem 1.1rem;border:1px solid transparent;border-radius:999px;background:#fff;
-        font:inherit;font-size:.9rem;font-weight:600;white-space:pre;overflow:hidden;pointer-events:none}
+        font:inherit;font-size:16px;line-height:1.35;font-weight:600;white-space:pre;overflow:hidden;pointer-events:none}
       .np-ime-duh-txt{white-space:pre}
       .np-ime-duh i{font-style:normal;color:transparent}
       .np-ime-duh em{font-style:normal;color:rgba(17,17,17,.38)}
