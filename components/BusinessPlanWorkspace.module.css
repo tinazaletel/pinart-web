@@ -629,6 +629,8 @@
    v dvostolpcno mrezo in so ozka, besedilna in izbirna ostanejo cez celo sirino. */
 .pregled .timerForm { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: .8rem; align-items: start; }
 .pregled .timerForm > label { grid-column: 1 / -1; }
+/* vec zraka med napisom in poljem — pri gostem obrazcu sta se drzala skupaj */
+.pregled .timerForm label { gap: .55rem; }
 .pregled .timerForm > label:has(input[type='number']) { grid-column: auto; }
 .pregled .timerForm > label:has(input[type='number']) input { max-width: 100%; }
 .pregled .timerForm > button,
