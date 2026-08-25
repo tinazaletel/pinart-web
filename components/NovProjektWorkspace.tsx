@@ -297,9 +297,21 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {odgovorjen(0) && chatOdgovor(0, obrazec.naslov.trim() || '—')}
         {aktiven(0) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); if (obrazec.naslov.trim()) potrdiKorak(urejamKorak !== 0); }}>
-            <input className="np-chat-polje" type="text" autoFocus value={obrazec.naslov} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" aria-label="Naslov projekta" />
+            {/* duh-predlog: ob podvojenem imenu se sivo izpise stevilka, Tab jo
+                sprejme (Tina, 25. 8.) */}
+            <span className="np-ime-ovoj">
+                          <input className="np-chat-polje np-ime-vnos" type="text" autoFocus value={obrazec.naslov} onKeyDown={event => {
+                if (event.key === 'Tab' && obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim()) {
+                  event.preventDefault();
+                  setObrazec(o => ({ ...o, naslov: enolicnoIme(o.naslov) }));
+                }
+              }} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" aria-label="Naslov projekta" />
+              {obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim() && (
+                <span className="np-ime-duh" aria-hidden><i>{obrazec.naslov}</i><em>{enolicnoIme(obrazec.naslov).slice(obrazec.naslov.trim().length)}</em></span>
+              )}
+            </span>
             {obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim() && (
-              <p className="np-ime-opomba">Projekt »{obrazec.naslov.trim()}« že obstaja — shranil se bo kot »{enolicnoIme(obrazec.naslov)}«.</p>
+              <p className="np-ime-opomba">Projekt s tem imenom že obstaja — pritisni Tab za »{enolicnoIme(obrazec.naslov)}«.</p>
             )}
             <button type="submit" className="np-chat-naprej" disabled={!obrazec.naslov.trim()}>{urejamKorak === 0 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
@@ -575,6 +587,13 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font:inherit;
         text-align:left;transition:border-color .15s ease}
       .np-okvir-vec:hover{border-color:rgba(17,17,17,.4)}
+      .np-ime-ovoj{position:relative;display:block;width:100%}
+      .np-ime-ovoj .np-ime-vnos{position:relative;background:transparent;z-index:1}
+      .np-ime-duh{position:absolute;inset:0;z-index:0;display:flex;align-items:center;
+        padding:.75rem 1.1rem;border:1px solid transparent;border-radius:999px;background:#fff;
+        font:inherit;font-size:.9rem;font-weight:600;white-space:pre;overflow:hidden;pointer-events:none}
+      .np-ime-duh i{font-style:normal;color:transparent}
+      .np-ime-duh em{font-style:normal;color:rgba(17,17,17,.38)}
       .np-ime-opomba{margin:-.25rem 0 0 .3rem;max-width:min(34rem,calc(100% - 1rem));
         font-size:.8rem;font-weight:600;color:#7C3AED;line-height:1.45}
       .np-okvir-vec-glava{display:inline-flex;gap:.45rem;align-items:center;font-weight:700;font-size:.84rem}
