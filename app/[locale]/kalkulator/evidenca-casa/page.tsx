@@ -18,7 +18,7 @@ export default async function EvidencaCasaPage({ params }: { params: Promise<{ l
 
   return (
     <main className={styles.shell}>
-      <DashboardSidebar base={base} active="profile" />
+      <DashboardSidebar base={base} active="evidenca" />
       <section className={styles.workspace}>
         <NazajLink rezerva="/kalkulator/profil" label={jeEn ? 'Back to profile' : 'Nazaj na profil'} />
         <header className={styles.topbar}>
