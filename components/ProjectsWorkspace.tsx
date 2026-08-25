@@ -215,7 +215,11 @@ const pwStyles = `
    06 Komunikacije/07 Zapiski) — svoj pw- razdelek v duhu .projectNarrative
    kartic (isti border/radius/ozadje odtenek), da se lepo vklopi. */
 .pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
-.pw-kom-panel{flex:0 1 1040px;min-width:0;max-width:min(1040px,92vw)}
+/* TRDNA sirina, ne po vsebini: fiksni .pw-rail brez width se meri po
+   max-content otrok, zato je bil panel pri vsaki mapi drugace sirok, glava
+   stisnjena (iskalnik cez Klepet), ob prazni vsebini pa se desni rob.
+   (Tina, 25. 8.) width doloci max-content, shrink ostane za ozke zaslone. */
+.pw-kom-panel{flex:0 1 1040px;width:min(1040px,92vw);min-width:0;max-width:min(1040px,92vw)}
 /* okno Nova naloga iz maila */
 .pw-naloga-panel{width:min(560px,94vw);padding:2.4rem 2rem}
 .pw-naloga-obr{display:flex;flex-direction:column;gap:.9rem;margin-top:.6rem}
@@ -268,7 +272,8 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-rail-col + .pw-rail-col{border-left:1px solid color-mix(in oklch,var(--ink) 9%,transparent)}
 .pw-rail > .pw-rail-col:first-child{box-shadow:-1.4rem 0 3.4rem -1.2rem oklch(20% .03 55 / .2)}
 /* SAMO ta notranji predal se skrola; X plava, ozadje strani je zaklenjeno */
-.pw-rail-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2.4rem 2rem}
+/* ozji rob: 2rem levo/desno je jemal prostor vsebini (Tina) */
+.pw-rail-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2rem 1.4rem}
 .pw-ai-scroll{display:flex;flex-direction:column;gap:1rem;padding:2.4rem 1.6rem}
 .pw-klepet-scroll{padding:0}
 @keyframes pwRailIn{from{opacity:.35;transform:translateX(26px)}to{opacity:1;transform:none}}
@@ -1958,6 +1963,19 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             <p className={styles.eyebrow}>{L('DOKUMENTACIJA · POVEZAVE', 'DOCUMENTATION · LINKS')}</p>
             <h2 style={{ margin: '.1rem 0 .3rem' }}>{L('Zunanje datoteke projekta', 'Project external files')}</h2>
             <p className="pw-dok-uvod">{L('Figma, Google Drive, Miro, mapa slik … — vse povezave projekta na enem mestu.', 'Figma, Google Drive, Miro, image folder … — all project links in one place.')}</p>
+            {/* NAJPREJ obrazec, POD njim seznam (Tina, 25. 8.): dodajanje je
+                glavno dejanje tega panela, seznam je posledica. */}
+            {!samoOgled ? (
+              <div className="pw-dok-obrazec">
+                <p className={styles.eyebrow} style={{ margin: 0 }}>{dokUredi !== null ? L('UREJANJE POVEZAVE', 'EDITING LINK') : L('NOVA POVEZAVA', 'NEW LINK')}</p>
+                <label className="pw-naloga-l"><span>{L('Oznaka', 'Label')}</span><input type="text" value={linkOznaka} onChange={e => setLinkOznaka(e.target.value)} placeholder={L('npr. Figma · Dizajn', 'e.g. Figma · Design')} /></label>
+                <label className="pw-naloga-l"><span>{L('Naslov (URL)', 'Address (URL)')}</span><input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://…" /></label>
+                <div className="pw-naloga-akcije">
+                  {dokUredi !== null && <button type="button" className="pw-naloga-preklic" onClick={() => { setDokUredi(null); setLinkOznaka(''); setLinkUrl(''); }}>{L('Prekliči', 'Cancel')}</button>}
+                  <button type="button" className="pw-naloga-shrani" onClick={shraniLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>{dokUredi !== null ? L('Shrani spremembe', 'Save changes') : L('+ Dodaj povezavo', '+ Add link')}</button>
+                </div>
+              </div>
+            ) : <p className="pw-opozorilo">{L('Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.', 'Adding links is not available in the demo preview. Sign in to your account.')}</p>}
             {links.length ? (
               <div className="pw-dok-linki">
                 {links.map((link, index) => (
@@ -1971,17 +1989,6 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 ))}
               </div>
             ) : <p className="pw-dok-prazno-t">{L('Še ni povezav.', 'No links yet.')}</p>}
-            {!samoOgled ? (
-              <div className="pw-dok-obrazec">
-                <p className={styles.eyebrow} style={{ margin: 0 }}>{dokUredi !== null ? L('UREJANJE POVEZAVE', 'EDITING LINK') : L('NOVA POVEZAVA', 'NEW LINK')}</p>
-                <label className="pw-naloga-l"><span>{L('Oznaka', 'Label')}</span><input type="text" value={linkOznaka} onChange={e => setLinkOznaka(e.target.value)} placeholder={L('npr. Figma · Dizajn', 'e.g. Figma · Design')} /></label>
-                <label className="pw-naloga-l"><span>{L('Naslov (URL)', 'Address (URL)')}</span><input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://…" /></label>
-                <div className="pw-naloga-akcije">
-                  {dokUredi !== null && <button type="button" className="pw-naloga-preklic" onClick={() => { setDokUredi(null); setLinkOznaka(''); setLinkUrl(''); }}>{L('Prekliči', 'Cancel')}</button>}
-                  <button type="button" className="pw-naloga-shrani" onClick={shraniLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>{dokUredi !== null ? L('Shrani spremembe', 'Save changes') : L('+ Dodaj povezavo', '+ Add link')}</button>
-                </div>
-              </div>
-            ) : <p className="pw-opozorilo">{L('Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.', 'Adding links is not available in the demo preview. Sign in to your account.')}</p>}
           </div>
         </aside>
       </div>

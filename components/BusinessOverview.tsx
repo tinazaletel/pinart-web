@@ -93,11 +93,13 @@ function HistoryIcon({ type }: { type: string }) {
   return <P size={17} weight="regular" style={IKONA_SLOG} />;
 }
 
-export default function BusinessOverview({ base }: { base: string }) {
+export default function BusinessOverview({ base, imaPupo = true }: { base: string; imaPupo?: boolean }) {
   const locale = useLocale();
   const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
   const dl = locale === 'en' ? 'en-GB' : 'sl-SI';
   const [ready, setReady] = useState(false);
+  /* Brez Pupe prazno stanje ne pelje k njej: klik pove, kje zacnes (Tina, 25. 8.). */
+  const [praznoNamig, setPraznoNamig] = useState<'danes' | 'dokumenti' | null>(null);
   /* vodoravni slide orodij: puščici ‹ › (desktop) drsata vrsto za ~70 % širine */
   const orodjaRef = useRef<HTMLDivElement>(null);
   const drsniOrodja = (smer: number) => orodjaRef.current?.scrollBy({ left: smer * orodjaRef.current.clientWidth * 0.7, behavior: 'smooth' });
@@ -494,13 +496,25 @@ export default function BusinessOverview({ base }: { base: string }) {
         ) : danes ? (
           /* Isti vzorec praznega stanja kot Aktivne naloge in Zadnja posta —
              drobna siva vrstica je izpadla kot pomota, ne kot mirno stanje. */
-          <div className={styles.emptyState}>
-            <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span>
-            <div>
-              <strong>{L('Danes te nič ne čaka.', 'Nothing needs you today.')}</strong>
-              <p>{L('Roki, računi in opomniki se prikažejo tukaj.', 'Deadlines, invoices and reminders appear here.')}</p>
-            </div>
-          </div>
+          imaPupo ? (
+            <Link className={styles.emptyState} href={`${base}/kalkulator/dom`}>
+              <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span>
+              <div>
+                <strong>{L('Danes te nič ne čaka.', 'Nothing needs you today.')}</strong>
+                <p>{L('Roki, računi in opomniki se prikažejo tukaj. Vprašaj Pupo, da dodaš prvega.', 'Deadlines, invoices and reminders appear here. Ask Pupa to add the first one.')}</p>
+              </div>
+            </Link>
+          ) : (
+            <button type="button" className={styles.emptyState} onClick={() => setPraznoNamig(n => n === 'danes' ? null : 'danes')} aria-expanded={praznoNamig === 'danes'}>
+              <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span>
+              <div>
+                <strong>{praznoNamig === 'danes' ? L('Začni v meniju levo.', 'Start in the menu on the left.') : L('Danes te nič ne čaka.', 'Nothing needs you today.')}</strong>
+                <p>{praznoNamig === 'danes'
+                  ? L('Koledar za rok, Naloge za opravilo, Računi za plačilo — vsak vpis se pojavi tukaj.', 'Calendar for a deadline, Tasks for a to-do, Invoices for a payment — each entry shows up here.')
+                  : L('Roki, računi in opomniki se prikažejo tukaj.', 'Deadlines, invoices and reminders appear here.')}</p>
+              </div>
+            </button>
+          )
         ) : null}
         </div>
       </section>
@@ -527,7 +541,7 @@ export default function BusinessOverview({ base }: { base: string }) {
             const map: Record<string, [string, string]> = { draft: [L('Osnutek', 'Draft'), 'neutral'], sent: [L('V teku', 'In progress'), 'info'], accepted: [L('Zaključeno', 'Completed'), 'success'], rejected: [L('Zavrnjeno', 'Rejected'), 'danger'] };
             const [label, tone] = map[o.status] || ['—', 'neutral'];
             return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString(dl)}</td></tr>;
-          })}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še ni projektov.', 'No projects yet.')}</strong><p>{L('Projekti se prikažejo tukaj, ko ustvariš ponudbo.', 'Projects will appear here once you create an offer.')}</p></div></div>}
+          })}</tbody></table></div> : <Link className={styles.emptyState} href={`${base}/kalkulator/nov-projekt`}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še ni projektov.', 'No projects yet.')}</strong><p>{L('Ustvari prvi projekt — ali pripravi ponudbo in projekt nastane sam.', 'Create your first project — or prepare an offer and the project appears by itself.')}</p></div></Link>}
           </div>
         </section>
       </div>
@@ -546,7 +560,7 @@ export default function BusinessOverview({ base }: { base: string }) {
                 <span className={styles.dashRowArrow} aria-hidden>›</span>
               </Link></li>
             ); })}
-          </ul> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Naloge se prikažejo tukaj — dodaj jih v Task managerju.', 'Tasks appear here — add them in the Task manager.')}</p></div></div>}
+          </ul> : <Link className={styles.emptyState} href={`${base}/kalkulator/naloge`}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Dodaj prvo nalogo.', 'Add your first task.')}</p></div></Link>}
           </div>
         </section>
 
@@ -568,7 +582,7 @@ export default function BusinessOverview({ base }: { base: string }) {
         <div className={styles.bandTop}><p className={styles.eyebrow}>{L('07 · ZGODOVINA', '07 · HISTORY')}</p><Link className={styles.accountingButton} href={`${base}/kalkulator/racunovodstvo`}><span className={styles.abTxt}>{L('Vsi dokumenti', 'All documents')}</span><span className={styles.abShort}>{L('Več', 'More')}</span> <span className={styles.abArrow} aria-hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link></div>
         <div className={styles.bandBody}>
         <h2 className={styles.bandNaslov}>{L('Zadnji dokumenti', 'Recent documents')}</h2>
-        {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable} ${styles.accTable}`}><table><thead><tr><th>{L('Dokument', 'Document')}</th><th>{L('Stranka', 'Client')}</th><th>{L('Datum', 'Date')}</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={L(`Odpri ${item.title}`, `Open ${item.title}`)} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString(dl)}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? L('To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.', 'This is demo data — the status cannot be changed. Switch to »My data«.') : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še nimaš dokumentov.', 'You have no documents yet.')}</strong><p>{L('Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.', 'Offers, contracts, invoices and costs will appear here.')}</p></div></div>}
+        {historyItems.length ? <div className={`${styles.tableWrap} ${styles.historyTable} ${styles.accTable}`}><table><thead><tr><th>{L('Dokument', 'Document')}</th><th>{L('Stranka', 'Client')}</th><th>{L('Datum', 'Date')}</th><th>Status</th></tr></thead><tbody>{historyItems.map(item => <tr key={`${item.type}-${item.id}`} role="button" tabIndex={0} aria-label={L(`Odpri ${item.title}`, `Open ${item.title}`)} onClick={() => setSelectedDocument(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedDocument(item); } }}><td><div className={styles.documentCell}><span className={`${styles.documentIcon} ${styles[`document_${item.type === 'Ponudba' ? 'offer' : item.type === 'Pogodba' ? 'contract' : item.type === 'Račun' ? 'invoice' : 'expense'}`]}`}><HistoryIcon type={item.type} /></span><span><strong>{item.title}</strong><small>{item.subtitle ?? item.type}</small></span></div></td><td>{item.client}</td><td>{new Date(item.date).toLocaleDateString(dl)}</td><td>{statusOptions(item.type).length ? <span className={`${styles.statusField} ${styles[`status_${statusTone(item.status)}`]}`} data-editable={preview === 'mine' ? '' : undefined}><span className={styles.statusPill}>{item.status}</span><select aria-label={`Status: ${item.title}`} className={styles.statusSelect} value={item.status} disabled={preview !== 'mine'} title={preview !== 'mine' ? L('To so demo podatki — statusa ni mogoče spreminjati. Preklopi na »Moji podatki«.', 'This is demo data — the status cannot be changed. Switch to »My data«.') : undefined} onClick={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onChange={e => updateDocumentStatus(item.type, item.id, e.target.value)}>{statusOptions(item.type).map(option => <option key={option}>{option}</option>)}</select></span> : <span className={`${styles.statusPill} ${styles.status_neutral}`}>{item.status}</span>}</td></tr>)}</tbody></table></div> : imaPupo ? <Link className={styles.emptyState} href={`${base}/kalkulator/dom`}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še nimaš dokumentov.', 'You have no documents yet.')}</strong><p>{L('Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj. Vprašaj Pupo, da začneš.', 'Offers, contracts, invoices and costs will appear here. Ask Pupa to get started.')}</p></div></Link> : <button type="button" className={styles.emptyState} onClick={() => setPraznoNamig(n => n === 'dokumenti' ? null : 'dokumenti')} aria-expanded={praznoNamig === 'dokumenti'}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{praznoNamig === 'dokumenti' ? L('Začni v meniju levo.', 'Start in the menu on the left.') : L('Še nimaš dokumentov.', 'You have no documents yet.')}</strong><p>{praznoNamig === 'dokumenti' ? L('Ponudba za novo stranko, Pogodba za dogovor, Račun za plačilo — dokument se shrani sem.', 'Proposal for a new client, Contract for the deal, Invoice for payment — the document lands here.') : L('Ponudbe, pogodbe, računi in stroški se bodo prikazali tukaj.', 'Offers, contracts, invoices and costs will appear here.')}</p></div></button>}
         </div>
       </section>
 

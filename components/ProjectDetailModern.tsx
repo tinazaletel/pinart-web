@@ -109,14 +109,14 @@ export default function ProjectDetailModern({
   /* Stran za panelom obmiruje -- enako kot v DokPanelu. Brez tega se ob drsenju
      nad odprtim panelom pomika se stran spodaj in vidita se dva drsnika. */
   useEffect(() => {
-    if (typeof document === 'undefined' || !(briefOdprt || taskOdprt !== null || dokumentOdprt !== null)) return;
+    if (typeof document === 'undefined' || !(taskOdprt !== null || dokumentOdprt !== null)) return;
     const prejOverflow = document.body.style.overflow;
     const prejPadding = document.body.style.paddingRight;
     const sirinaDrsnika = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = 'hidden';
     if (sirinaDrsnika > 0) document.body.style.paddingRight = `${sirinaDrsnika}px`;
     return () => { document.body.style.overflow = prejOverflow; document.body.style.paddingRight = prejPadding; };
-  }, [briefOdprt, taskOdprt, dokumentOdprt]);
+  }, [taskOdprt, dokumentOdprt]);
 
   const dodeljeniIds = real?.dodeljeni || [];
   const ekipa = dodeljeniIds.map(id => sodelavci.find(s => s.id === id)).filter(Boolean) as Sodelavec[];
@@ -154,6 +154,7 @@ export default function ProjectDetailModern({
     [L('Dizajn želje', 'Design wishes'), real.dizajnZelje],
     [L('Ton / glas', 'Tone / voice'), real.voice],
     [L('Konkurenca', 'Competitors'), real.konkurenca],
+    [L('Več podrobnosti', 'More details'), real.podrobnosti],
   ].filter(([, v]) => v && v.trim()) as Array<[string, string]> : [];
   /* pravi dostop clanov ekipe — risemo ga v isti vrstici kot imena za naloge */
   const dostop = useDostopProjekta(real?.id, real?.strankaId);
@@ -179,7 +180,8 @@ export default function ProjectDetailModern({
       .filter(v => kljuc(v.projectName || '') === iskan)
       .reduce((s, v) => s + (v.durationMinutes || 0), 0);
   }, [vnosiCasa, naslovProjekta]);
-  const cilji = real?.cilji?.filter(c => c.besedilo?.trim()) || [];
+  /* tudi cilj brez besedila (samo merilo/tarca) je cilj — ne skrivaj ga */
+  const cilji = real?.cilji?.filter(c => c.besedilo?.trim() || c.metrika?.trim() || c.tarca?.trim()) || [];
   const imaBrief = briefPolja.length > 0 || cilji.length > 0 || dodatna.length > 0;
   const datumDokumenta = (datum?: string) => {
     const d = new Date(datum || real?.updatedAt || real?.created || offer.date);
@@ -574,51 +576,62 @@ export default function ProjectDetailModern({
         </div>
       </DokPanel>
 
-      {mounted && briefOdprt && createPortal(
-        <div className="pm-modal-back" role="presentation" onMouseDown={() => setBriefOdprt(false)}>
-          <div className="pm-modal" role="dialog" aria-modal="true" aria-label={L('Brief projekta', 'Project brief')} onMouseDown={e => e.stopPropagation()}>
-            <header className="pm-modal-h">
-              <div><p className="pm-modal-kick">{L('BRIEF · VSA VPRAŠANJA', 'BRIEF · ALL QUESTIONS')}</p><h2>{offer.title}</h2></div>
-              <button type="button" className="pm-modal-x" onClick={() => setBriefOdprt(false)} aria-label={L('Zapri', 'Close')}>✕</button>
-            </header>
-            <div className="pm-modal-body">
-              {onSaveBrief && real ? (<>
-                {([[L('Cilj / želje', 'Goal / wishes'), 'zelje'], [L('Stranka', 'Client'), 'opisStranke'], [L('Panoga', 'Industry'), 'panoga'], [L('Ciljna publika', 'Target audience'), 'ciljnaSkupina'], [L('Dizajn želje', 'Design wishes'), 'dizajnZelje'], [L('Ton / glas', 'Tone / voice'), 'voice'], [L('Konkurenca', 'Competitors'), 'konkurenca']] as Array<[string, keyof Projekt]>).map(([label, key]) => (
-                  <label key={key} className="pm-qa pm-qa-edit"><span className="pm-qa-k">{label}</span><textarea className="pm-inp" rows={2} defaultValue={(real[key] as string) || ''} placeholder={L('Vpiši …', 'Type …')} onBlur={e => onSaveBrief({ [key]: e.target.value.trim() || undefined } as Partial<Projekt>)} /></label>
-                ))}
-                {dodatna.map(v => (
-                  <div key={v.id} className="pm-qa"><span className="pm-qa-k">{v.vprasanje}</span><p className="pm-qa-v">{v.odgovor}</p></div>
-                ))}
-                <p className="pm-muted pm-brief-namig">{L('Cilje urejaš v kartici »Cilji projekta«.', 'Edit goals in the »Project goals« card.')}</p>
-                <div className="pm-brief-noga">
-                  <button type="button" className="pm-dok-brisi" onClick={() => {
-                    if (!window.confirm(L('Izbrišem brief? Vsa polja (želje, stranka, panoga, ciljna publika, dizajn, ton, konkurenca) se izpraznijo. Cilji ostanejo.', 'Delete the brief? All fields (wishes, client, industry, audience, design, tone, competitors) will be cleared. Goals remain.'))) return;
-                    onSaveBrief({ zelje: undefined, opisStranke: undefined, panoga: undefined, ciljnaSkupina: undefined, dizajnZelje: undefined, voice: undefined, konkurenca: undefined } as Partial<Projekt>);
-                    setBriefOdprt(false);
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" /></svg>
-                    {L('Izbriši brief', 'Delete brief')}
-                  </button>
-                </div>
-              </>) : (<>
-                {briefPolja.map(([k, v]) => (
-                  <div key={k} className="pm-qa"><span className="pm-qa-k">{k}</span><p className="pm-qa-v">{v}</p></div>
-                ))}
-                {cilji.length > 0 && (
-                  <div className="pm-qa"><span className="pm-qa-k">{L('Cilji', 'Goals')}</span>
-                    <ul className="pm-qa-cilji">{cilji.map(c => <li key={c.id}><b>{c.besedilo}</b>{(c.metrika || c.tarca) && <small>{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</small>}</li>)}</ul>
-                  </div>
-                )}
-                {dodatna.map(v => (
-                  <div key={v.id} className="pm-qa"><span className="pm-qa-k">{v.vprasanje}</span><p className="pm-qa-v">{v.odgovor}</p></div>
-                ))}
-                {!imaBrief && <p className="pm-muted">{L('Brief še ni izpolnjen.', 'The brief is not filled in yet.')}</p>}
-              </>)}
-            </div>
-            {real && <Link href={`${base}/kalkulator/nov-projekt?uredi=${real.id}`} className="pm-modal-edit">{L('Celoten urejevalnik', 'Full editor')} <Puscica /></Link>}
-          </div>
+      {/* Brief je DOKUMENT, ne okno: isti DokPanel kot racun, pitch in SWOT,
+          zato tudi Natisni. Prej je bil svoj pm-modal in je ostal pri starem
+          videzu, ko so se ostali paneli poenotili (Tina, 25. 8.). */}
+      <DokPanel
+        odprt={briefOdprt}
+        nadnaslov={L('BRIEF · VSA VPRAŠANJA', 'BRIEF · ALL QUESTIONS')}
+        naslov={offer.title}
+        podnaslov={real?.strankaIme}
+        onZapri={() => setBriefOdprt(false)}
+        jeEn={jeEn}
+        dejanja={<>
+          {real && <Link href={`${base}/kalkulator/nov-projekt?uredi=${real.id}`} className="pm-dok-odpri">{L('Celoten urejevalnik', 'Full editor')} <Puscica /></Link>}
+          {onSaveBrief && real && (
+            <button type="button" className="pm-dok-brisi" onClick={() => {
+              if (!window.confirm(L('Izbrišem brief? Vsa polja (želje, stranka, panoga, ciljna publika, dizajn, ton, konkurenca) se izpraznijo. Cilji ostanejo.', 'Delete the brief? All fields (wishes, client, industry, audience, design, tone, competitors) will be cleared. Goals remain.'))) return;
+              onSaveBrief({ zelje: undefined, opisStranke: undefined, panoga: undefined, ciljnaSkupina: undefined, dizajnZelje: undefined, voice: undefined, konkurenca: undefined } as Partial<Projekt>);
+              setBriefOdprt(false);
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" /></svg>
+              {L('Izbriši brief', 'Delete brief')}
+            </button>
+          )}
+        </>}
+      >
+        <div className="pm-dok-vsebina">
+          {onSaveBrief && real ? (<>
+            {([[L('Cilj / želje', 'Goal / wishes'), 'zelje'], [L('Stranka', 'Client'), 'opisStranke'], [L('Panoga', 'Industry'), 'panoga'], [L('Ciljna publika', 'Target audience'), 'ciljnaSkupina'], [L('Dizajn želje', 'Design wishes'), 'dizajnZelje'], [L('Ton / glas', 'Tone / voice'), 'voice'], [L('Konkurenca', 'Competitors'), 'konkurenca']] as Array<[string, keyof Projekt]>).map(([label, key]) => (
+              <label key={key} className="pm-qa pm-qa-edit"><span className="pm-qa-k">{label}</span><textarea className="pm-inp" rows={2} defaultValue={(real[key] as string) || ''} placeholder={L('Vpiši …', 'Type …')} onBlur={e => onSaveBrief({ [key]: e.target.value.trim() || undefined } as Partial<Projekt>)} /></label>
+            ))}
+            {/* Cilji so del dokumenta tudi med urejanjem -- natisnjen brief brez
+                njih ni cel brief (Tina, 25. 8.). Urejajo se v kartici. */}
+            {cilji.length > 0 && (
+              <div className="pm-qa"><span className="pm-qa-k">{L('Cilji', 'Goals')}</span>
+                <ul className="pm-qa-cilji">{cilji.map(c => <li key={c.id}><b>{c.besedilo}</b>{(c.metrika || c.tarca) && <small>{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</small>}</li>)}</ul>
+              </div>
+            )}
+            {dodatna.map(v => (
+              <div key={v.id} className="pm-qa"><span className="pm-qa-k">{v.vprasanje}</span><p className="pm-qa-v">{v.odgovor}</p></div>
+            ))}
+            <p className="pm-muted pm-brief-namig">{L('Cilje urejaš v kartici »Cilji projekta«.', 'Edit goals in the »Project goals« card.')}</p>
+          </>) : (<>
+            {briefPolja.map(([k, v]) => (
+              <div key={k} className="pm-qa"><span className="pm-qa-k">{k}</span><p className="pm-qa-v">{v}</p></div>
+            ))}
+            {cilji.length > 0 && (
+              <div className="pm-qa"><span className="pm-qa-k">{L('Cilji', 'Goals')}</span>
+                <ul className="pm-qa-cilji">{cilji.map(c => <li key={c.id}><b>{c.besedilo}</b>{(c.metrika || c.tarca) && <small>{[c.metrika, c.tarca].filter(Boolean).join(' · ')}</small>}</li>)}</ul>
+              </div>
+            )}
+            {dodatna.map(v => (
+              <div key={v.id} className="pm-qa"><span className="pm-qa-k">{v.vprasanje}</span><p className="pm-qa-v">{v.odgovor}</p></div>
+            ))}
+            {!imaBrief && <p className="pm-muted">{L('Brief še ni izpolnjen.', 'The brief is not filled in yet.')}</p>}
+          </>)}
         </div>
-      , document.body)}
+      </DokPanel>
 
       {mounted && taskOdprt && createPortal(
         <div className="pm-modal-back" role="presentation" onMouseDown={() => setTaskOdprt(null)}>
@@ -712,7 +725,6 @@ export default function ProjectDetailModern({
         .pm-dokumenti li:has(.pm-canvas-link:hover), .pm-dokumenti li:has(.pm-canvas-link:hover) + li { border-top-color:transparent; }
         .pm-dokumenti time { color:var(--pm-muted); font-size:.72rem; font-weight:500; }
         .pm-dok-vsebina section + section { margin-top:1.5rem; }
-        .pm-brief-noga { margin-top:1.2rem; padding-top:1rem; border-top:1px solid var(--pm-line); }
         .pm-dok-brisi { display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .8rem; border:1px solid color-mix(in oklch, var(--pm-ink) 12%, transparent); border-radius:999px; background:transparent; font:700 .76rem var(--font-sans),sans-serif; color:color-mix(in oklch, var(--pm-ink) 55%, transparent); cursor:pointer; transition:background .15s, color .15s, border-color .15s; }
         .pm-dok-brisi:hover { border-color:oklch(58% .17 25); background:oklch(96% .04 25); color:oklch(48% .17 25); }
         .pm-dok-vsebina h2 { margin:0 0 .35rem; font:800 .68rem var(--font-sans),sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#655f58; }
@@ -834,6 +846,8 @@ export default function ProjectDetailModern({
         .pm-qa-cilji b { font-size:.88rem; }
         .pm-qa-cilji small { margin-left:.4rem; color:var(--pm-muted); font-size:.75rem; }
         .pm-modal-edit { display:inline-block; margin-top:1.1rem; text-decoration:none; font-size:.8rem; font-weight:600; color:var(--pm-acc); }
+        .pm-dok-odpri { display:inline-flex; align-items:center; gap:.35rem; text-decoration:none; font:700 .8rem var(--font-sans),sans-serif; color:var(--pm-acc); }
+        .pm-dok-odpri:hover { text-decoration:underline; text-underline-offset:3px; }
         /* seznami zapisa (pogodbe/racuni/stroski) */
         .pm-list { list-style:none; margin:.2rem 0 0; padding:0; display:flex; flex-direction:column; }
         .pm-li { display:flex; align-items:center; gap:.5rem; padding:.72rem .6rem; margin:0 -.6rem; border-radius:10px; font-size:.83rem; color:var(--pm-ink); }

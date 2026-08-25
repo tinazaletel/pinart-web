@@ -7,6 +7,7 @@
    pregled.module.css (.shell ima agresivna pravila za input/select/button). */
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import Toast from '@/components/Toast';
 import { createPortal } from 'react-dom';
 import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, Plus, ArrowUp, ArrowDown } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
@@ -33,21 +34,21 @@ const datStr = (d: Date) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYea
 /* vrste pogodb (skupina A): navadna pogodba o sodelovanju + 5 dodatnih.
    naziv = naslov v dokumentu (h1), slug = predpona imena datoteke, kick = eyebrow (velike crke). */
 type VrstaPog = 'sodelovanje' | 'podjemna' | 'avtorska' | 'licencna' | 'nda' | 'dpa';
-const VRSTE_POG: { id: VrstaPog; label: string; naziv: string; slug: string; kick: string }[] = [
-  { id: 'sodelovanje', label: 'Sodelovanje', naziv: 'Pogodba o poslovnem sodelovanju', slug: 'pogodba', kick: 'POGODBA' },
-  { id: 'podjemna', label: 'Podjemna', naziv: 'Podjemna pogodba', slug: 'podjemna', kick: 'PODJEMNA POGODBA' },
-  { id: 'avtorska', label: 'Avtorska', naziv: 'Avtorska pogodba', slug: 'avtorska', kick: 'AVTORSKA POGODBA' },
-  { id: 'licencna', label: 'Licenčna', naziv: 'Licenčna pogodba', slug: 'licencna', kick: 'LICENČNA POGODBA' },
-  { id: 'nda', label: 'NDA', naziv: 'Sporazum o varovanju zaupnih podatkov (NDA)', slug: 'nda', kick: 'NDA' },
-  { id: 'dpa', label: 'DPA', naziv: 'Pogodba o obdelavi osebnih podatkov (DPA)', slug: 'dpa', kick: 'DPA' },
+const VRSTE_POG: { id: VrstaPog; label: string; naziv: string; slug: string; kick: string; razlaga: string }[] = [
+  { id: 'sodelovanje', label: 'Sodelovanje', naziv: 'Pogodba o poslovnem sodelovanju', slug: 'pogodba', kick: 'POGODBA', razlaga: 'Okvirna pogodba za daljše sodelovanje s stranko: kako delata, roki, plačilo in odpoved. Uporabiš jo, kadar ne gre za eno samo naročilo.' },
+  { id: 'podjemna', label: 'Podjemna', naziv: 'Podjemna pogodba', slug: 'podjemna', kick: 'PODJEMNA POGODBA', razlaga: 'Za konkretno naročilo z dogovorjenim rezultatom (katalog, spletna stran). Poskrbi, da so obseg, rok in plačilo zapisani, preden začneš delati.' },
+  { id: 'avtorska', label: 'Avtorska', naziv: 'Avtorska pogodba', slug: 'avtorska', kick: 'AVTORSKA POGODBA', razlaga: 'Kadar nastane avtorsko delo in se dogovarjata o pravicah: kdo sme oblikovanje uporabljati, kje in kako dolgo. Brez nje ostane nedorečeno, kaj stranka sploh sme.' },
+  { id: 'licencna', label: 'Licenčna', naziv: 'Licenčna pogodba', slug: 'licencna', kick: 'LICENČNA POGODBA', razlaga: 'Dela ne prodaš, ampak daš dovoljenje za uporabo: teritorij, ekskluzivnost, trajanje, poročanje. Uporabna, kadar isto delo licenciraš več strankam.' },
+  { id: 'nda', label: 'NDA', naziv: 'Sporazum o varovanju zaupnih podatkov (NDA)', slug: 'nda', kick: 'NDA', razlaga: 'Sporazum o varovanju zaupnih podatkov. Kar izveš pri delu, ostane med vama. Podpišeta ga, preden si izmenjata občutljivo gradivo, na primer nelansiran izdelek ali cene.' },
+  { id: 'dpa', label: 'DPA', naziv: 'Pogodba o obdelavi osebnih podatkov (DPA)', slug: 'dpa', kick: 'DPA', razlaga: 'Pogodba o obdelavi osebnih podatkov. GDPR jo zahteva, kadar za stranko obdeluješ osebne podatke njenih ljudi, na primer pošiljaš e-novice na njen seznam naročnikov.' },
 ];
-const VRSTE_POG_EN: Record<VrstaPog, { naziv: string; kick: string }> = {
-  sodelovanje: { naziv: 'Business Cooperation Agreement', kick: 'AGREEMENT' },
-  podjemna: { naziv: 'Services Agreement', kick: 'SERVICES AGREEMENT' },
-  avtorska: { naziv: 'Copyright Agreement', kick: 'COPYRIGHT AGREEMENT' },
-  licencna: { naziv: 'Licence Agreement', kick: 'LICENCE AGREEMENT' },
-  nda: { naziv: 'Non-Disclosure Agreement (NDA)', kick: 'NDA' },
-  dpa: { naziv: 'Data Processing Agreement (DPA)', kick: 'DPA' },
+const VRSTE_POG_EN: Record<VrstaPog, { naziv: string; kick: string; razlaga: string }> = {
+  sodelovanje: { naziv: 'Business Cooperation Agreement', kick: 'AGREEMENT', razlaga: 'A framework agreement for an ongoing relationship: how you work together, deadlines, payment and termination. Use it when the work is not a single order.' },
+  podjemna: { naziv: 'Services Agreement', kick: 'SERVICES AGREEMENT', razlaga: 'For a specific order with an agreed result (a catalogue, a website). It puts scope, deadline and payment in writing before you start.' },
+  avtorska: { naziv: 'Copyright Agreement', kick: 'COPYRIGHT AGREEMENT', razlaga: 'For when a copyrighted work is created and you agree on rights: who may use the design, where and for how long. Without it, what the client may do stays undefined.' },
+  licencna: { naziv: 'Licence Agreement', kick: 'LICENCE AGREEMENT', razlaga: 'You do not sell the work, you grant permission to use it: territory, exclusivity, term, reporting. Useful when you licence the same work to more than one client.' },
+  nda: { naziv: 'Non-Disclosure Agreement (NDA)', kick: 'NDA', razlaga: 'A non-disclosure agreement. What you learn on the job stays between you. Signed before you exchange sensitive material, such as an unreleased product or pricing.' },
+  dpa: { naziv: 'Data Processing Agreement (DPA)', kick: 'DPA', razlaga: 'A data processing agreement. GDPR requires it when you process personal data of the client\u2019s people, for example sending newsletters to their subscriber list.' },
 };
 /* kratke oznake pilul (tabov) za angleski prikaz — samo UI chrome, NE vpliva na shranjen naslov (ostane SL label) */
 const VRSTE_LABEL_EN: Record<VrstaPog, string> = {
@@ -56,14 +57,38 @@ const VRSTE_LABEL_EN: Record<VrstaPog, string> = {
 
 /* posamezen clen dokumenta; opcijski cleni se dajo vklopiti/izklopiti, stevilcenje se prilagodi samo */
 type Clen = { id: string; naslov: string; telo: string; opcijski?: boolean };
-/* opcijski cleni, ki so ob preklopu na vrsto PRIVZETO IZKLOPLJENI */
+/* NOBEN opcijski clen ni vkljucen tiho (ChatGPT/Codex tocka 1): uporabnica
+   vsakega vklopi zavestno, ob vsakem pa prebere, kaksno posledico prinese. */
 const PRIVZETO_IZKLOP: Record<VrstaPog, string[]> = {
-  sodelovanje: ['sod-konkurenca', 'sod-kazen'],
-  podjemna: ['pod-kazen'],
-  avtorska: ['avt-tantieme'],
-  licencna: ['lic-podlicence', 'lic-porocanje'],
-  nda: [],
-  dpa: ['dpa-prenos'],
+  sodelovanje: ['sod-varovanje', 'sod-avtorske', 'sod-konkurenca', 'sod-kazen'],
+  podjemna: ['pod-avtorske', 'pod-varovanje', 'pod-kazen'],
+  avtorska: ['avt-atribucija', 'avt-portfelj', 'avt-tantieme'],
+  licencna: ['lic-teritorij', 'lic-ekskl', 'lic-podlicence', 'lic-porocanje'],
+  nda: ['nda-odgovornost'],
+  dpa: ['dpa-podobdelovalci', 'dpa-prenos'],
+};
+
+/* Ena poved o POSLEDICI za vsak opcijski clen — v isti velikosti kot ime,
+   ne v drobnem tisku. Gole oznake ("Konkurencna prepoved") ne povejo, koga
+   clen omeji. */
+const POSLEDICE: Record<string, { sl: string; en: string }> = {
+  'sod-varovanje':      { sl: 'Obe strani zavezuje k varovanju zaupnih podatkov tudi po koncu sodelovanja.', en: 'Binds both parties to keep confidential information secret, also after the engagement ends.' },
+  'sod-avtorske':       { sl: 'Ureja, katere avtorske pravice in v kakšnem obsegu preidejo na naročnika.', en: 'Defines which rights transfer to the client and to what extent.' },
+  'sod-konkurenca':     { sl: 'Izvajalcu za 12 mesecev omeji delo za konkurente naročnika.', en: 'Restricts the contractor from working for the client\u2019s competitors for 12 months.' },
+  'sod-kazen':          { sl: 'Ob zamudi se obračuna 0,5 % na dan, največ 10 % vrednosti.', en: 'Late delivery accrues 0.5% per day, capped at 10% of the value.' },
+  'pod-avtorske':       { sl: 'Ureja, katere avtorske pravice in v kakšnem obsegu preidejo na naročnika.', en: 'Defines which rights transfer to the client and to what extent.' },
+  'pod-varovanje':      { sl: 'Obe strani zavezuje k varovanju zaupnih podatkov tudi po koncu sodelovanja.', en: 'Binds both parties to keep confidential information secret, also after the engagement ends.' },
+  'pod-kazen':          { sl: 'Ob zamudi se obračuna 0,5 % na dan, največ 10 % vrednosti.', en: 'Late delivery accrues 0.5% per day, capped at 10% of the value.' },
+  'avt-atribucija':     { sl: 'Naročnika zavezuje, da ob javni objavi navede avtorja.', en: 'Requires the client to credit the author when publishing.' },
+  'avt-portfelj':       { sl: 'Avtorju dovoli prikaz dela v lastnem portfelju in referencah.', en: 'Lets the author show the work in their portfolio and references.' },
+  'avt-tantieme':       { sl: 'Ob rabi čez dogovorjeni obseg avtorju pripada dodatno nadomestilo.', en: 'Use beyond the agreed scope entitles the author to additional payment.' },
+  'lic-teritorij':      { sl: 'Veljavnost licence omeji na dogovorjeno ozemlje.', en: 'Limits the licence to the agreed territory.' },
+  'lic-ekskl':          { sl: 'Določi, ali sme enako licenco dobiti tudi kdo drug.', en: 'States whether anyone else may receive the same licence.' },
+  'lic-podlicence':     { sl: 'Pridobitelju dovoli prenos pravic naprej tretjim osebam.', en: 'Allows the licensee to pass the rights on to third parties.' },
+  'lic-porocanje':      { sl: 'Pridobitelja zavezuje k poročanju o obsegu rabe.', en: 'Obliges the licensee to report how much the work is used.' },
+  'nda-odgovornost':    { sl: 'Kršitev zaupnosti pomeni odškodninsko odgovornost.', en: 'A breach of confidentiality creates liability for damages.' },
+  'dpa-podobdelovalci': { sl: 'Ureja vključevanje zunanjih izvajalcev pri obdelavi podatkov.', en: 'Governs bringing external sub-processors into data processing.' },
+  'dpa-prenos':         { sl: 'Prepove prenos osebnih podatkov izven EU brez ustreznih jamstev.', en: 'Bars transfers of personal data outside the EU without safeguards.' },
 };
 const privzetoIzklop = (v: VrstaPog) => new Set<string>(PRIVZETO_IZKLOP[v]);
 
@@ -100,6 +125,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
      Privzeto 'sodelovanje' = obstojece obnasanje nespremenjeno. */
   const [vrstaPog, setVrstaPog] = useState<VrstaPog>('sodelovanje');
   const [vrstaSheetOdprt, setVrstaSheetOdprt] = useState(false); /* mobile: dropdown -> slide-up */
+  const [vrsteRazlaga, setVrsteRazlaga] = useState(false); /* "?" ob vrstah: kaj je in zakaj jo rabis */
   /* izklopljeni opcijski cleni (po id) za trenutno vrsto; ob menjavi vrste se ponastavi na privzeto */
   const [izklKlavzule, setIzklKlavzule] = useState<Set<string>>(() => privzetoIzklop('sodelovanje'));
   const [offerId, setOfferId] = useState('');
@@ -766,7 +792,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* obvestilo se izrise na vrhu strani — brez skoka na vrh ga uporabnica na
          dnu dokumenta sploh ne vidi in izgleda, kot da gumb ne dela */
       setNotice(L('To so demo podatki — shranjevanje ni mogoče. Zgoraj v vrstici preklopi na »Moji podatki«.', 'This is demo data — saving is not possible. Switch to “My data” in the bar above.'));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     const telo = izvozniTelo();
@@ -806,7 +831,19 @@ export default function ContractWorkspace({ base }: { base: string }) {
     setPriponkaIme(fileName || '');
     setPriponkaPot(filePath || '');
     setPriponkaZaBrisanje('');
-    setNotice(L('Pogodba je shranjena in povezana s projektom.', 'The contract is saved and linked to the project.'));
+    /* Sporocilo mora povedati RESNICO (Codex/ChatGPT tocka 5): "povezana s
+       projektom" je pisalo tudi, ko projekta ni; tiho izpusceno nalaganje
+       priponke pa je najhujsa vrsta napake — polovicno shranjevanje brez
+       besede. */
+    const zPovezavo = vir === 'ponudba' && selectedOffer;
+    let sporocilo = zPovezavo
+      ? L('Pogodba je shranjena in povezana s projektom.', 'The contract is saved and linked to the project.')
+      : L('Pogodba je shranjena v arhiv.', 'The contract is saved to the archive.');
+    if (priponkaFile && !filePath) {
+      sporocilo += ' ' + L('Priponka je ostala samo v tem brskalniku — nalaganje v oblak ni uspelo.',
+        'The attachment stayed only in this browser — uploading to the cloud failed.');
+    }
+    setNotice(sporocilo);
     /* po shranjevanju nazaj na prvo stran — nova pogodba je takoj vidna v arhivu
        (Tina: "naj se shrani in vrnem se na prvo stran") */
     setPogled('nastavitve');
@@ -850,12 +887,20 @@ export default function ContractWorkspace({ base }: { base: string }) {
     if (!(file instanceof File) || !file.size) return;
     const id = crypto.randomUUID();
     let filePath: string | undefined;
-    try { filePath = await uploadBusinessDocument(file, 'contracts', id); } catch { await storeFile(id, file); }
+    /* Ce oblak odpove, gre datoteka v rezervo v brskalniku — a tega NE sme
+       zamolcati (Codex/ChatGPT tocka 5): tiho polovicno shranjevanje je
+       najhujsa vrsta napake. */
+    let samoVBrskalniku = false;
+    try { filePath = await uploadBusinessDocument(file, 'contracts', id); }
+    catch { await storeFile(id, file); samoVBrskalniku = true; }
     const zapis: FlowContract = { id, title: String(data.get('title')), client: String(data.get('client')), date: String(data.get('date')), status: 'received', sourceOfferId: String(data.get('sourceOfferId')) || undefined, fileName: file.name, filePath, notes: String(data.get('notes')) };
     const next = [zapis, ...contracts];
     setContracts(next);
     saveFlowCollection('contracts', next);
-    setNotice(L('Prejeta pogodba je shranjena in čaka na pregled.', 'The received contract is saved and awaiting review.'));
+    setNotice(samoVBrskalniku
+      ? L('Pogodba je shranjena samo v tem brskalniku — nalaganje v oblak ni uspelo. Na drugih napravah je ne bo.',
+          'The contract is saved only in this browser — uploading to the cloud failed. It will not appear on other devices.')
+      : L('Prejeta pogodba je shranjena in čaka na pregled.', 'The received contract is saved and awaiting review.'));
     event.currentTarget.reset();
   };
 
@@ -884,7 +929,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
   ) : null;
 
   return <div className={`${styles.contractPage} pg`}>
-    {notice && <div className={styles.contractNotice}>{notice}<button onClick={() => setNotice('')}>×</button></div>}
+    {/* Toast namesto pasu na vrhu (DESIGN.md 13): pas je stran ob shranjevanju
+        odskocil na vrh, toast pride k uporabnici, kjer je. */}
+    {notice && <Toast sporocilo={notice} ton="uspeh" onClose={() => setNotice('')} />}
 
     {ponudbaPredogled && selectedOffer && typeof document !== 'undefined' && createPortal(
       <div className="pg-op-back" role="presentation" onMouseDown={event => {
@@ -930,16 +977,31 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <span className="pg-mehur"><b>{L('Iz česa nastane pogodba?', 'What is the contract built from?')}</b><small>{L('Če obstaja ponudba, jo izberi — naročnik in obseg se predizpolnita. Sicer pusti »Brez ponudbe« za samostojno pogodbo.', 'If an offer exists, pick it — the client and scope are pre-filled. Otherwise leave “No offer” for a standalone contract.')}</small></span>
       </div>
       <section className="pg-sek pg-vstop-panel">
-        {/* vrsta dokumenta: 6 vrst pogodb. Desktop = pilule; mobile = dropdown -> slide-up */}
-        <div className="pg-vrstapog" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
-          {VRSTE_POG.map(v => (
-            <button key={v.id} type="button" aria-label={jeEn ? VRSTE_POG_EN[v.id].naziv : v.naziv} aria-pressed={vrstaPog === v.id} className={vrstaPog === v.id ? 'on' : ''} onClick={() => menjajVrsto(v.id)}>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</button>
-          ))}
+        {/* vrsta dokumenta: 6 vrst pogodb. Desktop = pilule; mobile = dropdown -> slide-up.
+            "?" desno odpre razlago vseh sestih: kaj je in zakaj jo rabis (Tina, 25. 8.) */}
+        <div className="pg-vrsta-vrsta">
+          <div className="pg-vrstapog" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
+            {VRSTE_POG.map(v => (
+              <button key={v.id} type="button" aria-label={jeEn ? VRSTE_POG_EN[v.id].naziv : v.naziv} aria-pressed={vrstaPog === v.id} className={vrstaPog === v.id ? 'on' : ''} onClick={() => menjajVrsto(v.id)}>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</button>
+            ))}
+          </div>
+          <button type="button" className="pg-vrsta-drop" aria-haspopup="dialog" aria-expanded={vrstaSheetOdprt} onClick={() => setVrstaSheetOdprt(true)}>
+            <span className="pg-vrsta-drop-oznaka">{L('Vrsta dokumenta', 'Document type')}</span>
+            <span className="pg-vrsta-drop-val">{jeEn ? VRSTE_LABEL_EN[vrstaPog] : VRSTE_POG.find(v => v.id === vrstaPog)!.label}<CaretDown size={16} weight="bold" aria-hidden /></span>
+          </button>
+          <button type="button" className="pg-pomoc" aria-expanded={vrsteRazlaga}
+            aria-label={L('Katera pogodba je katera?', 'Which contract is which?')}
+            onClick={() => setVrsteRazlaga(o => !o)}>?</button>
         </div>
-        <button type="button" className="pg-vrsta-drop" aria-haspopup="dialog" aria-expanded={vrstaSheetOdprt} onClick={() => setVrstaSheetOdprt(true)}>
-          <span className="pg-vrsta-drop-oznaka">{L('Vrsta dokumenta', 'Document type')}</span>
-          <span className="pg-vrsta-drop-val">{jeEn ? VRSTE_LABEL_EN[vrstaPog] : VRSTE_POG.find(v => v.id === vrstaPog)!.label}<CaretDown size={16} weight="bold" aria-hidden /></span>
-        </button>
+        {vrsteRazlaga && (
+          <div className="pg-vrste-razlaga">
+            {VRSTE_POG.map(v => (
+              <p key={v.id} className={vrstaPog === v.id ? 'on' : ''}>
+                <b>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</b> — {jeEn ? VRSTE_POG_EN[v.id].razlaga : v.razlaga}
+              </p>
+            ))}
+          </div>
+        )}
         {vrstaSheetOdprt && typeof document !== 'undefined' && createPortal(
           <div className="pg-vrsta-back" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setVrstaSheetOdprt(false); }}>
             <div className="pg-vrsta-sheet" role="dialog" aria-modal="true" aria-label={L('Vrsta dokumenta', 'Document type')}>
@@ -965,16 +1027,42 @@ export default function ContractWorkspace({ base }: { base: string }) {
           if (!opcijski.length) return null;
           return (
             <div className="pg-klavzule">
-              <span className="pg-klavzule-label">{L('Vključi člene:', 'Include clauses:')}</span>
-              <div className="pg-klavzule-pilule" role="group" aria-label={L('Opcijski členi', 'Optional clauses')}>
+              <span className="pg-klavzule-label">{L('Dodatni pogoji', 'Additional terms')}</span>
+              <div className="pg-klavzule-seznam" role="group" aria-label={L('Opcijski členi', 'Optional clauses')}>
                 {opcijski.map(c => {
                   const vkljucen = !izklKlavzule.has(c.id);
-                  return <button key={c.id} type="button" aria-pressed={vkljucen} className={'pg-segpills-mini' + (vkljucen ? ' on' : '')} onClick={() => prekloviKlavzulo(c.id)}>{c.naslov}</button>;
+                  const posledica = POSLEDICE[c.id];
+                  return <button key={c.id} type="button" aria-pressed={vkljucen} className={'pg-klavzula' + (vkljucen ? ' on' : '')} onClick={() => prekloviKlavzulo(c.id)}>
+                    <span className="pg-klavzula-kv" aria-hidden>{vkljucen ? '✓' : '+'}</span>
+                    <span className="pg-klavzula-txt">
+                      <strong>{c.naslov}</strong>
+                      {posledica && <span>{jeEn ? posledica.en : posledica.sl}</span>}
+                    </span>
+                  </button>;
                 })}
               </div>
             </div>
           );
         })()}
+        {/* TRI POTI ENAKOVREDNO (ChatGPT/Codex tocka 4): tretja je bila skrita
+            kot povezava na dnu in je nihce ni nasel. */}
+        <div className="pg-poti" role="group" aria-label={L('Iz česa nastane pogodba', 'What the contract is built from')}>
+          <button type="button" className={'pg-pot' + (vir === 'ponudba' ? ' on' : '')}
+            onClick={() => { setOdStranke(false); setVstopOdprt(true); }}>
+            <strong>{L('Ustvari iz ponudbe', 'Create from an offer')}</strong>
+            <small>{L('Obseg, cena in naročnik se prenesejo.', 'Scope, price and client carry over.')}</small>
+          </button>
+          <button type="button" className={'pg-pot' + (vir === 'rocno' ? ' on' : '')}
+            onClick={() => { setOdStranke(false); setOfferId(''); }}>
+            <strong>{L('Ustvari brez ponudbe', 'Create without an offer')}</strong>
+            <small>{L('Samostojna pogodba, vse vpišeš sama.', 'A standalone contract you fill in yourself.')}</small>
+          </button>
+          <button type="button" className={'pg-pot' + (vir === 'stranka' ? ' on' : '')}
+            onClick={() => setOdStranke(true)}>
+            <strong>{L('Naloži pogodbo stranke', 'Upload the client\u2019s contract')}</strong>
+            <small>{L('Prejeto pogodbo shraniš in pregledaš.', 'Save and review a received contract.')}</small>
+          </button>
+        </div>
         {!odStranke ? (
           <>
             {/* PONUDBA (iskalen combobox) + DATUM. Izbrana ponudba => vir 'ponudba'
@@ -1003,7 +1091,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                         ))}
                         {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers match this search.')}</p>}
                       </div>
-                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 7 && <p className="pg-combo-namig">{L('Prikazane zadnje — išči za vse.', 'Showing recent — search to see all.')}</p>}
+                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 7 && <p className="pg-combo-namig">{L('Prikazanih je zadnjih 7 ponudb. Za starejše uporabi iskanje.', 'Showing the last 7 offers. Use search for older ones.')}</p>}
                     </>);
                     if (jeMobilni && typeof document !== 'undefined') {
                       return createPortal(
@@ -1034,7 +1122,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 {/* "Brez ponudbe" = samostojna pogodba: naročnika in obseg vpišeš ročno */}
                 <div className="pg-polja">
                   <label className="pg-polje">{L('Naročnik', 'Client')}
-                    <input type="text" placeholder={L('npr. Odvetniška družba Volk & Babica', 'e.g. Volk & Babica Law Firm')} value={rocniNarocnik} onChange={event => setRocniNarocnik(event.target.value)} />
+                    <input type="text" placeholder={L('npr. Studio Sever d.o.o.', 'e.g. Studio Sever Ltd')} value={rocniNarocnik} onChange={event => setRocniNarocnik(event.target.value)} />
                   </label>
                   <label className="pg-polje">{L('E-pošta naročnika', 'Client email')}
                     <input type="email" placeholder={L('npr. pisarna@volk-babica.si', 'e.g. office@volk-babica.si')} value={narEmail} onChange={event => setNarEmail(event.target.value)} />
@@ -1046,9 +1134,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 <p className="pg-namig">{L('Priporočamo: najprej ustvari ', 'We recommend: first create an ')}<b>{L('ponudbo', 'offer')}</b>{L(' — obseg, cena in številka se v pogodbo prenesejo sami. ', ' — the scope, price and number carry over into the contract automatically. ')}<a href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator →', 'Open calculator →')}</a></p>
               </>
             )}
-            {/* pot "Od stranke": naloži že podpisano/prejeto pogodbo za pregled (ohranjena funkcija) */}
-            <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>{L('Imaš pogodbo od stranke? Naloži jo za pregled →', 'Have a contract from the client? Upload it for review →')}</button>
-          </>
+                      </>
         ) : (
           /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
           <>
@@ -1059,7 +1145,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                   <input required name="title" type="text" placeholder={L('npr. Pogodba o sodelovanju 2026', 'e.g. Cooperation Agreement 2026')} />
                 </label>
                 <label className="pg-polje">{L('Stranka', 'Client')}
-                  <input required name="client" type="text" placeholder={L('npr. Odvetniška družba Volk & Babica', 'e.g. Volk & Babica Law Firm')} />
+                  <input required name="client" type="text" placeholder={L('npr. Studio Sever d.o.o.', 'e.g. Studio Sever Ltd')} />
                 </label>
                 <label className="pg-polje">{L('Datum prejema', 'Date received')}
                   <input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
@@ -1209,7 +1295,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       )}
 
       {napaka && <p className="pg-napaka">{napaka}</p>}
-      <p className="pg-mini" style={{ marginTop: '.7rem' }}>{L('Besedilo preveri; Pinart ne nadomešča pravnega svetovanja.', 'Please review the text; Pinart does not replace legal advice.')}</p>
+      <p className="pg-mini" style={{ marginTop: '.7rem' }}>{L('To je prilagodljiv pogodbeni osnutek, ne pravni nasvet.', 'Please review the text; Pinart does not replace legal advice.')}</p>
     </section>}
 
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
@@ -1231,10 +1317,39 @@ export default function ContractWorkspace({ base }: { base: string }) {
       </div>
       <p className="pg-kicker">{jeEn ? VRSTE_POG_EN[vrstaPog].kick : VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? L(` · PONUDBA ŠT. ${selectedOffer.number}`, ` · OFFER NO. ${selectedOffer.number}`) : ''}</p>
       <h2 className="pg-naslov">{L('Zaključek.', 'Finish.')}{odvPoslano && <span className="pg-odvetnik-znak">{L('Pri odvetniku', 'With the lawyer')}</span>}</h2>
+      {/* PREGLED ODLOCITEV (ChatGPT/Codex tocki 2 in 3): kar manjka, mora
+          uporabnica videti PRED posiljanjem — v dolgem besedilu manjkajoco
+          ceno ali narocnika zlahka spregleda, v povzetku ne more. */}
+      {(() => {
+        const vkljuceni = cleniZaVrsto(vrstaPog).filter(c => c.opcijski && !izklKlavzule.has(c.id));
+        const vrstice: { oznaka: string; vrednost: string; manjka?: boolean }[] = [
+          { oznaka: L('Izvajalec', 'Contractor'), vrednost: ponudnik.ime.trim(), manjka: !ponudnik.ime.trim() },
+          { oznaka: L('Naročnik', 'Client'), vrednost: narocnikIme(), manjka: !narocnikIme() },
+          vir === 'ponudba' && selectedOffer
+            ? { oznaka: L('Obseg in cena', 'Scope and price'), vrednost: `${selectedOffer.title} · ${selectedOffer.agreedAmount ? selectedOffer.agreedAmount.toLocaleString('sl-SI') + ' €' : L('cena ni določena', 'no price set')}`, manjka: !selectedOffer.agreedAmount }
+            : { oznaka: L('Obseg in cena', 'Scope and price'), vrednost: L('samostojna pogodba — obseg in ceno preveri v besedilu', 'standalone contract — check scope and price in the text'), manjka: vir !== 'stranka' },
+          { oznaka: L('Datum', 'Date'), vrednost: datum, manjka: !datum },
+          { oznaka: L('Dodatni pogoji', 'Additional terms'), vrednost: vkljuceni.length ? vkljuceni.map(c => c.naslov).join(' · ') : L('nobeden ni vključen', 'none included') },
+        ];
+        return (
+          <div className="pg-povzetek">
+            <b>{L('Pred pošiljanjem preveri', 'Check before sending')}</b>
+            <ul>
+              {vrstice.map(v => (
+                <li key={v.oznaka} data-manjka={v.manjka || undefined}>
+                  <span>{v.oznaka}</span>
+                  <strong>{v.manjka ? (v.vrednost || L('manjka', 'missing')) : v.vrednost}</strong>
+                </li>
+              ))}
+            </ul>
+            <p>{L('Preveri še roke, način plačila in pogoje odpovedi v besedilu pogodbe.', 'Also check deadlines, payment terms and termination terms in the contract text.')}</p>
+          </div>
+        );
+      })()}
       <p className="pg-uvod">{L('Prenesi pogodbo', 'Download the contract')}{narocnikIme() ? L(' za ', ' for ') + narocnikIme() : ''}{L(', jo shrani ali pošlji naročniku.', ', save it or send it to the client.')}</p>
       <p className="pg-disc">{L('Pripravljeno iz vzorčne predloge kot pripomoček — ', 'Prepared from a sample template as an aid — ')}<b>{L('ni pravni nasvet', 'not legal advice')}</b>{L('. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.', '. Before signing, we recommend a review by a lawyer and adaptation to the specific deal.')}</p>
       <div className="pg-epodpis">
-        <b>{L('Soglasje s podpisno povezavo', 'Consent via signing link')}</b>
+        <b>{L('Elektronska potrditev soglasja', 'Electronic consent confirmation')}</b>
         <p>{L('Zabeležijo se oba podpisnika, čas, IP in SHA-256 vsebine. To ni kvalificiran elektronski podpis po eIDAS in ga ne nadomešča. Po podpisu naročnika se pogodba zaklene.', 'Both signers, time, IP and the SHA-256 content hash are recorded. This is not a qualified electronic signature under eIDAS and does not replace one. The contract is locked after the client signs.')}</p>
         {!podpisnaPovezava ? <button type="button" className="pg-gumb" disabled={podpisNalaganje || !shranjenaId} onClick={pripraviPodpisnoPovezavo}>{podpisNalaganje ? L('Pripravljam …', 'Preparing …') : shranjenaId ? L('Podpiši kot izvajalec in ustvari povezavo', 'Sign as contractor and create link') : L('Najprej shrani pogodbo', 'Save the contract first')}</button> : <div className="pg-epodpis-link"><input readOnly value={podpisnaPovezava} aria-label={L('Povezava za podpis naročnika', 'Client signing link')} /><button type="button" onClick={() => { void navigator.clipboard?.writeText(podpisnaPovezava); setNotice(L('Povezava je kopirana.', 'Link copied.')); }}>{L('Kopiraj', 'Copy')}</button></div>}
       </div>
@@ -1281,10 +1396,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}><Plus size={15} weight="bold" aria-hidden /> {L('Nova pogodba', 'New contract')}</button>
       </>)}
       {pogled === 'nastavitve' && (
-        <button type="button" className="pg-noga-naprej" onClick={pripraviPogodbo}>{L('Pripravi pogodbo', 'Prepare contract')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
+        <button type="button" className="pg-noga-naprej" onClick={pripraviPogodbo}>{L('Ustvari osnutek pogodbe', 'Create contract draft')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
       )}
       {pogled === 'dokument' && (
-        <button type="button" className="pg-noga-naprej" onClick={() => setPogled('zakljucek')}>{L('Zaključi', 'Finish')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
+        <button type="button" className="pg-noga-naprej" onClick={() => setPogled('zakljucek')}>{L('Preglej in pošlji', 'Review and send')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
       )}
     </div></div>}
 
@@ -1374,6 +1489,15 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       /* preklop vrste dokumenta (Pogodba o sodelovanju | NDA) — dve pilули, akcent za aktivno,
          da se locita od izbire vira (ta uporablja ink) */
+      .pg-vrsta-vrsta{display:flex;align-items:center;gap:.55rem;margin:0 0 1rem}
+      .pg-vrsta-vrsta>.pg-vrstapog{margin:0}
+      .pg-pomoc{flex:none;width:1.55rem;height:1.55rem;border:1px solid rgba(17,17,17,.22);border-radius:50%;background:transparent;color:rgba(17,17,17,.55);font:700 .8rem inherit;line-height:1;cursor:pointer;transition:border-color .15s,color .15s}
+      .pg-pomoc:hover,.pg-pomoc[aria-expanded="true"]{border-color:var(--accent,#B25476);color:var(--accent,#B25476)}
+      .pg-vrste-razlaga{margin:-.35rem 0 1.1rem;padding:.9rem 1.05rem;border:1px solid rgba(178,84,118,.22);border-radius:12px;background:rgba(255,255,255,.62)}
+      .pg-vrste-razlaga p{margin:0 0 .55rem;font-size:.85rem;line-height:1.5;color:rgba(17,17,17,.78)}
+      .pg-vrste-razlaga p:last-child{margin-bottom:0}
+      .pg-vrste-razlaga b{color:var(--ink);font-weight:700}
+      .pg-vrste-razlaga p.on{color:var(--ink)}
       .pg-vrstapog{display:inline-flex;flex-wrap:wrap;background:rgba(255,255,255,.55);border:1px solid rgba(178,84,118,.28);border-radius:999px;padding:.3rem;gap:.45rem;margin:0 0 1rem}
       .pg-vrstapog button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem 1rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
       .pg-vrstapog button.on{background:var(--accent,#B25476);color:#fff}
@@ -1384,6 +1508,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
       @media (max-width:640px){
         .pg-vrstapog{display:none}
         .pg-vrsta-drop{display:flex;flex-direction:column;gap:.35rem;width:100%;align-items:stretch;margin:0 0 1rem;padding:0;border:none;background:none;cursor:pointer;text-align:left}
+        /* na mobilnem stoji "?" ob izbirniku, poravnan s poljem (ne z oznako) */
+        .pg-vrsta-vrsta{align-items:flex-end}
+        .pg-vrsta-vrsta>.pg-vrsta-drop{flex:1;min-width:0;margin:0}
+        .pg-vrsta-vrsta>.pg-pomoc{margin-bottom:.6rem}
       }
       .pg-vrsta-back{position:fixed;inset:0;z-index:120;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:pgVrstaBack .2s ease both}
       @keyframes pgVrstaBack{from{opacity:0}to{opacity:1}}
@@ -1416,6 +1544,38 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-klavzule{margin:0 0 1rem}
       .pg-klavzule-label{display:block;font-size:.95rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .5rem}
       .pg-klavzule-pilule{display:flex;flex-wrap:wrap;gap:.4rem}
+      /* Cleni kot vrstice s POSLEDICO v isti velikosti kot ime (ne drobni tisk) */
+      /* Povzetek odlocitev na Zakljucku: manjkajoce rdece, vse ostalo mirno */
+      .pg-povzetek{width:100%;max-width:34rem;margin:0 auto 1.1rem;text-align:left;
+        padding:1rem 1.1rem;border:1px solid rgba(17,17,17,.12);border-radius:14px;background:#fff}
+      .pg-povzetek>b{display:block;margin-bottom:.55rem;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase}
+      .pg-povzetek ul{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+      .pg-povzetek li{display:flex;justify-content:space-between;gap:1rem;font-size:.92rem}
+      .pg-povzetek li span{flex:none;color:rgba(17,17,17,.62)}
+      .pg-povzetek li strong{font-weight:600;text-align:right;min-width:0;overflow-wrap:break-word}
+      .pg-povzetek li[data-manjka] strong{color:oklch(52% .19 25)}
+      .pg-povzetek li[data-manjka] strong::before{content:'⚠ '}
+      .pg-povzetek>p{margin:.65rem 0 0;font-size:.85rem;color:rgba(17,17,17,.66)}
+      .pg-poti{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin:0 0 1.1rem}
+      @media (max-width:640px){.pg-poti{grid-template-columns:minmax(0,1fr)}}
+      .pg-pot{display:grid;gap:.2rem;text-align:left;padding:.75rem .85rem;border:1px solid rgba(17,17,17,.14);
+        border-radius:12px;background:#fff;cursor:pointer;font:inherit;transition:border-color .15s ease,background .15s ease}
+      .pg-pot:hover{border-color:rgba(17,17,17,.4)}
+      .pg-pot.on{border-color:#7C3AED;background:oklch(97.5% .025 297)}
+      .pg-pot strong{font-size:.92rem}
+      .pg-pot small{font-size:.8rem;font-weight:400;color:rgba(17,17,17,.72);line-height:1.4}
+      .pg-klavzule-seznam{display:grid;gap:.45rem}
+      .pg-klavzula{display:flex;gap:.7rem;align-items:flex-start;width:100%;text-align:left;
+        padding:.7rem .85rem;border:1px solid rgba(17,17,17,.14);border-radius:12px;
+        background:#fff;cursor:pointer;font:inherit;transition:border-color .15s ease,background .15s ease}
+      .pg-klavzula:hover{border-color:rgba(17,17,17,.4)}
+      .pg-klavzula.on{border-color:#7C3AED;background:oklch(97.5% .025 297)}
+      .pg-klavzula-kv{flex:none;display:grid;place-items:center;width:1.3rem;height:1.3rem;margin-top:.05rem;
+        border:1.5px solid rgba(17,17,17,.35);border-radius:7px;font-size:.85rem;line-height:1;color:rgba(17,17,17,.55)}
+      .pg-klavzula.on .pg-klavzula-kv{background:#7C3AED;border-color:#7C3AED;color:#fff}
+      .pg-klavzula-txt{display:grid;gap:.15rem;min-width:0}
+      .pg-klavzula-txt strong{font-size:.92rem;font-weight:700}
+      .pg-klavzula-txt span{font-size:.92rem;font-weight:400;line-height:1.45;color:rgba(17,17,17,.78)}
       .pg-segpills-mini{border:1px solid rgba(17,17,17,.18);background:rgba(255,255,255,.5);color:var(--ink);font-family:inherit;font-weight:600;font-size:.72rem;letter-spacing:.01em;padding:.34rem .72rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .16s,color .16s,border-color .16s}
       .pg-segpills-mini:hover{border-color:var(--ink)}
       .pg-segpills-mini.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}

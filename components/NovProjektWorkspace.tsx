@@ -19,7 +19,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowRight, PencilSimple } from '@phosphor-icons/react';
+import { ArrowRight, CaretDown, PencilSimple } from '@phosphor-icons/react';
 import { loadFlowData, saveProjectLinks, type FlowClient, type FlowOffer, type FlowContract } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektPovezava, type ProjektStatus, type ProjektVprasanje } from '@/lib/projekti';
@@ -78,20 +78,71 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     setObrazec({
       naslov: p.naslov || '', strankaId: p.strankaId || '', zacetek: p.zacetek || '', rok: p.rok || '',
       status: p.status || 'aktiven', opisStranke: p.opisStranke || '', panoga: p.panoga || '',
-      ciljnaSkupina: p.ciljnaSkupina || '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>,
+      ciljnaSkupina: p.ciljnaSkupina || '', podrobnosti: p.podrobnosti || '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>,
       dizajnZelje: p.dizajnZelje || '', voice: p.voice || '', konkurenca: p.konkurenca || '',
       cilji: p.cilji || [], dodatnaVprasanja: p.dodatnaVprasanja || [], povezave: p.povezave || [], dodeljeni: p.dodeljeni || [],
     });
-    setNovKorak(11);
+    setNovKorak(13); setPodrobnostiPotrjene(true); /* urejanje: vse takoj vidno */
   }, [searchParams]);
 
-  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, opisStranke: '', panoga: '', ciljnaSkupina: '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>, dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
+  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, podrobnosti: '', opisStranke: '', panoga: '', ciljnaSkupina: '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>, dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
   const [obrazec, setObrazec] = useState(prazenObrazec());
   /* onboarding kot CHAT (glej np-chat-* spodaj): novKorak = do kam je uporabnica
      ze prisla (0..11, 11 = vsa osnovna vprasanja odgovorjena -> dodatno+povezave+ekipa+zakljucek);
      koraki: 0 naslov, 1 stranka, 2 cilji, 3 opis stranke, 4 panoga, 5 ciljna skupina,
      6 dizajn zelje, 7 voice/ton, 8 konkurenca, 9 zacetek/rok, 10 status.
      urejamKorak = klik na ze odgovorjen mehurcek odpre polje ZNOVA V MESTU */
+  /* MARKETINSKI OKVIR JE ZLOZEN, ne vsiljen (Tina, 25. 8.: "kot vpis podatkov
+     podjetja pri kalkulatorju"). Privzeto so vprasanja stiri: ime, stranka,
+     rok, status. Cilji, persona, dizajn, ton in konkurenca zivijo za zaprto
+     vrstico s plusom — kdor jih rabi, jo odpre. */
+  const [okvir, setOkvir] = useState(false); /* stari chat-nacin — ostaja izklopljen */
+  const [podrobnostiOdprte, setPodrobnostiOdprte] = useState(false);
+  /* Safari (se) ne zna field-sizing: content — visino uravnamo ob tipkanju */
+  const rastiTextarea = (el: HTMLTextAreaElement) => {
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
+  /* Vrstica podrobnosti je SVOJ korak z Naprej — ce pogovor tece mimo nje,
+     jo spregledas (Tina, 25. 8.). */
+  const [podrobnostiPotrjene, setPodrobnostiPotrjene] = useState(false);
+  /* Pupa napolni prazna polja podrobnosti iz tega, kar ze vemo — prazna
+     vprasanja so kruta do nekoga, ki "ne ve, kaj bi" (Tina, 25. 8.). */
+  const [pupaPolni, setPupaPolni] = useState(false);
+  const [pupaNapaka, setPupaNapaka] = useState('');
+  const pupaPredlaga = async () => {
+    setPupaPolni(true); setPupaNapaka('');
+    const stranka = clients.find(c => c.id === obrazec.strankaId)?.name || '';
+    try {
+      const r = await fetch('/api/pupa', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          vprasanje: 'Izpolni podrobnosti kreativnega projekta. Vrni SAMO cist JSON brez razlage, s kljuci: opisStranke, panoga, ciljnaSkupina, dizajnZelje, voice, konkurenca. Vsaka vrednost kratka (1-2 stavka), v slovenscini, prakticna. Ce cesa ni mogoce sklepati, vrni prazen niz.',
+          kontekst: `Projekt: ${obrazec.naslov || '(brez imena)'}. Stranka: ${stranka || '(neznana)'}. Ze vpisano - dejavnost: ${obrazec.opisStranke || '-'}; panoga: ${obrazec.panoga || '-'}; ciljna skupina: ${obrazec.ciljnaSkupina || '-'}.`,
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.odgovor) throw new Error(d.napaka || 'Pupa ni odgovorila.');
+      const ujemanje = String(d.odgovor).match(/\{[\s\S]*\}/);
+      if (!ujemanje) throw new Error('Pupa ni vrnila predlogov.');
+      const predlogi = JSON.parse(ujemanje[0]) as Record<string, string>;
+      setObrazec(o => ({
+        ...o,
+        opisStranke: o.opisStranke.trim() ? o.opisStranke : (predlogi.opisStranke || o.opisStranke),
+        panoga: o.panoga.trim() ? o.panoga : (predlogi.panoga || o.panoga),
+        ciljnaSkupina: o.ciljnaSkupina.trim() ? o.ciljnaSkupina : (predlogi.ciljnaSkupina || o.ciljnaSkupina),
+        dizajnZelje: o.dizajnZelje.trim() ? o.dizajnZelje : (predlogi.dizajnZelje || o.dizajnZelje),
+        voice: o.voice.trim() ? o.voice : (predlogi.voice || o.voice),
+        konkurenca: o.konkurenca.trim() ? o.konkurenca : (predlogi.konkurenca || o.konkurenca),
+      }));
+    } catch (napaka) {
+      setPupaNapaka(napaka instanceof Error ? napaka.message : 'Pupa trenutno ne more pomagati.');
+    }
+    setPupaPolni(false);
+  };
+  /* Lastna vprasanja so ZLOZENA (Tina, 25. 8.: "tega ne rabim videti") —
+     vrstica s plusom, odpre se na klik ali ce vprasanja ze obstajajo. */
+  const [vprasanjaOdprta, setVprasanjaOdprta] = useState(false);
   const [novKorak, setNovKorak] = useState(0);
   const [urejamKorak, setUrejamKorak] = useState<number | null>(null);
   const [novoVprasanje, setNovoVprasanje] = useState({ vprasanje: '', odgovor: '' });
@@ -130,7 +181,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   const posodobiCilj = (id: string, patch: Partial<ProjektCilj>) => setObrazec(o => ({ ...o, cilji: o.cilji.map(c => c.id === id ? { ...c, ...patch } : c) }));
   /* potrdi trenutni korak vprasanja: naprej=true premakne kazalec (NAPREJ), sicer
      samo zapre "urejanje v mestu" (Shrani na ze odgovorjenem koraku) */
-  const potrdiKorak = (naprej: boolean) => { setUrejamKorak(null); if (naprej) setNovKorak(k => Math.min(11, k + 1)); };
+  const potrdiKorak = (naprej: boolean) => { setUrejamKorak(null); if (naprej) setNovKorak(k => Math.min(13, k + 1)); };
   /* Vodena persona (korak 5): pKorak = kateri podkorak persone je aktiven. */
   const [pKorak, setPKorak] = useState(0);
   const setPersona = (k: PersonaKljuc, v: string) => setObrazec(o => ({ ...o, persona: { ...o.persona, [k]: v } }));
@@ -179,7 +230,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     const projekt: Projekt = {
       id: urejam?.id || crypto.randomUUID(),
       stevilka: urejam?.stevilka || naslednjaStevilka(realProjekti),
-      naslov,
+      naslov: enolicnoIme(naslov),
       strankaId: stranka?.id,
       strankaIme: stranka?.name,
       opisStranke: obrazec.opisStranke.trim() || undefined,
@@ -188,17 +239,39 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       dizajnZelje: obrazec.dizajnZelje.trim() || undefined,
       voice: obrazec.voice.trim() || undefined,
       konkurenca: obrazec.konkurenca.trim() || undefined,
-      cilji: obrazec.cilji.filter(c => c.besedilo.trim()).map(c => ({ id: c.id, besedilo: c.besedilo.trim(), metrika: c.metrika?.trim() || undefined, tarca: c.tarca?.trim() || undefined })),
+      podrobnosti: (obrazec.podrobnosti || '').trim() || undefined,
+      /* Cilj z izpolnjenim merilom ali tarco, a praznim besedilom, se je tiho
+         zavrgel (Tina, 25. 8.: "čas + 800 €" -> cilji: [] v oblaku). Obdrzimo
+         vse, kjer je karkoli vpisano; besedilo po potrebi sestavimo iz njiju. */
+      cilji: obrazec.cilji
+        .filter(c => c.besedilo.trim() || c.metrika?.trim() || c.tarca?.trim())
+        .map(c => ({
+          id: c.id,
+          besedilo: c.besedilo.trim() || [c.metrika?.trim(), c.tarca?.trim()].filter(Boolean).join(' · '),
+          metrika: c.metrika?.trim() || undefined,
+          tarca: c.tarca?.trim() || undefined,
+        })),
       zacetek: obrazec.zacetek || undefined,
       rok: obrazec.rok || undefined,
       status: obrazec.status,
+      vrsta: (podrobnostiOdprte || obrazec.cilji.some(c => c.besedilo.trim() || c.tarca?.trim())
+        || obrazec.opisStranke.trim() || obrazec.ciljnaSkupina.trim() || (obrazec.podrobnosti || '').trim()) ? 'okvir' : 'preprost',
       created: urejam?.created || new Date().toISOString(),
       dodatnaVprasanja: obrazec.dodatnaVprasanja.length ? obrazec.dodatnaVprasanja : undefined,
       povezave: obrazec.povezave.length ? obrazec.povezave : undefined,
       dodeljeni: obrazec.dodeljeni.length ? obrazec.dodeljeni : undefined,
     };
+    /* Vpisano-a-ne-dodano se NE sme tiho izgubiti (Tina, 25. 8.: druga povezava
+       je izginila): ce sta polji za povezavo ali vprasanje se polni, ju ob
+       shranjevanju dodamo, kot da je kliknila "+ Dodaj". */
+    const cakajocaPovezava = povezavaNaslov.trim() && povezavaUrl.trim()
+      ? [{ id: crypto.randomUUID(), naslov: povezavaNaslov.trim(), url: povezavaUrl.trim() }] : [];
+    const cakajoceVprasanje = novoVprasanje.vprasanje.trim() && novoVprasanje.odgovor.trim()
+      ? [{ id: crypto.randomUUID(), vprasanje: novoVprasanje.vprasanje.trim(), odgovor: novoVprasanje.odgovor.trim() }] : [];
+    if (cakajocaPovezava.length) projekt.povezave = [...(projekt.povezave || []), ...cakajocaPovezava];
+    if (cakajoceVprasanje.length) projekt.dodatnaVprasanja = [...(projekt.dodatnaVprasanja || []), ...cakajoceVprasanje];
     shraniProjekt(projekt);
-    if (obrazec.povezave.length) saveProjectLinks(`real-${projekt.id}`, obrazec.povezave.map(p => ({ oznaka: p.naslov, url: p.url })));
+    if (projekt.povezave?.length) saveProjectLinks(`real-${projekt.id}`, projekt.povezave.map(p => ({ oznaka: p.naslov, url: p.url })));
     /* Nov projekt = PRAVI (moji) podatek. Preklopi na »moji podatki«, da se pravi
        projekti sploh naložijo (v demo nacinu jih ProjectsWorkspace ne bere), nato
        odpri detajl/specifikacijo tega projekta prek ?projekt=real-<id>. */
@@ -208,6 +281,20 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
 
   /* mehurcek bota (vprasanje) + moj odgovor (klikljiv, odpre urejanje v mestu) — isti
      vzorec kot chat-bot/chat-jaz v KalkulatorApp.tsx/ProjectsWorkspace, tu s predpono np- */
+  /* Enaka imena projektov: samodejna stevilka + opozorilo (Tina, 25. 8.,
+     "oboje A in B") — isti vzorec kot pri imenih ponudb. "Smeg" ze obstaja ->
+     novi se shrani kot "Smeg 2", uporabnica pa to izve ze pod poljem. */
+  const enolicnoIme = (zeljeno: string): string => {
+    const ime = zeljeno.trim();
+    if (!ime) return ime;
+    const zasedena = new Set(realProjekti
+      .filter(pr => !pr.deletedAt && pr.id !== urejam?.id)
+      .map(pr => pr.naslov.trim().toLocaleLowerCase('sl')));
+    if (!zasedena.has(ime.toLocaleLowerCase('sl'))) return ime;
+    let n = 2;
+    while (zasedena.has(`${ime} ${n}`.toLocaleLowerCase('sl'))) n += 1;
+    return `${ime} ${n}`;
+  };
   const prikazan = (i: number) => novKorak >= i;
   const aktiven = (i: number) => novKorak === i || urejamKorak === i;
   const odgovorjen = (i: number) => novKorak > i && urejamKorak !== i;
@@ -258,7 +345,22 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {odgovorjen(0) && chatOdgovor(0, obrazec.naslov.trim() || '—')}
         {aktiven(0) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); if (obrazec.naslov.trim()) potrdiKorak(urejamKorak !== 0); }}>
-            <input className="np-chat-polje" type="text" autoFocus value={obrazec.naslov} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" aria-label="Naslov projekta" />
+            {/* duh-predlog: ob podvojenem imenu se sivo izpise stevilka, Tab jo
+                sprejme (Tina, 25. 8.) */}
+            <span className="np-ime-ovoj">
+                          <input className="np-chat-polje np-ime-vnos" type="text" autoFocus value={obrazec.naslov} onKeyDown={event => {
+                if (event.key === 'Tab' && obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim()) {
+                  event.preventDefault();
+                  setObrazec(o => ({ ...o, naslov: enolicnoIme(o.naslov) }));
+                }
+              }} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" aria-label="Naslov projekta" />
+              {obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim() && (
+                <span className="np-ime-duh" aria-hidden><span className="np-ime-duh-txt"><i>{obrazec.naslov}</i><em>{enolicnoIme(obrazec.naslov).slice(obrazec.naslov.trim().length).replace(/ /g, '\u00A0')}</em></span></span>
+              )}
+            </span>
+            {obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim() && (
+              <p className="np-ime-opomba">Projekt s tem imenom že obstaja — pritisni Tab za »{enolicnoIme(obrazec.naslov)}«.</p>
+            )}
             <button type="submit" className="np-chat-naprej" disabled={!obrazec.naslov.trim()}>{urejamKorak === 0 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
@@ -267,7 +369,10 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {prikazan(1) && chatBot('Za katero stranko je ta projekt?', clients.length ? 'Izberi iz imenika — ali nadaljuj brez stranke.' : 'V imeniku še ni strank — lahko nadaljuješ brez izbora.', 1)}
         {odgovorjen(1) && chatOdgovor(1, clients.find(c => c.id === obrazec.strankaId)?.name || 'Brez stranke')}
         {aktiven(1) && (
-          <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 1); }}>
+          <form className="np-chat-vnos" onSubmit={event => { event.preventDefault();
+            if (urejamKorak === 1) { setUrejamKorak(null); return; }
+            setUrejamKorak(null); setNovKorak(okvir ? 2 : 9);
+          }}>
             <select className="np-chat-polje" value={obrazec.strankaId} onChange={event => setObrazec(o => ({ ...o, strankaId: event.target.value }))} aria-label="Stranka">
               <option value="">Brez stranke</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -277,9 +382,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 2 · cilji */}
-        {prikazan(2) && chatBot('Kaj so cilji projekta?', 'Dodaj enega ali več — lahko tudi preskočiš.', 2)}
-        {odgovorjen(2) && chatOdgovor(2, obrazec.cilji.filter(c => c.besedilo.trim()).length ? obrazec.cilji.filter(c => c.besedilo.trim()).map(c => c.besedilo.trim()).join(' · ') : 'Brez ciljev')}
-        {aktiven(2) && (
+        {okvir && prikazan(2) && chatBot('Kaj so cilji projekta?', 'Dodaj enega ali več — lahko tudi preskočiš.', 2)}
+        {okvir && odgovorjen(2) && chatOdgovor(2, obrazec.cilji.filter(c => c.besedilo.trim()).length ? obrazec.cilji.filter(c => c.besedilo.trim()).map(c => c.besedilo.trim()).join(' · ') : 'Brez ciljev')}
+        {okvir && aktiven(2) && (
           <div className="np-chat-vnos">
             {obrazec.cilji.map(cilj => (
               <div key={cilj.id} className="np-nov-cilj">
@@ -295,19 +400,19 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 3 · kdo je stranka (razširjen brief — locen korak namesto ene "zelje" textarea) */}
-        {prikazan(3) && chatBot('Kaj počne stranka?', 'Njena dejavnost in kontekst — prosto besedilo.', 3)}
-        {odgovorjen(3) && chatOdgovor(3, obrazec.opisStranke.trim() || 'Brez opisa')}
-        {aktiven(3) && (
+        {okvir && prikazan(3) && chatBot('Kaj počne stranka?', 'Njena dejavnost in kontekst — prosto besedilo.', 3)}
+        {okvir && odgovorjen(3) && chatOdgovor(3, obrazec.opisStranke.trim() || 'Brez opisa')}
+        {okvir && aktiven(3) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 3); }}>
-            <textarea className="np-chat-polje" value={obrazec.opisStranke} onChange={event => setObrazec(o => ({ ...o, opisStranke: event.target.value }))} placeholder="Npr. lokalna kavarna, širi ponudbo na zajtrke …" rows={3} aria-label="Kaj počne stranka" />
+            <textarea className="np-chat-polje" value={obrazec.opisStranke} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, opisStranke: event.target.value })); }} placeholder="Npr. lokalna kavarna, širi ponudbo na zajtrke …" rows={3} aria-label="Kaj počne stranka" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 3 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
 
         {/* 4 · panoga stranke (širši kontekst, takoj za "Kdo je stranka?") */}
-        {prikazan(4) && chatBot('Iz katere panoge je stranka?', undefined, 4)}
-        {odgovorjen(4) && chatOdgovor(4, obrazec.panoga.trim() || 'Ni določena')}
-        {aktiven(4) && (
+        {okvir && prikazan(4) && chatBot('Iz katere panoge je stranka?', undefined, 4)}
+        {okvir && odgovorjen(4) && chatOdgovor(4, obrazec.panoga.trim() || 'Ni določena')}
+        {okvir && aktiven(4) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 4); }}>
             <input className="np-chat-polje" type="text" value={obrazec.panoga} onChange={event => setObrazec(o => ({ ...o, panoga: event.target.value }))} placeholder="Npr. gostinstvo, IT storitve, gradbeništvo …" aria-label="Panoga stranke" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 4 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
@@ -315,11 +420,11 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 5 · ciljna skupina / persona */}
-        {prikazan(5) && chatBot('Opišimo ciljno skupino (persono).', 'Vodim te skozi nekaj vprašanj — ali preskoči.', 5)}
-        {odgovorjen(5) && chatOdgovor(5, obrazec.ciljnaSkupina.trim() || 'Preskočena')}
-        {aktiven(5) && (urejamKorak === 5 ? (
+        {okvir && prikazan(5) && chatBot('Opišimo ciljno skupino (persono).', 'Vodim te skozi nekaj vprašanj — ali preskoči.', 5)}
+        {okvir && odgovorjen(5) && chatOdgovor(5, obrazec.ciljnaSkupina.trim() || 'Preskočena')}
+        {okvir && aktiven(5) && (urejamKorak === 5 ? (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(false); }}>
-            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Kdo + starost, kaj uporabljajo, pain points, potrebe, cilji in kanali …" rows={5} aria-label="Ciljna skupina / persona" />
+            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value })); }} placeholder="Kdo + starost, kaj uporabljajo, pain points, potrebe, cilji in kanali …" rows={5} aria-label="Ciljna skupina / persona" />
             <button type="submit" className="np-chat-naprej">Shrani <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         ) : (
@@ -344,19 +449,19 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         ))}
 
         {/* 6 · želje glede dizajna */}
-        {prikazan(6) && chatBot('Kakšne so želje glede dizajna?', 'Barve, stil, reference.', 6)}
-        {odgovorjen(6) && chatOdgovor(6, obrazec.dizajnZelje.trim() || 'Brez posebnih želja')}
-        {aktiven(6) && (
+        {okvir && prikazan(6) && chatBot('Kakšne so želje glede dizajna?', 'Barve, stil, reference.', 6)}
+        {okvir && odgovorjen(6) && chatOdgovor(6, obrazec.dizajnZelje.trim() || 'Brez posebnih želja')}
+        {okvir && aktiven(6) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 6); }}>
-            <textarea className="np-chat-polje" value={obrazec.dizajnZelje} onChange={event => setObrazec(o => ({ ...o, dizajnZelje: event.target.value }))} placeholder="Npr. toplo-nevtralna paleta, minimalizem, reference: …" rows={3} aria-label="Želje glede dizajna" />
+            <textarea className="np-chat-polje" value={obrazec.dizajnZelje} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, dizajnZelje: event.target.value })); }} placeholder="Npr. toplo-nevtralna paleta, minimalizem, reference: …" rows={3} aria-label="Želje glede dizajna" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 6 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
 
         {/* 7 · voice / ton komunikacije */}
-        {prikazan(7) && chatBot('Voice / ton komunikacije?', undefined, 7)}
-        {odgovorjen(7) && chatOdgovor(7, obrazec.voice.trim() || 'Ni določen')}
-        {aktiven(7) && (
+        {okvir && prikazan(7) && chatBot('Voice / ton komunikacije?', undefined, 7)}
+        {okvir && odgovorjen(7) && chatOdgovor(7, obrazec.voice.trim() || 'Ni določen')}
+        {okvir && aktiven(7) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 7); }}>
             <textarea className="np-chat-polje" value={obrazec.voice} onChange={event => setObrazec(o => ({ ...o, voice: event.target.value }))} placeholder="Npr. neposreden, prijazen, brez korporativnega žargona …" rows={3} aria-label="Voice / ton komunikacije" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 7 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
@@ -364,19 +469,73 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 8 · konkurenca */}
-        {prikazan(8) && chatBot('Kdo je konkurenca?', 'Kdo so, kaj jim je všeč in kaj ne.', 8)}
-        {odgovorjen(8) && chatOdgovor(8, obrazec.konkurenca.trim() || 'Ni podatka')}
-        {aktiven(8) && (
+        {okvir && prikazan(8) && chatBot('Kdo je konkurenca?', 'Kdo so, kaj jim je všeč in kaj ne.', 8)}
+        {okvir && odgovorjen(8) && chatOdgovor(8, obrazec.konkurenca.trim() || 'Ni podatka')}
+        {okvir && aktiven(8) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 8); }}>
             <textarea className="np-chat-polje" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Npr. XY d.o.o. — všeč jim je hitrost, ne mara jih cena …" rows={3} aria-label="Konkurenca" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 8 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
 
+        {/* Zlozena vrstica: marketinski okvir — isti vzorec kot "Dodaj podatke
+            podjetja" v kalkulatorju (plus, naslov, pripis; DESIGN.md 13d). */}
+        {prikazan(9) && (
+          <button type="button" className="np-okvir-vec" aria-expanded={podrobnostiOdprte}
+            onClick={() => setPodrobnostiOdprte(o => !o)}>
+            <span className="np-okvir-vec-glava"><span aria-hidden>{podrobnostiOdprte ? '−' : '+'}</span>
+              {podrobnostiOdprte ? 'Skrij podrobnosti projekta' : 'Dodaj podrobnosti projekta'}
+              <CaretDown size={14} weight="bold" className="np-okvir-caret" style={podrobnostiOdprte ? { transform: 'rotate(180deg)' } : undefined} aria-hidden /></span>
+            {!podrobnostiOdprte && <small>Cilji, stranka, ciljna skupina, videz in ton.</small>}
+          </button>
+        )}
+        {prikazan(9) && podrobnostiOdprte && (
+          /* INLINE obrazec (kot "Dodaj podatke podjetja"): odpre se NA MESTU,
+             pogovor z rokom in statusom tece naprej nemoteno — klik prej je
+             uporabnico vrgel nazaj na cilje in ji "izgubil" rok (Tina). */
+          <div className="np-podrobnosti">
+            <p className="np-pod-naslov">Cilji in brief</p>
+            <button type="button" className="np-pupa-predlog" onClick={pupaPredlaga} disabled={pupaPolni}>
+              ✨ {pupaPolni ? 'Pupa razmišlja …' : 'Ne veš, kaj bi? Naj Pupa predlaga'}
+            </button>
+            {pupaNapaka && <p className="np-pupa-napaka">{pupaNapaka}</p>}
+            <label className="np-pod-polje"><span>Kaj mora projekt doseči?</span>
+              {obrazec.cilji.map(cilj => (
+                <div key={cilj.id} className="np-nov-cilj">
+                  <input type="text" value={cilj.besedilo} onChange={event => posodobiCilj(cilj.id, { besedilo: event.target.value })} placeholder="npr. nova podoba do septembra" />
+                  <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="merilo, npr. 800 € ali 3 objave" />
+                  <button type="button" className="np-link-brisi" onClick={() => odstraniCilj(cilj.id)} aria-label="Odstrani cilj">×</button>
+                </div>
+              ))}
+              <button type="button" className="np-nov-dodaj-cilj" onClick={dodajCilj}>+ Dodaj cilj</button>
+            </label>
+            <label className="np-pod-polje"><span>Kaj počne stranka?</span>
+              <textarea value={obrazec.opisStranke} onChange={event => setObrazec(o => ({ ...o, opisStranke: event.target.value }))} placeholder="Njena dejavnost, izdelki ali storitve in komu prodaja …" /></label>
+            <label className="np-pod-polje"><span>V kateri panogi je stranka?</span>
+              <input type="text" value={obrazec.panoga} onChange={event => setObrazec(o => ({ ...o, panoga: event.target.value }))} placeholder="npr. gostinstvo, kozmetika, gradbeništvo …" /></label>
+            <label className="np-pod-polje"><span>Koga mora projekt nagovoriti?</span>
+              <textarea value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Kdo so ti ljudje, kaj jih muči in kje jih dosežeš …" /></label>
+            <label className="np-pod-polje"><span>Kakšen videz si stranka želi?</span>
+              <textarea value={obrazec.dizajnZelje} onChange={event => setObrazec(o => ({ ...o, dizajnZelje: event.target.value }))} placeholder="Slog, barve, reference — in česa noče …" /></label>
+            <label className="np-pod-polje"><span>Kako naj zveni komunikacija?</span>
+              <input type="text" value={obrazec.voice} onChange={event => setObrazec(o => ({ ...o, voice: event.target.value }))} placeholder="npr. toplo in osebno · strokovno · hudomušno …" /></label>
+            <label className="np-pod-polje"><span>Kdo je konkurenca?</span>
+              <input type="text" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Imena — in kaj naj stranko loči od njih …" /></label>
+            <label className="np-pod-polje"><span>Več podrobnosti</span>
+              <textarea value={obrazec.podrobnosti || ''} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, podrobnosti: event.target.value })); }} placeholder="Karkoli še šteje — obseg, roki po fazah, posebnosti, dogovori …" /></label>
+          </div>
+        )}
+
         {/* 9 · začetek/rok */}
-        {prikazan(9) && chatBot('Kdaj začneš in do kdaj?', undefined, 9)}
-        {odgovorjen(9) && chatOdgovor(9, [obrazec.zacetek && datStr(obrazec.zacetek), obrazec.rok && `do ${datStr(obrazec.rok)}`].filter(Boolean).join(' ') || 'Ni določeno')}
-        {aktiven(9) && (
+        {prikazan(9) && !podrobnostiPotrjene && (
+          <div className="np-chat-vnos">
+            <button type="button" className="np-chat-naprej" onClick={() => setPodrobnostiPotrjene(true)}>Naprej <ArrowRight size={15} weight="bold" aria-hidden /></button>
+          </div>
+        )}
+
+        {podrobnostiPotrjene && prikazan(9) && chatBot('Kdaj začneš in do kdaj?', undefined, 9)}
+        {podrobnostiPotrjene && odgovorjen(9) && chatOdgovor(9, [obrazec.zacetek && datStr(obrazec.zacetek), obrazec.rok && `do ${datStr(obrazec.rok)}`].filter(Boolean).join(' ') || 'Ni določeno')}
+        {podrobnostiPotrjene && aktiven(9) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 9); }}>
             <div className="np-nov-mreza">
               <label className="np-nov-polje"><span>Začetek</span><input type="date" value={obrazec.zacetek} onChange={event => setObrazec(o => ({ ...o, zacetek: event.target.value }))} /></label>
@@ -402,7 +561,14 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {/* po osnovnih vprašanjih: moja lastna vprašanja + povezave + ekipa + zaključek —
             vse na isti neprekinjeni površini, brez nadaljnjega gating-a (izpolniš, kolikor želiš) */}
         {novKorak >= 11 && (<>
-          {chatBot('Želiš dodati svoja vprašanja?', 'Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.')}
+          {prikazan(11) && !vprasanjaOdprta && !obrazec.dodatnaVprasanja.length && (
+            <button type="button" className="np-okvir-vec" onClick={() => setVprasanjaOdprta(true)}>
+              <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj svoja vprašanja<CaretDown size={14} weight="bold" className="np-okvir-caret" aria-hidden /></span>
+              <small>Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.</small>
+            </button>
+          )}
+          {prikazan(11) && (vprasanjaOdprta || obrazec.dodatnaVprasanja.length > 0) && <>
+          {chatBot('Tvoja vprašanja.', 'Vprašanje in odgovor si zapišeš sama.')}
           <div className="np-chat-vnos">
             {obrazec.dodatnaVprasanja.map(v => (
               <div key={v.id} className="np-vprasanje-vrstica">
@@ -411,12 +577,20 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
               </div>
             ))}
             <div className="np-link-obrazec">
-              <input type="text" value={novoVprasanje.vprasanje} onChange={event => setNovoVprasanje(v => ({ ...v, vprasanje: event.target.value }))} placeholder="Vprašanje, npr. Ima stranka že CGP?" aria-label="Vprašanje" />
-              <input type="text" value={novoVprasanje.odgovor} onChange={event => setNovoVprasanje(v => ({ ...v, odgovor: event.target.value }))} placeholder="Odgovor" aria-label="Odgovor" />
+              <textarea rows={1} value={novoVprasanje.vprasanje} onChange={event => { rastiTextarea(event.currentTarget); setNovoVprasanje(v => ({ ...v, vprasanje: event.target.value })); }} placeholder="Vprašanje, npr. Ima stranka že CGP?" aria-label="Vprašanje" />
+              <textarea rows={1} value={novoVprasanje.odgovor} onChange={event => { rastiTextarea(event.currentTarget); setNovoVprasanje(v => ({ ...v, odgovor: event.target.value })); }} placeholder="Odgovor" aria-label="Odgovor" />
               <button type="button" className="np-link-dodaj" onClick={dodajVprasanje} disabled={!novoVprasanje.vprasanje.trim() || !novoVprasanje.odgovor.trim()}>+ Dodaj vprašanje</button>
             </div>
           </div>
+          </>}
 
+          {novKorak === 11 && (
+            <div className="np-chat-vnos">
+              <button type="button" className="np-chat-naprej" onClick={() => potrdiKorak(true)}>Naprej <ArrowRight size={15} weight="bold" aria-hidden /></button>
+            </div>
+          )}
+
+          {prikazan(12) && <>
           {chatBot('Deli povezave do gradiv.', 'Figma, Miro, Drive … naslov + URL.')}
           <div className="np-chat-vnos">
             {obrazec.povezave.length > 0 && (
@@ -432,8 +606,16 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
               <button type="button" className="np-link-dodaj" onClick={dodajPovezavo} disabled={!povezavaNaslov.trim() || !povezavaUrl.trim()}>+ Dodaj povezavo</button>
             </div>
           </div>
+          </>}
+          {novKorak === 12 && (
+            <div className="np-chat-vnos">
+              <button type="button" className="np-chat-naprej" onClick={() => potrdiKorak(true)}>Naprej <ArrowRight size={15} weight="bold" aria-hidden /></button>
+            </div>
+          )}
 
-          {chatBot('Deli projekt in dodeli sodelavce.', 'Klikni osebo, da jo dodeliš — »Deli projekt« pošlje vabilo dodeljenim.')}
+
+          {prikazan(13) && <>
+          {chatBot('Dodaj sodelavce.', 'Klikni osebo, da jo dodeliš — »Deli projekt« ji pošlje vabilo.')}
           <div className="np-chat-vnos">
             <div className="np-chat-sodelavci">
               {sodelavci.map(s => {
@@ -454,6 +636,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
             <button type="button" className="np-gumb" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim()}>{urejam ? 'Shrani spremembe' : 'Ustvari projekt'}</button>
             <Link className="np-gumb sek" href={`${base}/kalkulator/projekti`}>Prekliči</Link>
           </div>
+          </>}
         </>)}
       </div>
     </div>
@@ -497,7 +680,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-chat-mehur-ured svg{opacity:.4;flex:none;transition:opacity .15s}
       .np-chat-mehur-ured:hover svg{opacity:.85}
       /* vnosno polje pod vprasanjem bota — zamaknjeno pod mehurcek, "Naprej" pilula z ink ozadjem */
-      .np-chat-vnos{display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;max-width:calc(100% - 1rem);margin:-.2rem 0 0 .3rem}
+      .np-chat-vnos{display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;width:min(34rem,calc(100% - 1rem));max-width:calc(100% - 1rem);margin:-.2rem 0 0 .3rem}
       .np-chat-polje{width:100%;box-sizing:border-box;padding:.75rem 1.1rem;border:1px solid rgba(17,17,17,.14);border-radius:999px;background:#fff;font:inherit;font-size:.9rem;font-weight:600;color:var(--ink);box-shadow:0 4px 14px rgba(40,25,40,.05);outline:none}
       textarea.np-chat-polje{border-radius:1rem;resize:vertical;min-height:5rem;font-weight:400;line-height:1.5;font-family:inherit}
       select.np-chat-polje{cursor:pointer}
@@ -516,6 +699,49 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-preskoci:hover{color:var(--ink)}
       /* izbirne kartice (status) — pod vprasanjem bota, klik takoj potrdi in gre naprej */
       .np-chat-izbire{display:flex;flex-direction:column;gap:.55rem;margin:-.2rem 0 0 .3rem}
+      /* ISTI dizajn kot "Dodaj podatke podjetja" v kalkulatorju (uv-vec):
+         naslov v barvi poudarka s plusom, kazalec desno, pripis pod njim.
+         (Tina, 25. 8.: "premalo vidno in enak dizajn kot pri kalkulatorju") */
+      .np-okvir-vec{display:flex;flex-direction:column;align-items:flex-start;gap:.25rem;
+        width:min(34rem,calc(100% - 1rem));margin:-.1rem 0 .35rem .3rem;padding:.75rem .95rem;
+        border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;cursor:pointer;font:inherit;
+        text-align:left;box-shadow:0 4px 14px rgba(40,25,40,.05);transition:border-color .15s ease}
+      .np-okvir-vec:hover{border-color:rgba(17,17,17,.35)}
+      /* naslov v ISTI velikosti kot chat vprasanja (Tina: "poglej kok je
+         vprasanje veliko") — vrstica je korak pogovora, ne drobna opomba */
+      .np-okvir-vec-glava{width:100%;display:flex;gap:.5rem;align-items:center;
+        color:#7C3AED;font-weight:700;font-size:1.02rem}
+      .np-okvir-vec-glava>span[aria-hidden]{font-size:1.05rem;line-height:1}
+      .np-okvir-caret{margin-left:auto;color:#7C3AED}
+      .np-okvir-vec small{font-size:.84rem;font-weight:500;color:rgba(17,17,17,.7);line-height:1.45}
+      .np-podrobnosti{display:grid;gap:.8rem;width:min(34rem,calc(100% - 1rem));
+        margin:-.1rem 0 .4rem .3rem;padding:1rem .95rem;
+        border:1px solid var(--line);border-radius:12px;background:#fff}
+      .np-pod-naslov{margin:0 0 -.2rem;font:700 .76rem var(--font-sans),sans-serif;
+        letter-spacing:.15em;text-transform:uppercase;color:rgba(17,17,17,.55)}
+      .np-pupa-predlog{justify-self:start;padding:.5rem .9rem;border:1px solid rgba(124,58,237,.4);
+        border-radius:999px;background:oklch(97.5% .025 297);color:#7C3AED;cursor:pointer;
+        font:650 .8rem var(--font-sans),sans-serif;transition:border-color .15s ease}
+      .np-pupa-predlog:hover{border-color:#7C3AED}
+      .np-pupa-predlog:disabled{opacity:.6;cursor:progress}
+      .np-pupa-napaka{margin:-.3rem 0 0;font-size:.78rem;color:oklch(52% .19 25)}
+      .np-pod-polje{display:grid;gap:.35rem;font-weight:700;font-size:.8rem}
+      .np-pod-polje input,.np-pod-polje textarea{width:100%;box-sizing:border-box;padding:.6rem .75rem;
+        border:1px solid var(--line);border-radius:.6rem;background:#fff;font:inherit;font-size:.88rem;font-weight:500}
+      /* textarea raste z vsebino, brez drsnikov (Tina, 25. 8.) — field-sizing
+         za novejse brskalnike, JS fallback (npRastiTextarea) za Safari */
+      .np-pod-polje textarea{min-height:4.2rem;resize:none;overflow:hidden;field-sizing:content}
+      .np-ime-ovoj{position:relative;display:block;width:100%}
+      .np-ime-ovoj .np-ime-vnos{position:relative;background:transparent;z-index:1}
+      .np-ime-duh{position:absolute;inset:0;z-index:0;display:flex;align-items:center;
+        padding:.75rem 1.1rem;border:1px solid transparent;border-radius:999px;background:#fff;
+        font:inherit;font-size:16px;line-height:1.35;font-weight:600;white-space:pre;overflow:hidden;pointer-events:none}
+      .np-ime-duh-txt{white-space:pre}
+      .np-ime-duh i{font-style:normal;color:transparent}
+      .np-ime-duh em{font-style:normal;color:rgba(17,17,17,.38)}
+      .np-ime-opomba{margin:-.25rem 0 0 .3rem;max-width:min(34rem,calc(100% - 1rem));
+        font-size:.8rem;font-weight:600;color:#7C3AED;line-height:1.45}
+      .np-okvir-vec small{font-size:.74rem;font-weight:500;color:rgba(17,17,17,.66);line-height:1.4}
       .np-chat-opcija{display:flex;align-items:center;gap:.8rem;width:min(380px,100%);padding:.8rem 1rem;border:1px solid var(--line);border-radius:14px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
       .np-chat-opcija:hover{transform:translateY(-2px);border-color:color-mix(in oklch,var(--ink) 28%,transparent);box-shadow:0 8px 20px rgba(40,25,40,.08)}
       .np-crk{display:grid;place-items:center;width:1.8rem;height:1.8rem;border-radius:8px;background:oklch(94% .045 295);color:var(--ink);font-weight:800;font-size:.78rem;flex:none}
@@ -525,6 +751,10 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-nov-polje span{font-size:.7rem;font-weight:700;color:var(--muted)}
       .np-nov-polje input{width:100%;box-sizing:border-box;padding:.65rem .8rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.85rem;color:var(--ink)}
       .np-nov-cilj{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;align-items:center;gap:.45rem}
+      /* v inline obrazcu podrobnosti: dve polji (cilj, tarca) cez celo sirino,
+         enako dolgi, brisanje ob koncu (Tina, 25. 8.: tarca se je odrezala) */
+      .np-podrobnosti .np-nov-cilj{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;width:100%}
+      .np-podrobnosti .np-nov-cilj input{width:100%;box-sizing:border-box;min-width:0}
       .np-nov-cilj input,.np-nov-cilj select{box-sizing:border-box;padding:.6rem .7rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.78rem;color:var(--ink);min-width:0}
       .np-nov-cilj select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:1.5rem;background-color:oklch(100% 0 0 / .7);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .5rem center}
       .np-nov-dodaj-cilj{align-self:start;margin-top:.1rem;padding:.55rem .9rem;border:1px dashed color-mix(in oklch,var(--ink) 28%,transparent);border-radius:.7rem;background:transparent;font:700 .7rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
@@ -536,9 +766,17 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-vprasanje-vrstica div{display:flex;flex-direction:column;gap:.15rem;min-width:0}
       .np-vprasanje-vrstica b{font-size:.8rem;color:var(--ink);font-weight:700}
       .np-vprasanje-vrstica span{font-size:.76rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
-      .np-link-obrazec{display:grid;grid-template-columns:1fr;gap:.5rem;margin-top:.2rem}
-      .np-link-obrazec input{padding:.6rem .75rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.8rem;color:var(--ink);min-width:0}
-      .np-link-dodaj{flex:none;padding:.55rem .9rem;border:1px solid var(--ink);border-radius:.6rem;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
+      /* Polja cez SIRINO pogovora, ne ozka (Tina, 25. 8.: "teli inputi so
+         prekratki") — vnos vprasanj in povezav dobi isto sirino kot mehurcki. */
+      .np-link-obrazec{display:grid;grid-template-columns:1fr;gap:.5rem;margin-top:.2rem;width:100%}
+      .np-link-obrazec input,.np-link-obrazec textarea{padding:.6rem .75rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.8rem;color:var(--ink);min-width:0}
+      /* polje raste z besedilom — dolgo vprasanje se je odrezalo (Tina) */
+      .np-link-obrazec textarea{resize:none;overflow:hidden;field-sizing:content;min-height:2.4rem;line-height:1.45}
+      /* crtkan "dodaj" kot pri ciljih (DESIGN 13e) — crn polni gumb je izgledal
+         kot glavno dejanje, ceprav je le dodajanje vrstice (Tina) */
+      .np-link-dodaj{flex:none;padding:.55rem .9rem;border:1px dashed color-mix(in oklch,var(--ink) 28%,transparent);border-radius:.7rem;background:transparent;color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
+      .np-link-dodaj:hover{border-color:var(--ink)}
+      .np-link-dodaj:disabled{opacity:.45;cursor:default}
       .np-link-dodaj:disabled{opacity:.5;cursor:not-allowed}
       .np-linki{display:flex;flex-direction:column;gap:.45rem}
       .np-link-vrstica{display:flex;align-items:center;gap:.5rem;padding:.55rem .7rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
@@ -547,7 +785,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
 
       .np-chat-sodelavci{display:flex;flex-wrap:wrap;gap:.55rem}
       .np-chat-sodelavec{display:flex;align-items:center;gap:.6rem;padding:.55rem .9rem .55rem .55rem;border:1px solid var(--line);border-radius:999px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);cursor:pointer;transition:border-color .16s,background .16s}
-      .np-chat-sodelavec b{font-size:.78rem;font-weight:700}
+      /* ime in vloga desno poravnana ob krogu (Tina, 25. 8.) */
+      .np-chat-sodelavec>span:last-child{margin-left:auto;text-align:right}
+      .np-chat-sodelavec b{display:block;font-size:.78rem;font-weight:700}
       .np-chat-sodelavec small{display:block;color:color-mix(in oklch,var(--ink) 55%,transparent);font-size:.64rem}
       .np-chat-sod-krog{display:grid;place-items:center;width:1.8rem;height:1.8rem;border-radius:50%;background:oklch(90% .045 297);color:oklch(40% .16 297);font-size:.64rem;font-weight:800;flex:none}
       .np-chat-sodelavec.on{border-color:oklch(84% .05 165);background:oklch(93% .04 165)}

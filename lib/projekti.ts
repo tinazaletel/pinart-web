@@ -67,10 +67,15 @@ export interface Projekt {
   dizajnZelje?: string;
   voice?: string;
   konkurenca?: string;
+  /* prosto polje za vse, cesar strukturirana vprasanja ne zajamejo */
+  podrobnosti?: string;
   cilji?: ProjektCilj[];
   zacetek?: string;
   rok?: string;
   status: ProjektStatus;
+  /* preprosto narocilo ali projekt z marketinskim okvirom (razcep v carovniku);
+     kasneje krmili privzeti nabor kartic na detajlu */
+  vrsta?: 'preprost' | 'okvir';
   created: string;
   /* lastna vprasanja, dodana med onboarding chatom (glej ProjectsWorkspace) */
   dodatnaVprasanja?: ProjektVprasanje[];

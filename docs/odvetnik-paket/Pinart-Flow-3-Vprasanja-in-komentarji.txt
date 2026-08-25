@@ -111,6 +111,15 @@ pristop v redu ali potrebujem ločene, krajše pogoje samo za kalkulator?
 naročnina, arbitraža) je pisanih vnaprej. Je bolje imeti jih zapisane in
 neuporabljene ali jih dodati šele, ko funkcija zaživi?
 
+18. Zaklenjene opombe (načrtujem). Uporabniki mi po e-pošti pošiljajo tudi
+gesla in dostope svojih strank. Namesto navadnega besedilnega polja načrtujem
+opombe, šifrirane v brskalniku z geslom, ki ga pozna samo uporabnik: v mojo
+bazo pride le šifrat, jaz vsebine ne morem prebrati niti obnoviti, pozabljeno
+geslo pomeni trajno izgubo. Vprašanja: ali tako šifriranje spremeni moje
+obveznosti po 32. členu in ob morebitni kršitvi; ali za hrambo poverilnic
+tretjih oseb potrebujem še kaj v pogojih; in ali smem zapisati, da vsebine
+"niti mi ne moremo prebrati"?
+
 KAM GREM NAPREJ
 
 Da vam ni treba istega besedila pregledovati večkrat, na kratko še načrti za

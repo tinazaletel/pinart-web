@@ -132,6 +132,9 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
 
         /* Ob tiskanju ostane samo papir — brez zatemnitve, glave in noge. */
         @media print {
+          /* Natisne se SAMO dokument: vse ostalo na strani (lupina, meni, kartice
+             projekta) gre iz tiska, sicer se pred dokumentom natisne cela app. */
+          :global(body > *:not(.dp)) { display: none !important; }
           .dp-back, .dp-glava, .dp-noga { display: none; }
           .dp { position: static; width: auto; height: auto; box-shadow: none; border: 0; background: #fff; backdrop-filter: none; }
           .dp-papir { margin: 0; padding: 0; overflow: visible; box-shadow: none; border-radius: 0; }
