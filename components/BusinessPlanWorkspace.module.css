@@ -375,6 +375,10 @@
 }
 .mesecTabela thead th:first-child { border-top-left-radius: .95rem; }
 .mesecTabela thead th:last-child { border-top-right-radius: .95rem; width: 2.4rem; }
+/* Zadnji stolpec je le gumb za brisanje in ne rabi zraka na obeh straneh; DAN pa
+   ga rabi, ker nosi datum in pod njim opombo (Tina, 25. 8.). */
+.mesecTabela thead th:last-child, .mesecTabela tbody td:last-child { padding-left: .2rem; padding-right: .35rem; }
+.mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-right: 1.15rem; }
 .mesecTabela tbody td { padding: .55rem .85rem; border-top: 1px solid var(--line); vertical-align: middle; }
 /* Safari podvoji ločnico glava/prva vrstica (thead border-bottom + tbody border-top) — ena črta */
 .mesecTabela tbody tr:first-child td { border-top: 0; }
