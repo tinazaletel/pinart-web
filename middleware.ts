@@ -105,12 +105,8 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
 
   <div class="kartica">
     <h2>${en ? 'Tester sign-in' : 'Vstop za testerje'}</h2>
-    <p>${en ? 'Enter your name, email and the password we sent you.' : 'Vpiši ime, e-naslov in geslo, ki si ga dobil/-a od nas.'}</p>
+    <p>${en ? 'Enter the password we sent you.' : 'Vpiši geslo, ki si ga dobil/-a od nas.'}</p>
     <form id="vstop">
-      <label for="ime">${en ? 'Name' : 'Ime'}</label>
-      <input id="ime" name="ime" autocomplete="name" required maxlength="200">
-      <label for="email">${en ? 'Email' : 'E-naslov'}</label>
-      <input id="email" name="email" type="email" autocomplete="email" required maxlength="200">
       <label for="geslo">${en ? 'Password' : 'Geslo'}</label>
       <input id="geslo" name="geslo" type="password" autocomplete="current-password" required maxlength="200">
       <button type="submit">${en ? 'Sign in' : 'Prijavi se'}</button>
@@ -159,7 +155,7 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
   vf.addEventListener('submit', function(e){
     e.preventDefault();
     var g = vf.querySelector('button'); g.disabled = true; vo.textContent = ''; vo.className='sporocilo';
-    poslji('/api/beta', {dejanje:'geslo', geslo: vf.geslo.value, ime: vf.ime.value, email: vf.email.value})
+    poslji('/api/beta', {dejanje:'geslo', geslo: vf.geslo.value})
       .then(function(r){
         if(r.ok){ location.reload(); }
         else { vo.className='sporocilo napaka'; vo.textContent='Geslo ni pravilno.'; g.disabled = false; }
