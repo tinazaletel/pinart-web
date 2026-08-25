@@ -899,6 +899,9 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               pogled izgledati kot stoparica, ne kot obrazec (Tina, 25. 8.).
               Mirujoca ura kaze 00:00:00 — pokaze, kaj bo gumb naredil. */}
           <div className={styles.startGlava}>
+            {/* isti valovi kot pri tekoci stoparici, le da mirujejo — kartica se
+                ob zagonu ne spremeni, le stevilke stecejo in preliv ozivi. */}
+            <TimerValovi className={styles.valovi} />
             <b className={styles.startUra}>00:00:00</b>
             <span className={styles.startDatum}>{danesIzpis}</span>
             <button type="submit" className={styles.startGumb}>{L('Začni meriti', 'Start timing')}</button>

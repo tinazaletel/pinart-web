@@ -545,26 +545,49 @@
 .nadnaslovZIkono { display: inline-flex; align-items: center; gap: .4rem; }
 .nadnaslovZIkono svg { color: var(--accent, #7c3aed); }
 
-/* Glava stoparice v jeziku Flowa: mehak vijolicno-zelen preliv, serif ura in
-   crn pilulast gumb — isto kot ostale kartice, ne tuja skatla (Tina, 25. 8.). */
-.startGlava { display: grid; gap: .35rem; justify-items: center; margin-bottom: 1.2rem;
-  padding: 1.6rem 1rem 1.5rem; border-radius: 1.35rem;
-  background: linear-gradient(135deg, oklch(97% .028 300 / .9), oklch(97% .03 190 / .75));
-  border: 1px solid oklch(22% .015 60 / .05); }
-.startUra { font: 500 clamp(2.6rem, 8vw, 3.6rem)/1 var(--font-serif), Georgia, serif;
-  color: var(--ink); font-variant-numeric: tabular-nums; }
-.startDatum { font: 500 .82rem var(--font-sans), sans-serif; letter-spacing: .02em;
-  color: color-mix(in oklch, var(--ink) 62%, transparent); text-transform: lowercase; }
-.startGumb { width: min(19rem, 100%); margin-top: .9rem; padding: .95rem 1.4rem;
-  border: none; border-radius: 999px; background: var(--ink); color: var(--paper);
-  cursor: pointer; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: .12em;
-  text-transform: uppercase; transition: transform .16s ease, box-shadow .16s ease; }
+/* MIRUJOCA stoparica je ista skatla kot tekoca (.running): isti preliv, ista
+   visina, ista velikost cifer in gumba. Ko merjenje stece, se zamenja SAMO to,
+   da stevilke tecejo in da se preliv premika — kartica ne poskoci in ne
+   spremeni oblike (Tina, 25. 8.). */
+.startGlava > * { min-width: 0; }
+/* valovi v mirovanju: brez animacije, sicer bi se mirujoca in tekoca stoparica
+   ne locili nic */
+.startGlava .valovi { animation: none; opacity: .85; }
+.startGlava {
+  position: relative; isolation: isolate; overflow: hidden;
+  container-type: inline-size;
+  display: grid; gap: 1rem; padding: 1.2rem; margin-bottom: 1.2rem;
+  border-radius: 1.1rem; justify-items: stretch;
+  background: linear-gradient(135deg, oklch(91% .09 160), oklch(94% .06 295));
+}
+.startUra {
+  min-width: 0; text-align: center;
+  font: 500 clamp(2.6rem, 21cqw, 5.4rem)/1 var(--font-serif), Georgia, serif;
+  font-variant-numeric: tabular-nums; letter-spacing: -.015em; white-space: nowrap;
+  color: var(--ink);
+}
+.startDatum {
+  margin-top: -.55rem; text-align: center;
+  font: 500 .82rem var(--font-sans), sans-serif;
+  color: color-mix(in oklch, var(--ink) 60%, transparent);
+}
+.startGumb {
+  width: 100%; padding: .95rem 1.4rem; border: none; border-radius: 999px;
+  background: var(--ink); color: var(--paper); cursor: pointer;
+  font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: .12em;
+  text-transform: uppercase;
+  transition: transform .16s ease, box-shadow .16s ease;
+}
 .startGumb:hover { transform: translateY(-2px); box-shadow: 0 10px 26px oklch(22% .015 60 / .18); }
 
-/* "Vec": neobvezni polji (vrednost, obseg) sta privzeto skriti, da je pot do
-   zagona merjenja kratka. */
-.vecGumb { justify-self: start; margin: .1rem 0 .2rem; padding: .4rem .9rem;
-  border: 1px solid var(--line); border-radius: 999px; background: transparent;
-  color: color-mix(in oklch, var(--ink) 78%, transparent); cursor: pointer;
-  font: 650 .78rem var(--font-sans), sans-serif; }
-.vecGumb:hover { border-color: var(--ink); color: var(--ink); }
+/* "Vec": drugotni gumb po vzoru .linkGumb — pilula z mehko obrobo. Crnega in
+   kvadratnega gumba nikjer na sajtu nimamo (Tina, 25. 8.). */
+.vecGumb {
+  grid-column: 1 / -1; justify-self: start;
+  min-height: 0; padding: .55rem 1.15rem;
+  border: 1px solid oklch(90% .008 82); border-radius: 999px;
+  background: oklch(100% 0 0 / .75); color: var(--ink);
+  font: 600 .82rem var(--font-sans), sans-serif; cursor: pointer;
+  transition: border-color .15s ease-out, background .15s ease-out;
+}
+.vecGumb:hover { border-color: var(--ink); background: oklch(100% 0 0); }
