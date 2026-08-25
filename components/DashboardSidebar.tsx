@@ -90,7 +90,9 @@ export default async function DashboardSidebar({ base, active }: { base: string;
           NA PROJEKTU, prisotnost belezi prihod in odhod OSEBE po ZEPDSV — dve
           razlicni stvari, zato tudi razlicni ikoni. Ostane dosegljiva tudi iz
           profila. */}
-      {item('evidenca', `${base}/kalkulator/evidenca-casa`, '03', L('Prisotnost', 'Attendance'), 'evidenca', 'businessInsights')}
+      {/* BREZ kljucavnice: evidenca delovnega casa je zakonska obveznost po
+          ZEPDSV, ne premijska analitika. Ne sme biti za placilnim zidom. */}
+      {item('evidenca', `${base}/kalkulator/evidenca-casa`, '03', L('Prisotnost', 'Attendance'), 'evidenca')}
       {item('plan', `${base}/kalkulator/poslovni-nacrt`, '04', L('Poslovni okvir', 'Business framework'), 'okvir', 'businessInsights')}
       {item('naloge', `${base}/kalkulator/naloge`, '05', L('Naloge', 'Tasks'), 'naloge')}
       {item('koledar', `${base}/kalkulator/koledar`, '06', L('Koledar', 'Calendar'), 'koledar')}
