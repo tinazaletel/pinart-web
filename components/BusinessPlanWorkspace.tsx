@@ -821,8 +821,6 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     URL.revokeObjectURL(url);
   };
 
-  if (!ready) return <p className={styles.loading}>{L('Pripravljam poslovni načrt …', 'Preparing your business plan …')}</p>;
-
   /* Datum ob uri: stoparica naj pove, za KATERI dan meri. Racunamo po montazi
      (ne med izrisom), sicer se streznik in brskalnik ne ujemata in React javi
      napako hidracije. */
@@ -830,6 +828,9 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   useEffect(() => {
     setDanesIzpis(new Date().toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long' }));
   }, [dl]);
+
+  if (!ready) return <p className={styles.loading}>{L('Pripravljam poslovni načrt …', 'Preparing your business plan …')}</p>;
+
   return <div className={`${styles.page} ${view === 'time' ? styles.casPogled : ''}`}>
     {notice && <div className={styles.notice} role="status">{notice}<button onClick={() => setNotice('')} aria-label={L('Zapri', 'Close')}>×</button></div>}
 
