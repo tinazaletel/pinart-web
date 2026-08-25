@@ -92,6 +92,10 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
      koraki: 0 naslov, 1 stranka, 2 cilji, 3 opis stranke, 4 panoga, 5 ciljna skupina,
      6 dizajn zelje, 7 voice/ton, 8 konkurenca, 9 zacetek/rok, 10 status.
      urejamKorak = klik na ze odgovorjen mehurcek odpre polje ZNOVA V MESTU */
+  /* RAZCEP (Tina, 25. 8.): za "prevod kataloga" so cilji, persona, dizajn, ton
+     in konkurenca odvec. Preprosto narocilo preskoci korake 2-8 in vprasa samo
+     se rok in status; marketinski okvir gre po stari, polni poti. */
+  const [vrstaProjekta, setVrstaProjekta] = useState<'preprost' | 'okvir' | null>(null);
   const [novKorak, setNovKorak] = useState(0);
   const [urejamKorak, setUrejamKorak] = useState<number | null>(null);
   const [novoVprasanje, setNovoVprasanje] = useState({ vprasanje: '', odgovor: '' });
@@ -202,6 +206,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       zacetek: obrazec.zacetek || undefined,
       rok: obrazec.rok || undefined,
       status: obrazec.status,
+      vrsta: vrstaProjekta || undefined,
       created: urejam?.created || new Date().toISOString(),
       dodatnaVprasanja: obrazec.dodatnaVprasanja.length ? obrazec.dodatnaVprasanja : undefined,
       povezave: obrazec.povezave.length ? obrazec.povezave : undefined,
@@ -295,10 +300,31 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
           </form>
         )}
 
+        {/* 1b · RAZCEP: kaksen projekt je to? */}
+        {prikazan(2) && vrstaProjekta === null && chatBot('Kakšen projekt je to?', 'Da te ne sprašujem, česar ne rabiš.')}
+        {prikazan(2) && vrstaProjekta === null && (
+          <div className="np-chat-izbire">
+            <button type="button" className="np-chat-opcija" onClick={() => { setVrstaProjekta('preprost'); setNovKorak(k => Math.max(k, 9)); }}>
+              <span className="np-crk">A</span><b>Preprosto naročilo</b>
+              <small>prevod, tisk, popravki … — vprašam samo še rok</small>
+            </button>
+            <button type="button" className="np-chat-opcija" onClick={() => setVrstaProjekta('okvir')}>
+              <span className="np-crk">B</span><b>Projekt z marketinškim okvirom</b>
+              <small>znamka, kampanja, splet — cilji, ciljna skupina, ton …</small>
+            </button>
+          </div>
+        )}
+        {vrstaProjekta === 'preprost' && novKorak >= 9 && (
+          <div className="np-chat-jaz np-chat-jaz-klik">
+            <button type="button" onClick={() => { setVrstaProjekta(null); setNovKorak(2); }}
+              title="Spremeni vrsto projekta">Preprosto naročilo ✎</button>
+          </div>
+        )}
+
         {/* 2 · cilji */}
-        {prikazan(2) && chatBot('Kaj so cilji projekta?', 'Dodaj enega ali več — lahko tudi preskočiš.', 2)}
-        {odgovorjen(2) && chatOdgovor(2, obrazec.cilji.filter(c => c.besedilo.trim()).length ? obrazec.cilji.filter(c => c.besedilo.trim()).map(c => c.besedilo.trim()).join(' · ') : 'Brez ciljev')}
-        {aktiven(2) && (
+        {vrstaProjekta !== 'preprost' && prikazan(2) && chatBot('Kaj so cilji projekta?', 'Dodaj enega ali več — lahko tudi preskočiš.', 2)}
+        {vrstaProjekta !== 'preprost' && odgovorjen(2) && chatOdgovor(2, obrazec.cilji.filter(c => c.besedilo.trim()).length ? obrazec.cilji.filter(c => c.besedilo.trim()).map(c => c.besedilo.trim()).join(' · ') : 'Brez ciljev')}
+        {vrstaProjekta !== 'preprost' && aktiven(2) && (
           <div className="np-chat-vnos">
             {obrazec.cilji.map(cilj => (
               <div key={cilj.id} className="np-nov-cilj">
@@ -314,9 +340,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 3 · kdo je stranka (razširjen brief — locen korak namesto ene "zelje" textarea) */}
-        {prikazan(3) && chatBot('Kaj počne stranka?', 'Njena dejavnost in kontekst — prosto besedilo.', 3)}
-        {odgovorjen(3) && chatOdgovor(3, obrazec.opisStranke.trim() || 'Brez opisa')}
-        {aktiven(3) && (
+        {vrstaProjekta !== 'preprost' && prikazan(3) && chatBot('Kaj počne stranka?', 'Njena dejavnost in kontekst — prosto besedilo.', 3)}
+        {vrstaProjekta !== 'preprost' && odgovorjen(3) && chatOdgovor(3, obrazec.opisStranke.trim() || 'Brez opisa')}
+        {vrstaProjekta !== 'preprost' && aktiven(3) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 3); }}>
             <textarea className="np-chat-polje" value={obrazec.opisStranke} onChange={event => setObrazec(o => ({ ...o, opisStranke: event.target.value }))} placeholder="Npr. lokalna kavarna, širi ponudbo na zajtrke …" rows={3} aria-label="Kaj počne stranka" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 3 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
@@ -324,9 +350,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 4 · panoga stranke (širši kontekst, takoj za "Kdo je stranka?") */}
-        {prikazan(4) && chatBot('Iz katere panoge je stranka?', undefined, 4)}
-        {odgovorjen(4) && chatOdgovor(4, obrazec.panoga.trim() || 'Ni določena')}
-        {aktiven(4) && (
+        {vrstaProjekta !== 'preprost' && prikazan(4) && chatBot('Iz katere panoge je stranka?', undefined, 4)}
+        {vrstaProjekta !== 'preprost' && odgovorjen(4) && chatOdgovor(4, obrazec.panoga.trim() || 'Ni določena')}
+        {vrstaProjekta !== 'preprost' && aktiven(4) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 4); }}>
             <input className="np-chat-polje" type="text" value={obrazec.panoga} onChange={event => setObrazec(o => ({ ...o, panoga: event.target.value }))} placeholder="Npr. gostinstvo, IT storitve, gradbeništvo …" aria-label="Panoga stranke" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 4 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
@@ -334,9 +360,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 5 · ciljna skupina / persona */}
-        {prikazan(5) && chatBot('Opišimo ciljno skupino (persono).', 'Vodim te skozi nekaj vprašanj — ali preskoči.', 5)}
-        {odgovorjen(5) && chatOdgovor(5, obrazec.ciljnaSkupina.trim() || 'Preskočena')}
-        {aktiven(5) && (urejamKorak === 5 ? (
+        {vrstaProjekta !== 'preprost' && prikazan(5) && chatBot('Opišimo ciljno skupino (persono).', 'Vodim te skozi nekaj vprašanj — ali preskoči.', 5)}
+        {vrstaProjekta !== 'preprost' && odgovorjen(5) && chatOdgovor(5, obrazec.ciljnaSkupina.trim() || 'Preskočena')}
+        {vrstaProjekta !== 'preprost' && aktiven(5) && (urejamKorak === 5 ? (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(false); }}>
             <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Kdo + starost, kaj uporabljajo, pain points, potrebe, cilji in kanali …" rows={5} aria-label="Ciljna skupina / persona" />
             <button type="submit" className="np-chat-naprej">Shrani <ArrowRight size={15} weight="bold" aria-hidden /></button>
@@ -363,9 +389,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         ))}
 
         {/* 6 · želje glede dizajna */}
-        {prikazan(6) && chatBot('Kakšne so želje glede dizajna?', 'Barve, stil, reference.', 6)}
-        {odgovorjen(6) && chatOdgovor(6, obrazec.dizajnZelje.trim() || 'Brez posebnih želja')}
-        {aktiven(6) && (
+        {vrstaProjekta !== 'preprost' && prikazan(6) && chatBot('Kakšne so želje glede dizajna?', 'Barve, stil, reference.', 6)}
+        {vrstaProjekta !== 'preprost' && odgovorjen(6) && chatOdgovor(6, obrazec.dizajnZelje.trim() || 'Brez posebnih želja')}
+        {vrstaProjekta !== 'preprost' && aktiven(6) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 6); }}>
             <textarea className="np-chat-polje" value={obrazec.dizajnZelje} onChange={event => setObrazec(o => ({ ...o, dizajnZelje: event.target.value }))} placeholder="Npr. toplo-nevtralna paleta, minimalizem, reference: …" rows={3} aria-label="Želje glede dizajna" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 6 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
@@ -373,9 +399,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 7 · voice / ton komunikacije */}
-        {prikazan(7) && chatBot('Voice / ton komunikacije?', undefined, 7)}
-        {odgovorjen(7) && chatOdgovor(7, obrazec.voice.trim() || 'Ni določen')}
-        {aktiven(7) && (
+        {vrstaProjekta !== 'preprost' && prikazan(7) && chatBot('Voice / ton komunikacije?', undefined, 7)}
+        {vrstaProjekta !== 'preprost' && odgovorjen(7) && chatOdgovor(7, obrazec.voice.trim() || 'Ni določen')}
+        {vrstaProjekta !== 'preprost' && aktiven(7) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 7); }}>
             <textarea className="np-chat-polje" value={obrazec.voice} onChange={event => setObrazec(o => ({ ...o, voice: event.target.value }))} placeholder="Npr. neposreden, prijazen, brez korporativnega žargona …" rows={3} aria-label="Voice / ton komunikacije" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 7 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
@@ -383,9 +409,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 8 · konkurenca */}
-        {prikazan(8) && chatBot('Kdo je konkurenca?', 'Kdo so, kaj jim je všeč in kaj ne.', 8)}
-        {odgovorjen(8) && chatOdgovor(8, obrazec.konkurenca.trim() || 'Ni podatka')}
-        {aktiven(8) && (
+        {vrstaProjekta !== 'preprost' && prikazan(8) && chatBot('Kdo je konkurenca?', 'Kdo so, kaj jim je všeč in kaj ne.', 8)}
+        {vrstaProjekta !== 'preprost' && odgovorjen(8) && chatOdgovor(8, obrazec.konkurenca.trim() || 'Ni podatka')}
+        {vrstaProjekta !== 'preprost' && aktiven(8) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 8); }}>
             <textarea className="np-chat-polje" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Npr. XY d.o.o. — všeč jim je hitrost, ne mara jih cena …" rows={3} aria-label="Konkurenca" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 8 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>

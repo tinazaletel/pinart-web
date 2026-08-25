@@ -71,6 +71,9 @@ export interface Projekt {
   zacetek?: string;
   rok?: string;
   status: ProjektStatus;
+  /* preprosto narocilo ali projekt z marketinskim okvirom (razcep v carovniku);
+     kasneje krmili privzeti nabor kartic na detajlu */
+  vrsta?: 'preprost' | 'okvir';
   created: string;
   /* lastna vprasanja, dodana med onboarding chatom (glej ProjectsWorkspace) */
   dodatnaVprasanja?: ProjektVprasanje[];
