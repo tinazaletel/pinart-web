@@ -19,7 +19,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowRight, PencilSimple } from '@phosphor-icons/react';
+import { ArrowRight, CaretDown, PencilSimple } from '@phosphor-icons/react';
 import { loadFlowData, saveProjectLinks, type FlowClient, type FlowOffer, type FlowContract } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { naslednjaStevilka, preberiProjekti, shraniProjekt, type Projekt, type ProjektCilj, type ProjektPovezava, type ProjektStatus, type ProjektVprasanje } from '@/lib/projekti';
@@ -437,7 +437,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
             podjetja" v kalkulatorju (plus, naslov, pripis; DESIGN.md 13d). */}
         {!okvir && prikazan(9) && (
           <button type="button" className="np-okvir-vec" onClick={() => { setOkvir(true); setNovKorak(2); }}>
-            <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj podrobnosti projekta</span>
+            <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj podrobnosti projekta<CaretDown size={14} weight="bold" className="np-okvir-caret" aria-hidden /></span>
             <small>Cilji, brief, ciljna skupina, dizajn želje in ton.</small>
           </button>
         )}
@@ -473,7 +473,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {novKorak >= 11 && (<>
           {!vprasanjaOdprta && !obrazec.dodatnaVprasanja.length && (
             <button type="button" className="np-okvir-vec" onClick={() => setVprasanjaOdprta(true)}>
-              <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj svoja vprašanja</span>
+              <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj svoja vprašanja<CaretDown size={14} weight="bold" className="np-okvir-caret" aria-hidden /></span>
               <small>Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.</small>
             </button>
           )}
@@ -593,11 +593,19 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-preskoci:hover{color:var(--ink)}
       /* izbirne kartice (status) — pod vprasanjem bota, klik takoj potrdi in gre naprej */
       .np-chat-izbire{display:flex;flex-direction:column;gap:.55rem;margin:-.2rem 0 0 .3rem}
-      .np-okvir-vec{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;
-        width:min(34rem,calc(100% - 1rem));margin:-.1rem 0 .3rem .3rem;padding:.7rem .85rem;
+      /* ISTI dizajn kot "Dodaj podatke podjetja" v kalkulatorju (uv-vec):
+         naslov v barvi poudarka s plusom, kazalec desno, pripis pod njim.
+         (Tina, 25. 8.: "premalo vidno in enak dizajn kot pri kalkulatorju") */
+      .np-okvir-vec{display:flex;flex-direction:column;align-items:flex-start;gap:.25rem;
+        width:min(34rem,calc(100% - 1rem));margin:-.1rem 0 .35rem .3rem;padding:.75rem .95rem;
         border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font:inherit;
-        text-align:left;transition:border-color .15s ease}
-      .np-okvir-vec:hover{border-color:rgba(17,17,17,.4)}
+        text-align:left;box-shadow:0 4px 14px rgba(40,25,40,.05);transition:border-color .15s ease}
+      .np-okvir-vec:hover{border-color:rgba(17,17,17,.35)}
+      .np-okvir-vec-glava{width:100%;display:flex;gap:.5rem;align-items:center;
+        color:#7C3AED;font-weight:700;font-size:.92rem}
+      .np-okvir-vec-glava>span[aria-hidden]{font-size:1.05rem;line-height:1}
+      .np-okvir-caret{margin-left:auto;color:#7C3AED}
+      .np-okvir-vec small{font-size:.8rem;font-weight:500;color:rgba(17,17,17,.7);line-height:1.45}
       .np-ime-ovoj{position:relative;display:block;width:100%}
       .np-ime-ovoj .np-ime-vnos{position:relative;background:transparent;z-index:1}
       .np-ime-duh{position:absolute;inset:0;z-index:0;display:flex;align-items:center;
