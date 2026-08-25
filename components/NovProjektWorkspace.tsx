@@ -106,6 +106,40 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   /* Vrstica podrobnosti je SVOJ korak z Naprej — ce pogovor tece mimo nje,
      jo spregledas (Tina, 25. 8.). */
   const [podrobnostiPotrjene, setPodrobnostiPotrjene] = useState(false);
+  /* Pupa napolni prazna polja podrobnosti iz tega, kar ze vemo — prazna
+     vprasanja so kruta do nekoga, ki "ne ve, kaj bi" (Tina, 25. 8.). */
+  const [pupaPolni, setPupaPolni] = useState(false);
+  const [pupaNapaka, setPupaNapaka] = useState('');
+  const pupaPredlaga = async () => {
+    setPupaPolni(true); setPupaNapaka('');
+    const stranka = clients.find(c => c.id === obrazec.strankaId)?.name || '';
+    try {
+      const r = await fetch('/api/pupa', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          vprasanje: 'Izpolni podrobnosti kreativnega projekta. Vrni SAMO cist JSON brez razlage, s kljuci: opisStranke, panoga, ciljnaSkupina, dizajnZelje, voice, konkurenca. Vsaka vrednost kratka (1-2 stavka), v slovenscini, prakticna. Ce cesa ni mogoce sklepati, vrni prazen niz.',
+          kontekst: `Projekt: ${obrazec.naslov || '(brez imena)'}. Stranka: ${stranka || '(neznana)'}. Ze vpisano - dejavnost: ${obrazec.opisStranke || '-'}; panoga: ${obrazec.panoga || '-'}; ciljna skupina: ${obrazec.ciljnaSkupina || '-'}.`,
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.odgovor) throw new Error(d.napaka || 'Pupa ni odgovorila.');
+      const ujemanje = String(d.odgovor).match(/\{[\s\S]*\}/);
+      if (!ujemanje) throw new Error('Pupa ni vrnila predlogov.');
+      const predlogi = JSON.parse(ujemanje[0]) as Record<string, string>;
+      setObrazec(o => ({
+        ...o,
+        opisStranke: o.opisStranke.trim() ? o.opisStranke : (predlogi.opisStranke || o.opisStranke),
+        panoga: o.panoga.trim() ? o.panoga : (predlogi.panoga || o.panoga),
+        ciljnaSkupina: o.ciljnaSkupina.trim() ? o.ciljnaSkupina : (predlogi.ciljnaSkupina || o.ciljnaSkupina),
+        dizajnZelje: o.dizajnZelje.trim() ? o.dizajnZelje : (predlogi.dizajnZelje || o.dizajnZelje),
+        voice: o.voice.trim() ? o.voice : (predlogi.voice || o.voice),
+        konkurenca: o.konkurenca.trim() ? o.konkurenca : (predlogi.konkurenca || o.konkurenca),
+      }));
+    } catch (napaka) {
+      setPupaNapaka(napaka instanceof Error ? napaka.message : 'Pupa trenutno ne more pomagati.');
+    }
+    setPupaPolni(false);
+  };
   /* Lastna vprasanja so ZLOZENA (Tina, 25. 8.: "tega ne rabim videti") —
      vrstica s plusom, odpre se na klik ali ce vprasanja ze obstajajo. */
   const [vprasanjaOdprta, setVprasanjaOdprta] = useState(false);
@@ -459,6 +493,10 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
              pogovor z rokom in statusom tece naprej nemoteno — klik prej je
              uporabnico vrgel nazaj na cilje in ji "izgubil" rok (Tina). */
           <div className="np-podrobnosti">
+            <button type="button" className="np-pupa-predlog" onClick={pupaPredlaga} disabled={pupaPolni}>
+              ✨ {pupaPolni ? 'Pupa razmišlja …' : 'Ne veš, kaj bi? Naj Pupa predlaga'}
+            </button>
+            {pupaNapaka && <p className="np-pupa-napaka">{pupaNapaka}</p>}
             <label className="np-pod-polje"><span>Kaj mora projekt doseči?</span>
               {obrazec.cilji.map(cilj => (
                 <div key={cilj.id} className="np-nov-cilj">
@@ -675,6 +713,12 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-podrobnosti{display:grid;gap:.8rem;width:min(34rem,calc(100% - 1rem));
         margin:-.1rem 0 .4rem .3rem;padding:1rem .95rem;
         border:1px solid var(--line);border-radius:12px;background:#fff}
+      .np-pupa-predlog{justify-self:start;padding:.5rem .9rem;border:1px solid rgba(124,58,237,.4);
+        border-radius:999px;background:oklch(97.5% .025 297);color:#7C3AED;cursor:pointer;
+        font:650 .8rem var(--font-sans),sans-serif;transition:border-color .15s ease}
+      .np-pupa-predlog:hover{border-color:#7C3AED}
+      .np-pupa-predlog:disabled{opacity:.6;cursor:progress}
+      .np-pupa-napaka{margin:-.3rem 0 0;font-size:.78rem;color:oklch(52% .19 25)}
       .np-pod-polje{display:grid;gap:.35rem;font-weight:700;font-size:.8rem}
       .np-pod-polje input,.np-pod-polje textarea{width:100%;box-sizing:border-box;padding:.6rem .75rem;
         border:1px solid var(--line);border-radius:.6rem;background:#fff;font:inherit;font-size:.88rem;font-weight:500}
