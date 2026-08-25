@@ -549,7 +549,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
 
       .np-chat-sodelavci{display:flex;flex-wrap:wrap;gap:.55rem}
       .np-chat-sodelavec{display:flex;align-items:center;gap:.6rem;padding:.55rem .9rem .55rem .55rem;border:1px solid var(--line);border-radius:999px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);cursor:pointer;transition:border-color .16s,background .16s}
-      .np-chat-sodelavec b{font-size:.78rem;font-weight:700}
+      /* ime in vloga desno poravnana ob krogu (Tina, 25. 8.) */
+      .np-chat-sodelavec>span:last-child{margin-left:auto;text-align:right}
+      .np-chat-sodelavec b{display:block;font-size:.78rem;font-weight:700}
       .np-chat-sodelavec small{display:block;color:color-mix(in oklch,var(--ink) 55%,transparent);font-size:.64rem}
       .np-chat-sod-krog{display:grid;place-items:center;width:1.8rem;height:1.8rem;border-radius:50%;background:oklch(90% .045 297);color:oklch(40% .16 297);font-size:.64rem;font-weight:800;flex:none}
       .np-chat-sodelavec.on{border-color:oklch(84% .05 165);background:oklch(93% .04 165)}
