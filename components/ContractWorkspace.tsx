@@ -1279,7 +1279,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       )}
 
       {napaka && <p className="pg-napaka">{napaka}</p>}
-      <p className="pg-mini" style={{ marginTop: '.7rem' }}>{L('Besedilo preveri; Pinart ne nadomešča pravnega svetovanja.', 'Please review the text; Pinart does not replace legal advice.')}</p>
+      <p className="pg-mini" style={{ marginTop: '.7rem' }}>{L('To je prilagodljiv pogodbeni osnutek, ne pravni nasvet.', 'Please review the text; Pinart does not replace legal advice.')}</p>
     </section>}
 
     {/* ── POGLED 3: ZAKLJUCEK (prenos + posiljanje + shranjevanje) ── */}
@@ -1301,6 +1301,35 @@ export default function ContractWorkspace({ base }: { base: string }) {
       </div>
       <p className="pg-kicker">{jeEn ? VRSTE_POG_EN[vrstaPog].kick : VRSTE_POG.find(v => v.id === vrstaPog)!.kick}{vir === 'ponudba' && selectedOffer?.number ? L(` · PONUDBA ŠT. ${selectedOffer.number}`, ` · OFFER NO. ${selectedOffer.number}`) : ''}</p>
       <h2 className="pg-naslov">{L('Zaključek.', 'Finish.')}{odvPoslano && <span className="pg-odvetnik-znak">{L('Pri odvetniku', 'With the lawyer')}</span>}</h2>
+      {/* PREGLED ODLOCITEV (ChatGPT/Codex tocki 2 in 3): kar manjka, mora
+          uporabnica videti PRED posiljanjem — v dolgem besedilu manjkajoco
+          ceno ali narocnika zlahka spregleda, v povzetku ne more. */}
+      {(() => {
+        const vkljuceni = cleniZaVrsto(vrstaPog).filter(c => c.opcijski && !izklKlavzule.has(c.id));
+        const vrstice: { oznaka: string; vrednost: string; manjka?: boolean }[] = [
+          { oznaka: L('Izvajalec', 'Contractor'), vrednost: ponudnik.ime.trim(), manjka: !ponudnik.ime.trim() },
+          { oznaka: L('Naročnik', 'Client'), vrednost: narocnikIme(), manjka: !narocnikIme() },
+          vir === 'ponudba' && selectedOffer
+            ? { oznaka: L('Obseg in cena', 'Scope and price'), vrednost: `${selectedOffer.title} · ${selectedOffer.agreedAmount ? selectedOffer.agreedAmount.toLocaleString('sl-SI') + ' €' : L('cena ni določena', 'no price set')}`, manjka: !selectedOffer.agreedAmount }
+            : { oznaka: L('Obseg in cena', 'Scope and price'), vrednost: L('samostojna pogodba — obseg in ceno preveri v besedilu', 'standalone contract — check scope and price in the text'), manjka: vir !== 'stranka' },
+          { oznaka: L('Datum', 'Date'), vrednost: datum, manjka: !datum },
+          { oznaka: L('Dodatni pogoji', 'Additional terms'), vrednost: vkljuceni.length ? vkljuceni.map(c => c.naslov).join(' · ') : L('nobeden ni vključen', 'none included') },
+        ];
+        return (
+          <div className="pg-povzetek">
+            <b>{L('Pred pošiljanjem preveri', 'Check before sending')}</b>
+            <ul>
+              {vrstice.map(v => (
+                <li key={v.oznaka} data-manjka={v.manjka || undefined}>
+                  <span>{v.oznaka}</span>
+                  <strong>{v.manjka ? (v.vrednost || L('manjka', 'missing')) : v.vrednost}</strong>
+                </li>
+              ))}
+            </ul>
+            <p>{L('Preveri še roke, način plačila in pogoje odpovedi v besedilu pogodbe.', 'Also check deadlines, payment terms and termination terms in the contract text.')}</p>
+          </div>
+        );
+      })()}
       <p className="pg-uvod">{L('Prenesi pogodbo', 'Download the contract')}{narocnikIme() ? L(' za ', ' for ') + narocnikIme() : ''}{L(', jo shrani ali pošlji naročniku.', ', save it or send it to the client.')}</p>
       <p className="pg-disc">{L('Pripravljeno iz vzorčne predloge kot pripomoček — ', 'Prepared from a sample template as an aid — ')}<b>{L('ni pravni nasvet', 'not legal advice')}</b>{L('. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.', '. Before signing, we recommend a review by a lawyer and adaptation to the specific deal.')}</p>
       <div className="pg-epodpis">
@@ -1487,6 +1516,17 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-klavzule-label{display:block;font-size:.95rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .5rem}
       .pg-klavzule-pilule{display:flex;flex-wrap:wrap;gap:.4rem}
       /* Cleni kot vrstice s POSLEDICO v isti velikosti kot ime (ne drobni tisk) */
+      /* Povzetek odlocitev na Zakljucku: manjkajoce rdece, vse ostalo mirno */
+      .pg-povzetek{width:100%;max-width:34rem;margin:0 auto 1.1rem;text-align:left;
+        padding:1rem 1.1rem;border:1px solid rgba(17,17,17,.12);border-radius:14px;background:#fff}
+      .pg-povzetek>b{display:block;margin-bottom:.55rem;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase}
+      .pg-povzetek ul{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+      .pg-povzetek li{display:flex;justify-content:space-between;gap:1rem;font-size:.92rem}
+      .pg-povzetek li span{flex:none;color:rgba(17,17,17,.62)}
+      .pg-povzetek li strong{font-weight:600;text-align:right;min-width:0;overflow-wrap:break-word}
+      .pg-povzetek li[data-manjka] strong{color:oklch(52% .19 25)}
+      .pg-povzetek li[data-manjka] strong::before{content:'⚠ '}
+      .pg-povzetek>p{margin:.65rem 0 0;font-size:.85rem;color:rgba(17,17,17,.66)}
       .pg-poti{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin:0 0 1.1rem}
       @media (max-width:640px){.pg-poti{grid-template-columns:minmax(0,1fr)}}
       .pg-pot{display:grid;gap:.2rem;text-align:left;padding:.75rem .85rem;border:1px solid rgba(17,17,17,.14);
