@@ -292,7 +292,7 @@
 .trajanje strong { color: var(--ink); font-size: 1rem; font-weight: 700; }
 
 /* zasebna opomba pod vnosom v dnevniku */
-.opomba { color: var(--muted); font-size: .8rem; font-style: italic; overflow-wrap: anywhere; }
+.opomba { color: var(--muted); font-size: .8rem; font-style: italic; overflow-wrap: break-word; word-break: normal; hyphens: none; }
 
 /* Ročni vnos: vprašanje je besedilo, gumb je kratek.
    Prej je bil cel stavek na gumbu in se je na telefonu razlezel čez dve vrstici. */
@@ -379,6 +379,14 @@
    ga rabi, ker nosi datum in pod njim opombo (Tina, 25. 8.). */
 .mesecTabela thead th:last-child, .mesecTabela tbody td:last-child { padding-left: .2rem; padding-right: .35rem; }
 .mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-right: 1.15rem; }
+/* DAN nosi datum in pod njim opombo — brez lastne sirine se je besedilo lomilo
+   sredi besede ("Sestan / ek s / stranko"). (Tina, 25. 8.) */
+.mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { min-width: 11rem; }
+/* casovni stolpci so ozki in fiksni, da ves preostali prostor pripade DNEVU */
+.mesecTabela thead th:nth-child(2), .mesecTabela thead th:nth-child(3),
+.mesecTabela thead th:nth-child(4) { width: 5.2rem; }
+.mesecTabela tbody td:nth-child(2), .mesecTabela tbody td:nth-child(3),
+.mesecTabela tbody td:nth-child(4) { white-space: nowrap; }
 .mesecTabela tbody td { padding: .55rem .85rem; border-top: 1px solid var(--line); vertical-align: middle; }
 /* Safari podvoji ločnico glava/prva vrstica (thead border-bottom + tbody border-top) — ena črta */
 .mesecTabela tbody tr:first-child td { border-top: 0; }
@@ -409,7 +417,7 @@
 .mesecUre { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; color: var(--ink); }
 .mesecPrazno { padding: 1.4rem .85rem; color: var(--muted); text-align: center; }
 /* opomba pod dnevom, drobna in tiha — ne postane nov stolpec */
-.mesecOpomba { display: block; margin-top: .15rem; color: var(--muted); font-size: .72rem; font-weight: 400; font-style: italic; overflow-wrap: anywhere; }
+.mesecOpomba { display: block; margin-top: .15rem; color: var(--muted); font-size: .72rem; font-weight: 400; font-style: italic; overflow-wrap: break-word; word-break: normal; hyphens: none; }
 
 /* ── Vrsta dneva: pilula s piko, kot arh-status drugod v projektu ─────────── */
 .vrstaPilula {
