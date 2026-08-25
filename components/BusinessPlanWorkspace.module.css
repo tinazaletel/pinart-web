@@ -379,12 +379,9 @@
    ga rabi, ker nosi datum in pod njim opombo (Tina, 25. 8.). */
 .mesecTabela thead th:last-child, .mesecTabela tbody td:last-child { padding-left: .2rem; padding-right: .35rem; }
 .mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-right: 1.15rem; }
-/* DAN nosi datum in pod njim opombo — brez lastne sirine se je besedilo lomilo
-   sredi besede ("Sestan / ek s / stranko"). (Tina, 25. 8.) */
-.mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { min-width: 11rem; }
-/* casovni stolpci so ozki in fiksni, da ves preostali prostor pripade DNEVU */
-.mesecTabela thead th:nth-child(2), .mesecTabela thead th:nth-child(3),
-.mesecTabela thead th:nth-child(4) { width: 5.2rem; }
+/* DAN dobi prostor tako, da casovni stolpci vzamejo natanko toliko, kot rabijo
+   (nowrap), NE s fiksno sirino — s tem je tabela zrasla cez kartico in zadnja
+   stolpca sta padla ven (Tina, 25. 8.). */
 .mesecTabela tbody td:nth-child(2), .mesecTabela tbody td:nth-child(3),
 .mesecTabela tbody td:nth-child(4) { white-space: nowrap; }
 .mesecTabela tbody td { padding: .55rem .85rem; border-top: 1px solid var(--line); vertical-align: middle; }
