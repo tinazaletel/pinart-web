@@ -297,8 +297,13 @@
    Prej je bil cel stavek na gumbu in se je na telefonu razlezel čez dve vrstici. */
 .rocniVrstica {
   grid-column: 1 / -1;
-  /* brez okvirja: Tini je bilo ljubse kot cista vrstica, samo na sredini */
-  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .55rem;
+  /* SVOJ blok, locen od polj nad njim: kdor casa ni meril sproti, mora pot do
+     rocnega vnosa videti takoj (Tina, 25. 8.). Bela kartica, brez crtkane
+     obrobe — ta ji ni bila vsec. */
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .6rem;
+  margin-top: .6rem; padding: 1rem 1.1rem;
+  border: 1px solid oklch(22% .015 60 / .06); border-radius: 1.1rem;
+  background: #fff;
 }
 .rocniVrstica > span {
   color: var(--muted); font: 400 .82rem var(--font-sans), sans-serif;
