@@ -680,4 +680,9 @@
 /* Desni rob kartice do tabele manjsi od levega — tabela naj seze skoraj do
    roba (Tina, 25. 8.). Negativni margin je na ovoju, ne na tabeli, da
    zaobljeni okvir potuje z njo. */
-.evidenca .mesecTabelaOvoj { margin-right: -.65rem; max-width: none; }
+.evidenca .mesecTabelaOvoj { margin-right: -11px; max-width: none; }
+
+/* Znesek + valuta v isti vrstici; izbirnik je ozek, polje dobi preostanek. */
+.znesekVrsta { display: flex; gap: .5rem; align-items: stretch; }
+.znesekVrsta input { flex: 1; min-width: 0; }
+.znesekVrsta select { flex: none; width: 4.6rem; }
