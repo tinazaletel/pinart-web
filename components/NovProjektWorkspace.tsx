@@ -97,6 +97,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
      rok, status. Cilji, persona, dizajn, ton in konkurenca zivijo za zaprto
      vrstico s plusom — kdor jih rabi, jo odpre. */
   const [okvir, setOkvir] = useState(false);
+  /* Lastna vprasanja so ZLOZENA (Tina, 25. 8.: "tega ne rabim videti") —
+     vrstica s plusom, odpre se na klik ali ce vprasanja ze obstajajo. */
+  const [vprasanjaOdprta, setVprasanjaOdprta] = useState(false);
   const [novKorak, setNovKorak] = useState(0);
   const [urejamKorak, setUrejamKorak] = useState<number | null>(null);
   const [novoVprasanje, setNovoVprasanje] = useState({ vprasanje: '', odgovor: '' });
@@ -468,7 +471,14 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {/* po osnovnih vprašanjih: moja lastna vprašanja + povezave + ekipa + zaključek —
             vse na isti neprekinjeni površini, brez nadaljnjega gating-a (izpolniš, kolikor želiš) */}
         {novKorak >= 11 && (<>
-          {chatBot('Želiš dodati svoja vprašanja?', 'Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.')}
+          {!vprasanjaOdprta && !obrazec.dodatnaVprasanja.length && (
+            <button type="button" className="np-okvir-vec" onClick={() => setVprasanjaOdprta(true)}>
+              <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj svoja vprašanja</span>
+              <small>Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.</small>
+            </button>
+          )}
+          {(vprasanjaOdprta || obrazec.dodatnaVprasanja.length > 0) && <>
+          {chatBot('Tvoja vprašanja.', 'Vprašanje in odgovor si zapišeš sama.')}
           <div className="np-chat-vnos">
             {obrazec.dodatnaVprasanja.map(v => (
               <div key={v.id} className="np-vprasanje-vrstica">
@@ -482,6 +492,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
               <button type="button" className="np-link-dodaj" onClick={dodajVprasanje} disabled={!novoVprasanje.vprasanje.trim() || !novoVprasanje.odgovor.trim()}>+ Dodaj vprašanje</button>
             </div>
           </div>
+          </>}
 
           {chatBot('Deli povezave do gradiv.', 'Figma, Miro, Drive … naslov + URL.')}
           <div className="np-chat-vnos">
