@@ -297,14 +297,9 @@
    Prej je bil cel stavek na gumbu in se je na telefonu razlezel čez dve vrstici. */
 .rocniVrstica {
   grid-column: 1 / -1;
-  /* SVOJ blok, ne drobna vrstica na dnu: kdor casa ni meril sproti, mora pot do
-     rocnega vnosa videti takoj, sicer misli, da je ze zamudil (Tina, 25. 8.). */
-  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .7rem;
-  margin-top: .5rem; padding: 1rem 1.1rem;
-  border: 1px dashed oklch(85% .015 82); border-radius: 1.1rem;
-  background: oklch(99% .004 82 / .7);
+  /* brez okvirja: Tini je bilo ljubse kot cista vrstica, samo na sredini */
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .55rem;
 }
-.rocniVrstica > span { font-weight: 500; }
 .rocniVrstica > span {
   color: var(--muted); font: 400 .82rem var(--font-sans), sans-serif;
 }
