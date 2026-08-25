@@ -96,7 +96,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
      podjetja pri kalkulatorju"). Privzeto so vprasanja stiri: ime, stranka,
      rok, status. Cilji, persona, dizajn, ton in konkurenca zivijo za zaprto
      vrstico s plusom — kdor jih rabi, jo odpre. */
-  const [okvir, setOkvir] = useState(false);
+  const [okvir, setOkvir] = useState(false); /* stari chat-nacin — ostaja izklopljen */
+  const [podrobnostiOdprte, setPodrobnostiOdprte] = useState(false);
   /* Lastna vprasanja so ZLOZENA (Tina, 25. 8.: "tega ne rabim videti") —
      vrstica s plusom, odpre se na klik ali ce vprasanja ze obstajajo. */
   const [vprasanjaOdprta, setVprasanjaOdprta] = useState(false);
@@ -210,7 +211,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       zacetek: obrazec.zacetek || undefined,
       rok: obrazec.rok || undefined,
       status: obrazec.status,
-      vrsta: okvir ? 'okvir' : 'preprost',
+      vrsta: (podrobnostiOdprte || obrazec.cilji.some(c => c.besedilo.trim() || c.tarca?.trim())
+        || obrazec.opisStranke.trim() || obrazec.ciljnaSkupina.trim()) ? 'okvir' : 'preprost',
       created: urejam?.created || new Date().toISOString(),
       dodatnaVprasanja: obrazec.dodatnaVprasanja.length ? obrazec.dodatnaVprasanja : undefined,
       povezave: obrazec.povezave.length ? obrazec.povezave : undefined,
@@ -435,11 +437,43 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
 
         {/* Zlozena vrstica: marketinski okvir — isti vzorec kot "Dodaj podatke
             podjetja" v kalkulatorju (plus, naslov, pripis; DESIGN.md 13d). */}
-        {!okvir && prikazan(9) && (
-          <button type="button" className="np-okvir-vec" onClick={() => { setOkvir(true); setNovKorak(2); }}>
-            <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj podrobnosti projekta<CaretDown size={14} weight="bold" className="np-okvir-caret" aria-hidden /></span>
-            <small>Cilji, brief, ciljna skupina, dizajn želje in ton.</small>
+        {prikazan(9) && (
+          <button type="button" className="np-okvir-vec" aria-expanded={podrobnostiOdprte}
+            onClick={() => setPodrobnostiOdprte(o => !o)}>
+            <span className="np-okvir-vec-glava"><span aria-hidden>{podrobnostiOdprte ? '−' : '+'}</span>
+              {podrobnostiOdprte ? 'Skrij podrobnosti projekta' : 'Dodaj podrobnosti projekta'}
+              <CaretDown size={14} weight="bold" className="np-okvir-caret" style={podrobnostiOdprte ? { transform: 'rotate(180deg)' } : undefined} aria-hidden /></span>
+            {!podrobnostiOdprte && <small>Cilji, brief, ciljna skupina, dizajn želje in ton.</small>}
           </button>
+        )}
+        {prikazan(9) && podrobnostiOdprte && (
+          /* INLINE obrazec (kot "Dodaj podatke podjetja"): odpre se NA MESTU,
+             pogovor z rokom in statusom tece naprej nemoteno — klik prej je
+             uporabnico vrgel nazaj na cilje in ji "izgubil" rok (Tina). */
+          <div className="np-podrobnosti">
+            <label className="np-pod-polje"><span>Cilji projekta</span>
+              {obrazec.cilji.map(cilj => (
+                <div key={cilj.id} className="np-nov-cilj">
+                  <input type="text" value={cilj.besedilo} onChange={event => posodobiCilj(cilj.id, { besedilo: event.target.value })} placeholder="Cilj, npr. povečati prodajo" />
+                  <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="Tarča, npr. 800 €" />
+                  <button type="button" className="np-link-brisi" onClick={() => odstraniCilj(cilj.id)} aria-label="Odstrani cilj">×</button>
+                </div>
+              ))}
+              <button type="button" className="np-nov-dodaj-cilj" onClick={dodajCilj}>+ Dodaj cilj</button>
+            </label>
+            <label className="np-pod-polje"><span>Brief — kaj počne stranka</span>
+              <textarea value={obrazec.opisStranke} onChange={event => setObrazec(o => ({ ...o, opisStranke: event.target.value }))} placeholder="Dejavnost in kontekst stranke …" /></label>
+            <label className="np-pod-polje"><span>Panoga</span>
+              <input type="text" value={obrazec.panoga} onChange={event => setObrazec(o => ({ ...o, panoga: event.target.value }))} placeholder="npr. gostinstvo, gradbeništvo …" /></label>
+            <label className="np-pod-polje"><span>Ciljna skupina</span>
+              <textarea value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Kdo so, kaj potrebujejo, kje jih dosežeš …" /></label>
+            <label className="np-pod-polje"><span>Dizajn želje</span>
+              <textarea value={obrazec.dizajnZelje} onChange={event => setObrazec(o => ({ ...o, dizajnZelje: event.target.value }))} placeholder="Slog, reference, česa ne …" /></label>
+            <label className="np-pod-polje"><span>Ton komunikacije</span>
+              <input type="text" value={obrazec.voice} onChange={event => setObrazec(o => ({ ...o, voice: event.target.value }))} placeholder="npr. topel in oseben / strokoven …" /></label>
+            <label className="np-pod-polje"><span>Konkurenca</span>
+              <input type="text" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Kdo je konkurenca in kaj te loči …" /></label>
+          </div>
         )}
 
         {/* 9 · začetek/rok */}
@@ -624,6 +658,13 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-okvir-vec-glava>span[aria-hidden]{font-size:1.05rem;line-height:1}
       .np-okvir-caret{margin-left:auto;color:#7C3AED}
       .np-okvir-vec small{font-size:.84rem;font-weight:500;color:rgba(17,17,17,.7);line-height:1.45}
+      .np-podrobnosti{display:grid;gap:.8rem;width:min(34rem,calc(100% - 1rem));
+        margin:-.1rem 0 .4rem .3rem;padding:1rem .95rem;
+        border:1px solid var(--line);border-radius:12px;background:#fff}
+      .np-pod-polje{display:grid;gap:.35rem;font-weight:700;font-size:.8rem}
+      .np-pod-polje input,.np-pod-polje textarea{width:100%;box-sizing:border-box;padding:.6rem .75rem;
+        border:1px solid var(--line);border-radius:.6rem;background:#fff;font:inherit;font-size:.88rem;font-weight:500}
+      .np-pod-polje textarea{min-height:4.2rem;resize:vertical}
       .np-ime-ovoj{position:relative;display:block;width:100%}
       .np-ime-ovoj .np-ime-vnos{position:relative;background:transparent;z-index:1}
       .np-ime-duh{position:absolute;inset:0;z-index:0;display:flex;align-items:center;
