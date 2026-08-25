@@ -577,8 +577,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
               </div>
             ))}
             <div className="np-link-obrazec">
-              <input type="text" value={novoVprasanje.vprasanje} onChange={event => setNovoVprasanje(v => ({ ...v, vprasanje: event.target.value }))} placeholder="Vprašanje, npr. Ima stranka že CGP?" aria-label="Vprašanje" />
-              <input type="text" value={novoVprasanje.odgovor} onChange={event => setNovoVprasanje(v => ({ ...v, odgovor: event.target.value }))} placeholder="Odgovor" aria-label="Odgovor" />
+              <textarea rows={1} value={novoVprasanje.vprasanje} onChange={event => { rastiTextarea(event.currentTarget); setNovoVprasanje(v => ({ ...v, vprasanje: event.target.value })); }} placeholder="Vprašanje, npr. Ima stranka že CGP?" aria-label="Vprašanje" />
+              <textarea rows={1} value={novoVprasanje.odgovor} onChange={event => { rastiTextarea(event.currentTarget); setNovoVprasanje(v => ({ ...v, odgovor: event.target.value })); }} placeholder="Odgovor" aria-label="Odgovor" />
               <button type="button" className="np-link-dodaj" onClick={dodajVprasanje} disabled={!novoVprasanje.vprasanje.trim() || !novoVprasanje.odgovor.trim()}>+ Dodaj vprašanje</button>
             </div>
           </div>
@@ -768,8 +768,14 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       /* Polja cez SIRINO pogovora, ne ozka (Tina, 25. 8.: "teli inputi so
          prekratki") — vnos vprasanj in povezav dobi isto sirino kot mehurcki. */
       .np-link-obrazec{display:grid;grid-template-columns:1fr;gap:.5rem;margin-top:.2rem;width:100%}
-      .np-link-obrazec input{padding:.6rem .75rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.8rem;color:var(--ink);min-width:0}
-      .np-link-dodaj{flex:none;padding:.55rem .9rem;border:1px solid var(--ink);border-radius:.6rem;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
+      .np-link-obrazec input,.np-link-obrazec textarea{padding:.6rem .75rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.8rem;color:var(--ink);min-width:0}
+      /* polje raste z besedilom — dolgo vprasanje se je odrezalo (Tina) */
+      .np-link-obrazec textarea{resize:none;overflow:hidden;field-sizing:content;min-height:2.4rem;line-height:1.45}
+      /* crtkan "dodaj" kot pri ciljih (DESIGN 13e) — crn polni gumb je izgledal
+         kot glavno dejanje, ceprav je le dodajanje vrstice (Tina) */
+      .np-link-dodaj{flex:none;padding:.55rem .9rem;border:1px dashed color-mix(in oklch,var(--ink) 28%,transparent);border-radius:.7rem;background:transparent;color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
+      .np-link-dodaj:hover{border-color:var(--ink)}
+      .np-link-dodaj:disabled{opacity:.45;cursor:default}
       .np-link-dodaj:disabled{opacity:.5;cursor:not-allowed}
       .np-linki{display:flex;flex-direction:column;gap:.45rem}
       .np-link-vrstica{display:flex;align-items:center;gap:.5rem;padding:.55rem .7rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .55)}
