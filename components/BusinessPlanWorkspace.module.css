@@ -383,7 +383,15 @@
 .mesecTabela thead th:last-child, .mesecTabela tbody td:last-child { padding-left: 0; padding-right: .1rem; width: 1.5rem; }
 /* stolpec URE ob robu: stevilka naj diha, a brez odvecnega roba na koncu */
 .mesecTabela thead th:nth-last-child(2), .mesecTabela tbody td:nth-last-child(2) { padding-right: .2rem; }
-.mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-left: .8rem; padding-right: .9rem; }
+.mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-left: .7rem; padding-right: .7rem; }
+/* DAN dobi ves prostor, ki ostane: ostali stolpci se ne raztezajo (nowrap +
+   width: 1%), zato tabela prvemu stolpcu pripise preostanek (Tina, 25. 8.). */
+.mesecTabela tbody td:nth-child(2), .mesecTabela tbody td:nth-child(3),
+.mesecTabela tbody td:nth-child(4), .mesecTabela tbody td:nth-child(5),
+.mesecTabela tbody td:nth-last-child(2),
+.mesecTabela thead th:nth-child(2), .mesecTabela thead th:nth-child(3),
+.mesecTabela thead th:nth-child(4), .mesecTabela thead th:nth-child(5),
+.mesecTabela thead th:nth-last-child(2) { width: 1%; white-space: nowrap; }
 /* DAN dobi prostor tako, da casovni stolpci vzamejo natanko toliko, kot rabijo
    (nowrap), NE s fiksno sirino — s tem je tabela zrasla cez kartico in zadnja
    stolpca sta padla ven (Tina, 25. 8.). */
