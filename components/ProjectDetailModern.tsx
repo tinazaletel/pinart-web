@@ -179,7 +179,8 @@ export default function ProjectDetailModern({
       .filter(v => kljuc(v.projectName || '') === iskan)
       .reduce((s, v) => s + (v.durationMinutes || 0), 0);
   }, [vnosiCasa, naslovProjekta]);
-  const cilji = real?.cilji?.filter(c => c.besedilo?.trim()) || [];
+  /* tudi cilj brez besedila (samo merilo/tarca) je cilj — ne skrivaj ga */
+  const cilji = real?.cilji?.filter(c => c.besedilo?.trim() || c.metrika?.trim() || c.tarca?.trim()) || [];
   const imaBrief = briefPolja.length > 0 || cilji.length > 0 || dodatna.length > 0;
   const datumDokumenta = (datum?: string) => {
     const d = new Date(datum || real?.updatedAt || real?.created || offer.date);

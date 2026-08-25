@@ -28,7 +28,9 @@ export { datotekeIzOdlozisca };
 /* SVG je v seznamu, ker ga zaledje SPREJME (z opozorilom o postnih streznikih,
    glej preveriPriponko). Brez njega je izbirnik datotek sicer sivil prav tiste
    datoteke, ki jih oblikovalka najveckrat prilaga (Tina, 25. 8., na produkciji). */
-const SPREJME = '.pdf,.png,.jpg,.jpeg,.webp,.svg,.svgz,.docx,.xlsx,.csv,.zip';
+/* Oblikovalka posilja tudi IZVORNIKE: .ai stranki po mailu, .indd v arhiv
+   (Tina, 25. 8.). Streznik koncnic ne omejuje, omejeval je le ta seznam. */
+const SPREJME = '.pdf,.png,.jpg,.jpeg,.webp,.svg,.svgz,.ai,.indd,.idml,.psd,.eps,.docx,.xlsx,.csv,.zip';
 
 function Slog() {
   return (

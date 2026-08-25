@@ -188,7 +188,17 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       dizajnZelje: obrazec.dizajnZelje.trim() || undefined,
       voice: obrazec.voice.trim() || undefined,
       konkurenca: obrazec.konkurenca.trim() || undefined,
-      cilji: obrazec.cilji.filter(c => c.besedilo.trim()).map(c => ({ id: c.id, besedilo: c.besedilo.trim(), metrika: c.metrika?.trim() || undefined, tarca: c.tarca?.trim() || undefined })),
+      /* Cilj z izpolnjenim merilom ali tarco, a praznim besedilom, se je tiho
+         zavrgel (Tina, 25. 8.: "čas + 800 €" -> cilji: [] v oblaku). Obdrzimo
+         vse, kjer je karkoli vpisano; besedilo po potrebi sestavimo iz njiju. */
+      cilji: obrazec.cilji
+        .filter(c => c.besedilo.trim() || c.metrika?.trim() || c.tarca?.trim())
+        .map(c => ({
+          id: c.id,
+          besedilo: c.besedilo.trim() || [c.metrika?.trim(), c.tarca?.trim()].filter(Boolean).join(' · '),
+          metrika: c.metrika?.trim() || undefined,
+          tarca: c.tarca?.trim() || undefined,
+        })),
       zacetek: obrazec.zacetek || undefined,
       rok: obrazec.rok || undefined,
       status: obrazec.status,
@@ -197,8 +207,17 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       povezave: obrazec.povezave.length ? obrazec.povezave : undefined,
       dodeljeni: obrazec.dodeljeni.length ? obrazec.dodeljeni : undefined,
     };
+    /* Vpisano-a-ne-dodano se NE sme tiho izgubiti (Tina, 25. 8.: druga povezava
+       je izginila): ce sta polji za povezavo ali vprasanje se polni, ju ob
+       shranjevanju dodamo, kot da je kliknila "+ Dodaj". */
+    const cakajocaPovezava = povezavaNaslov.trim() && povezavaUrl.trim()
+      ? [{ id: crypto.randomUUID(), naslov: povezavaNaslov.trim(), url: povezavaUrl.trim() }] : [];
+    const cakajoceVprasanje = novoVprasanje.vprasanje.trim() && novoVprasanje.odgovor.trim()
+      ? [{ id: crypto.randomUUID(), vprasanje: novoVprasanje.vprasanje.trim(), odgovor: novoVprasanje.odgovor.trim() }] : [];
+    if (cakajocaPovezava.length) projekt.povezave = [...(projekt.povezave || []), ...cakajocaPovezava];
+    if (cakajoceVprasanje.length) projekt.dodatnaVprasanja = [...(projekt.dodatnaVprasanja || []), ...cakajoceVprasanje];
     shraniProjekt(projekt);
-    if (obrazec.povezave.length) saveProjectLinks(`real-${projekt.id}`, obrazec.povezave.map(p => ({ oznaka: p.naslov, url: p.url })));
+    if (projekt.povezave?.length) saveProjectLinks(`real-${projekt.id}`, projekt.povezave.map(p => ({ oznaka: p.naslov, url: p.url })));
     /* Nov projekt = PRAVI (moji) podatek. Preklopi na »moji podatki«, da se pravi
        projekti sploh naložijo (v demo nacinu jih ProjectsWorkspace ne bere), nato
        odpri detajl/specifikacijo tega projekta prek ?projekt=real-<id>. */
