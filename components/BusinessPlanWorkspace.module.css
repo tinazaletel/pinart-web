@@ -546,6 +546,10 @@
    da stevilke tecejo in da se preliv premika — kartica ne poskoci in ne
    spremeni oblike (Tina, 25. 8.). */
 .startGlava > * { min-width: 0; }
+/* Kartica ima samo nadnaslov (naslov je odsel pod naslov strani), zato pod njim
+   ne rabimo toliko zraka — ura naj se zacne takoj (Tina, 25. 8.). */
+.timer > header:has(> p:only-child) { margin-bottom: -.35rem; }
+.timer > header:has(> p:only-child) p { margin-bottom: 0; }
 /* valovi v mirovanju: brez animacije, sicer bi se mirujoca in tekoca stoparica
    ne locili nic */
 .startGlava .valovi { animation: none; opacity: .85; }
