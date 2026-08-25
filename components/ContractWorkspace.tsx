@@ -806,7 +806,19 @@ export default function ContractWorkspace({ base }: { base: string }) {
     setPriponkaIme(fileName || '');
     setPriponkaPot(filePath || '');
     setPriponkaZaBrisanje('');
-    setNotice(L('Pogodba je shranjena in povezana s projektom.', 'The contract is saved and linked to the project.'));
+    /* Sporocilo mora povedati RESNICO (Codex/ChatGPT tocka 5): "povezana s
+       projektom" je pisalo tudi, ko projekta ni; tiho izpusceno nalaganje
+       priponke pa je najhujsa vrsta napake — polovicno shranjevanje brez
+       besede. */
+    const zPovezavo = vir === 'ponudba' && selectedOffer;
+    let sporocilo = zPovezavo
+      ? L('Pogodba je shranjena in povezana s projektom.', 'The contract is saved and linked to the project.')
+      : L('Pogodba je shranjena v arhiv.', 'The contract is saved to the archive.');
+    if (priponkaFile && !filePath) {
+      sporocilo += ' ' + L('Priponka je ostala samo v tem brskalniku — nalaganje v oblak ni uspelo.',
+        'The attachment stayed only in this browser — uploading to the cloud failed.');
+    }
+    setNotice(sporocilo);
     /* po shranjevanju nazaj na prvo stran — nova pogodba je takoj vidna v arhivu
        (Tina: "naj se shrani in vrnem se na prvo stran") */
     setPogled('nastavitve');
@@ -850,12 +862,20 @@ export default function ContractWorkspace({ base }: { base: string }) {
     if (!(file instanceof File) || !file.size) return;
     const id = crypto.randomUUID();
     let filePath: string | undefined;
-    try { filePath = await uploadBusinessDocument(file, 'contracts', id); } catch { await storeFile(id, file); }
+    /* Ce oblak odpove, gre datoteka v rezervo v brskalniku — a tega NE sme
+       zamolcati (Codex/ChatGPT tocka 5): tiho polovicno shranjevanje je
+       najhujsa vrsta napake. */
+    let samoVBrskalniku = false;
+    try { filePath = await uploadBusinessDocument(file, 'contracts', id); }
+    catch { await storeFile(id, file); samoVBrskalniku = true; }
     const zapis: FlowContract = { id, title: String(data.get('title')), client: String(data.get('client')), date: String(data.get('date')), status: 'received', sourceOfferId: String(data.get('sourceOfferId')) || undefined, fileName: file.name, filePath, notes: String(data.get('notes')) };
     const next = [zapis, ...contracts];
     setContracts(next);
     saveFlowCollection('contracts', next);
-    setNotice(L('Prejeta pogodba je shranjena in čaka na pregled.', 'The received contract is saved and awaiting review.'));
+    setNotice(samoVBrskalniku
+      ? L('Pogodba je shranjena samo v tem brskalniku — nalaganje v oblak ni uspelo. Na drugih napravah je ne bo.',
+          'The contract is saved only in this browser — uploading to the cloud failed. It will not appear on other devices.')
+      : L('Prejeta pogodba je shranjena in čaka na pregled.', 'The received contract is saved and awaiting review.'));
     event.currentTarget.reset();
   };
 
@@ -965,7 +985,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
           if (!opcijski.length) return null;
           return (
             <div className="pg-klavzule">
-              <span className="pg-klavzule-label">{L('Vključi člene:', 'Include clauses:')}</span>
+              <span className="pg-klavzule-label">{L('Dodatni pogoji', 'Additional terms')}</span>
               <div className="pg-klavzule-pilule" role="group" aria-label={L('Opcijski členi', 'Optional clauses')}>
                 {opcijski.map(c => {
                   const vkljucen = !izklKlavzule.has(c.id);
@@ -1003,7 +1023,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                         ))}
                         {!vstopSeznam.length && <p className="pg-mini pg-combo-prazno">{L('Ni ponudb za to iskanje.', 'No offers match this search.')}</p>}
                       </div>
-                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 7 && <p className="pg-combo-namig">{L('Prikazane zadnje — išči za vse.', 'Showing recent — search to see all.')}</p>}
+                      {!vstopIskanje.trim() && ponudbePoDatumu.length > 7 && <p className="pg-combo-namig">{L('Prikazanih je zadnjih 7 ponudb. Za starejše uporabi iskanje.', 'Showing the last 7 offers. Use search for older ones.')}</p>}
                     </>);
                     if (jeMobilni && typeof document !== 'undefined') {
                       return createPortal(
@@ -1034,7 +1054,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 {/* "Brez ponudbe" = samostojna pogodba: naročnika in obseg vpišeš ročno */}
                 <div className="pg-polja">
                   <label className="pg-polje">{L('Naročnik', 'Client')}
-                    <input type="text" placeholder={L('npr. Odvetniška družba Volk & Babica', 'e.g. Volk & Babica Law Firm')} value={rocniNarocnik} onChange={event => setRocniNarocnik(event.target.value)} />
+                    <input type="text" placeholder={L('npr. Studio Sever d.o.o.', 'e.g. Studio Sever Ltd')} value={rocniNarocnik} onChange={event => setRocniNarocnik(event.target.value)} />
                   </label>
                   <label className="pg-polje">{L('E-pošta naročnika', 'Client email')}
                     <input type="email" placeholder={L('npr. pisarna@volk-babica.si', 'e.g. office@volk-babica.si')} value={narEmail} onChange={event => setNarEmail(event.target.value)} />
@@ -1059,7 +1079,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                   <input required name="title" type="text" placeholder={L('npr. Pogodba o sodelovanju 2026', 'e.g. Cooperation Agreement 2026')} />
                 </label>
                 <label className="pg-polje">{L('Stranka', 'Client')}
-                  <input required name="client" type="text" placeholder={L('npr. Odvetniška družba Volk & Babica', 'e.g. Volk & Babica Law Firm')} />
+                  <input required name="client" type="text" placeholder={L('npr. Studio Sever d.o.o.', 'e.g. Studio Sever Ltd')} />
                 </label>
                 <label className="pg-polje">{L('Datum prejema', 'Date received')}
                   <input required name="date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
@@ -1234,7 +1254,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
       <p className="pg-uvod">{L('Prenesi pogodbo', 'Download the contract')}{narocnikIme() ? L(' za ', ' for ') + narocnikIme() : ''}{L(', jo shrani ali pošlji naročniku.', ', save it or send it to the client.')}</p>
       <p className="pg-disc">{L('Pripravljeno iz vzorčne predloge kot pripomoček — ', 'Prepared from a sample template as an aid — ')}<b>{L('ni pravni nasvet', 'not legal advice')}</b>{L('. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.', '. Before signing, we recommend a review by a lawyer and adaptation to the specific deal.')}</p>
       <div className="pg-epodpis">
-        <b>{L('Soglasje s podpisno povezavo', 'Consent via signing link')}</b>
+        <b>{L('Elektronska potrditev soglasja', 'Electronic consent confirmation')}</b>
         <p>{L('Zabeležijo se oba podpisnika, čas, IP in SHA-256 vsebine. To ni kvalificiran elektronski podpis po eIDAS in ga ne nadomešča. Po podpisu naročnika se pogodba zaklene.', 'Both signers, time, IP and the SHA-256 content hash are recorded. This is not a qualified electronic signature under eIDAS and does not replace one. The contract is locked after the client signs.')}</p>
         {!podpisnaPovezava ? <button type="button" className="pg-gumb" disabled={podpisNalaganje || !shranjenaId} onClick={pripraviPodpisnoPovezavo}>{podpisNalaganje ? L('Pripravljam …', 'Preparing …') : shranjenaId ? L('Podpiši kot izvajalec in ustvari povezavo', 'Sign as contractor and create link') : L('Najprej shrani pogodbo', 'Save the contract first')}</button> : <div className="pg-epodpis-link"><input readOnly value={podpisnaPovezava} aria-label={L('Povezava za podpis naročnika', 'Client signing link')} /><button type="button" onClick={() => { void navigator.clipboard?.writeText(podpisnaPovezava); setNotice(L('Povezava je kopirana.', 'Link copied.')); }}>{L('Kopiraj', 'Copy')}</button></div>}
       </div>
@@ -1281,10 +1301,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <button type="button" className="pg-noga-pill nova" onClick={novaPogodba}><Plus size={15} weight="bold" aria-hidden /> {L('Nova pogodba', 'New contract')}</button>
       </>)}
       {pogled === 'nastavitve' && (
-        <button type="button" className="pg-noga-naprej" onClick={pripraviPogodbo}>{L('Pripravi pogodbo', 'Prepare contract')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
+        <button type="button" className="pg-noga-naprej" onClick={pripraviPogodbo}>{L('Ustvari osnutek pogodbe', 'Create contract draft')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
       )}
       {pogled === 'dokument' && (
-        <button type="button" className="pg-noga-naprej" onClick={() => setPogled('zakljucek')}>{L('Zaključi', 'Finish')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
+        <button type="button" className="pg-noga-naprej" onClick={() => setPogled('zakljucek')}>{L('Preglej in pošlji', 'Review and send')} <ArrowDown size={16} weight="bold" aria-hidden /></button>
       )}
     </div></div>}
 
