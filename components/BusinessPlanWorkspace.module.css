@@ -297,7 +297,8 @@
    Prej je bil cel stavek na gumbu in se je na telefonu razlezel čez dve vrstici. */
 .rocniVrstica {
   grid-column: 1 / -1;
-  display: flex; align-items: center; flex-wrap: wrap; gap: .55rem;
+  /* na sredino, skupaj z gumbom Vec nad njo (Tina, 25. 8.) */
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .55rem;
 }
 .rocniVrstica > span {
   color: var(--muted); font: 400 .82rem var(--font-sans), sans-serif;
