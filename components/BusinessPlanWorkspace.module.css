@@ -627,7 +627,7 @@
 /* PREGLED: kratke stevilke ne rabijo cele sirine kartice — "1 minuta" v polju
    cez ves stolpec je izgledala kot napaka (Tina, 25. 8.). Stevilcna polja gredo
    v dvostolpcno mrezo in so ozka, besedilna in izbirna ostanejo cez celo sirino. */
-.pregled .timerForm { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: .8rem; align-items: end; }
+.pregled .timerForm { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: .8rem; align-items: start; }
 .pregled .timerForm > label { grid-column: 1 / -1; }
 .pregled .timerForm > label:has(input[type='number']) { grid-column: auto; }
 .pregled .timerForm > label:has(input[type='number']) input { max-width: 100%; }
