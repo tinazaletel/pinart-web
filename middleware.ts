@@ -43,11 +43,13 @@ const KMALU_HTML = `<!doctype html>
 /* Zaklenjena stran (401 telo) — z jorkijem, ista znamka kot Flow 404. Prikaze se
    za geslo-oknom / ce ga uporabnik preklice. Slika je staticna (.png), zato jo
    matcher spusti mimo middlewara. */
-const ZAKLENJENO_HTML = `<!doctype html>
-<html lang="sl"><head>
+/* Zaklenjeni zaslon govori jezik obiskovalca: kdor pride na /en, ne sme
+   naleteti na slovenscino (Tina, 25. 8.). */
+const zaklenjenoHtml = (en: boolean) => `<!doctype html>
+<html lang="${en ? 'en' : 'sl'}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Pinart Flow — v testiranju</title>
+<title>${en ? 'Pinart Flow — in testing' : 'Pinart Flow — v testiranju'}</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   body{min-height:100svh;position:relative;overflow-x:hidden;background:#f4f4f3;color:#26211f;
@@ -71,6 +73,11 @@ const ZAKLENJENO_HTML = `<!doctype html>
     box-shadow:0 10px 30px rgba(40,30,60,.08)}
   .kartica h2{font-size:.98rem;font-weight:750;margin-bottom:.3rem}
   .kartica p{font-size:.86rem;line-height:1.5;color:#5c5650;margin-bottom:.85rem}
+  .nazaj{display:inline-block;margin-bottom:1.2rem;font-size:.9rem;font-weight:600;color:rgba(17,17,17,.72);text-decoration:none}
+  .nazaj:hover{color:#111}
+  .se-ne{margin-top:1.1rem;padding-top:1rem;border-top:1px solid rgba(17,17,17,.12);text-align:center}
+  .se-ne p{margin:0 0 .6rem;font-size:.9rem;color:rgba(17,17,17,.7)}
+  .se-ne button{background:transparent;color:#111;border:1px solid rgba(17,17,17,.35)}
   label{display:block;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
     color:#6b655d;margin-bottom:.25rem}
   input{width:100%;padding:.7rem .85rem;border:1px solid rgba(17,17,17,.14);border-radius:.7rem;
@@ -91,31 +98,34 @@ const ZAKLENJENO_HTML = `<!doctype html>
 <div class="scrim"></div>
 <div class="w">
   <div class="ey"><span class="pika"></span>Pinart Flow</div>
-  <h1>Še <em>zadnje teste</em> delamo.</h1>
-  <p class="uvod">Flow je v zaključnem testiranju in pride na trg predvidoma v začetku septembra. Do takrat je brezplačni kalkulator odprt za vse — brez računa in brez prijave.</p>
-  <a class="kalk" href="/kalkulator/orodje">Preizkusi brezplačni kalkulator &rarr;</a>
+  <a class="nazaj" href="${en ? '/en' : '/'}">&larr; ${en ? 'Back to the overview' : 'Nazaj na predstavitev'}</a>
+  <h1>${en ? 'Just <em>final testing</em> left.' : 'Še <em>zadnje teste</em> delamo.'}</h1>
+  <p class="uvod">${en ? 'Flow is in final testing and launches in early September. Until then the free calculator is open to everyone, with no account and no sign-in.' : 'Flow je v zaključnem testiranju in pride na trg predvidoma v začetku septembra. Do takrat je brezplačni kalkulator odprt za vse — brez računa in brez prijave.'}</p>
+  <a class="kalk" href="${en ? '/en' : ''}/kalkulator/orodje">${en ? 'Try the free calculator' : 'Preizkusi brezplačni kalkulator'} &rarr;</a>
 
   <div class="kartica">
-    <h2>Bi testiral(a) pred zagonom?</h2>
-    <p>Pusti ime in e-naslov. Javimo se ti z dostopom — in ko odpremo, boš med prvimi.</p>
-    <form id="prijava">
-      <label for="ime">Ime</label>
-      <input id="ime" name="ime" autocomplete="name" required maxlength="200">
-      <label for="email">E-naslov</label>
-      <input id="email" name="email" type="email" autocomplete="email" required maxlength="200">
-      <button type="submit">Prijavi me</button>
-      <p class="sporocilo" id="odziv" role="status"></p>
+    <h2>${en ? 'Tester sign-in' : 'Vstop za testerje'}</h2>
+    <p>${en ? 'Enter the password we sent you.' : 'Vpiši geslo, ki si ga dobil/-a od nas.'}</p>
+    <form id="vstop">
+      <label for="geslo">${en ? 'Password' : 'Geslo'}</label>
+      <input id="geslo" name="geslo" type="password" autocomplete="current-password" required maxlength="200">
+      <button type="submit">${en ? 'Sign in' : 'Prijavi se'}</button>
+      <p class="sporocilo" id="odzivGeslo" role="status"></p>
     </form>
 
-    <details class="geslo">
-      <summary>Imam geslo za beto</summary>
-      <form id="vstop">
-        <label for="geslo">Geslo</label>
-        <input id="geslo" name="geslo" type="password" autocomplete="current-password" required maxlength="200">
-        <button type="submit">Vstopi</button>
-        <p class="sporocilo" id="odzivGeslo" role="status"></p>
-      </form>
-    </details>
+    <div class="se-ne">
+      <p>${en ? 'Not a tester yet?' : 'Še nisi tester?'}</p>
+      <button type="button" id="odpriPrijavo">${en ? 'Apply to test' : 'Prijavi se za testiranje'}</button>
+    </div>
+
+    <form id="prijava" hidden>
+      <label for="pime">${en ? 'Name' : 'Ime'}</label>
+      <input id="pime" name="ime" autocomplete="name" required maxlength="200">
+      <label for="pemail">${en ? 'Email' : 'E-naslov'}</label>
+      <input id="pemail" name="email" type="email" autocomplete="email" required maxlength="200">
+      <button type="submit">${en ? 'Send application' : 'Pošlji prijavo'}</button>
+      <p class="sporocilo" id="odziv" role="status"></p>
+    </form>
   </div>
 </div>
 <script>
@@ -124,16 +134,21 @@ const ZAKLENJENO_HTML = `<!doctype html>
     return fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(telo)})
       .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); });
   }
+  var odpri = document.getElementById('odpriPrijavo');
+  odpri.addEventListener('click', function(){
+    var f = document.getElementById('prijava');
+    f.hidden = false; odpri.parentNode.hidden = true; f.querySelector('input').focus();
+  });
   var pf = document.getElementById('prijava'), po = document.getElementById('odziv');
   pf.addEventListener('submit', function(e){
     e.preventDefault();
     var g = pf.querySelector('button'); g.disabled = true; po.textContent = ''; po.className = 'sporocilo';
     poslji('/api/beta', {dejanje:'prijava', ime: pf.ime.value, email: pf.email.value})
       .then(function(r){
-        if(r.ok){ pf.reset(); po.className='sporocilo ok'; po.textContent='Hvala! Javimo se ti na ta naslov.'; }
-        else { po.className='sporocilo napaka'; po.textContent = (r.d && r.d.napaka) || 'Prijava ni uspela.'; }
+        if(r.ok){ pf.reset(); po.className='sporocilo ok'; po.textContent=${en ? "'Thank you! We will be in touch at this address.'" : "'Hvala! Javimo se ti na ta naslov.'"}; }
+        else { po.className='sporocilo napaka'; po.textContent = (r.d && r.d.napaka) || ${en ? "'Sign-up failed.'" : "'Prijava ni uspela.'"}; }
       })
-      .catch(function(){ po.className='sporocilo napaka'; po.textContent='Ni povezave. Poskusi znova.'; })
+      .catch(function(){ po.className='sporocilo napaka'; po.textContent=${en ? "'No connection. Try again.'" : "'Ni povezave. Poskusi znova.'"}; })
       .then(function(){ g.disabled = false; });
   });
   var vf = document.getElementById('vstop'), vo = document.getElementById('odzivGeslo');
@@ -219,7 +234,7 @@ export default async function middleware(request: NextRequest) {
       const cookieOk = request.cookies.get('flow_gate')?.value === geslo;
       const authOk = gesloVeljavno(request.headers.get('authorization') || '', geslo);
       if (!cookieOk && !authOk) {
-        return new NextResponse(ZAKLENJENO_HTML, {
+        return new NextResponse(zaklenjenoHtml(request.nextUrl.pathname.startsWith('/en')), {
           status: 401,
           headers: {
             'content-type': 'text/html; charset=utf-8',

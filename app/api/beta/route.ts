@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { posiljatelj } from '@/lib/posiljatelj';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 /* VSTOP V ZAPRTO BETO in PRIJAVA TESTERJEV.
  *
