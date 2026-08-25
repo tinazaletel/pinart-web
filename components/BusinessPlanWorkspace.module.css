@@ -367,9 +367,12 @@
 /* min-width: 0 je nujen: .timer je grid, brez tega grid-item ne skrci pod min-width
    tabele (34rem) → tabelo odreze .workspace overflow. Z 0 se ovoj skrci in overflow-x drsi. */
 .mesecTabelaOvoj { min-width: 0; max-width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 1rem; }
-.mesecTabela { width: 100%; min-width: 34rem; border-collapse: collapse; font-size: .84rem; }
+/* min-width 34rem je tabelo silil cez kartico in jo poslal v vodoravni drs.
+   Casovni stolpci se ne lomijo (nowrap spodaj), zato tabela lahko fita v
+   kartico (Tina, 25. 8.: "fit to content ne deluje"). */
+.mesecTabela { width: 100%; min-width: 0; border-collapse: collapse; font-size: .84rem; table-layout: auto; }
 .mesecTabela thead th {
-  padding: .6rem .85rem; border-bottom: 1px solid var(--line);
+  padding: .6rem .55rem; border-bottom: 1px solid var(--line);
   background: oklch(95% .035 300); color: oklch(38% .06 300);
   text-align: left; font-size: .66rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase;
 }
@@ -378,13 +381,13 @@
 /* Zadnji stolpec je le gumb za brisanje in ne rabi zraka na obeh straneh; DAN pa
    ga rabi, ker nosi datum in pod njim opombo (Tina, 25. 8.). */
 .mesecTabela thead th:last-child, .mesecTabela tbody td:last-child { padding-left: .2rem; padding-right: .35rem; }
-.mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-right: 1.15rem; }
+.mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-left: .8rem; padding-right: .9rem; }
 /* DAN dobi prostor tako, da casovni stolpci vzamejo natanko toliko, kot rabijo
    (nowrap), NE s fiksno sirino — s tem je tabela zrasla cez kartico in zadnja
    stolpca sta padla ven (Tina, 25. 8.). */
 .mesecTabela tbody td:nth-child(2), .mesecTabela tbody td:nth-child(3),
 .mesecTabela tbody td:nth-child(4) { white-space: nowrap; }
-.mesecTabela tbody td { padding: .55rem .85rem; border-top: 1px solid var(--line); vertical-align: middle; }
+.mesecTabela tbody td { padding: .55rem .55rem; border-top: 1px solid var(--line); vertical-align: middle; }
 /* Safari podvoji ločnico glava/prva vrstica (thead border-bottom + tbody border-top) — ena črta */
 .mesecTabela tbody tr:first-child td { border-top: 0; }
 /* bolniska/dopust/praznik so cel dan brez ur — vrstica je nekoliko zbledela */
