@@ -527,7 +527,7 @@ export default function BusinessOverview({ base }: { base: string }) {
             const map: Record<string, [string, string]> = { draft: [L('Osnutek', 'Draft'), 'neutral'], sent: [L('V teku', 'In progress'), 'info'], accepted: [L('Zaključeno', 'Completed'), 'success'], rejected: [L('Zavrnjeno', 'Rejected'), 'danger'] };
             const [label, tone] = map[o.status] || ['—', 'neutral'];
             return <tr key={o.id}><td><div className={styles.documentCell}><span><strong>{o.title}</strong><small>{o.client || '—'}</small></span></div></td><td><span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>{label}</span></td><td>{new Date(o.date).toLocaleDateString(dl)}</td></tr>;
-          })}</tbody></table></div> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še ni projektov.', 'No projects yet.')}</strong><p>{L('Projekti se prikažejo tukaj, ko ustvariš ponudbo.', 'Projects will appear here once you create an offer.')}</p></div></div>}
+          })}</tbody></table></div> : <Link className={styles.emptyState} href={`${base}/kalkulator/nov-projekt`}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Še ni projektov.', 'No projects yet.')}</strong><p>{L('Ustvari prvi projekt — ali pripravi ponudbo in projekt nastane sam.', 'Create your first project — or prepare an offer and the project appears by itself.')}</p></div></Link>}
           </div>
         </section>
       </div>
@@ -546,7 +546,7 @@ export default function BusinessOverview({ base }: { base: string }) {
                 <span className={styles.dashRowArrow} aria-hidden>›</span>
               </Link></li>
             ); })}
-          </ul> : <div className={styles.emptyState}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Naloge se prikažejo tukaj — dodaj jih v Task managerju.', 'Tasks appear here — add them in the Task manager.')}</p></div></div>}
+          </ul> : <Link className={styles.emptyState} href={`${base}/kalkulator/naloge`}><span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M12 5v14M5 12h14" /></svg></span><div><strong>{L('Ni odprtih nalog.', 'No open tasks.')}</strong><p>{L('Dodaj prvo nalogo.', 'Add your first task.')}</p></div></Link>}
           </div>
         </section>
 
