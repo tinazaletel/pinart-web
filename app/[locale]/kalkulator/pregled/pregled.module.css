@@ -2866,3 +2866,7 @@
 @media (max-width: 680px) {
   .sidebar { height: 3rem; }
 }
+
+/* Podnaslov pod naslovom strani: pojasnilo orodja sodi sem, ne v kartico. */
+.podnaslov { max-width: 46rem; margin: .5rem 0 0; font: 400 .95rem/1.55 var(--font-sans), sans-serif;
+  color: color-mix(in oklch, var(--ink) 70%, transparent); }

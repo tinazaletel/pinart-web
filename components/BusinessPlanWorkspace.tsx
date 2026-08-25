@@ -857,7 +857,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             in sprasuje o tem, kar se bo sele zgodilo, druga vrstica pa obljubi
             izid — zakaj bi sploh meril. Prej: "Ali se ti je delo po tej ceni
             splacalo?" nad gumbom "Zacni meriti" (Tina, 25. 8.). */}
-        <header><p className={styles.nadnaslovZIkono}><Timer size={16} weight="bold" aria-hidden />{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p><h2>{L('Štoparica', 'Stopwatch')}</h2><span>{L('Vklopi in pusti teči. Ko končaš, vidiš, ali se je cena izšla.', 'Start it and let it run. When you stop, you see whether the price worked out.')}</span><span>{L('Štoparica je zasebna. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The stopwatch is private. It does not track your screen, activity, apps or location.')}</span></header>
+        <header><p className={styles.nadnaslovZIkono}><Timer size={16} weight="bold" aria-hidden />{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p><h2>{L('Štoparica', 'Stopwatch')}</h2></header>
 
         {running && timerSkrit ? <div className={styles.tecePas}>
           {/* skrito: merjenje NE stoji, samo ne zavzema pol zaslona */}

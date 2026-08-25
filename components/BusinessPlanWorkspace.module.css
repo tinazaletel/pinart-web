@@ -556,6 +556,10 @@
 .startGlava {
   position: relative; isolation: isolate; overflow: hidden;
   container-type: inline-size;
+  /* ista visina kot tekoca stoparica (.running): ta ima nadnaslov, ime projekta
+     in storitev nad uro, mirujoca pa le uro in datum — brez tega je bila nizja
+     in kartica je ob zagonu poskocila (Tina, 25. 8.). */
+  min-height: 16.5rem; align-content: center;
   display: grid; gap: 1rem; padding: 1.2rem; margin-bottom: 1.2rem;
   border-radius: 1.1rem; justify-items: stretch;
   background: linear-gradient(135deg, oklch(91% .09 160), oklch(94% .06 295));
