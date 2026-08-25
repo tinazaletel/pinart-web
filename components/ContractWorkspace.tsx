@@ -7,6 +7,7 @@
    pregled.module.css (.shell ima agresivna pravila za input/select/button). */
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import Toast from '@/components/Toast';
 import { createPortal } from 'react-dom';
 import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, Plus, ArrowUp, ArrowDown } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
@@ -790,7 +791,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
       /* obvestilo se izrise na vrhu strani — brez skoka na vrh ga uporabnica na
          dnu dokumenta sploh ne vidi in izgleda, kot da gumb ne dela */
       setNotice(L('To so demo podatki — shranjevanje ni mogoče. Zgoraj v vrstici preklopi na »Moji podatki«.', 'This is demo data — saving is not possible. Switch to “My data” in the bar above.'));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     const telo = izvozniTelo();
@@ -928,7 +928,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
   ) : null;
 
   return <div className={`${styles.contractPage} pg`}>
-    {notice && <div className={styles.contractNotice}>{notice}<button onClick={() => setNotice('')}>×</button></div>}
+    {/* Toast namesto pasu na vrhu (DESIGN.md 13): pas je stran ob shranjevanju
+        odskocil na vrh, toast pride k uporabnici, kjer je. */}
+    {notice && <Toast sporocilo={notice} ton="uspeh" onClose={() => setNotice('')} />}
 
     {ponudbaPredogled && selectedOffer && typeof document !== 'undefined' && createPortal(
       <div className="pg-op-back" role="presentation" onMouseDown={event => {
