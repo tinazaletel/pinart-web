@@ -743,7 +743,7 @@ export default function ProjectDetailModern({
         .pm-act:hover { background:color-mix(in oklch, var(--pm-ink) 12%, transparent); color:var(--pm-ink); border-color:transparent; }
         /* urejljiva brief polja (inline v panelu) */
         .pm-qa-edit { display:block; }
-        .pm-inp { width:100%; box-sizing:border-box; field-sizing:content; margin-top:.3rem; padding:.5rem .6rem; border:1px solid color-mix(in oklch, #fff 55%, transparent); border-radius:.55rem; background:color-mix(in oklch, #fff 34%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); font:inherit; font-size:.9rem; color:var(--pm-ink); resize:none; overflow:hidden; }
+        .pm-inp { width:100%; box-sizing:border-box; field-sizing:content; margin-top:.3rem; padding:.5rem .6rem; border:1px solid color-mix(in oklch, var(--pm-ink) 13%, transparent); border-radius:.55rem; background:color-mix(in oklch, #fff 34%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); font:inherit; font-size:.9rem; color:var(--pm-ink); resize:none; overflow:hidden; }
         .pm-inp:focus { outline:none; border-color:var(--pm-acc); box-shadow:0 0 0 3px color-mix(in oklch, var(--pm-acc) 18%, transparent); }
         .pm-cilji-edit { display:flex; flex-direction:column; gap:.4rem; margin-top:.35rem; }
         .pm-cilj-row { display:flex; gap:.35rem; align-items:center; flex-wrap:wrap; }
