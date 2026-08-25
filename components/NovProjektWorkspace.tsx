@@ -434,8 +434,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
             podjetja" v kalkulatorju (plus, naslov, pripis; DESIGN.md 13d). */}
         {!okvir && prikazan(9) && (
           <button type="button" className="np-okvir-vec" onClick={() => { setOkvir(true); setNovKorak(2); }}>
-            <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj marketinški okvir</span>
-            <small>Cilji, ciljna skupina, dizajn želje, ton in konkurenca.</small>
+            <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj podrobnosti projekta</span>
+            <small>Cilji, brief, ciljna skupina, dizajn želje in ton.</small>
           </button>
         )}
 
