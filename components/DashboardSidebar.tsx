@@ -82,12 +82,17 @@ export default async function DashboardSidebar({ base, active }: { base: string;
       {item('accounting', `${base}/kalkulator/racunovodstvo`, '06', L('Računovodstvo', 'Accounting'), 'racunovodstvo')}
       {item('sef', `${base}/kalkulator/sef`, '07', L('Sef avtorstva', 'Authorship vault'), 'sef')}
     </MeniSkupina>
-    <MeniSkupina naslov={L('Načrt', 'Plan')} aktivna={active === 'goals' || active === 'time' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
+    <MeniSkupina naslov={L('Načrt', 'Plan')} aktivna={active === 'goals' || active === 'time' || active === 'evidenca' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
       {item('goals', `${base}/kalkulator/cilji`, '01', L('Cilji', 'Goals'), 'cilji', 'businessInsights')}
       {item('time', `${base}/kalkulator/cas`, '02', L('Štoparica', 'Stopwatch'), 'cas', 'businessInsights')}
-      {/* Delovne prisotnosti tu NI: zapis je o osebi, ne o projektu, zato zivi pri
-          profilu (ProfileWorkspace, kartica 04) — isto kot Videz dokumentov.
-          Stran /kalkulator/evidenca-casa ostane, samo v meni ne sodi. */}
+      {/* Prisotnost je SVOJA postavka, ne del Stoparice (Tina, 25. 8.: "imela sem
+          v meniju posebej stoparico in posebej prisotnost"). Stoparica meri ure
+          NA PROJEKTU, prisotnost belezi prihod in odhod OSEBE po ZEPDSV — dve
+          razlicni stvari, zato tudi razlicni ikoni. Ostane dosegljiva tudi iz
+          profila. */}
+      {/* BREZ kljucavnice: evidenca delovnega casa je zakonska obveznost po
+          ZEPDSV, ne premijska analitika. Ne sme biti za placilnim zidom. */}
+      {item('evidenca', `${base}/kalkulator/evidenca-casa`, '03', L('Prisotnost', 'Attendance'), 'evidenca')}
       {item('plan', `${base}/kalkulator/poslovni-nacrt`, '04', L('Poslovni okvir', 'Business framework'), 'okvir', 'businessInsights')}
       {item('naloge', `${base}/kalkulator/naloge`, '05', L('Naloge', 'Tasks'), 'naloge')}
       {item('koledar', `${base}/kalkulator/koledar`, '06', L('Koledar', 'Calendar'), 'koledar')}

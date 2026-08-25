@@ -3,6 +3,7 @@
 import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { CaretDown, CaretUp, PencilSimple } from '@phosphor-icons/react';
 import {
   calculatePlan, DEFAULT_BUSINESS_PLAN, deleteCloudPresence, deleteCloudTimeEntry, loadCloudBusinessPlan,
   loadCloudPresence, loadCloudTimeEntries, loadLocalPlan, loadLocalTimeEntries, type BusinessPlan,
@@ -124,7 +125,7 @@ function zdruziPoProjektu(dnevni: PrivateTimeEntry[]) {
  * nadzorne plosce — merjenje je teklo, klik nanj pa je pripeljal na cenik.
  */
 export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
-  { view?: 'all' | 'time'; omejeno?: boolean }) {
+  { view?: 'all' | 'time' | 'prisotnost'; omejeno?: boolean }) {
   const locale = useLocale();
   const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
   const dl = locale === 'en' ? 'en-GB' : 'sl-SI';
@@ -820,12 +821,23 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     URL.revokeObjectURL(url);
   };
 
+  /* Datum ob uri: stoparica naj pove, za KATERI dan meri. Racunamo po montazi
+     (ne med izrisom), sicer se streznik in brskalnik ne ujemata in React javi
+     napako hidracije. */
+  const [vecOdprt, setVecOdprt] = useState(false);
+  const [danesIzpis, setDanesIzpis] = useState('');
+  useEffect(() => {
+    setDanesIzpis(new Date().toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long' }));
+  }, [dl]);
+
   if (!ready) return <p className={styles.loading}>{L('Pripravljam poslovni načrt …', 'Preparing your business plan …')}</p>;
 
   return <div className={`${styles.page} ${view === 'time' ? styles.casPogled : ''}`}>
     {notice && <div className={styles.notice} role="status">{notice}<button onClick={() => setNotice('')} aria-label={L('Zapri', 'Close')}>×</button></div>}
 
-    <div className={`${styles.layout} ${view === 'time' ? styles.timeOnly : ''}`}>
+    {/* Na strani Prisotnost stoparice NI: tam se belezi prihod in odhod osebe,
+        merjenje ur na projektu pa ima svojo stran (Tina, 25. 8.). */}
+    {view !== 'prisotnost' && <div className={`${styles.layout} ${view === 'time' ? styles.timeOnly : ''}`}>
       {view === 'all' && <form className={styles.plan} onSubmit={savePlan}>
         <header><p>{L('01 · POSLOVNI NAČRT', '01 · BUSINESS PLAN')}</p><h2>{L('Najprej določi, kaj mora podjetje omogočiti.', 'First define what the business has to make possible.')}</h2><span>{L('Načrt postane osnova za mesečne in letne cilje.', 'The plan becomes the basis for monthly and yearly goals.')}</span></header>
         <div className={styles.fields}>
@@ -841,32 +853,11 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       </form>}
 
       <section className={styles.timer} id="timer" ref={timerRef2}>
-        <header><p>{view === 'time' ? '01' : '02'} · {L('ČAS', 'TIME')}</p><h2>{L('Ali se ti je delo po tej ceni splačalo?', 'Was the work worth it at this price?')}</h2><span>{L('Timer je zaseben. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The timer is private. It does not track your screen, activity, apps or location.')}</span></header>
+        {/* Samo nadnaslov: ikona in naslov "Stoparica" sta ponavljala isto besedo
+            trikrat zapored (Tina, 25. 8.). Pojasnilo je pod naslovom strani. */}
+        <header><p>{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p></header>
 
-        {pozabljeno ? <form className={styles.timerForm} onSubmit={potrdiPozabljenKonec}>
-          <div className={styles.reviewTitle} role="alert">
-            <strong>{L('Je časovnik ostal prižgan?', 'Did the timer stay running?')}</strong>
-            <span>{L(`Časovnik je tekel ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Popravi konec?`, `The timer ran for ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Fix the end time?`)}</span>
-          </div>
-          <label>
-            <span>{L('Dejanski konec dela', 'Actual end of work')}</span>
-            <input name="actualEnd" type="datetime-local" required max={localDateTimeValue(new Date())}
-              value={predlaganKonec} onChange={e => setPredlaganKonec(e.target.value)} />
-            <small>{L('Predlagali smo največ 8 ur po začetku. Po potrebi čas popravi.', 'We suggested at most 8 hours after the start. Adjust the time if needed.')}</small>
-          </label>
-          <button type="submit">{L('Shrani', 'Save')}</button>
-          <button type="button" className={styles.linkGumb} onClick={zavrziPozabljenoMerjenje}>{L('Zavrzi sejo', 'Discard session')}</button>
-          <button type="button" className={styles.linkGumb} onClick={nadaljujPozabljenoMerjenje}>{L('Merjenje še vedno teče', 'Timing is still running')}</button>
-        </form> : pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
-          <div className={styles.reviewTitle}><strong>{L('Preglej zaključeni vnos', 'Review the completed entry')}</strong><span>{pending.projectName} · {pending.serviceName || L('brez oznake storitve', 'no service label')}</span></div>
-          <label><span>{L('Ure', 'Hours')}</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
-          <label><span>{L('Minute', 'Minutes')}</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
-          {poljeZnesek()}
-          <label><span>{L('Obseg', 'Scope')}</span><select name="scope" defaultValue={pending.scopeStatus}><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
-          <label><span>{L('Zakaj je delo odstopalo od načrta?', 'Why did the work differ from the plan?')}</span><select name="reason"><option value="">Ni odstopanja</option><option>Zahtevnejše od pričakovanega</option><option>Preveč popravkov</option><option>Nejasen brief</option><option>Dodatne zahteve</option><option>Veliko komunikacije</option><option>Administracija</option><option>Novo področje ali učenje</option><option>Ta vrsta dela mi ne ustreza</option></select></label>
-          <label><span>{L('Zasebna opomba', 'Private note')}</span><input name="note" placeholder={L('Kaj boš naslednjič spremenila pri ceni ali obsegu?', 'What will you change next time in price or scope?')} /></label>
-          <button type="submit">{L('Potrdi zasebni vnos', 'Confirm private entry')}</button>
-        </form> : running && timerSkrit ? <div className={styles.tecePas}>
+        {running && timerSkrit ? <div className={styles.tecePas}>
           {/* skrito: merjenje NE stoji, samo ne zavzema pol zaslona */}
           <span className={styles.tecePika} aria-hidden="true" />
           <strong>{running.projectName}</strong>
@@ -902,16 +893,40 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             </button>
           </div>
         </div> : <form className={styles.timerForm} onSubmit={start}>
+          {/* Ura in START sta ZGORAJ, polja pod njima: kartica mora na prvi
+              pogled izgledati kot stoparica, ne kot obrazec (Tina, 25. 8.).
+              Mirujoca ura kaze 00:00:00 — pokaze, kaj bo gumb naredil. */}
+          <div className={styles.startGlava}>
+            {/* isti valovi kot pri tekoci stoparici, le da mirujejo — kartica se
+                ob zagonu ne spremeni, le stevilke stecejo in preliv ozivi. */}
+            <TimerValovi className={styles.valovi} />
+            <b className={styles.startUra}>00:00:00</b>
+            <span className={styles.startDatum}>{danesIzpis}</span>
+            <button type="submit" className={styles.startGumb}>{L('Začni meriti', 'Start timing')}</button>
+          </div>
           <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required list="seznam-projektov" placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>
           <label><span>{L('Storitev', 'Service')}</span><input name="service" placeholder={L('npr. oblikovanje logotipa', 'e.g. logo design')} /></label>
+          {/* Vrednost in obseg sta neobvezna in ju pri zagonu vecinoma ne
+              izpolnis — dolocis ju lahko ob zakljucku. Zato pod gumb "Vec"
+              (Tina, 25. 8.), da je pot do zagona kratka. */}
+          <button type="button" className={styles.vecGumb} onClick={() => setVecOdprt(v => !v)} aria-expanded={vecOdprt}>
+            {/* isti vzorec kot drugod na sajtu (Arhiv, Pogodbe): napis ostane
+                enak, smer pove puscica — "Manj" ne uporabljamo nikjer. */}
+            {L('Več', 'More')}
+            <span aria-hidden>{vecOdprt ? <CaretUp size={13} weight="bold" /> : <CaretDown size={13} weight="bold" />}</span>
+          </button>
+          {vecOdprt && <>
           <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /></label>
           <label><span>{L('Obseg', 'Scope')}</span><select name="scope"><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
-          <button type="submit">{L('Začni meriti', 'Start timing')}</button>
+          </>}
           {/* ure, ki si jih zapisala drugam — dodaj jih na poljuben (tudi pretekli) dan.
               Naslov je besedilo, gumb ostane kratek (prej je bil cel stavek na gumbu). */}
           <div className={styles.rocniVrstica}>
             <span>{L('Nisi merila?', 'Did not track it?')}</span>
             <button type="button" className={styles.rocniGumb} onClick={() => { setRocniOdprt(v => !v); pripraviVnos(danesISO(), 1, 0, 0); }}>
+              {/* svincnik spredaj: gumb je majhen in brez ikone ni bilo takoj
+                  jasno, da odpre rocni vnos (Tina, 25. 8.) */}
+              {!rocniOdprt && <PencilSimple size={15} weight="bold" aria-hidden />}
               {rocniOdprt ? L('Prekliči', 'Cancel') : L('Vpiši ročno', 'Enter manually')}
             </button>
           </div>
@@ -949,14 +964,46 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             <button type="button" className={styles.linkGumb} onClick={() => setUrejam(null)}>{L('Prekliči', 'Cancel')}</button>
           </form>
         )}
-        <div className={styles.ethics}><strong>{L('Čas meri donosnost projekta, ne tvoje vrednosti.', 'Time measures a project’s profitability, not your worth.')}</strong><span>{L('Vnosi ostanejo v tvojem računu in se ne delijo s strankami ali vodji.', 'Entries stay in your account and are not shared with clients or managers.')}</span></div>
+        {/* Pojasnilo o zasebnosti odpade: isto ze pove podnaslov strani
+            (Tina, 25. 8.). */}
       </section>
     </div>
 
-    {/* Prisotnost/evidenca je LOCENA kartica izven ozkega .layout stolpca (glej
-        .casPogled v CSS) — meri cel delovnik po dnevih in ga zbira v mesecno
-        tabelo, stoparica meri en projekt. Obe sta vedno vidni. */}
-    <section className={`${styles.timer} ${styles.evidenca}`}>
+}
+    {/* PREGLED je svoja kartica na DESNI (Tina, 25. 8.): prej je zamenjal
+        stoparico v levem stolpcu, zato je ta med potrjevanjem vnosa izginila.
+        Stoparica mora biti vedno vidna. */}
+    {view !== 'prisotnost' && (pozabljeno || pending) && <section className={`${styles.timer} ${styles.pregled}`}>
+      <header><p>{L('PREGLED', 'REVIEW')}</p><h2>{L('Potrdi izmerjeni čas.', 'Confirm the measured time.')}</h2></header>
+      {pozabljeno ? <form className={styles.timerForm} onSubmit={potrdiPozabljenKonec}>
+          <div className={styles.reviewTitle} role="alert">
+            <strong>{L('Je časovnik ostal prižgan?', 'Did the timer stay running?')}</strong>
+            <span>{L(`Časovnik je tekel ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Popravi konec?`, `The timer ran for ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Fix the end time?`)}</span>
+          </div>
+          <label>
+            <span>{L('Dejanski konec dela', 'Actual end of work')}</span>
+            <input name="actualEnd" type="datetime-local" required max={localDateTimeValue(new Date())}
+              value={predlaganKonec} onChange={e => setPredlaganKonec(e.target.value)} />
+            <small>{L('Predlagali smo največ 8 ur po začetku. Po potrebi čas popravi.', 'We suggested at most 8 hours after the start. Adjust the time if needed.')}</small>
+          </label>
+          <button type="submit">{L('Shrani', 'Save')}</button>
+          <button type="button" className={styles.linkGumb} onClick={zavrziPozabljenoMerjenje}>{L('Zavrzi sejo', 'Discard session')}</button>
+          <button type="button" className={styles.linkGumb} onClick={nadaljujPozabljenoMerjenje}>{L('Merjenje še vedno teče', 'Timing is still running')}</button>
+        </form> : pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
+          <div className={styles.reviewTitle}><strong>{L('Preglej zaključeni vnos', 'Review the completed entry')}</strong><span>{pending.projectName} · {pending.serviceName || L('brez oznake storitve', 'no service label')}</span></div>
+          <label><span>{L('Ure', 'Hours')}</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
+          <label><span>{L('Minute', 'Minutes')}</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
+          {poljeZnesek()}
+          <label><span>{L('Obseg', 'Scope')}</span><select name="scope" defaultValue={pending.scopeStatus}><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
+          <label><span>{L('Zakaj je delo odstopalo od načrta?', 'Why did the work differ from the plan?')}</span><select name="reason"><option value="">Ni odstopanja</option><option>Zahtevnejše od pričakovanega</option><option>Preveč popravkov</option><option>Nejasen brief</option><option>Dodatne zahteve</option><option>Veliko komunikacije</option><option>Administracija</option><option>Novo področje ali učenje</option><option>Ta vrsta dela mi ne ustreza</option></select></label>
+          <label><span>{L('Zasebna opomba', 'Private note')}</span><input name="note" placeholder={L('Kaj boš naslednjič spremenila pri ceni ali obsegu?', 'What will you change next time in price or scope?')} /></label>
+          <button type="submit">{L('Potrdi zasebni vnos', 'Confirm private entry')}</button>
+      </form> : null}
+    </section>}
+    {/* Prisotnost ima od 25. 8. svojo stran (/kalkulator/evidenca-casa) in svojo
+        postavko v meniju: zapis je o OSEBI (prihod, odhod, ZEPDSV), stoparica pa
+        meri ure na PROJEKTU. Na strani Stoparice je zato ni vec. */}
+    {view !== 'time' && <section className={`${styles.timer} ${styles.evidenca}`}>
       <header><p>{L('PRISOTNOST', 'ATTENDANCE')}</p><h2>{L('Mesečna evidenca delovnega časa', 'Monthly work-time record')}</h2><span>{L('Prihod, odhod, malica in vrsta dneva — mesečni pregled in napredek proti cilju se izračunata sama.', 'Arrival, departure, break and day type — the monthly overview and progress toward the goal are calculated for you.')}</span></header>
 
       <div className={styles.prisotnost}>
@@ -1091,9 +1138,9 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             : L(`+${izpisMinut(-mesecOstaneMinut)} viška`, `+${izpisMinut(-mesecOstaneMinut)} over`)}
         </span>
       </div>
-    </section>
+    </section>}
 
-    <section className={styles.history}>
+    {view !== 'prisotnost' && <section className={styles.history}>
       {omejeno
         ? <header><div><p>{L('03 · DANES', '03 · TODAY')}</p><h2>{L('Kaj si danes izmerila.', 'What you tracked today.')}</h2></div><span>{duration(dnevnaVsota)} {L('danes', 'today')}</span></header>
         : <header><div><p>{L('03 · ZASEBNI DNEVNIK', '03 · PRIVATE LOG')}</p><h2>{L('Izkušnje, ki izboljšajo naslednjo ceno.', 'Lessons that improve your next price.')}</h2></div><span>{duration(trackedMinutes)} {L('skupaj', 'total')}</span></header>}
@@ -1206,7 +1253,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
           })}
         </div>
       )))}
-    </section>
+    </section>}
 
     {/* Plavajoča štoparica — v portal na <body>, ker se position:fixed sicer meri
         glede na prednika s transformom in bi pas pristal sredi strani. */}

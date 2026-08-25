@@ -16,5 +16,5 @@ export default async function TimePage({ params }: { params: Promise<{ locale: s
      pripeljal na cenik — slepa ulica. */
   const sme = await smePorabiti('businessInsights');
 
-  return <main className={styles.shell}><DashboardSidebar base={base} active="time" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>ČAS</p><h1>Čas naj izboljša ceno.</h1></div></header><BusinessPlanWorkspace view="time" omejeno={!sme} />{!sme && <Zaklenjeno funkcija="businessInsights" base={base} />}</section></main>;
+  return <main className={styles.shell}><DashboardSidebar base={base} active="time" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>ČAS</p><h1>Čas naj izboljša ceno.</h1><p className={styles.podnaslov}>Vklopi in pusti teči. Ko končaš, vidiš, ali se je cena izšla. Štoparica je zasebna: ne beleži zaslona, aktivnosti, aplikacij ali lokacije.</p></div></header><BusinessPlanWorkspace view="time" omejeno={!sme} />{!sme && <Zaklenjeno funkcija="businessInsights" base={base} />}</section></main>;
 }
