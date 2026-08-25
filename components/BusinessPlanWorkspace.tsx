@@ -823,6 +823,13 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
 
   if (!ready) return <p className={styles.loading}>{L('Pripravljam poslovni načrt …', 'Preparing your business plan …')}</p>;
 
+  /* Datum ob uri: stoparica naj pove, za KATERI dan meri. Racunamo po montazi
+     (ne med izrisom), sicer se streznik in brskalnik ne ujemata in React javi
+     napako hidracije. */
+  const [danesIzpis, setDanesIzpis] = useState('');
+  useEffect(() => {
+    setDanesIzpis(new Date().toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long' }));
+  }, [dl]);
   return <div className={`${styles.page} ${view === 'time' ? styles.casPogled : ''}`}>
     {notice && <div className={styles.notice} role="status">{notice}<button onClick={() => setNotice('')} aria-label={L('Zapri', 'Close')}>×</button></div>}
 
@@ -848,7 +855,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             in sprasuje o tem, kar se bo sele zgodilo, druga vrstica pa obljubi
             izid — zakaj bi sploh meril. Prej: "Ali se ti je delo po tej ceni
             splacalo?" nad gumbom "Zacni meriti" (Tina, 25. 8.). */}
-        <header><p className={styles.nadnaslovZIkono}><Timer size={16} weight="bold" aria-hidden />{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p><h2>{L('Koliko časa ti vzame ta projekt?', 'How long is this project taking you?')}</h2><span>{L('Vklopi in pusti teči. Ko končaš, vidiš, ali se je cena izšla.', 'Start it and let it run. When you stop, you see whether the price worked out.')}</span><span>{L('Štoparica je zasebna. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The stopwatch is private. It does not track your screen, activity, apps or location.')}</span></header>
+        <header><p className={styles.nadnaslovZIkono}><Timer size={16} weight="bold" aria-hidden />{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p><h2>{L('Štoparica', 'Stopwatch')}</h2><span>{L('Vklopi in pusti teči. Ko končaš, vidiš, ali se je cena izšla.', 'Start it and let it run. When you stop, you see whether the price worked out.')}</span><span>{L('Štoparica je zasebna. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The stopwatch is private. It does not track your screen, activity, apps or location.')}</span></header>
 
         {running && timerSkrit ? <div className={styles.tecePas}>
           {/* skrito: merjenje NE stoji, samo ne zavzema pol zaslona */}
@@ -891,6 +898,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               Mirujoca ura kaze 00:00:00 — pokaze, kaj bo gumb naredil. */}
           <div className={styles.startGlava}>
             <b className={styles.startUra}>00:00:00</b>
+            <span className={styles.startDatum}>{danesIzpis}</span>
             <button type="submit" className={styles.startGumb}>{L('Začni meriti', 'Start timing')}</button>
           </div>
           <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required list="seznam-projektov" placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>

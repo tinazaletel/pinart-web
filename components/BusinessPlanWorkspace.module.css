@@ -545,14 +545,18 @@
 .nadnaslovZIkono { display: inline-flex; align-items: center; gap: .4rem; }
 .nadnaslovZIkono svg { color: var(--accent, #7c3aed); }
 
-/* Glava stoparice: velika ura in START nad polji, da kartica takoj bere kot
-   merilnik casa in ne kot obrazec (Tina, 25. 8.). */
-.startGlava { display: grid; gap: .75rem; justify-items: center; margin-bottom: 1.15rem;
-  padding: 1.25rem 1rem 1.35rem; border-radius: 1.1rem;
-  background: linear-gradient(135deg, oklch(96% .03 300 / .75), oklch(96% .035 190 / .6)); }
-.startUra { font: 300 clamp(2.4rem, 7vw, 3.4rem)/1 var(--font-sans), system-ui, sans-serif;
-  letter-spacing: .02em; color: oklch(45% .02 285); font-variant-numeric: tabular-nums; }
-.startGumb { width: min(20rem, 100%); padding: .95rem 1.4rem; border: none; border-radius: 999px;
-  background: var(--ink); color: var(--paper); cursor: pointer;
-  font: 650 .95rem var(--font-sans), sans-serif; letter-spacing: .04em; }
-.startGumb:hover { transform: translateY(-1px); }
+/* Glava stoparice v jeziku Flowa: mehak vijolicno-zelen preliv, serif ura in
+   crn pilulast gumb — isto kot ostale kartice, ne tuja skatla (Tina, 25. 8.). */
+.startGlava { display: grid; gap: .35rem; justify-items: center; margin-bottom: 1.2rem;
+  padding: 1.6rem 1rem 1.5rem; border-radius: 1.35rem;
+  background: linear-gradient(135deg, oklch(97% .028 300 / .9), oklch(97% .03 190 / .75));
+  border: 1px solid oklch(22% .015 60 / .05); }
+.startUra { font: 500 clamp(2.6rem, 8vw, 3.6rem)/1 var(--font-serif), Georgia, serif;
+  color: var(--ink); font-variant-numeric: tabular-nums; }
+.startDatum { font: 500 .82rem var(--font-sans), sans-serif; letter-spacing: .02em;
+  color: color-mix(in oklch, var(--ink) 62%, transparent); text-transform: lowercase; }
+.startGumb { width: min(19rem, 100%); margin-top: .9rem; padding: .95rem 1.4rem;
+  border: none; border-radius: 999px; background: var(--ink); color: var(--paper);
+  cursor: pointer; font: 650 .82rem var(--font-sans), sans-serif; letter-spacing: .12em;
+  text-transform: uppercase; transition: transform .16s ease, box-shadow .16s ease; }
+.startGumb:hover { transform: translateY(-2px); box-shadow: 0 10px 26px oklch(22% .015 60 / .18); }
