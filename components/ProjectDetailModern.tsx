@@ -739,9 +739,9 @@ export default function ProjectDetailModern({
         .pm-inp { width:100%; box-sizing:border-box; margin-top:.3rem; padding:.5rem .6rem; border:1px solid color-mix(in oklch, #fff 55%, transparent); border-radius:.55rem; background:color-mix(in oklch, #fff 34%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); font:inherit; font-size:.9rem; color:var(--pm-ink); resize:vertical; }
         .pm-inp:focus { outline:none; border-color:var(--pm-ink); }
         .pm-cilji-edit { display:flex; flex-direction:column; gap:.4rem; margin-top:.35rem; }
-        .pm-cilj-row { display:flex; gap:.35rem; align-items:center; }
-        .pm-cilj-row .pm-inp { margin-top:0; }
-        .pm-inp-s { flex:0 0 5.5rem; min-width:0; }
+        .pm-cilj-row { display:flex; gap:.35rem; align-items:center; flex-wrap:wrap; }
+        .pm-cilj-row .pm-inp { margin-top:0; flex:2 1 10rem; min-width:0; }
+        .pm-inp-s { flex:1 1 7.5rem; min-width:0; }
         .pm-cilj-x { flex:none; width:2rem; height:2rem; padding:0; border:1px solid color-mix(in oklch, oklch(52% .16 25) 40%, var(--pm-line)); border-radius:50%; background:transparent; color:oklch(52% .16 25); cursor:pointer; }
         .pm-cilj-add { align-self:flex-start; margin-top:.1rem; padding:.4rem .85rem; border:1px dashed var(--pm-line); border-radius:999px; background:transparent; color:var(--pm-ink); font:inherit; font-size:.82rem; font-weight:600; cursor:pointer; }
         .pm-act:hover { background:var(--pm-paper); }
