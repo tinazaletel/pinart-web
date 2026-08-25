@@ -82,7 +82,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       dizajnZelje: p.dizajnZelje || '', voice: p.voice || '', konkurenca: p.konkurenca || '',
       cilji: p.cilji || [], dodatnaVprasanja: p.dodatnaVprasanja || [], povezave: p.povezave || [], dodeljeni: p.dodeljeni || [],
     });
-    setNovKorak(11);
+    setNovKorak(13); /* urejanje: vse takoj vidno */
   }, [searchParams]);
 
   const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, opisStranke: '', panoga: '', ciljnaSkupina: '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>, dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
@@ -138,7 +138,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
   const posodobiCilj = (id: string, patch: Partial<ProjektCilj>) => setObrazec(o => ({ ...o, cilji: o.cilji.map(c => c.id === id ? { ...c, ...patch } : c) }));
   /* potrdi trenutni korak vprasanja: naprej=true premakne kazalec (NAPREJ), sicer
      samo zapre "urejanje v mestu" (Shrani na ze odgovorjenem koraku) */
-  const potrdiKorak = (naprej: boolean) => { setUrejamKorak(null); if (naprej) setNovKorak(k => Math.min(11, k + 1)); };
+  const potrdiKorak = (naprej: boolean) => { setUrejamKorak(null); if (naprej) setNovKorak(k => Math.min(13, k + 1)); };
   /* Vodena persona (korak 5): pKorak = kateri podkorak persone je aktiven. */
   const [pKorak, setPKorak] = useState(0);
   const setPersona = (k: PersonaKljuc, v: string) => setObrazec(o => ({ ...o, persona: { ...o.persona, [k]: v } }));
@@ -471,13 +471,13 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {/* po osnovnih vprašanjih: moja lastna vprašanja + povezave + ekipa + zaključek —
             vse na isti neprekinjeni površini, brez nadaljnjega gating-a (izpolniš, kolikor želiš) */}
         {novKorak >= 11 && (<>
-          {!vprasanjaOdprta && !obrazec.dodatnaVprasanja.length && (
+          {prikazan(11) && !vprasanjaOdprta && !obrazec.dodatnaVprasanja.length && (
             <button type="button" className="np-okvir-vec" onClick={() => setVprasanjaOdprta(true)}>
               <span className="np-okvir-vec-glava"><span aria-hidden>+</span>Dodaj svoja vprašanja<CaretDown size={14} weight="bold" className="np-okvir-caret" aria-hidden /></span>
               <small>Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.</small>
             </button>
           )}
-          {(vprasanjaOdprta || obrazec.dodatnaVprasanja.length > 0) && <>
+          {prikazan(11) && (vprasanjaOdprta || obrazec.dodatnaVprasanja.length > 0) && <>
           {chatBot('Tvoja vprašanja.', 'Vprašanje in odgovor si zapišeš sama.')}
           <div className="np-chat-vnos">
             {obrazec.dodatnaVprasanja.map(v => (
@@ -494,6 +494,13 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
           </div>
           </>}
 
+          {novKorak === 11 && (
+            <div className="np-chat-vnos">
+              <button type="button" className="np-chat-naprej" onClick={() => potrdiKorak(true)}>Naprej <ArrowRight size={15} weight="bold" aria-hidden /></button>
+            </div>
+          )}
+
+          {prikazan(12) && <>
           {chatBot('Deli povezave do gradiv.', 'Figma, Miro, Drive … naslov + URL.')}
           <div className="np-chat-vnos">
             {obrazec.povezave.length > 0 && (
@@ -509,8 +516,16 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
               <button type="button" className="np-link-dodaj" onClick={dodajPovezavo} disabled={!povezavaNaslov.trim() || !povezavaUrl.trim()}>+ Dodaj povezavo</button>
             </div>
           </div>
+          </>}
+          {novKorak === 12 && (
+            <div className="np-chat-vnos">
+              <button type="button" className="np-chat-naprej" onClick={() => potrdiKorak(true)}>Naprej <ArrowRight size={15} weight="bold" aria-hidden /></button>
+            </div>
+          )}
 
-          {chatBot('Deli projekt in dodeli sodelavce.', 'Klikni osebo, da jo dodeliš — »Deli projekt« pošlje vabilo dodeljenim.')}
+
+          {prikazan(13) && <>
+          {chatBot('Dodaj sodelavce.', 'Klikni osebo, da jo dodeliš — »Deli projekt« ji pošlje vabilo.')}
           <div className="np-chat-vnos">
             <div className="np-chat-sodelavci">
               {sodelavci.map(s => {
@@ -531,6 +546,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
             <button type="button" className="np-gumb" onClick={shraniNovProjekt} disabled={!obrazec.naslov.trim()}>{urejam ? 'Shrani spremembe' : 'Ustvari projekt'}</button>
             <Link className="np-gumb sek" href={`${base}/kalkulator/projekti`}>Prekliči</Link>
           </div>
+          </>}
         </>)}
       </div>
     </div>
