@@ -1963,6 +1963,19 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             <p className={styles.eyebrow}>{L('DOKUMENTACIJA · POVEZAVE', 'DOCUMENTATION · LINKS')}</p>
             <h2 style={{ margin: '.1rem 0 .3rem' }}>{L('Zunanje datoteke projekta', 'Project external files')}</h2>
             <p className="pw-dok-uvod">{L('Figma, Google Drive, Miro, mapa slik … — vse povezave projekta na enem mestu.', 'Figma, Google Drive, Miro, image folder … — all project links in one place.')}</p>
+            {/* NAJPREJ obrazec, POD njim seznam (Tina, 25. 8.): dodajanje je
+                glavno dejanje tega panela, seznam je posledica. */}
+            {!samoOgled ? (
+              <div className="pw-dok-obrazec">
+                <p className={styles.eyebrow} style={{ margin: 0 }}>{dokUredi !== null ? L('UREJANJE POVEZAVE', 'EDITING LINK') : L('NOVA POVEZAVA', 'NEW LINK')}</p>
+                <label className="pw-naloga-l"><span>{L('Oznaka', 'Label')}</span><input type="text" value={linkOznaka} onChange={e => setLinkOznaka(e.target.value)} placeholder={L('npr. Figma · Dizajn', 'e.g. Figma · Design')} /></label>
+                <label className="pw-naloga-l"><span>{L('Naslov (URL)', 'Address (URL)')}</span><input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://…" /></label>
+                <div className="pw-naloga-akcije">
+                  {dokUredi !== null && <button type="button" className="pw-naloga-preklic" onClick={() => { setDokUredi(null); setLinkOznaka(''); setLinkUrl(''); }}>{L('Prekliči', 'Cancel')}</button>}
+                  <button type="button" className="pw-naloga-shrani" onClick={shraniLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>{dokUredi !== null ? L('Shrani spremembe', 'Save changes') : L('+ Dodaj povezavo', '+ Add link')}</button>
+                </div>
+              </div>
+            ) : <p className="pw-opozorilo">{L('Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.', 'Adding links is not available in the demo preview. Sign in to your account.')}</p>}
             {links.length ? (
               <div className="pw-dok-linki">
                 {links.map((link, index) => (
@@ -1976,17 +1989,6 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 ))}
               </div>
             ) : <p className="pw-dok-prazno-t">{L('Še ni povezav.', 'No links yet.')}</p>}
-            {!samoOgled ? (
-              <div className="pw-dok-obrazec">
-                <p className={styles.eyebrow} style={{ margin: 0 }}>{dokUredi !== null ? L('UREJANJE POVEZAVE', 'EDITING LINK') : L('NOVA POVEZAVA', 'NEW LINK')}</p>
-                <label className="pw-naloga-l"><span>{L('Oznaka', 'Label')}</span><input type="text" value={linkOznaka} onChange={e => setLinkOznaka(e.target.value)} placeholder={L('npr. Figma · Dizajn', 'e.g. Figma · Design')} /></label>
-                <label className="pw-naloga-l"><span>{L('Naslov (URL)', 'Address (URL)')}</span><input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://…" /></label>
-                <div className="pw-naloga-akcije">
-                  {dokUredi !== null && <button type="button" className="pw-naloga-preklic" onClick={() => { setDokUredi(null); setLinkOznaka(''); setLinkUrl(''); }}>{L('Prekliči', 'Cancel')}</button>}
-                  <button type="button" className="pw-naloga-shrani" onClick={shraniLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>{dokUredi !== null ? L('Shrani spremembe', 'Save changes') : L('+ Dodaj povezavo', '+ Add link')}</button>
-                </div>
-              </div>
-            ) : <p className="pw-opozorilo">{L('Dodajanje povezav ni na voljo v predogledu (demo). Prijavi se v svoj račun.', 'Adding links is not available in the demo preview. Sign in to your account.')}</p>}
           </div>
         </aside>
       </div>
