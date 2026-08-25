@@ -305,8 +305,7 @@
 .rocniGumb {
   padding: .42rem .95rem; border: 1px solid var(--line); border-radius: 999px;
   background: transparent; color: var(--ink);
-  font: 650 .78rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer;
-}
+  font: 650 .78rem var(--font-sans), sans-serif; white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: .38rem; }
 .rocniGumb:hover { border-color: var(--ink); }
 
 /* ── Prisotnost: cilj delovnika, dnevni vnos (prihod/malica/odhod/vrsta) ── */

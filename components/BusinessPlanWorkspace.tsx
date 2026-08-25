@@ -3,6 +3,7 @@
 import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { PencilSimple } from '@phosphor-icons/react';
 import {
   calculatePlan, DEFAULT_BUSINESS_PLAN, deleteCloudPresence, deleteCloudTimeEntry, loadCloudBusinessPlan,
   loadCloudPresence, loadCloudTimeEntries, loadLocalPlan, loadLocalTimeEntries, type BusinessPlan,
@@ -895,6 +896,9 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
           <div className={styles.rocniVrstica}>
             <span>{L('Nisi merila?', 'Did not track it?')}</span>
             <button type="button" className={styles.rocniGumb} onClick={() => { setRocniOdprt(v => !v); pripraviVnos(danesISO(), 1, 0, 0); }}>
+              {/* svincnik spredaj: gumb je majhen in brez ikone ni bilo takoj
+                  jasno, da odpre rocni vnos (Tina, 25. 8.) */}
+              {!rocniOdprt && <PencilSimple size={15} weight="bold" aria-hidden />}
               {rocniOdprt ? L('Prekliči', 'Cancel') : L('Vpiši ročno', 'Enter manually')}
             </button>
           </div>
