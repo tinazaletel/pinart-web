@@ -825,7 +825,9 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   return <div className={`${styles.page} ${view === 'time' ? styles.casPogled : ''}`}>
     {notice && <div className={styles.notice} role="status">{notice}<button onClick={() => setNotice('')} aria-label={L('Zapri', 'Close')}>×</button></div>}
 
-    <div className={`${styles.layout} ${view === 'time' ? styles.timeOnly : ''}`}>
+    {/* Na strani Prisotnost stoparice NI: tam se belezi prihod in odhod osebe,
+        merjenje ur na projektu pa ima svojo stran (Tina, 25. 8.). */}
+    {view !== 'prisotnost' && <div className={`${styles.layout} ${view === 'time' ? styles.timeOnly : ''}`}>
       {view === 'all' && <form className={styles.plan} onSubmit={savePlan}>
         <header><p>{L('01 · POSLOVNI NAČRT', '01 · BUSINESS PLAN')}</p><h2>{L('Najprej določi, kaj mora podjetje omogočiti.', 'First define what the business has to make possible.')}</h2><span>{L('Načrt postane osnova za mesečne in letne cilje.', 'The plan becomes the basis for monthly and yearly goals.')}</span></header>
         <div className={styles.fields}>
@@ -930,11 +932,11 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       </section>
     </div>
 
-
+}
     {/* PREGLED je svoja kartica na DESNI (Tina, 25. 8.): prej je zamenjal
         stoparico v levem stolpcu, zato je ta med potrjevanjem vnosa izginila.
         Stoparica mora biti vedno vidna. */}
-    {(pozabljeno || pending) && <section className={`${styles.timer} ${styles.pregled}`}>
+    {view !== 'prisotnost' && (pozabljeno || pending) && <section className={`${styles.timer} ${styles.pregled}`}>
       <header><p>{L('PREGLED', 'REVIEW')}</p><h2>{L('Potrdi izmerjeni čas.', 'Confirm the measured time.')}</h2></header>
       {pozabljeno ? <form className={styles.timerForm} onSubmit={potrdiPozabljenKonec}>
           <div className={styles.reviewTitle} role="alert">
@@ -1101,7 +1103,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       </div>
     </section>}
 
-    <section className={styles.history}>
+    {view !== 'prisotnost' && <section className={styles.history}>
       {omejeno
         ? <header><div><p>{L('03 · DANES', '03 · TODAY')}</p><h2>{L('Kaj si danes izmerila.', 'What you tracked today.')}</h2></div><span>{duration(dnevnaVsota)} {L('danes', 'today')}</span></header>
         : <header><div><p>{L('03 · ZASEBNI DNEVNIK', '03 · PRIVATE LOG')}</p><h2>{L('Izkušnje, ki izboljšajo naslednjo ceno.', 'Lessons that improve your next price.')}</h2></div><span>{duration(trackedMinutes)} {L('skupaj', 'total')}</span></header>}
@@ -1214,7 +1216,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
           })}
         </div>
       )))}
-    </section>
+    </section>}
 
     {/* Plavajoča štoparica — v portal na <body>, ker se position:fixed sicer meri
         glede na prednika s transformom in bi pas pristal sredi strani. */}
