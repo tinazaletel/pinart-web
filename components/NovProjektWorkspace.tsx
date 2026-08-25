@@ -497,7 +497,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-chat-mehur-ured svg{opacity:.4;flex:none;transition:opacity .15s}
       .np-chat-mehur-ured:hover svg{opacity:.85}
       /* vnosno polje pod vprasanjem bota — zamaknjeno pod mehurcek, "Naprej" pilula z ink ozadjem */
-      .np-chat-vnos{display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;max-width:calc(100% - 1rem);margin:-.2rem 0 0 .3rem}
+      .np-chat-vnos{display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;width:min(34rem,calc(100% - 1rem));max-width:calc(100% - 1rem);margin:-.2rem 0 0 .3rem}
       .np-chat-polje{width:100%;box-sizing:border-box;padding:.75rem 1.1rem;border:1px solid rgba(17,17,17,.14);border-radius:999px;background:#fff;font:inherit;font-size:.9rem;font-weight:600;color:var(--ink);box-shadow:0 4px 14px rgba(40,25,40,.05);outline:none}
       textarea.np-chat-polje{border-radius:1rem;resize:vertical;min-height:5rem;font-weight:400;line-height:1.5;font-family:inherit}
       select.np-chat-polje{cursor:pointer}
@@ -536,7 +536,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-vprasanje-vrstica div{display:flex;flex-direction:column;gap:.15rem;min-width:0}
       .np-vprasanje-vrstica b{font-size:.8rem;color:var(--ink);font-weight:700}
       .np-vprasanje-vrstica span{font-size:.76rem;color:color-mix(in oklch,var(--ink) 62%,transparent)}
-      .np-link-obrazec{display:grid;grid-template-columns:1fr;gap:.5rem;margin-top:.2rem}
+      /* Polja cez SIRINO pogovora, ne ozka (Tina, 25. 8.: "teli inputi so
+         prekratki") — vnos vprasanj in povezav dobi isto sirino kot mehurcki. */
+      .np-link-obrazec{display:grid;grid-template-columns:1fr;gap:.5rem;margin-top:.2rem;width:100%}
       .np-link-obrazec input{padding:.6rem .75rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.8rem;color:var(--ink);min-width:0}
       .np-link-dodaj{flex:none;padding:.55rem .9rem;border:1px solid var(--ink);border-radius:.6rem;background:var(--ink);color:var(--paper);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer}
       .np-link-dodaj:disabled{opacity:.5;cursor:not-allowed}
