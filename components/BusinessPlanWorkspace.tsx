@@ -935,7 +935,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             <span aria-hidden>{vecOdprt ? <CaretUp size={13} weight="bold" /> : <CaretDown size={13} weight="bold" />}</span>
           </button>
           {vecOdprt && <>
-          <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /></label>
+          <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><span className={styles.znesekVrsta}><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /><select aria-label={L('Valuta', 'Currency')} value={valuta} onChange={e => nastaviValuto(e.target.value)}>{VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.znak}</option>)}</select></span></label>
           <label><span>{L('Obseg', 'Scope')}</span><select name="scope"><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
           </>}
           {/* ure, ki si jih zapisala drugam — dodaj jih na poljuben (tudi pretekli) dan.
