@@ -1231,8 +1231,10 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
         .fl-plan-cta::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; background: linear-gradient(120deg, transparent 0%, rgba(124,58,237,.28) 42%, rgba(56,189,248,.28) 58%, transparent 100%); transform: skewX(-18deg); transition: left .6s cubic-bezier(.19,1,.22,1); pointer-events: none; }
         .fl-plan-cta.polni::after { background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.9) 50%, transparent 100%); }
         .fl-plan-cta:hover::after { left: 170%; }
-        .fl-plan.kmalu { opacity: .62; }
-        .fl-plan.kmalu .fl-plan-znacka { background: rgba(17,17,17,.42); }
+        .fl-plan.kmalu { opacity: 1; }
+        .fl-plan.kmalu .fl-plan-znacka { background: #8a8177; }
+        .fl-plan.kmalu .fl-plan-cta { border-color: rgba(17,17,17,.2); color: #6f6862; background: transparent; }
+        .fl-plan.kmalu .fl-plan-cta::after { display: none; }
         .fl-plan-cta.cakalna { pointer-events: none; border-style: dashed; border-color: rgba(17,17,17,.72); color: rgba(17,17,17,.62); }
         .fl-plan-cta.cakalna::after { display: none; }
         .fl-plan-lista { list-style: none; margin: 1.4rem 0 0; padding: 1.3rem 0 0; border-top: 1px solid rgba(17,17,17,.1); display: grid; gap: .65rem; }
