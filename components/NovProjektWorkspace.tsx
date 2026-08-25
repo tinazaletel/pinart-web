@@ -239,7 +239,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       dizajnZelje: obrazec.dizajnZelje.trim() || undefined,
       voice: obrazec.voice.trim() || undefined,
       konkurenca: obrazec.konkurenca.trim() || undefined,
-      podrobnosti: obrazec.podrobnosti.trim() || undefined,
+      podrobnosti: (obrazec.podrobnosti || '').trim() || undefined,
       /* Cilj z izpolnjenim merilom ali tarco, a praznim besedilom, se je tiho
          zavrgel (Tina, 25. 8.: "čas + 800 €" -> cilji: [] v oblaku). Obdrzimo
          vse, kjer je karkoli vpisano; besedilo po potrebi sestavimo iz njiju. */
@@ -255,7 +255,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       rok: obrazec.rok || undefined,
       status: obrazec.status,
       vrsta: (podrobnostiOdprte || obrazec.cilji.some(c => c.besedilo.trim() || c.tarca?.trim())
-        || obrazec.opisStranke.trim() || obrazec.ciljnaSkupina.trim() || obrazec.podrobnosti.trim()) ? 'okvir' : 'preprost',
+        || obrazec.opisStranke.trim() || obrazec.ciljnaSkupina.trim() || (obrazec.podrobnosti || '').trim()) ? 'okvir' : 'preprost',
       created: urejam?.created || new Date().toISOString(),
       dodatnaVprasanja: obrazec.dodatnaVprasanja.length ? obrazec.dodatnaVprasanja : undefined,
       povezave: obrazec.povezave.length ? obrazec.povezave : undefined,
@@ -522,7 +522,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
             <label className="np-pod-polje"><span>Kdo je konkurenca?</span>
               <input type="text" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Imena — in kaj naj stranko loči od njih …" /></label>
             <label className="np-pod-polje"><span>Več podrobnosti</span>
-              <textarea value={obrazec.podrobnosti} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, podrobnosti: event.target.value })); }} placeholder="Karkoli še šteje — obseg, roki po fazah, posebnosti, dogovori …" /></label>
+              <textarea value={obrazec.podrobnosti || ''} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, podrobnosti: event.target.value })); }} placeholder="Karkoli še šteje — obseg, roki po fazah, posebnosti, dogovori …" /></label>
           </div>
         )}
 
