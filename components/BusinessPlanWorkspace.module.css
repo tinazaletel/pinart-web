@@ -623,3 +623,19 @@
 @media (prefers-reduced-motion: reduce) {
   .running, .timerForm, .running .uraVrstica b { animation: none; }
 }
+
+/* PREGLED: kratke stevilke ne rabijo cele sirine kartice — "1 minuta" v polju
+   cez ves stolpec je izgledala kot napaka (Tina, 25. 8.). Stevilcna polja gredo
+   v dvostolpcno mrezo in so ozka, besedilna in izbirna ostanejo cez celo sirino. */
+.pregled .timerForm { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: .8rem; align-items: end; }
+.pregled .timerForm > label { grid-column: 1 / -1; }
+.pregled .timerForm > label:has(input[type='number']) { grid-column: auto; }
+.pregled .timerForm > label:has(input[type='number']) input { max-width: 9rem; }
+.pregled .timerForm > button,
+.pregled .timerForm > .reviewTitle,
+.pregled .timerForm > small,
+.pregled .timerForm > p { grid-column: 1 / -1; }
+@media (max-width: 560px) {
+  .pregled .timerForm { grid-template-columns: minmax(0, 1fr); }
+  .pregled .timerForm > label:has(input[type='number']) { grid-column: 1 / -1; }
+}
