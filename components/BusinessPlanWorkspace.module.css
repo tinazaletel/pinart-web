@@ -301,7 +301,7 @@
   display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .55rem;
 }
 .rocniVrstica > span {
-  color: var(--muted); font: 400 .82rem var(--font-sans), sans-serif;
+  color: var(--ink); font: 700 .82rem var(--font-sans), sans-serif;
 }
 .rocniGumb {
   padding: .42rem .95rem; border: 1px solid var(--line); border-radius: 999px;
