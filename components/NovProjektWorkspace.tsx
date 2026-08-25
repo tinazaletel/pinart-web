@@ -82,7 +82,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       dizajnZelje: p.dizajnZelje || '', voice: p.voice || '', konkurenca: p.konkurenca || '',
       cilji: p.cilji || [], dodatnaVprasanja: p.dodatnaVprasanja || [], povezave: p.povezave || [], dodeljeni: p.dodeljeni || [],
     });
-    setNovKorak(13); /* urejanje: vse takoj vidno */
+    setNovKorak(13); setPodrobnostiPotrjene(true); /* urejanje: vse takoj vidno */
   }, [searchParams]);
 
   const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, opisStranke: '', panoga: '', ciljnaSkupina: '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>, dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
@@ -98,6 +98,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
      vrstico s plusom — kdor jih rabi, jo odpre. */
   const [okvir, setOkvir] = useState(false); /* stari chat-nacin — ostaja izklopljen */
   const [podrobnostiOdprte, setPodrobnostiOdprte] = useState(false);
+  /* Vrstica podrobnosti je SVOJ korak z Naprej — ce pogovor tece mimo nje,
+     jo spregledas (Tina, 25. 8.). */
+  const [podrobnostiPotrjene, setPodrobnostiPotrjene] = useState(false);
   /* Lastna vprasanja so ZLOZENA (Tina, 25. 8.: "tega ne rabim videti") —
      vrstica s plusom, odpre se na klik ali ce vprasanja ze obstajajo. */
   const [vprasanjaOdprta, setVprasanjaOdprta] = useState(false);
@@ -477,9 +480,15 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         )}
 
         {/* 9 · začetek/rok */}
-        {prikazan(9) && chatBot('Kdaj začneš in do kdaj?', undefined, 9)}
-        {odgovorjen(9) && chatOdgovor(9, [obrazec.zacetek && datStr(obrazec.zacetek), obrazec.rok && `do ${datStr(obrazec.rok)}`].filter(Boolean).join(' ') || 'Ni določeno')}
-        {aktiven(9) && (
+        {prikazan(9) && !podrobnostiPotrjene && (
+          <div className="np-chat-vnos">
+            <button type="button" className="np-chat-naprej" onClick={() => setPodrobnostiPotrjene(true)}>Naprej <ArrowRight size={15} weight="bold" aria-hidden /></button>
+          </div>
+        )}
+
+        {podrobnostiPotrjene && prikazan(9) && chatBot('Kdaj začneš in do kdaj?', undefined, 9)}
+        {podrobnostiPotrjene && odgovorjen(9) && chatOdgovor(9, [obrazec.zacetek && datStr(obrazec.zacetek), obrazec.rok && `do ${datStr(obrazec.rok)}`].filter(Boolean).join(' ') || 'Ni določeno')}
+        {podrobnostiPotrjene && aktiven(9) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 9); }}>
             <div className="np-nov-mreza">
               <label className="np-nov-polje"><span>Začetek</span><input type="date" value={obrazec.zacetek} onChange={event => setObrazec(o => ({ ...o, zacetek: event.target.value }))} /></label>
