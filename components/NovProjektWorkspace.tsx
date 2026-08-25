@@ -740,7 +740,6 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-ime-duh em{font-style:normal;color:rgba(17,17,17,.38)}
       .np-ime-opomba{margin:-.25rem 0 0 .3rem;max-width:min(34rem,calc(100% - 1rem));
         font-size:.8rem;font-weight:600;color:#7C3AED;line-height:1.45}
-      .np-okvir-vec-glava{display:inline-flex;gap:.45rem;align-items:center;font-weight:700;font-size:.84rem}
       .np-okvir-vec small{font-size:.74rem;font-weight:500;color:rgba(17,17,17,.66);line-height:1.4}
       .np-chat-opcija{display:flex;align-items:center;gap:.8rem;width:min(380px,100%);padding:.8rem 1rem;border:1px solid var(--line);border-radius:14px;background:oklch(99% .006 87 / .85);font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
       .np-chat-opcija:hover{transform:translateY(-2px);border-color:color-mix(in oklch,var(--ink) 28%,transparent);box-shadow:0 8px 20px rgba(40,25,40,.08)}
