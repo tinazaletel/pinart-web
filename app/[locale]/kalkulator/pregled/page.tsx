@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import BusinessOverview from '@/components/BusinessOverview';
+import { paketUporabnika } from '@/lib/pravice';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import OnboardingKartica from '@/components/OnboardingKartica';
 import PozdravPregled from '@/components/PozdravPregled';
@@ -20,6 +21,8 @@ export default async function PoslovniPregledPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const base = locale === 'sl' ? '' : `/${locale}`;
+  /* Prazna stanja brez Pupe ne smejo peljati k zaklenjeni Pupi. */
+  const imaPupo = (await paketUporabnika()) === 'pro';
 
   return (
     <main className={styles.shell}>
@@ -38,7 +41,7 @@ export default async function PoslovniPregledPage({
             privzete stevilke in ne ve, zakaj mu ne ustrezajo */}
         <OnboardingKartica base={base} />
 
-        <BusinessOverview base={base} />
+        <BusinessOverview base={base} imaPupo={imaPupo} />
       </section>
     </main>
   );

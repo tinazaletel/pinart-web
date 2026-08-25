@@ -1443,7 +1443,8 @@
 /* Prazno stanje s plusom je POVEZAVA tja, kjer stvar nastane (Tina, 25. 8.:
    "vse mora biti klikabilno, ce je prazno in pise plus"). */
 .emptyState { display: flex; align-items: center; gap: 1rem; min-height: 9rem; margin-top: 1rem; padding: 1.25rem; border-radius: 1rem; color: inherit; text-decoration: none; transition: border-color .15s ease, transform .15s ease; border: 1px solid transparent; background: oklch(98% .01 87); text-decoration: none; color: inherit; }
-a.emptyState:hover { border-color: rgba(17,17,17,.35); transform: translateY(-1px); }
+a.emptyState:hover, button.emptyState:hover { border-color: rgba(17,17,17,.35); transform: translateY(-1px); }
+button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointer; }
 .emptyState > span { display: grid; place-items: center; width: 2.7rem; aspect-ratio: 1; border-radius: 50%; background: oklch(92% .04 297); font-size: 1.25rem; line-height: 1; }
 .emptyState strong { font-size: .75rem; }
 .emptyState p { margin: .25rem 0 0; color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .68rem; }
