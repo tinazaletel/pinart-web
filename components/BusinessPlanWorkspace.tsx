@@ -3,6 +3,7 @@
 import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { VALUTE_RACUN, valutaZnak } from '@/lib/valute';
 import { CaretDown, CaretUp, PencilSimple } from '@phosphor-icons/react';
 import {
   calculatePlan, DEFAULT_BUSINESS_PLAN, deleteCloudPresence, deleteCloudTimeEntry, loadCloudBusinessPlan,
@@ -513,8 +514,13 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   const poljeZnesek = () => (
     <label>
       <span>{L('Vrednost tega dela', 'Value of this work')}</span>
-      <input name="amount" type="number" min="0" step="10" placeholder="0"
-        value={znesekVnos} onChange={e => { setZnesekRocno(true); setZnesekVnos(e.target.value); }} />
+      <span className={styles.znesekVrsta}>
+        <input name="amount" type="number" min="0" step="10" placeholder="0"
+          value={znesekVnos} onChange={e => { setZnesekRocno(true); setZnesekVnos(e.target.value); }} />
+        <select aria-label={L('Valuta', 'Currency')} value={valuta} onChange={e => nastaviValuto(e.target.value)}>
+          {VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.znak}</option>)}
+        </select>
+      </span>
       <small>
         {znesekRocno
           ? <button type="button" className={styles.linkGumb} onClick={() => setZnesekRocno(false)}>{L(`Izračunaj po ${money(urnaVrednost)}/h`, `Calculate at ${money(urnaVrednost)}/h`)}</button>
@@ -824,6 +830,19 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
   /* Datum ob uri: stoparica naj pove, za KATERI dan meri. Racunamo po montazi
      (ne med izrisom), sicer se streznik in brskalnik ne ujemata in React javi
      napako hidracije. */
+  /* Valuta stoparice: ZDA racuna v dolarjih (Tina, 25. 8.). Samo prikaz in
+     izbira — zneski v dnevniku ostanejo stevilke. Shranjena lokalno, da je
+     ista ob vsakem obisku; privzeto EUR. */
+  const [valuta, setValuta] = useState('eur');
+  useEffect(() => {
+    try { const v = localStorage.getItem('pinart-cas-valuta-v1'); if (v) setValuta(v); } catch { /* zasebno okno */ }
+  }, []);
+  const nastaviValuto = (v: string) => {
+    setValuta(v);
+    try { localStorage.setItem('pinart-cas-valuta-v1', v); } catch { /* zasebno okno */ }
+  };
+  /* zasenci modulski money: vsi izpisi v komponenti dobijo izbrano valuto */
+  const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 0 })} ${valutaZnak(valuta)}`;
   const [vecOdprt, setVecOdprt] = useState(false);
   const [danesIzpis, setDanesIzpis] = useState('');
   useEffect(() => {
@@ -916,7 +935,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             <span aria-hidden>{vecOdprt ? <CaretUp size={13} weight="bold" /> : <CaretDown size={13} weight="bold" />}</span>
           </button>
           {vecOdprt && <>
-          <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /></label>
+          <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><span className={styles.znesekVrsta}><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /><select aria-label={L('Valuta', 'Currency')} value={valuta} onChange={e => nastaviValuto(e.target.value)}>{VALUTE_RACUN.map(v => <option key={v.id} value={v.id}>{v.znak}</option>)}</select></span></label>
           <label><span>{L('Obseg', 'Scope')}</span><select name="scope"><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
           </>}
           {/* ure, ki si jih zapisala drugam — dodaj jih na poljuben (tudi pretekli) dan.

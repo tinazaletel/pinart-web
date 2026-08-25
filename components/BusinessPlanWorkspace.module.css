@@ -292,7 +292,7 @@
 .trajanje strong { color: var(--ink); font-size: 1rem; font-weight: 700; }
 
 /* zasebna opomba pod vnosom v dnevniku */
-.opomba { color: var(--muted); font-size: .8rem; font-style: italic; overflow-wrap: anywhere; }
+.opomba { color: var(--muted); font-size: .8rem; font-style: italic; overflow-wrap: break-word; word-break: normal; hyphens: none; }
 
 /* Ročni vnos: vprašanje je besedilo, gumb je kratek.
    Prej je bil cel stavek na gumbu in se je na telefonu razlezel čez dve vrstici. */
@@ -375,10 +375,6 @@
 }
 .mesecTabela thead th:first-child { border-top-left-radius: .95rem; }
 .mesecTabela thead th:last-child { border-top-right-radius: .95rem; width: 2.4rem; }
-/* Zadnji stolpec je le gumb za brisanje in ne rabi zraka na obeh straneh; DAN pa
-   ga rabi, ker nosi datum in pod njim opombo (Tina, 25. 8.). */
-.mesecTabela thead th:last-child, .mesecTabela tbody td:last-child { padding-left: .2rem; padding-right: .35rem; }
-.mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-right: 1.15rem; }
 .mesecTabela tbody td { padding: .55rem .85rem; border-top: 1px solid var(--line); vertical-align: middle; }
 /* Safari podvoji ločnico glava/prva vrstica (thead border-bottom + tbody border-top) — ena črta */
 .mesecTabela tbody tr:first-child td { border-top: 0; }
@@ -394,7 +390,14 @@
   .mesecTabela thead th, .mesecTabela tbody td { padding-left: .28rem; padding-right: .28rem; }
   .mesecTabela thead th:first-child, .mesecTabela tbody td:first-child { padding-left: .5rem; }
   .mesecTabela thead th { font-size: .54rem; letter-spacing: .01em; }
-  .mesecTabela thead th:last-child, .mesecTabela tbody td:last-child { width: 1.4rem; padding-right: .2rem; }
+  .mesecTabela thead th:last-child, .mesecTabela tbody td:last-child { width: 1.2rem; padding-left: 0; padding-right: 0; }
+  /* DAN dobi ves preostali prostor: ostali stolpci vzamejo natanko svoje */
+  .mesecTabela thead th:nth-child(2), .mesecTabela thead th:nth-child(3),
+  .mesecTabela thead th:nth-child(4), .mesecTabela thead th:nth-child(5),
+  .mesecTabela thead th:nth-last-child(2) { width: 1%; }
+  .mesecTabela thead th:nth-last-child(2), .mesecTabela tbody td:nth-last-child(2) { padding-right: .05rem; }
+  /* tabela seze skoraj do desnega roba kartice (desno ~6 px) */
+  .evidenca .mesecTabelaOvoj { margin-right: -11px; max-width: none; }
   /* casi + ure v eno vrstico (kratki), da se »30 min« / »7 h 45 min« ne lomi grdo */
   .mesecTabela tbody td:nth-child(2), .mesecTabela tbody td:nth-child(3),
   .mesecTabela tbody td:nth-child(4), .mesecTabela .mesecUre { white-space: nowrap; }
@@ -409,7 +412,7 @@
 .mesecUre { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; color: var(--ink); }
 .mesecPrazno { padding: 1.4rem .85rem; color: var(--muted); text-align: center; }
 /* opomba pod dnevom, drobna in tiha — ne postane nov stolpec */
-.mesecOpomba { display: block; margin-top: .15rem; color: var(--muted); font-size: .72rem; font-weight: 400; font-style: italic; overflow-wrap: anywhere; }
+.mesecOpomba { display: block; margin-top: .15rem; color: var(--muted); font-size: .72rem; font-weight: 400; font-style: italic; overflow-wrap: break-word; word-break: normal; hyphens: none; }
 
 /* ── Vrsta dneva: pilula s piko, kot arh-status drugod v projektu ─────────── */
 .vrstaPilula {
@@ -658,3 +661,13 @@
   .casPogled .layout > .timer,
   .casPogled .pregled { height: 100%; }
 }
+
+/* Znesek + valuta v isti vrstici; izbirnik je ozek, polje dobi preostanek. */
+.znesekVrsta { display: flex; gap: .5rem; align-items: stretch; }
+.znesekVrsta input { flex: 1; min-width: 0; }
+.znesekVrsta select { flex: none; width: 4.6rem; }
+
+/* Zgodovina je poravnana na VRH svoje celice: grid stretch je vrstice razpotegnil
+   cez vso visino stolpca in med dnevi so zazijale luknje (Tina, 25. 8.).
+   Spodaj naj ostane prazno. */
+.casPogled .history { align-content: start; align-self: start; }
