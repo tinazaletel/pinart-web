@@ -159,6 +159,13 @@ export default function ProjectDetailModern({
   /* pravi dostop clanov ekipe — risemo ga v isti vrstici kot imena za naloge */
   const dostop = useDostopProjekta(real?.id, real?.strankaId);
   const [razlagaOdprta, setRazlagaOdprta] = useState(false);
+  /* Polje se raztegne po besedilu — brez notranjega drsnika (Tina, 25. 8.).
+     ref poskrbi za pravo visino ze ob odprtju, onInput med tipkanjem. */
+  const rastiTextarea = (el: HTMLTextAreaElement | null) => {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
 
   /* Porabljene ure na tem projektu. Vnosi casa se vezejo na IME projekta (tako
      jih zapise stoparica), zato primerjamo po imenu — brez sumnikov in velikih
@@ -603,7 +610,7 @@ export default function ProjectDetailModern({
         <div className="pm-dok-vsebina">
           {onSaveBrief && real ? (<>
             {([[L('Cilj / želje', 'Goal / wishes'), 'zelje'], [L('Stranka', 'Client'), 'opisStranke'], [L('Panoga', 'Industry'), 'panoga'], [L('Ciljna publika', 'Target audience'), 'ciljnaSkupina'], [L('Dizajn želje', 'Design wishes'), 'dizajnZelje'], [L('Ton / glas', 'Tone / voice'), 'voice'], [L('Konkurenca', 'Competitors'), 'konkurenca']] as Array<[string, keyof Projekt]>).map(([label, key]) => (
-              <label key={key} className="pm-qa pm-qa-edit"><span className="pm-qa-k">{label}</span><textarea className="pm-inp" rows={2} defaultValue={(real[key] as string) || ''} placeholder={L('Vpiši …', 'Type …')} onBlur={e => onSaveBrief({ [key]: e.target.value.trim() || undefined } as Partial<Projekt>)} /></label>
+              <label key={key} className="pm-qa pm-qa-edit"><span className="pm-qa-k">{label}</span><textarea className="pm-inp" rows={2} ref={rastiTextarea} onInput={e => rastiTextarea(e.currentTarget)} defaultValue={(real[key] as string) || ''} placeholder={L('Vpiši …', 'Type …')} onBlur={e => onSaveBrief({ [key]: e.target.value.trim() || undefined } as Partial<Projekt>)} /></label>
             ))}
             {/* Cilji so del dokumenta tudi med urejanjem -- natisnjen brief brez
                 njih ni cel brief (Tina, 25. 8.). Urejajo se v kartici. */}
@@ -736,7 +743,7 @@ export default function ProjectDetailModern({
         .pm-act:hover { background:color-mix(in oklch, var(--pm-ink) 12%, transparent); color:var(--pm-ink); border-color:transparent; }
         /* urejljiva brief polja (inline v panelu) */
         .pm-qa-edit { display:block; }
-        .pm-inp { width:100%; box-sizing:border-box; margin-top:.3rem; padding:.5rem .6rem; border:1px solid color-mix(in oklch, #fff 55%, transparent); border-radius:.55rem; background:color-mix(in oklch, #fff 34%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); font:inherit; font-size:.9rem; color:var(--pm-ink); resize:vertical; }
+        .pm-inp { width:100%; box-sizing:border-box; field-sizing:content; margin-top:.3rem; padding:.5rem .6rem; border:1px solid color-mix(in oklch, #fff 55%, transparent); border-radius:.55rem; background:color-mix(in oklch, #fff 34%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); font:inherit; font-size:.9rem; color:var(--pm-ink); resize:none; overflow:hidden; }
         .pm-inp:focus { outline:none; border-color:var(--pm-ink); }
         .pm-cilji-edit { display:flex; flex-direction:column; gap:.4rem; margin-top:.35rem; }
         .pm-cilj-row { display:flex; gap:.35rem; align-items:center; flex-wrap:wrap; }
