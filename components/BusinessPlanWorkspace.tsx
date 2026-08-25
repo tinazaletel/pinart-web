@@ -886,11 +886,17 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             </button>
           </div>
         </div> : <form className={styles.timerForm} onSubmit={start}>
+          {/* Ura in START sta ZGORAJ, polja pod njima: kartica mora na prvi
+              pogled izgledati kot stoparica, ne kot obrazec (Tina, 25. 8.).
+              Mirujoca ura kaze 00:00:00 — pokaze, kaj bo gumb naredil. */}
+          <div className={styles.startGlava}>
+            <b className={styles.startUra}>00:00:00</b>
+            <button type="submit" className={styles.startGumb}>{L('Začni meriti', 'Start timing')}</button>
+          </div>
           <label><span>{L('Projekt ali stranka', 'Project or client')}</span><input name="project" required list="seznam-projektov" placeholder={L('npr. Nova identiteta', 'e.g. New identity')} /></label>
           <label><span>{L('Storitev', 'Service')}</span><input name="service" placeholder={L('npr. oblikovanje logotipa', 'e.g. logo design')} /></label>
           <label><span>{L('Vrednost tega dela', 'Value of this work')}</span><input name="amount" type="number" min="0" step="10" placeholder={L('Določiš lahko tudi ob zaključku', 'You can also set this when you finish')} /></label>
           <label><span>{L('Obseg', 'Scope')}</span><select name="scope"><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
-          <button type="submit">{L('Začni meriti', 'Start timing')}</button>
           {/* ure, ki si jih zapisala drugam — dodaj jih na poljuben (tudi pretekli) dan.
               Naslov je besedilo, gumb ostane kratek (prej je bil cel stavek na gumbu). */}
           <div className={styles.rocniVrstica}>

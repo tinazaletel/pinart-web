@@ -544,3 +544,15 @@
    (Tina, 25. 8.: "premalo vidim, da je stoparica"). */
 .nadnaslovZIkono { display: inline-flex; align-items: center; gap: .4rem; }
 .nadnaslovZIkono svg { color: var(--accent, #7c3aed); }
+
+/* Glava stoparice: velika ura in START nad polji, da kartica takoj bere kot
+   merilnik casa in ne kot obrazec (Tina, 25. 8.). */
+.startGlava { display: grid; gap: .75rem; justify-items: center; margin-bottom: 1.15rem;
+  padding: 1.25rem 1rem 1.35rem; border-radius: 1.1rem;
+  background: linear-gradient(135deg, oklch(96% .03 300 / .75), oklch(96% .035 190 / .6)); }
+.startUra { font: 300 clamp(2.4rem, 7vw, 3.4rem)/1 var(--font-sans), system-ui, sans-serif;
+  letter-spacing: .02em; color: oklch(45% .02 285); font-variant-numeric: tabular-nums; }
+.startGumb { width: min(20rem, 100%); padding: .95rem 1.4rem; border: none; border-radius: 999px;
+  background: var(--ink); color: var(--paper); cursor: pointer;
+  font: 650 .95rem var(--font-sans), sans-serif; letter-spacing: .04em; }
+.startGumb:hover { transform: translateY(-1px); }
