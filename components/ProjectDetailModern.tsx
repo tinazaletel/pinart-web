@@ -731,6 +731,7 @@ export default function ProjectDetailModern({
         .pm-dokumenti li:has(button:hover), .pm-dokumenti li:has(button:hover) + li,
         .pm-dokumenti li:has(.pm-canvas-link:hover), .pm-dokumenti li:has(.pm-canvas-link:hover) + li { border-top-color:transparent; }
         .pm-dokumenti time { color:var(--pm-muted); font-size:.72rem; font-weight:500; }
+        .pm-dok-vsebina { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 70%, var(--pm-card)); --pm-soft: color-mix(in oklch, var(--ink) 52%, var(--pm-card)); }
         .pm-dok-vsebina section + section { margin-top:1.5rem; }
         .pm-dok-brisi { display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .8rem; border:1px solid color-mix(in oklch, var(--pm-ink) 12%, transparent); border-radius:999px; background:transparent; font:700 .76rem var(--font-sans),sans-serif; color:color-mix(in oklch, var(--pm-ink) 55%, transparent); cursor:pointer; transition:background .15s, color .15s, border-color .15s; }
         .pm-dok-brisi:hover { border-color:oklch(58% .17 25); background:oklch(96% .04 25); color:oklch(48% .17 25); }
