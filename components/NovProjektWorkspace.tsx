@@ -694,6 +694,10 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-nov-polje span{font-size:.7rem;font-weight:700;color:var(--muted)}
       .np-nov-polje input{width:100%;box-sizing:border-box;padding:.65rem .8rem;border:1px solid var(--line);border-radius:.7rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.85rem;color:var(--ink)}
       .np-nov-cilj{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;align-items:center;gap:.45rem}
+      /* v inline obrazcu podrobnosti: dve polji (cilj, tarca) cez celo sirino,
+         enako dolgi, brisanje ob koncu (Tina, 25. 8.: tarca se je odrezala) */
+      .np-podrobnosti .np-nov-cilj{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;width:100%}
+      .np-podrobnosti .np-nov-cilj input{width:100%;box-sizing:border-box;min-width:0}
       .np-nov-cilj input,.np-nov-cilj select{box-sizing:border-box;padding:.6rem .7rem;border:1px solid var(--line);border-radius:.6rem;background:oklch(100% 0 0 / .7);font:inherit;font-size:.78rem;color:var(--ink);min-width:0}
       .np-nov-cilj select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:1.5rem;background-color:oklch(100% 0 0 / .7);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E4FA6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .5rem center}
       .np-nov-dodaj-cilj{align-self:start;margin-top:.1rem;padding:.55rem .9rem;border:1px dashed color-mix(in oklch,var(--ink) 28%,transparent);border-radius:.7rem;background:transparent;font:700 .7rem var(--font-sans),sans-serif;color:var(--ink);cursor:pointer}
