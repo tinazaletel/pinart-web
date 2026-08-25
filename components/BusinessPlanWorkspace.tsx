@@ -843,7 +843,11 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       </form>}
 
       <section className={styles.timer} id="timer" ref={timerRef2}>
-        <header><p>{view === 'time' ? '01' : '02'} · {L('ČAS', 'TIME')}</p><h2>{L('Ali se ti je delo po tej ceni splačalo?', 'Was the work worth it at this price?')}</h2><span>{L('Timer je zaseben. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The timer is private. It does not track your screen, activity, apps or location.')}</span></header>
+        {/* Nadnaslov pove IME orodja (ujema se z menijem), naslov je v sedanjiku
+            in sprasuje o tem, kar se bo sele zgodilo, druga vrstica pa obljubi
+            izid — zakaj bi sploh meril. Prej: "Ali se ti je delo po tej ceni
+            splacalo?" nad gumbom "Zacni meriti" (Tina, 25. 8.). */}
+        <header><p>{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p><h2>{L('Koliko časa ti vzame ta projekt?', 'How long is this project taking you?')}</h2><span>{L('Vklopi in pusti teči. Ko končaš, vidiš, ali se je cena izšla.', 'Start it and let it run. When you stop, you see whether the price worked out.')}</span><span>{L('Štoparica je zasebna. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The stopwatch is private. It does not track your screen, activity, apps or location.')}</span></header>
 
         {running && timerSkrit ? <div className={styles.tecePas}>
           {/* skrito: merjenje NE stoji, samo ne zavzema pol zaslona */}
