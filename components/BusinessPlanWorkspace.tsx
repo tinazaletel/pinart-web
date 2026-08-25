@@ -124,7 +124,7 @@ function zdruziPoProjektu(dnevni: PrivateTimeEntry[]) {
  * nadzorne plosce — merjenje je teklo, klik nanj pa je pripeljal na cenik.
  */
 export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
-  { view?: 'all' | 'time'; omejeno?: boolean }) {
+  { view?: 'all' | 'time' | 'prisotnost'; omejeno?: boolean }) {
   const locale = useLocale();
   const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
   const dl = locale === 'en' ? 'en-GB' : 'sl-SI';
@@ -843,30 +843,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       <section className={styles.timer} id="timer" ref={timerRef2}>
         <header><p>{view === 'time' ? '01' : '02'} · {L('ČAS', 'TIME')}</p><h2>{L('Ali se ti je delo po tej ceni splačalo?', 'Was the work worth it at this price?')}</h2><span>{L('Timer je zaseben. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The timer is private. It does not track your screen, activity, apps or location.')}</span></header>
 
-        {pozabljeno ? <form className={styles.timerForm} onSubmit={potrdiPozabljenKonec}>
-          <div className={styles.reviewTitle} role="alert">
-            <strong>{L('Je časovnik ostal prižgan?', 'Did the timer stay running?')}</strong>
-            <span>{L(`Časovnik je tekel ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Popravi konec?`, `The timer ran for ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Fix the end time?`)}</span>
-          </div>
-          <label>
-            <span>{L('Dejanski konec dela', 'Actual end of work')}</span>
-            <input name="actualEnd" type="datetime-local" required max={localDateTimeValue(new Date())}
-              value={predlaganKonec} onChange={e => setPredlaganKonec(e.target.value)} />
-            <small>{L('Predlagali smo največ 8 ur po začetku. Po potrebi čas popravi.', 'We suggested at most 8 hours after the start. Adjust the time if needed.')}</small>
-          </label>
-          <button type="submit">{L('Shrani', 'Save')}</button>
-          <button type="button" className={styles.linkGumb} onClick={zavrziPozabljenoMerjenje}>{L('Zavrzi sejo', 'Discard session')}</button>
-          <button type="button" className={styles.linkGumb} onClick={nadaljujPozabljenoMerjenje}>{L('Merjenje še vedno teče', 'Timing is still running')}</button>
-        </form> : pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
-          <div className={styles.reviewTitle}><strong>{L('Preglej zaključeni vnos', 'Review the completed entry')}</strong><span>{pending.projectName} · {pending.serviceName || L('brez oznake storitve', 'no service label')}</span></div>
-          <label><span>{L('Ure', 'Hours')}</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
-          <label><span>{L('Minute', 'Minutes')}</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
-          {poljeZnesek()}
-          <label><span>{L('Obseg', 'Scope')}</span><select name="scope" defaultValue={pending.scopeStatus}><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
-          <label><span>{L('Zakaj je delo odstopalo od načrta?', 'Why did the work differ from the plan?')}</span><select name="reason"><option value="">Ni odstopanja</option><option>Zahtevnejše od pričakovanega</option><option>Preveč popravkov</option><option>Nejasen brief</option><option>Dodatne zahteve</option><option>Veliko komunikacije</option><option>Administracija</option><option>Novo področje ali učenje</option><option>Ta vrsta dela mi ne ustreza</option></select></label>
-          <label><span>{L('Zasebna opomba', 'Private note')}</span><input name="note" placeholder={L('Kaj boš naslednjič spremenila pri ceni ali obsegu?', 'What will you change next time in price or scope?')} /></label>
-          <button type="submit">{L('Potrdi zasebni vnos', 'Confirm private entry')}</button>
-        </form> : running && timerSkrit ? <div className={styles.tecePas}>
+        {running && timerSkrit ? <div className={styles.tecePas}>
           {/* skrito: merjenje NE stoji, samo ne zavzema pol zaslona */}
           <span className={styles.tecePika} aria-hidden="true" />
           <strong>{running.projectName}</strong>
@@ -953,10 +930,41 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       </section>
     </div>
 
-    {/* Prisotnost/evidenca je LOCENA kartica izven ozkega .layout stolpca (glej
-        .casPogled v CSS) — meri cel delovnik po dnevih in ga zbira v mesecno
-        tabelo, stoparica meri en projekt. Obe sta vedno vidni. */}
-    <section className={`${styles.timer} ${styles.evidenca}`}>
+
+    {/* PREGLED je svoja kartica na DESNI (Tina, 25. 8.): prej je zamenjal
+        stoparico v levem stolpcu, zato je ta med potrjevanjem vnosa izginila.
+        Stoparica mora biti vedno vidna. */}
+    {(pozabljeno || pending) && <section className={`${styles.timer} ${styles.pregled}`}>
+      <header><p>{L('PREGLED', 'REVIEW')}</p><h2>{L('Potrdi izmerjeni čas.', 'Confirm the measured time.')}</h2></header>
+      {pozabljeno ? <form className={styles.timerForm} onSubmit={potrdiPozabljenKonec}>
+          <div className={styles.reviewTitle} role="alert">
+            <strong>{L('Je časovnik ostal prižgan?', 'Did the timer stay running?')}</strong>
+            <span>{L(`Časovnik je tekel ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Popravi konec?`, `The timer ran for ${izpisMinut(Math.max(1, Math.round(sekundeShrambe / 60)))}. Fix the end time?`)}</span>
+          </div>
+          <label>
+            <span>{L('Dejanski konec dela', 'Actual end of work')}</span>
+            <input name="actualEnd" type="datetime-local" required max={localDateTimeValue(new Date())}
+              value={predlaganKonec} onChange={e => setPredlaganKonec(e.target.value)} />
+            <small>{L('Predlagali smo največ 8 ur po začetku. Po potrebi čas popravi.', 'We suggested at most 8 hours after the start. Adjust the time if needed.')}</small>
+          </label>
+          <button type="submit">{L('Shrani', 'Save')}</button>
+          <button type="button" className={styles.linkGumb} onClick={zavrziPozabljenoMerjenje}>{L('Zavrzi sejo', 'Discard session')}</button>
+          <button type="button" className={styles.linkGumb} onClick={nadaljujPozabljenoMerjenje}>{L('Merjenje še vedno teče', 'Timing is still running')}</button>
+        </form> : pending ? <form className={styles.timerForm} onSubmit={confirmTime}>
+          <div className={styles.reviewTitle}><strong>{L('Preglej zaključeni vnos', 'Review the completed entry')}</strong><span>{pending.projectName} · {pending.serviceName || L('brez oznake storitve', 'no service label')}</span></div>
+          <label><span>{L('Ure', 'Hours')}</span><input name="ure" type="number" min="0" step="1" value={ureVnos} onChange={e => setUreVnos(e.target.value)} /></label>
+          <label><span>{L('Minute', 'Minutes')}</span><input name="min" type="number" min="0" max="59" step="1" value={minVnos} onChange={e => setMinVnos(e.target.value)} /></label>
+          {poljeZnesek()}
+          <label><span>{L('Obseg', 'Scope')}</span><select name="scope" defaultValue={pending.scopeStatus}><option value="included">{L('Vključeno v dogovor', 'Included in the agreement')}</option><option value="extra">{L('Dodatno delo', 'Extra work')}</option></select></label>
+          <label><span>{L('Zakaj je delo odstopalo od načrta?', 'Why did the work differ from the plan?')}</span><select name="reason"><option value="">Ni odstopanja</option><option>Zahtevnejše od pričakovanega</option><option>Preveč popravkov</option><option>Nejasen brief</option><option>Dodatne zahteve</option><option>Veliko komunikacije</option><option>Administracija</option><option>Novo področje ali učenje</option><option>Ta vrsta dela mi ne ustreza</option></select></label>
+          <label><span>{L('Zasebna opomba', 'Private note')}</span><input name="note" placeholder={L('Kaj boš naslednjič spremenila pri ceni ali obsegu?', 'What will you change next time in price or scope?')} /></label>
+          <button type="submit">{L('Potrdi zasebni vnos', 'Confirm private entry')}</button>
+      </form> : null}
+    </section>}
+    {/* Prisotnost ima od 25. 8. svojo stran (/kalkulator/evidenca-casa) in svojo
+        postavko v meniju: zapis je o OSEBI (prihod, odhod, ZEPDSV), stoparica pa
+        meri ure na PROJEKTU. Na strani Stoparice je zato ni vec. */}
+    {view !== 'time' && <section className={`${styles.timer} ${styles.evidenca}`}>
       <header><p>{L('PRISOTNOST', 'ATTENDANCE')}</p><h2>{L('Mesečna evidenca delovnega časa', 'Monthly work-time record')}</h2><span>{L('Prihod, odhod, malica in vrsta dneva — mesečni pregled in napredek proti cilju se izračunata sama.', 'Arrival, departure, break and day type — the monthly overview and progress toward the goal are calculated for you.')}</span></header>
 
       <div className={styles.prisotnost}>
@@ -1091,7 +1099,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             : L(`+${izpisMinut(-mesecOstaneMinut)} viška`, `+${izpisMinut(-mesecOstaneMinut)} over`)}
         </span>
       </div>
-    </section>
+    </section>}
 
     <section className={styles.history}>
       {omejeno

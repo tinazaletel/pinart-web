@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import BusinessPlanWorkspace from '@/components/BusinessPlanWorkspace';
 import NazajLink from '@/components/NazajLink';
-import EvidencaCasa from '@/components/EvidencaCasa';
 import styles from '../pregled/pregled.module.css';
 
 export const metadata: Metadata = { title: 'Evidenca delovnega časa | Pinart Flow', robots: { index: false, follow: false } };
@@ -29,7 +29,11 @@ export default async function EvidencaCasaPage({ params }: { params: Promise<{ l
             <h1>{jeEn ? 'When the work actually happened.' : 'Kdaj je delo res potekalo.'}</h1>
           </div>
         </header>
-        <EvidencaCasa />
+        {/* Vpis prihoda in odhoda je bil doslej na strani Stoparice; sodi sem,
+            k Prisotnosti. Kartica ze vsebuje mesecno tabelo z barvnimi znackami
+            in izvoz za HR, zato EvidencaCasa (druga, suhoparna tabela istega
+            meseca) tu odpade — podvajali sta se. */}
+        <BusinessPlanWorkspace view="prisotnost" />
       </section>
     </main>
   );

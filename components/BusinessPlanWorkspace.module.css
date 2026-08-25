@@ -503,14 +503,15 @@
 .casPogled { grid-template-columns: minmax(0, 27rem) minmax(0, 1fr); align-items: start; column-gap: 1rem; }
 .casPogled .notice   { grid-column: 1 / -1; order: 0; }
 .casPogled .layout   { grid-column: 1; order: 1; }
-.casPogled .evidenca { grid-column: 2; order: 1; }
-.casPogled .history  { grid-column: 2; order: 2; }
+.casPogled .pregled  { grid-column: 2; order: 1; }
+.casPogled .evidenca { grid-column: 2; order: 2; }
+.casPogled .history  { grid-column: 2; order: 3; }
 .casPogled .summary  { grid-column: 1 / -1; order: 3; }
 /* pod 1100 px ni prostora za dva stolpca -> vse eno pod drugim:
    Štoparica -> Evidenca -> Dnevnik */
 @media (max-width: 1100px) {
   .casPogled { grid-template-columns: minmax(0, 1fr); }
-  .casPogled .layout, .casPogled .evidenca, .casPogled .history { grid-column: 1; }
+  .casPogled .layout, .casPogled .pregled, .casPogled .evidenca, .casPogled .history { grid-column: 1; }
   .casPogled .layout   { order: 1; }
   .casPogled .evidenca { order: 2; }
   .casPogled .history  { order: 3; }
