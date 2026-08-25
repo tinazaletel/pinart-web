@@ -73,6 +73,12 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
     box-shadow:0 10px 30px rgba(40,30,60,.08)}
   .kartica h2{font-size:.98rem;font-weight:750;margin-bottom:.3rem}
   .kartica p{font-size:.86rem;line-height:1.5;color:#5c5650;margin-bottom:.85rem}
+  .geslo-ovoj{position:relative;display:block}
+  .geslo-ovoj input{width:100%;box-sizing:border-box;padding-right:2.9rem}
+  .geslo-ovoj button{position:absolute;right:.35rem;top:50%;transform:translateY(-50%);
+    display:grid;place-items:center;width:2.2rem;height:2.2rem;margin:0;padding:0;
+    border:none;background:none;color:rgba(17,17,17,.55);cursor:pointer}
+  .geslo-ovoj button:hover{color:#111}
   .nazaj{display:inline-block;margin-bottom:1.2rem;font-size:.9rem;font-weight:600;color:rgba(17,17,17,.72);text-decoration:none}
   .nazaj:hover{color:#111}
   .se-ne{margin-top:1.1rem;padding-top:1rem;border-top:1px solid rgba(17,17,17,.12);text-align:center}
@@ -108,7 +114,14 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
     <p>${en ? 'Enter the password we sent you.' : 'Vpiši geslo, ki si ga dobil/-a od nas.'}</p>
     <form id="vstop">
       <label for="geslo">${en ? 'Password' : 'Geslo'}</label>
-      <input id="geslo" name="geslo" type="password" autocomplete="current-password" required maxlength="200">
+      <span class="geslo-ovoj">
+        <input id="geslo" name="geslo" type="password" autocomplete="current-password" required maxlength="200">
+        <button type="button" id="okoGesla" aria-label="${en ? 'Show password' : 'Pokaži geslo'}">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z"/><circle cx="12" cy="12" r="2.6"/><path id="okoCrta" d="m4 20 16-16"/>
+          </svg>
+        </button>
+      </span>
       <button type="submit">${en ? 'Sign in' : 'Prijavi se'}</button>
       <p class="sporocilo" id="odzivGeslo" role="status"></p>
     </form>
@@ -150,6 +163,14 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
       })
       .catch(function(){ po.className='sporocilo napaka'; po.textContent=${en ? "'No connection. Try again.'" : "'Ni povezave. Poskusi znova.'"}; })
       .then(function(){ g.disabled = false; });
+  });
+  var oko = document.getElementById('okoGesla');
+  oko.addEventListener('click', function(){
+    var g = document.getElementById('geslo'), crta = document.getElementById('okoCrta');
+    var skrito = g.type === 'password';
+    g.type = skrito ? 'text' : 'password';
+    crta.style.display = skrito ? 'none' : '';
+    g.focus();
   });
   var vf = document.getElementById('vstop'), vo = document.getElementById('odzivGeslo');
   vf.addEventListener('submit', function(e){
