@@ -20,9 +20,11 @@ export default async function EvidencaCasaPage({ params }: { params: Promise<{ l
     <main className={styles.shell}>
       <DashboardSidebar base={base} active="evidenca" />
       <section className={styles.workspace}>
-        <NazajLink rezerva="/kalkulator/profil" label={jeEn ? 'Back to profile' : 'Nazaj na profil'} />
         <header className={styles.topbar}>
           <div>
+            {/* Povezava sodi V glavo, ne nadnjo: zunaj nje je stala ob levem robu
+                delovne povrsine in ni bila poravnana z naslovom (Tina, 25. 8.). */}
+            <NazajLink rezerva="/kalkulator/profil" label={jeEn ? 'Back to profile' : 'Nazaj na profil'} />
             <p className={styles.eyebrow}>{jeEn ? 'WORKING TIME RECORDS' : 'EVIDENCA DELOVNEGA ČASA'}</p>
             <h1>{jeEn ? 'When the work actually happened.' : 'Kdaj je delo res potekalo.'}</h1>
           </div>
