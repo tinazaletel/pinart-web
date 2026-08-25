@@ -71,6 +71,11 @@ const ZAKLENJENO_HTML = `<!doctype html>
     box-shadow:0 10px 30px rgba(40,30,60,.08)}
   .kartica h2{font-size:.98rem;font-weight:750;margin-bottom:.3rem}
   .kartica p{font-size:.86rem;line-height:1.5;color:#5c5650;margin-bottom:.85rem}
+  .nazaj{display:inline-block;margin-bottom:1.2rem;font-size:.9rem;font-weight:600;color:rgba(17,17,17,.72);text-decoration:none}
+  .nazaj:hover{color:#111}
+  .se-ne{margin-top:1.1rem;padding-top:1rem;border-top:1px solid rgba(17,17,17,.12);text-align:center}
+  .se-ne p{margin:0 0 .6rem;font-size:.9rem;color:rgba(17,17,17,.7)}
+  .se-ne button{background:transparent;color:#111;border:1px solid rgba(17,17,17,.35)}
   label{display:block;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
     color:#6b655d;margin-bottom:.25rem}
   input{width:100%;padding:.7rem .85rem;border:1px solid rgba(17,17,17,.14);border-radius:.7rem;
@@ -91,31 +96,38 @@ const ZAKLENJENO_HTML = `<!doctype html>
 <div class="scrim"></div>
 <div class="w">
   <div class="ey"><span class="pika"></span>Pinart Flow</div>
+  <a class="nazaj" href="/">&larr; Nazaj na predstavitev</a>
   <h1>Še <em>zadnje teste</em> delamo.</h1>
   <p class="uvod">Flow je v zaključnem testiranju in pride na trg predvidoma v začetku septembra. Do takrat je brezplačni kalkulator odprt za vse — brez računa in brez prijave.</p>
   <a class="kalk" href="/kalkulator/orodje">Preizkusi brezplačni kalkulator &rarr;</a>
 
   <div class="kartica">
-    <h2>Bi testiral(a) pred zagonom?</h2>
-    <p>Pusti ime in e-naslov. Javimo se ti z dostopom — in ko odpremo, boš med prvimi.</p>
-    <form id="prijava">
+    <h2>Vstop za testerje</h2>
+    <p>Vpiši ime, e-naslov in geslo, ki si ga dobil/-a od nas.</p>
+    <form id="vstop">
       <label for="ime">Ime</label>
       <input id="ime" name="ime" autocomplete="name" required maxlength="200">
       <label for="email">E-naslov</label>
       <input id="email" name="email" type="email" autocomplete="email" required maxlength="200">
-      <button type="submit">Prijavi me</button>
-      <p class="sporocilo" id="odziv" role="status"></p>
+      <label for="geslo">Geslo</label>
+      <input id="geslo" name="geslo" type="password" autocomplete="current-password" required maxlength="200">
+      <button type="submit">Prijavi se</button>
+      <p class="sporocilo" id="odzivGeslo" role="status"></p>
     </form>
 
-    <details class="geslo">
-      <summary>Imam geslo za beto</summary>
-      <form id="vstop">
-        <label for="geslo">Geslo</label>
-        <input id="geslo" name="geslo" type="password" autocomplete="current-password" required maxlength="200">
-        <button type="submit">Vstopi</button>
-        <p class="sporocilo" id="odzivGeslo" role="status"></p>
-      </form>
-    </details>
+    <div class="se-ne">
+      <p>Še nisi tester?</p>
+      <button type="button" id="odpriPrijavo">Prijavi se za testiranje</button>
+    </div>
+
+    <form id="prijava" hidden>
+      <label for="pime">Ime</label>
+      <input id="pime" name="ime" autocomplete="name" required maxlength="200">
+      <label for="pemail">E-naslov</label>
+      <input id="pemail" name="email" type="email" autocomplete="email" required maxlength="200">
+      <button type="submit">Pošlji prijavo</button>
+      <p class="sporocilo" id="odziv" role="status"></p>
+    </form>
   </div>
 </div>
 <script>
@@ -124,6 +136,11 @@ const ZAKLENJENO_HTML = `<!doctype html>
     return fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(telo)})
       .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); });
   }
+  var odpri = document.getElementById('odpriPrijavo');
+  odpri.addEventListener('click', function(){
+    var f = document.getElementById('prijava');
+    f.hidden = false; odpri.parentNode.hidden = true; f.querySelector('input').focus();
+  });
   var pf = document.getElementById('prijava'), po = document.getElementById('odziv');
   pf.addEventListener('submit', function(e){
     e.preventDefault();
@@ -140,7 +157,7 @@ const ZAKLENJENO_HTML = `<!doctype html>
   vf.addEventListener('submit', function(e){
     e.preventDefault();
     var g = vf.querySelector('button'); g.disabled = true; vo.textContent = ''; vo.className='sporocilo';
-    poslji('/api/beta', {dejanje:'geslo', geslo: vf.geslo.value})
+    poslji('/api/beta', {dejanje:'geslo', geslo: vf.geslo.value, ime: vf.ime.value, email: vf.email.value})
       .then(function(r){
         if(r.ok){ location.reload(); }
         else { vo.className='sporocilo napaka'; vo.textContent='Geslo ni pravilno.'; g.disabled = false; }

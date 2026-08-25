@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { posiljatelj } from '@/lib/posiljatelj';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 /* VSTOP V ZAPRTO BETO in PRIJAVA TESTERJEV.
  *
@@ -41,6 +42,21 @@ export async function POST(request: Request) {
     const pravo = process.env.SITE_GESLO || '';
     if (!pravo || !vpisano || vpisano.length > MAX || vpisano !== pravo) {
       return NextResponse.json({ napaka: 'Geslo ni pravilno.' }, { status: 401 });
+    }
+    /* Tina hoce vedeti, KDO je vstopil, ne le da je geslo pravilno: zato
+       vstopni obrazec poslje tudi ime in e-naslov. Zapis je postranski —
+       ce pade, vstop vseeno uspe. */
+    const vstopnoIme = typeof telo.ime === 'string' ? telo.ime.trim().slice(0, MAX) : '';
+    const vstopniMail = typeof telo.email === 'string' ? telo.email.trim().slice(0, MAX) : '';
+    if (vstopnoIme && vstopniMail) {
+      try {
+        const admin = createAdminClient();
+        if (admin) {
+          await admin.from('beta_vstopi').insert({ ime: vstopnoIme, email: vstopniMail.toLowerCase() });
+        }
+      } catch (napaka) {
+        console.error('Zapis vstopa v beto ni uspel:', napaka instanceof Error ? napaka.message : napaka);
+      }
     }
     const res = NextResponse.json({ ok: true });
     res.cookies.set('flow_gate', pravo, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 30 });
