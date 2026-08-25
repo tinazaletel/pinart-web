@@ -78,14 +78,14 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
     setObrazec({
       naslov: p.naslov || '', strankaId: p.strankaId || '', zacetek: p.zacetek || '', rok: p.rok || '',
       status: p.status || 'aktiven', opisStranke: p.opisStranke || '', panoga: p.panoga || '',
-      ciljnaSkupina: p.ciljnaSkupina || '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>,
+      ciljnaSkupina: p.ciljnaSkupina || '', podrobnosti: p.podrobnosti || '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>,
       dizajnZelje: p.dizajnZelje || '', voice: p.voice || '', konkurenca: p.konkurenca || '',
       cilji: p.cilji || [], dodatnaVprasanja: p.dodatnaVprasanja || [], povezave: p.povezave || [], dodeljeni: p.dodeljeni || [],
     });
     setNovKorak(13); setPodrobnostiPotrjene(true); /* urejanje: vse takoj vidno */
   }, [searchParams]);
 
-  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, opisStranke: '', panoga: '', ciljnaSkupina: '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>, dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
+  const prazenObrazec = () => ({ naslov: '', strankaId: '', zacetek: '', rok: '', status: 'aktiven' as ProjektStatus, podrobnosti: '', opisStranke: '', panoga: '', ciljnaSkupina: '', persona: { kdo: '', upo: '', pain: '', potrebe: '', cilji: '' } as Record<PersonaKljuc, string>, dizajnZelje: '', voice: '', konkurenca: '', cilji: [] as ProjektCilj[], dodatnaVprasanja: [] as ProjektVprasanje[], povezave: [] as ProjektPovezava[], dodeljeni: [] as string[] });
   const [obrazec, setObrazec] = useState(prazenObrazec());
   /* onboarding kot CHAT (glej np-chat-* spodaj): novKorak = do kam je uporabnica
      ze prisla (0..11, 11 = vsa osnovna vprasanja odgovorjena -> dodatno+povezave+ekipa+zakljucek);
@@ -239,6 +239,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       dizajnZelje: obrazec.dizajnZelje.trim() || undefined,
       voice: obrazec.voice.trim() || undefined,
       konkurenca: obrazec.konkurenca.trim() || undefined,
+      podrobnosti: obrazec.podrobnosti.trim() || undefined,
       /* Cilj z izpolnjenim merilom ali tarco, a praznim besedilom, se je tiho
          zavrgel (Tina, 25. 8.: "čas + 800 €" -> cilji: [] v oblaku). Obdrzimo
          vse, kjer je karkoli vpisano; besedilo po potrebi sestavimo iz njiju. */
@@ -254,7 +255,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       rok: obrazec.rok || undefined,
       status: obrazec.status,
       vrsta: (podrobnostiOdprte || obrazec.cilji.some(c => c.besedilo.trim() || c.tarca?.trim())
-        || obrazec.opisStranke.trim() || obrazec.ciljnaSkupina.trim()) ? 'okvir' : 'preprost',
+        || obrazec.opisStranke.trim() || obrazec.ciljnaSkupina.trim() || obrazec.podrobnosti.trim()) ? 'okvir' : 'preprost',
       created: urejam?.created || new Date().toISOString(),
       dodatnaVprasanja: obrazec.dodatnaVprasanja.length ? obrazec.dodatnaVprasanja : undefined,
       povezave: obrazec.povezave.length ? obrazec.povezave : undefined,
@@ -519,6 +520,8 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
               <input type="text" value={obrazec.voice} onChange={event => setObrazec(o => ({ ...o, voice: event.target.value }))} placeholder="npr. toplo in osebno · strokovno · hudomušno …" /></label>
             <label className="np-pod-polje"><span>Kdo je konkurenca?</span>
               <input type="text" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Imena — in kaj naj stranko loči od njih …" /></label>
+            <label className="np-pod-polje"><span>Več podrobnosti</span>
+              <textarea value={obrazec.podrobnosti} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, podrobnosti: event.target.value })); }} placeholder="Karkoli še šteje — obseg, roki po fazah, posebnosti, dogovori …" /></label>
           </div>
         )}
 

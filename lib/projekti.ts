@@ -67,6 +67,8 @@ export interface Projekt {
   dizajnZelje?: string;
   voice?: string;
   konkurenca?: string;
+  /* prosto polje za vse, cesar strukturirana vprasanja ne zajamejo */
+  podrobnosti?: string;
   cilji?: ProjektCilj[];
   zacetek?: string;
   rok?: string;

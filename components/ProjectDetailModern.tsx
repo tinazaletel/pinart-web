@@ -154,6 +154,7 @@ export default function ProjectDetailModern({
     [L('Dizajn želje', 'Design wishes'), real.dizajnZelje],
     [L('Ton / glas', 'Tone / voice'), real.voice],
     [L('Konkurenca', 'Competitors'), real.konkurenca],
+    [L('Več podrobnosti', 'More details'), real.podrobnosti],
   ].filter(([, v]) => v && v.trim()) as Array<[string, string]> : [];
   /* pravi dostop clanov ekipe — risemo ga v isti vrstici kot imena za naloge */
   const dostop = useDostopProjekta(real?.id, real?.strankaId);
