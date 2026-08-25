@@ -3,7 +3,7 @@
 import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { PencilSimple } from '@phosphor-icons/react';
+import { PencilSimple, Timer } from '@phosphor-icons/react';
 import {
   calculatePlan, DEFAULT_BUSINESS_PLAN, deleteCloudPresence, deleteCloudTimeEntry, loadCloudBusinessPlan,
   loadCloudPresence, loadCloudTimeEntries, loadLocalPlan, loadLocalTimeEntries, type BusinessPlan,
@@ -848,7 +848,7 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             in sprasuje o tem, kar se bo sele zgodilo, druga vrstica pa obljubi
             izid — zakaj bi sploh meril. Prej: "Ali se ti je delo po tej ceni
             splacalo?" nad gumbom "Zacni meriti" (Tina, 25. 8.). */}
-        <header><p>{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p><h2>{L('Koliko časa ti vzame ta projekt?', 'How long is this project taking you?')}</h2><span>{L('Vklopi in pusti teči. Ko končaš, vidiš, ali se je cena izšla.', 'Start it and let it run. When you stop, you see whether the price worked out.')}</span><span>{L('Štoparica je zasebna. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The stopwatch is private. It does not track your screen, activity, apps or location.')}</span></header>
+        <header><p className={styles.nadnaslovZIkono}><Timer size={16} weight="bold" aria-hidden />{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p><h2>{L('Koliko časa ti vzame ta projekt?', 'How long is this project taking you?')}</h2><span>{L('Vklopi in pusti teči. Ko končaš, vidiš, ali se je cena izšla.', 'Start it and let it run. When you stop, you see whether the price worked out.')}</span><span>{L('Štoparica je zasebna. Ne beleži zaslona, aktivnosti, aplikacij ali lokacije.', 'The stopwatch is private. It does not track your screen, activity, apps or location.')}</span></header>
 
         {running && timerSkrit ? <div className={styles.tecePas}>
           {/* skrito: merjenje NE stoji, samo ne zavzema pol zaslona */}
