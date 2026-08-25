@@ -244,6 +244,18 @@ Primeri: »Dodaj podatke podjetja« (kalkulator), »Dodaj podrobnosti projekta«
 in »Dodaj svoja vprašanja« (nov projekt), »Nova povezava za stranko« (projekt).
 Če srečaš vrstico-dodaj s polno obrobo, jo popravi na črtkano.
 
+## 13f. Pogovor vodi inline, čarovnik vodi noga
+
+Dve obliki vodenja, vsaka s svojim mestom za »Naprej«:
+
+- **Čarovnik s koraki čez cel zaslon** (ponudba, retainer): Nazaj/Naprej v
+  fiksni nogi — vsebina koraka je dolga, gumb mora biti vedno na dosegu.
+- **Pogovor** (nov projekt): Naprej stoji tik pod aktivnim poljem — roka je,
+  kjer je oko. »Nazaj« ne obstaja, ker je klik na prejšnji mehurček že
+  urejanje tistega odgovora.
+
+Odločeno 25. 8. (Tina: »ok, ne rabi noge«) — ne odpiraj znova ob novih straneh.
+
 ## 14. Nepovratna dejanja povej vnaprej
 
 Kar se ne da razveljaviti, mora biti povedano **preden** človek klikne, ne kot
