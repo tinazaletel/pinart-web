@@ -98,6 +98,11 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
      vrstico s plusom — kdor jih rabi, jo odpre. */
   const [okvir, setOkvir] = useState(false); /* stari chat-nacin — ostaja izklopljen */
   const [podrobnostiOdprte, setPodrobnostiOdprte] = useState(false);
+  /* Safari (se) ne zna field-sizing: content — visino uravnamo ob tipkanju */
+  const rastiTextarea = (el: HTMLTextAreaElement) => {
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
   /* Vrstica podrobnosti je SVOJ korak z Naprej — ce pogovor tece mimo nje,
      jo spregledas (Tina, 25. 8.). */
   const [podrobnostiPotrjene, setPodrobnostiPotrjene] = useState(false);
@@ -364,7 +369,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {okvir && odgovorjen(3) && chatOdgovor(3, obrazec.opisStranke.trim() || 'Brez opisa')}
         {okvir && aktiven(3) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 3); }}>
-            <textarea className="np-chat-polje" value={obrazec.opisStranke} onChange={event => setObrazec(o => ({ ...o, opisStranke: event.target.value }))} placeholder="Npr. lokalna kavarna, širi ponudbo na zajtrke …" rows={3} aria-label="Kaj počne stranka" />
+            <textarea className="np-chat-polje" value={obrazec.opisStranke} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, opisStranke: event.target.value })); }} placeholder="Npr. lokalna kavarna, širi ponudbo na zajtrke …" rows={3} aria-label="Kaj počne stranka" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 3 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
@@ -384,7 +389,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {okvir && odgovorjen(5) && chatOdgovor(5, obrazec.ciljnaSkupina.trim() || 'Preskočena')}
         {okvir && aktiven(5) && (urejamKorak === 5 ? (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(false); }}>
-            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Kdo + starost, kaj uporabljajo, pain points, potrebe, cilji in kanali …" rows={5} aria-label="Ciljna skupina / persona" />
+            <textarea className="np-chat-polje" value={obrazec.ciljnaSkupina} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value })); }} placeholder="Kdo + starost, kaj uporabljajo, pain points, potrebe, cilji in kanali …" rows={5} aria-label="Ciljna skupina / persona" />
             <button type="submit" className="np-chat-naprej">Shrani <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         ) : (
@@ -413,7 +418,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         {okvir && odgovorjen(6) && chatOdgovor(6, obrazec.dizajnZelje.trim() || 'Brez posebnih želja')}
         {okvir && aktiven(6) && (
           <form className="np-chat-vnos" onSubmit={event => { event.preventDefault(); potrdiKorak(urejamKorak !== 6); }}>
-            <textarea className="np-chat-polje" value={obrazec.dizajnZelje} onChange={event => setObrazec(o => ({ ...o, dizajnZelje: event.target.value }))} placeholder="Npr. toplo-nevtralna paleta, minimalizem, reference: …" rows={3} aria-label="Želje glede dizajna" />
+            <textarea className="np-chat-polje" value={obrazec.dizajnZelje} onChange={event => { rastiTextarea(event.currentTarget); setObrazec(o => ({ ...o, dizajnZelje: event.target.value })); }} placeholder="Npr. toplo-nevtralna paleta, minimalizem, reference: …" rows={3} aria-label="Želje glede dizajna" />
             <button type="submit" className="np-chat-naprej">{urejamKorak === 6 ? 'Shrani' : 'Naprej'} <ArrowRight size={15} weight="bold" aria-hidden /></button>
           </form>
         )}
@@ -673,7 +678,9 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-pod-polje{display:grid;gap:.35rem;font-weight:700;font-size:.8rem}
       .np-pod-polje input,.np-pod-polje textarea{width:100%;box-sizing:border-box;padding:.6rem .75rem;
         border:1px solid var(--line);border-radius:.6rem;background:#fff;font:inherit;font-size:.88rem;font-weight:500}
-      .np-pod-polje textarea{min-height:4.2rem;resize:vertical}
+      /* textarea raste z vsebino, brez drsnikov (Tina, 25. 8.) — field-sizing
+         za novejse brskalnike, JS fallback (npRastiTextarea) za Safari */
+      .np-pod-polje textarea{min-height:4.2rem;resize:none;overflow:hidden;field-sizing:content}
       .np-ime-ovoj{position:relative;display:block;width:100%}
       .np-ime-ovoj .np-ime-vnos{position:relative;background:transparent;z-index:1}
       .np-ime-duh{position:absolute;inset:0;z-index:0;display:flex;align-items:center;
