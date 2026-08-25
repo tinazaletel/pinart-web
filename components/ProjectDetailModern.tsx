@@ -159,6 +159,13 @@ export default function ProjectDetailModern({
   /* pravi dostop clanov ekipe — risemo ga v isti vrstici kot imena za naloge */
   const dostop = useDostopProjekta(real?.id, real?.strankaId);
   const [razlagaOdprta, setRazlagaOdprta] = useState(false);
+  /* Polje se raztegne po besedilu — brez notranjega drsnika (Tina, 25. 8.).
+     ref poskrbi za pravo visino ze ob odprtju, onInput med tipkanjem. */
+  const rastiTextarea = (el: HTMLTextAreaElement | null) => {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
 
   /* Porabljene ure na tem projektu. Vnosi casa se vezejo na IME projekta (tako
      jih zapise stoparica), zato primerjamo po imenu — brez sumnikov in velikih
@@ -603,7 +610,7 @@ export default function ProjectDetailModern({
         <div className="pm-dok-vsebina">
           {onSaveBrief && real ? (<>
             {([[L('Cilj / želje', 'Goal / wishes'), 'zelje'], [L('Stranka', 'Client'), 'opisStranke'], [L('Panoga', 'Industry'), 'panoga'], [L('Ciljna publika', 'Target audience'), 'ciljnaSkupina'], [L('Dizajn želje', 'Design wishes'), 'dizajnZelje'], [L('Ton / glas', 'Tone / voice'), 'voice'], [L('Konkurenca', 'Competitors'), 'konkurenca']] as Array<[string, keyof Projekt]>).map(([label, key]) => (
-              <label key={key} className="pm-qa pm-qa-edit"><span className="pm-qa-k">{label}</span><textarea className="pm-inp" rows={2} defaultValue={(real[key] as string) || ''} placeholder={L('Vpiši …', 'Type …')} onBlur={e => onSaveBrief({ [key]: e.target.value.trim() || undefined } as Partial<Projekt>)} /></label>
+              <label key={key} className="pm-qa pm-qa-edit"><span className="pm-qa-k">{label}</span><textarea className="pm-inp" rows={2} ref={rastiTextarea} onInput={e => rastiTextarea(e.currentTarget)} defaultValue={(real[key] as string) || ''} placeholder={L('Vpiši …', 'Type …')} onBlur={e => onSaveBrief({ [key]: e.target.value.trim() || undefined } as Partial<Projekt>)} /></label>
             ))}
             {/* Cilji so del dokumenta tudi med urejanjem -- natisnjen brief brez
                 njih ni cel brief (Tina, 25. 8.). Urejajo se v kartici. */}
@@ -724,6 +731,7 @@ export default function ProjectDetailModern({
         .pm-dokumenti li:has(button:hover), .pm-dokumenti li:has(button:hover) + li,
         .pm-dokumenti li:has(.pm-canvas-link:hover), .pm-dokumenti li:has(.pm-canvas-link:hover) + li { border-top-color:transparent; }
         .pm-dokumenti time { color:var(--pm-muted); font-size:.72rem; font-weight:500; }
+        .pm-dok-vsebina { --pm-ink: var(--ink, oklch(19% 0.014 55)); --pm-paper: var(--paper, oklch(97% 0.012 87)); --pm-line: var(--line, oklch(93% 0.007 82)); --pm-acc: var(--purple, oklch(66% 0.2 297)); --pm-card: #fff; --pm-muted: color-mix(in oklch, var(--ink) 70%, var(--pm-card)); --pm-soft: color-mix(in oklch, var(--ink) 52%, var(--pm-card)); }
         .pm-dok-vsebina section + section { margin-top:1.5rem; }
         .pm-dok-brisi { display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .8rem; border:1px solid color-mix(in oklch, var(--pm-ink) 12%, transparent); border-radius:999px; background:transparent; font:700 .76rem var(--font-sans),sans-serif; color:color-mix(in oklch, var(--pm-ink) 55%, transparent); cursor:pointer; transition:background .15s, color .15s, border-color .15s; }
         .pm-dok-brisi:hover { border-color:oklch(58% .17 25); background:oklch(96% .04 25); color:oklch(48% .17 25); }
@@ -736,12 +744,12 @@ export default function ProjectDetailModern({
         .pm-act:hover { background:color-mix(in oklch, var(--pm-ink) 12%, transparent); color:var(--pm-ink); border-color:transparent; }
         /* urejljiva brief polja (inline v panelu) */
         .pm-qa-edit { display:block; }
-        .pm-inp { width:100%; box-sizing:border-box; margin-top:.3rem; padding:.5rem .6rem; border:1px solid color-mix(in oklch, #fff 55%, transparent); border-radius:.55rem; background:color-mix(in oklch, #fff 34%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); font:inherit; font-size:.9rem; color:var(--pm-ink); resize:vertical; }
-        .pm-inp:focus { outline:none; border-color:var(--pm-ink); }
+        .pm-inp { width:100%; box-sizing:border-box; field-sizing:content; margin-top:.3rem; padding:.5rem .6rem; border:1px solid color-mix(in oklch, var(--pm-ink) 13%, transparent); border-radius:.55rem; background:color-mix(in oklch, #fff 34%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); font:inherit; font-size:.9rem; color:var(--pm-ink); resize:none; overflow:hidden; }
+        .pm-inp:focus { outline:none; border-color:var(--pm-acc); box-shadow:0 0 0 3px color-mix(in oklch, var(--pm-acc) 18%, transparent); }
         .pm-cilji-edit { display:flex; flex-direction:column; gap:.4rem; margin-top:.35rem; }
-        .pm-cilj-row { display:flex; gap:.35rem; align-items:center; }
-        .pm-cilj-row .pm-inp { margin-top:0; }
-        .pm-inp-s { flex:0 0 5.5rem; min-width:0; }
+        .pm-cilj-row { display:flex; gap:.35rem; align-items:center; flex-wrap:wrap; }
+        .pm-cilj-row .pm-inp { margin-top:0; flex:2 1 10rem; min-width:0; }
+        .pm-inp-s { flex:1 1 7.5rem; min-width:0; }
         .pm-cilj-x { flex:none; width:2rem; height:2rem; padding:0; border:1px solid color-mix(in oklch, oklch(52% .16 25) 40%, var(--pm-line)); border-radius:50%; background:transparent; color:oklch(52% .16 25); cursor:pointer; }
         .pm-cilj-add { align-self:flex-start; margin-top:.1rem; padding:.4rem .85rem; border:1px dashed var(--pm-line); border-radius:999px; background:transparent; color:var(--pm-ink); font:inherit; font-size:.82rem; font-weight:600; cursor:pointer; }
         .pm-act:hover { background:var(--pm-paper); }
