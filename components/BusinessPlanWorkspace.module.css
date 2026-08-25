@@ -680,4 +680,4 @@
 /* Desni rob kartice do tabele manjsi od levega — tabela naj seze skoraj do
    roba (Tina, 25. 8.). Negativni margin je na ovoju, ne na tabeli, da
    zaobljeni okvir potuje z njo. */
-.evidenca .mesecTabelaOvoj { margin-right: -.65rem; }
+.evidenca .mesecTabelaOvoj { margin-right: -.65rem; max-width: none; }
