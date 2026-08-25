@@ -964,7 +964,8 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             <button type="button" className={styles.linkGumb} onClick={() => setUrejam(null)}>{L('Prekliči', 'Cancel')}</button>
           </form>
         )}
-        <div className={styles.ethics}><strong>{L('Čas meri donosnost projekta, ne tvoje vrednosti.', 'Time measures a project’s profitability, not your worth.')}</strong><span>{L('Vnosi ostanejo v tvojem računu in se ne delijo s strankami ali vodji.', 'Entries stay in your account and are not shared with clients or managers.')}</span></div>
+        {/* Pojasnilo o zasebnosti odpade: isto ze pove podnaslov strani
+            (Tina, 25. 8.). */}
       </section>
     </div>
 

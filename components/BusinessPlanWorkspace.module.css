@@ -644,3 +644,13 @@
   .pregled .timerForm { grid-template-columns: minmax(0, 1fr); }
   .pregled .timerForm > label:has(input[type='number']) { grid-column: 1 / -1; }
 }
+
+/* Stoparica in Pregled sta na namizju enako visoka: obe kartici se raztegneta
+   cez visino vrstice, da desni obrazec ne visi krajsi ob levi (Tina, 25. 8.).
+   Na ozjih zaslonih (pod 1100 px) sta itak eden pod drugim. */
+@media (min-width: 1101px) {
+  .casPogled { align-items: stretch; }
+  .casPogled .layout { align-self: stretch; }
+  .casPogled .layout > .timer,
+  .casPogled .pregled { height: 100%; }
+}
