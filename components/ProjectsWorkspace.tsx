@@ -215,7 +215,11 @@ const pwStyles = `
    06 Komunikacije/07 Zapiski) — svoj pw- razdelek v duhu .projectNarrative
    kartic (isti border/radius/ozadje odtenek), da se lepo vklopi. */
 .pw-dodatno{display:flex;flex-direction:column;gap:.55rem;margin-top:.55rem}
-.pw-kom-panel{flex:0 1 1040px;min-width:0;max-width:min(1040px,92vw)}
+/* TRDNA sirina, ne po vsebini: fiksni .pw-rail brez width se meri po
+   max-content otrok, zato je bil panel pri vsaki mapi drugace sirok, glava
+   stisnjena (iskalnik cez Klepet), ob prazni vsebini pa se desni rob.
+   (Tina, 25. 8.) width doloci max-content, shrink ostane za ozke zaslone. */
+.pw-kom-panel{flex:0 1 1040px;width:min(1040px,92vw);min-width:0;max-width:min(1040px,92vw)}
 /* okno Nova naloga iz maila */
 .pw-naloga-panel{width:min(560px,94vw);padding:2.4rem 2rem}
 .pw-naloga-obr{display:flex;flex-direction:column;gap:.9rem;margin-top:.6rem}
@@ -268,7 +272,8 @@ body.flow-rail-odprt .pupa-fab{display:none !important}
 .pw-rail-col + .pw-rail-col{border-left:1px solid color-mix(in oklch,var(--ink) 9%,transparent)}
 .pw-rail > .pw-rail-col:first-child{box-shadow:-1.4rem 0 3.4rem -1.2rem oklch(20% .03 55 / .2)}
 /* SAMO ta notranji predal se skrola; X plava, ozadje strani je zaklenjeno */
-.pw-rail-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2.4rem 2rem}
+/* ozji rob: 2rem levo/desno je jemal prostor vsebini (Tina) */
+.pw-rail-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2rem 1.4rem}
 .pw-ai-scroll{display:flex;flex-direction:column;gap:1rem;padding:2.4rem 1.6rem}
 .pw-klepet-scroll{padding:0}
 @keyframes pwRailIn{from{opacity:.35;transform:translateX(26px)}to{opacity:1;transform:none}}
