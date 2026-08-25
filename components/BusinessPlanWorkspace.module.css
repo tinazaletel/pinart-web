@@ -582,7 +582,9 @@
 
 /* "Vec": drugotni gumb po vzoru .linkGumb — pilula z mehko obrobo. Crnega in
    kvadratnega gumba nikjer na sajtu nimamo (Tina, 25. 8.). */
-.vecGumb {
+/* Visja specificnost od .timerForm > button (0,1,1), sicer gumb pobarva crno —
+   ista past kot pri .linkGumb zgoraj. */
+.timerForm > .vecGumb, .vecGumb {
   grid-column: 1 / -1; justify-self: start;
   display: inline-flex; align-items: center; gap: .4rem;
   min-height: 0; padding: .55rem 1.15rem;
@@ -591,4 +593,4 @@
   font: 600 .82rem var(--font-sans), sans-serif; cursor: pointer;
   transition: border-color .15s ease-out, background .15s ease-out;
 }
-.vecGumb:hover { border-color: var(--ink); background: oklch(100% 0 0); }
+.timerForm > .vecGumb:hover, .vecGumb:hover { border-color: var(--ink); background: oklch(100% 0 0); }
