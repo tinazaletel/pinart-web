@@ -298,13 +298,12 @@
    Prej je bil cel stavek na gumbu in se je na telefonu razlezel čez dve vrstici. */
 .rocniVrstica {
   grid-column: 1 / -1;
-  /* SVOJ blok, locen od polj nad njim: kdor casa ni meril sproti, mora pot do
-     rocnega vnosa videti takoj (Tina, 25. 8.). Bela kartica, brez crtkane
-     obrobe — ta ji ni bila vsec. */
+  /* SVOJ blok s crtkano obrobo: kdor casa ni meril sproti, mora pot do rocnega
+     vnosa videti takoj (Tina, 25. 8.). */
   display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .6rem;
   margin-top: .6rem; padding: 1rem 1.1rem;
-  border: 1px solid oklch(22% .015 60 / .06); border-radius: 1.1rem;
-  background: #fff;
+  border: 1px dashed oklch(85% .015 82); border-radius: 1.1rem;
+  background: oklch(99% .004 82 / .7);
 }
 .rocniVrstica > span {
   color: var(--muted); font: 400 .82rem var(--font-sans), sans-serif;
