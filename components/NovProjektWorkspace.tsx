@@ -451,7 +451,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
             <span className="np-okvir-vec-glava"><span aria-hidden>{podrobnostiOdprte ? '−' : '+'}</span>
               {podrobnostiOdprte ? 'Skrij podrobnosti projekta' : 'Dodaj podrobnosti projekta'}
               <CaretDown size={14} weight="bold" className="np-okvir-caret" style={podrobnostiOdprte ? { transform: 'rotate(180deg)' } : undefined} aria-hidden /></span>
-            {!podrobnostiOdprte && <small>Cilji, brief, ciljna skupina, dizajn želje in ton.</small>}
+            {!podrobnostiOdprte && <small>Cilji, stranka, ciljna skupina, videz in ton.</small>}
           </button>
         )}
         {prikazan(9) && podrobnostiOdprte && (
@@ -459,28 +459,28 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
              pogovor z rokom in statusom tece naprej nemoteno — klik prej je
              uporabnico vrgel nazaj na cilje in ji "izgubil" rok (Tina). */
           <div className="np-podrobnosti">
-            <label className="np-pod-polje"><span>Cilji projekta</span>
+            <label className="np-pod-polje"><span>Kaj mora projekt doseči?</span>
               {obrazec.cilji.map(cilj => (
                 <div key={cilj.id} className="np-nov-cilj">
-                  <input type="text" value={cilj.besedilo} onChange={event => posodobiCilj(cilj.id, { besedilo: event.target.value })} placeholder="Cilj, npr. povečati prodajo" />
-                  <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="Tarča, npr. 800 €" />
+                  <input type="text" value={cilj.besedilo} onChange={event => posodobiCilj(cilj.id, { besedilo: event.target.value })} placeholder="npr. nova podoba do septembra" />
+                  <input type="text" value={cilj.tarca || ''} onChange={event => posodobiCilj(cilj.id, { tarca: event.target.value })} placeholder="merilo, npr. 800 € ali 3 objave" />
                   <button type="button" className="np-link-brisi" onClick={() => odstraniCilj(cilj.id)} aria-label="Odstrani cilj">×</button>
                 </div>
               ))}
               <button type="button" className="np-nov-dodaj-cilj" onClick={dodajCilj}>+ Dodaj cilj</button>
             </label>
-            <label className="np-pod-polje"><span>Brief — kaj počne stranka</span>
-              <textarea value={obrazec.opisStranke} onChange={event => setObrazec(o => ({ ...o, opisStranke: event.target.value }))} placeholder="Dejavnost in kontekst stranke …" /></label>
-            <label className="np-pod-polje"><span>Panoga</span>
-              <input type="text" value={obrazec.panoga} onChange={event => setObrazec(o => ({ ...o, panoga: event.target.value }))} placeholder="npr. gostinstvo, gradbeništvo …" /></label>
-            <label className="np-pod-polje"><span>Ciljna skupina</span>
-              <textarea value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Kdo so, kaj potrebujejo, kje jih dosežeš …" /></label>
-            <label className="np-pod-polje"><span>Dizajn želje</span>
-              <textarea value={obrazec.dizajnZelje} onChange={event => setObrazec(o => ({ ...o, dizajnZelje: event.target.value }))} placeholder="Slog, reference, česa ne …" /></label>
-            <label className="np-pod-polje"><span>Ton komunikacije</span>
-              <input type="text" value={obrazec.voice} onChange={event => setObrazec(o => ({ ...o, voice: event.target.value }))} placeholder="npr. topel in oseben / strokoven …" /></label>
-            <label className="np-pod-polje"><span>Konkurenca</span>
-              <input type="text" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Kdo je konkurenca in kaj te loči …" /></label>
+            <label className="np-pod-polje"><span>Kaj počne stranka?</span>
+              <textarea value={obrazec.opisStranke} onChange={event => setObrazec(o => ({ ...o, opisStranke: event.target.value }))} placeholder="Njena dejavnost, izdelki ali storitve in komu prodaja …" /></label>
+            <label className="np-pod-polje"><span>V kateri panogi je stranka?</span>
+              <input type="text" value={obrazec.panoga} onChange={event => setObrazec(o => ({ ...o, panoga: event.target.value }))} placeholder="npr. gostinstvo, kozmetika, gradbeništvo …" /></label>
+            <label className="np-pod-polje"><span>Koga mora projekt nagovoriti?</span>
+              <textarea value={obrazec.ciljnaSkupina} onChange={event => setObrazec(o => ({ ...o, ciljnaSkupina: event.target.value }))} placeholder="Kdo so ti ljudje, kaj jih muči in kje jih dosežeš …" /></label>
+            <label className="np-pod-polje"><span>Kakšen videz si stranka želi?</span>
+              <textarea value={obrazec.dizajnZelje} onChange={event => setObrazec(o => ({ ...o, dizajnZelje: event.target.value }))} placeholder="Slog, barve, reference — in česa noče …" /></label>
+            <label className="np-pod-polje"><span>Kako naj zveni komunikacija?</span>
+              <input type="text" value={obrazec.voice} onChange={event => setObrazec(o => ({ ...o, voice: event.target.value }))} placeholder="npr. toplo in osebno · strokovno · hudomušno …" /></label>
+            <label className="np-pod-polje"><span>Kdo je konkurenca?</span>
+              <input type="text" value={obrazec.konkurenca} onChange={event => setObrazec(o => ({ ...o, konkurenca: event.target.value }))} placeholder="Imena — in kaj naj stranko loči od njih …" /></label>
           </div>
         )}
 
