@@ -3,7 +3,7 @@
 import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, PencilSimple, Timer } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, PencilSimple } from '@phosphor-icons/react';
 import {
   calculatePlan, DEFAULT_BUSINESS_PLAN, deleteCloudPresence, deleteCloudTimeEntry, loadCloudBusinessPlan,
   loadCloudPresence, loadCloudTimeEntries, loadLocalPlan, loadLocalTimeEntries, type BusinessPlan,
@@ -853,11 +853,9 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
       </form>}
 
       <section className={styles.timer} id="timer" ref={timerRef2}>
-        {/* Nadnaslov pove IME orodja (ujema se z menijem), naslov je v sedanjiku
-            in sprasuje o tem, kar se bo sele zgodilo, druga vrstica pa obljubi
-            izid — zakaj bi sploh meril. Prej: "Ali se ti je delo po tej ceni
-            splacalo?" nad gumbom "Zacni meriti" (Tina, 25. 8.). */}
-        <header><p className={styles.nadnaslovZIkono}><Timer size={16} weight="bold" aria-hidden />{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p><h2>{L('Štoparica', 'Stopwatch')}</h2></header>
+        {/* Samo nadnaslov: ikona in naslov "Stoparica" sta ponavljala isto besedo
+            trikrat zapored (Tina, 25. 8.). Pojasnilo je pod naslovom strani. */}
+        <header><p>{view === 'time' ? '01' : '02'} · {L('ŠTOPARICA', 'STOPWATCH')}</p></header>
 
         {running && timerSkrit ? <div className={styles.tecePas}>
           {/* skrito: merjenje NE stoji, samo ne zavzema pol zaslona */}
