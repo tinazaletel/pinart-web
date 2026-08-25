@@ -1028,6 +1028,25 @@ export default function ContractWorkspace({ base }: { base: string }) {
             </div>
           );
         })()}
+        {/* TRI POTI ENAKOVREDNO (ChatGPT/Codex tocka 4): tretja je bila skrita
+            kot povezava na dnu in je nihce ni nasel. */}
+        <div className="pg-poti" role="group" aria-label={L('Iz česa nastane pogodba', 'What the contract is built from')}>
+          <button type="button" className={'pg-pot' + (vir === 'ponudba' ? ' on' : '')}
+            onClick={() => { setOdStranke(false); setVstopOdprt(true); }}>
+            <strong>{L('Ustvari iz ponudbe', 'Create from an offer')}</strong>
+            <small>{L('Obseg, cena in naročnik se prenesejo.', 'Scope, price and client carry over.')}</small>
+          </button>
+          <button type="button" className={'pg-pot' + (vir === 'rocno' ? ' on' : '')}
+            onClick={() => { setOdStranke(false); setOfferId(''); }}>
+            <strong>{L('Ustvari brez ponudbe', 'Create without an offer')}</strong>
+            <small>{L('Samostojna pogodba, vse vpišeš sama.', 'A standalone contract you fill in yourself.')}</small>
+          </button>
+          <button type="button" className={'pg-pot' + (vir === 'stranka' ? ' on' : '')}
+            onClick={() => setOdStranke(true)}>
+            <strong>{L('Naloži pogodbo stranke', 'Upload the client\u2019s contract')}</strong>
+            <small>{L('Prejeto pogodbo shraniš in pregledaš.', 'Save and review a received contract.')}</small>
+          </button>
+        </div>
         {!odStranke ? (
           <>
             {/* PONUDBA (iskalen combobox) + DATUM. Izbrana ponudba => vir 'ponudba'
@@ -1099,9 +1118,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 <p className="pg-namig">{L('Priporočamo: najprej ustvari ', 'We recommend: first create an ')}<b>{L('ponudbo', 'offer')}</b>{L(' — obseg, cena in številka se v pogodbo prenesejo sami. ', ' — the scope, price and number carry over into the contract automatically. ')}<a href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator →', 'Open calculator →')}</a></p>
               </>
             )}
-            {/* pot "Od stranke": naloži že podpisano/prejeto pogodbo za pregled (ohranjena funkcija) */}
-            <button type="button" className="pg-povezava pg-odstranke-link" onClick={() => setOdStranke(true)}>{L('Imaš pogodbo od stranke? Naloži jo za pregled →', 'Have a contract from the client? Upload it for review →')}</button>
-          </>
+                      </>
         ) : (
           /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
           <>
@@ -1470,6 +1487,14 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-klavzule-label{display:block;font-size:.95rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.72);margin:0 0 .5rem}
       .pg-klavzule-pilule{display:flex;flex-wrap:wrap;gap:.4rem}
       /* Cleni kot vrstice s POSLEDICO v isti velikosti kot ime (ne drobni tisk) */
+      .pg-poti{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin:0 0 1.1rem}
+      @media (max-width:640px){.pg-poti{grid-template-columns:minmax(0,1fr)}}
+      .pg-pot{display:grid;gap:.2rem;text-align:left;padding:.75rem .85rem;border:1px solid rgba(17,17,17,.14);
+        border-radius:12px;background:#fff;cursor:pointer;font:inherit;transition:border-color .15s ease,background .15s ease}
+      .pg-pot:hover{border-color:rgba(17,17,17,.4)}
+      .pg-pot.on{border-color:#7C3AED;background:oklch(97.5% .025 297)}
+      .pg-pot strong{font-size:.92rem}
+      .pg-pot small{font-size:.8rem;font-weight:400;color:rgba(17,17,17,.72);line-height:1.4}
       .pg-klavzule-seznam{display:grid;gap:.45rem}
       .pg-klavzula{display:flex;gap:.7rem;align-items:flex-start;width:100%;text-align:left;
         padding:.7rem .85rem;border:1px solid rgba(17,17,17,.14);border-radius:12px;
