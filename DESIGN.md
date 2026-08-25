@@ -229,6 +229,21 @@ vsebino predala, ne izida, ki bo šele nastal — in naj pove, **čigavi** podat
 so to, sicer uporabnik ne ve, ali sprašujemo po njem ali po njegovi stranki
 (glej [13c](#13c-stranka-v-vmesniku-naročnik-v-dokumentu)).
 
+## 13e. Vrstica »+ Dodaj …« — standardni videz
+
+Zaprta vrstica za neobvezno vsebino (13d) izgleda povsod enako:
+
+- **obroba: 1px črtkana** (`dashed`, ~30 % ink) — črtkano pomeni »tu lahko
+  nekaj dodaš«, polna obroba pomeni »to tu že je«
+- radij 12 px, bela podlaga, mehka senca
+- naslov: `+ Dodaj …` v **barvi poudarka**, krepko, ~.92 rem
+- pod njim en pripis v ~.8 rem, 70 % ink — pove, kaj se odpre oz. kam gre
+- kazalec (CaretDown) na desnem robu naslova
+
+Primeri: »Dodaj podatke podjetja« (kalkulator), »Dodaj podrobnosti projekta«
+in »Dodaj svoja vprašanja« (nov projekt), »Nova povezava za stranko« (projekt).
+Če srečaš vrstico-dodaj s polno obrobo, jo popravi na črtkano.
+
 ## 14. Nepovratna dejanja povej vnaprej
 
 Kar se ne da razveljaviti, mora biti povedano **preden** človek klikne, ne kot

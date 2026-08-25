@@ -6536,7 +6536,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            polnem pomenu — je ponudba, ne zahteva, zato brez ozadja in obrobe. */
         .cw .chat-preskoci { border: 0; background: none; color: rgba(17,17,17,.62); font: 600 .8rem var(--font-sans), sans-serif; text-decoration: underline; text-underline-offset: .22em; cursor: pointer; }
         .cw .chat-preskoci:hover { color: var(--ink); }
-        .cw .uv-forma .uv-vec { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; margin: .2rem 0 .1rem; padding: .7rem .85rem; border: 1px solid var(--line, rgba(17,17,17,.12)); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+        .cw .uv-forma .uv-vec { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; margin: .2rem 0 .1rem; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3)); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
         .cw .uv-forma .uv-vec:hover { border-color: rgba(17,17,17,.3); }
         .cw .uv-forma .uv-vec-glava { width: 100%; display: flex; align-items: center; gap: .45rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
         .cw .uv-forma .uv-vec-znak { font-size: 1rem; line-height: 1; }

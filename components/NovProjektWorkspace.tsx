@@ -614,7 +614,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
          (Tina, 25. 8.: "premalo vidno in enak dizajn kot pri kalkulatorju") */
       .np-okvir-vec{display:flex;flex-direction:column;align-items:flex-start;gap:.25rem;
         width:min(34rem,calc(100% - 1rem));margin:-.1rem 0 .35rem .3rem;padding:.75rem .95rem;
-        border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font:inherit;
+        border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;cursor:pointer;font:inherit;
         text-align:left;box-shadow:0 4px 14px rgba(40,25,40,.05);transition:border-color .15s ease}
       .np-okvir-vec:hover{border-color:rgba(17,17,17,.35)}
       .np-okvir-vec-glava{width:100%;display:flex;gap:.5rem;align-items:center;
