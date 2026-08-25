@@ -617,11 +617,13 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
         border:1px dashed rgba(17,17,17,.3);border-radius:12px;background:#fff;cursor:pointer;font:inherit;
         text-align:left;box-shadow:0 4px 14px rgba(40,25,40,.05);transition:border-color .15s ease}
       .np-okvir-vec:hover{border-color:rgba(17,17,17,.35)}
+      /* naslov v ISTI velikosti kot chat vprasanja (Tina: "poglej kok je
+         vprasanje veliko") — vrstica je korak pogovora, ne drobna opomba */
       .np-okvir-vec-glava{width:100%;display:flex;gap:.5rem;align-items:center;
-        color:#7C3AED;font-weight:700;font-size:.92rem}
+        color:#7C3AED;font-weight:700;font-size:1.02rem}
       .np-okvir-vec-glava>span[aria-hidden]{font-size:1.05rem;line-height:1}
       .np-okvir-caret{margin-left:auto;color:#7C3AED}
-      .np-okvir-vec small{font-size:.8rem;font-weight:500;color:rgba(17,17,17,.7);line-height:1.45}
+      .np-okvir-vec small{font-size:.84rem;font-weight:500;color:rgba(17,17,17,.7);line-height:1.45}
       .np-ime-ovoj{position:relative;display:block;width:100%}
       .np-ime-ovoj .np-ime-vnos{position:relative;background:transparent;z-index:1}
       .np-ime-duh{position:absolute;inset:0;z-index:0;display:flex;align-items:center;
