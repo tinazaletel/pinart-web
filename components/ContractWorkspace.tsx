@@ -34,21 +34,21 @@ const datStr = (d: Date) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYea
 /* vrste pogodb (skupina A): navadna pogodba o sodelovanju + 5 dodatnih.
    naziv = naslov v dokumentu (h1), slug = predpona imena datoteke, kick = eyebrow (velike crke). */
 type VrstaPog = 'sodelovanje' | 'podjemna' | 'avtorska' | 'licencna' | 'nda' | 'dpa';
-const VRSTE_POG: { id: VrstaPog; label: string; naziv: string; slug: string; kick: string }[] = [
-  { id: 'sodelovanje', label: 'Sodelovanje', naziv: 'Pogodba o poslovnem sodelovanju', slug: 'pogodba', kick: 'POGODBA' },
-  { id: 'podjemna', label: 'Podjemna', naziv: 'Podjemna pogodba', slug: 'podjemna', kick: 'PODJEMNA POGODBA' },
-  { id: 'avtorska', label: 'Avtorska', naziv: 'Avtorska pogodba', slug: 'avtorska', kick: 'AVTORSKA POGODBA' },
-  { id: 'licencna', label: 'Licenčna', naziv: 'Licenčna pogodba', slug: 'licencna', kick: 'LICENČNA POGODBA' },
-  { id: 'nda', label: 'NDA', naziv: 'Sporazum o varovanju zaupnih podatkov (NDA)', slug: 'nda', kick: 'NDA' },
-  { id: 'dpa', label: 'DPA', naziv: 'Pogodba o obdelavi osebnih podatkov (DPA)', slug: 'dpa', kick: 'DPA' },
+const VRSTE_POG: { id: VrstaPog; label: string; naziv: string; slug: string; kick: string; razlaga: string }[] = [
+  { id: 'sodelovanje', label: 'Sodelovanje', naziv: 'Pogodba o poslovnem sodelovanju', slug: 'pogodba', kick: 'POGODBA', razlaga: 'Okvirna pogodba za daljše sodelovanje s stranko: kako delata, roki, plačilo in odpoved. Uporabiš jo, kadar ne gre za eno samo naročilo.' },
+  { id: 'podjemna', label: 'Podjemna', naziv: 'Podjemna pogodba', slug: 'podjemna', kick: 'PODJEMNA POGODBA', razlaga: 'Za konkretno naročilo z dogovorjenim rezultatom (katalog, spletna stran). Poskrbi, da so obseg, rok in plačilo zapisani, preden začneš delati.' },
+  { id: 'avtorska', label: 'Avtorska', naziv: 'Avtorska pogodba', slug: 'avtorska', kick: 'AVTORSKA POGODBA', razlaga: 'Kadar nastane avtorsko delo in se dogovarjata o pravicah: kdo sme oblikovanje uporabljati, kje in kako dolgo. Brez nje ostane nedorečeno, kaj stranka sploh sme.' },
+  { id: 'licencna', label: 'Licenčna', naziv: 'Licenčna pogodba', slug: 'licencna', kick: 'LICENČNA POGODBA', razlaga: 'Dela ne prodaš, ampak daš dovoljenje za uporabo: teritorij, ekskluzivnost, trajanje, poročanje. Uporabna, kadar isto delo licenciraš več strankam.' },
+  { id: 'nda', label: 'NDA', naziv: 'Sporazum o varovanju zaupnih podatkov (NDA)', slug: 'nda', kick: 'NDA', razlaga: 'Sporazum o varovanju zaupnih podatkov. Kar izveš pri delu, ostane med vama. Podpišeta ga, preden si izmenjata občutljivo gradivo, na primer nelansiran izdelek ali cene.' },
+  { id: 'dpa', label: 'DPA', naziv: 'Pogodba o obdelavi osebnih podatkov (DPA)', slug: 'dpa', kick: 'DPA', razlaga: 'Pogodba o obdelavi osebnih podatkov. GDPR jo zahteva, kadar za stranko obdeluješ osebne podatke njenih ljudi, na primer pošiljaš e-novice na njen seznam naročnikov.' },
 ];
-const VRSTE_POG_EN: Record<VrstaPog, { naziv: string; kick: string }> = {
-  sodelovanje: { naziv: 'Business Cooperation Agreement', kick: 'AGREEMENT' },
-  podjemna: { naziv: 'Services Agreement', kick: 'SERVICES AGREEMENT' },
-  avtorska: { naziv: 'Copyright Agreement', kick: 'COPYRIGHT AGREEMENT' },
-  licencna: { naziv: 'Licence Agreement', kick: 'LICENCE AGREEMENT' },
-  nda: { naziv: 'Non-Disclosure Agreement (NDA)', kick: 'NDA' },
-  dpa: { naziv: 'Data Processing Agreement (DPA)', kick: 'DPA' },
+const VRSTE_POG_EN: Record<VrstaPog, { naziv: string; kick: string; razlaga: string }> = {
+  sodelovanje: { naziv: 'Business Cooperation Agreement', kick: 'AGREEMENT', razlaga: 'A framework agreement for an ongoing relationship: how you work together, deadlines, payment and termination. Use it when the work is not a single order.' },
+  podjemna: { naziv: 'Services Agreement', kick: 'SERVICES AGREEMENT', razlaga: 'For a specific order with an agreed result (a catalogue, a website). It puts scope, deadline and payment in writing before you start.' },
+  avtorska: { naziv: 'Copyright Agreement', kick: 'COPYRIGHT AGREEMENT', razlaga: 'For when a copyrighted work is created and you agree on rights: who may use the design, where and for how long. Without it, what the client may do stays undefined.' },
+  licencna: { naziv: 'Licence Agreement', kick: 'LICENCE AGREEMENT', razlaga: 'You do not sell the work, you grant permission to use it: territory, exclusivity, term, reporting. Useful when you licence the same work to more than one client.' },
+  nda: { naziv: 'Non-Disclosure Agreement (NDA)', kick: 'NDA', razlaga: 'A non-disclosure agreement. What you learn on the job stays between you. Signed before you exchange sensitive material, such as an unreleased product or pricing.' },
+  dpa: { naziv: 'Data Processing Agreement (DPA)', kick: 'DPA', razlaga: 'A data processing agreement. GDPR requires it when you process personal data of the client\u2019s people, for example sending newsletters to their subscriber list.' },
 };
 /* kratke oznake pilul (tabov) za angleski prikaz — samo UI chrome, NE vpliva na shranjen naslov (ostane SL label) */
 const VRSTE_LABEL_EN: Record<VrstaPog, string> = {
@@ -125,6 +125,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
      Privzeto 'sodelovanje' = obstojece obnasanje nespremenjeno. */
   const [vrstaPog, setVrstaPog] = useState<VrstaPog>('sodelovanje');
   const [vrstaSheetOdprt, setVrstaSheetOdprt] = useState(false); /* mobile: dropdown -> slide-up */
+  const [vrsteRazlaga, setVrsteRazlaga] = useState(false); /* "?" ob vrstah: kaj je in zakaj jo rabis */
   /* izklopljeni opcijski cleni (po id) za trenutno vrsto; ob menjavi vrste se ponastavi na privzeto */
   const [izklKlavzule, setIzklKlavzule] = useState<Set<string>>(() => privzetoIzklop('sodelovanje'));
   const [offerId, setOfferId] = useState('');
@@ -976,16 +977,31 @@ export default function ContractWorkspace({ base }: { base: string }) {
         <span className="pg-mehur"><b>{L('Iz česa nastane pogodba?', 'What is the contract built from?')}</b><small>{L('Če obstaja ponudba, jo izberi — naročnik in obseg se predizpolnita. Sicer pusti »Brez ponudbe« za samostojno pogodbo.', 'If an offer exists, pick it — the client and scope are pre-filled. Otherwise leave “No offer” for a standalone contract.')}</small></span>
       </div>
       <section className="pg-sek pg-vstop-panel">
-        {/* vrsta dokumenta: 6 vrst pogodb. Desktop = pilule; mobile = dropdown -> slide-up */}
-        <div className="pg-vrstapog" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
-          {VRSTE_POG.map(v => (
-            <button key={v.id} type="button" aria-label={jeEn ? VRSTE_POG_EN[v.id].naziv : v.naziv} aria-pressed={vrstaPog === v.id} className={vrstaPog === v.id ? 'on' : ''} onClick={() => menjajVrsto(v.id)}>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</button>
-          ))}
+        {/* vrsta dokumenta: 6 vrst pogodb. Desktop = pilule; mobile = dropdown -> slide-up.
+            "?" desno odpre razlago vseh sestih: kaj je in zakaj jo rabis (Tina, 25. 8.) */}
+        <div className="pg-vrsta-vrsta">
+          <div className="pg-vrstapog" role="group" aria-label={L('Vrsta dokumenta', 'Document type')}>
+            {VRSTE_POG.map(v => (
+              <button key={v.id} type="button" aria-label={jeEn ? VRSTE_POG_EN[v.id].naziv : v.naziv} aria-pressed={vrstaPog === v.id} className={vrstaPog === v.id ? 'on' : ''} onClick={() => menjajVrsto(v.id)}>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</button>
+            ))}
+          </div>
+          <button type="button" className="pg-vrsta-drop" aria-haspopup="dialog" aria-expanded={vrstaSheetOdprt} onClick={() => setVrstaSheetOdprt(true)}>
+            <span className="pg-vrsta-drop-oznaka">{L('Vrsta dokumenta', 'Document type')}</span>
+            <span className="pg-vrsta-drop-val">{jeEn ? VRSTE_LABEL_EN[vrstaPog] : VRSTE_POG.find(v => v.id === vrstaPog)!.label}<CaretDown size={16} weight="bold" aria-hidden /></span>
+          </button>
+          <button type="button" className="pg-pomoc" aria-expanded={vrsteRazlaga}
+            aria-label={L('Katera pogodba je katera?', 'Which contract is which?')}
+            onClick={() => setVrsteRazlaga(o => !o)}>?</button>
         </div>
-        <button type="button" className="pg-vrsta-drop" aria-haspopup="dialog" aria-expanded={vrstaSheetOdprt} onClick={() => setVrstaSheetOdprt(true)}>
-          <span className="pg-vrsta-drop-oznaka">{L('Vrsta dokumenta', 'Document type')}</span>
-          <span className="pg-vrsta-drop-val">{jeEn ? VRSTE_LABEL_EN[vrstaPog] : VRSTE_POG.find(v => v.id === vrstaPog)!.label}<CaretDown size={16} weight="bold" aria-hidden /></span>
-        </button>
+        {vrsteRazlaga && (
+          <div className="pg-vrste-razlaga">
+            {VRSTE_POG.map(v => (
+              <p key={v.id} className={vrstaPog === v.id ? 'on' : ''}>
+                <b>{jeEn ? VRSTE_LABEL_EN[v.id] : v.label}</b> — {jeEn ? VRSTE_POG_EN[v.id].razlaga : v.razlaga}
+              </p>
+            ))}
+          </div>
+        )}
         {vrstaSheetOdprt && typeof document !== 'undefined' && createPortal(
           <div className="pg-vrsta-back" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setVrstaSheetOdprt(false); }}>
             <div className="pg-vrsta-sheet" role="dialog" aria-modal="true" aria-label={L('Vrsta dokumenta', 'Document type')}>
@@ -1473,6 +1489,15 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
       /* preklop vrste dokumenta (Pogodba o sodelovanju | NDA) — dve pilули, akcent za aktivno,
          da se locita od izbire vira (ta uporablja ink) */
+      .pg-vrsta-vrsta{display:flex;align-items:center;gap:.55rem;margin:0 0 1rem}
+      .pg-vrsta-vrsta>.pg-vrstapog{margin:0}
+      .pg-pomoc{flex:none;width:1.55rem;height:1.55rem;border:1px solid rgba(17,17,17,.22);border-radius:50%;background:transparent;color:rgba(17,17,17,.55);font:700 .8rem inherit;line-height:1;cursor:pointer;transition:border-color .15s,color .15s}
+      .pg-pomoc:hover,.pg-pomoc[aria-expanded="true"]{border-color:var(--accent,#B25476);color:var(--accent,#B25476)}
+      .pg-vrste-razlaga{margin:-.35rem 0 1.1rem;padding:.9rem 1.05rem;border:1px solid rgba(178,84,118,.22);border-radius:12px;background:rgba(255,255,255,.62)}
+      .pg-vrste-razlaga p{margin:0 0 .55rem;font-size:.85rem;line-height:1.5;color:rgba(17,17,17,.78)}
+      .pg-vrste-razlaga p:last-child{margin-bottom:0}
+      .pg-vrste-razlaga b{color:var(--ink);font-weight:700}
+      .pg-vrste-razlaga p.on{color:var(--ink)}
       .pg-vrstapog{display:inline-flex;flex-wrap:wrap;background:rgba(255,255,255,.55);border:1px solid rgba(178,84,118,.28);border-radius:999px;padding:.3rem;gap:.45rem;margin:0 0 1rem}
       .pg-vrstapog button{border:none;background:transparent;color:var(--ink);font-family:inherit;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;padding:.46rem 1rem;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
       .pg-vrstapog button.on{background:var(--accent,#B25476);color:#fff}
@@ -1483,6 +1508,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
       @media (max-width:640px){
         .pg-vrstapog{display:none}
         .pg-vrsta-drop{display:flex;flex-direction:column;gap:.35rem;width:100%;align-items:stretch;margin:0 0 1rem;padding:0;border:none;background:none;cursor:pointer;text-align:left}
+        /* na mobilnem stoji "?" ob izbirniku, poravnan s poljem (ne z oznako) */
+        .pg-vrsta-vrsta{align-items:flex-end}
+        .pg-vrsta-vrsta>.pg-vrsta-drop{flex:1;min-width:0;margin:0}
+        .pg-vrsta-vrsta>.pg-pomoc{margin-bottom:.6rem}
       }
       .pg-vrsta-back{position:fixed;inset:0;z-index:120;background:rgba(28,21,24,.28);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:pgVrstaBack .2s ease both}
       @keyframes pgVrstaBack{from{opacity:0}to{opacity:1}}

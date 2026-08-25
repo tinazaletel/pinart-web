@@ -355,7 +355,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
                 }
               }} onChange={event => setObrazec(o => ({ ...o, naslov: event.target.value }))} placeholder="npr. Prenova celostne podobe" aria-label="Naslov projekta" />
               {obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim() && (
-                <span className="np-ime-duh" aria-hidden><i>{obrazec.naslov}</i><em>{enolicnoIme(obrazec.naslov).slice(obrazec.naslov.trim().length).replace(/ /g, '\u00A0')}</em></span>
+                <span className="np-ime-duh" aria-hidden><span className="np-ime-duh-txt"><i>{obrazec.naslov}</i><em>{enolicnoIme(obrazec.naslov).slice(obrazec.naslov.trim().length).replace(/ /g, '\u00A0')}</em></span></span>
               )}
             </span>
             {obrazec.naslov.trim() && enolicnoIme(obrazec.naslov) !== obrazec.naslov.trim() && (
@@ -736,6 +736,7 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
       .np-ime-duh{position:absolute;inset:0;z-index:0;display:flex;align-items:center;
         padding:.75rem 1.1rem;border:1px solid transparent;border-radius:999px;background:#fff;
         font:inherit;font-size:.9rem;font-weight:600;white-space:pre;overflow:hidden;pointer-events:none}
+      .np-ime-duh-txt{white-space:pre}
       .np-ime-duh i{font-style:normal;color:transparent}
       .np-ime-duh em{font-style:normal;color:rgba(17,17,17,.38)}
       .np-ime-opomba{margin:-.25rem 0 0 .3rem;max-width:min(34rem,calc(100% - 1rem));
