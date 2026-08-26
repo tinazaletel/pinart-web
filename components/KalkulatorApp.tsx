@@ -7211,9 +7211,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            ima poln rob in kljukico namesto plusa (Tina, 26. 8. 2026). */
         .cw .prav-vklop { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
         .cw .prav-vklop:hover { border-color: rgba(17,17,17,.45); }
-        .cw .prav-vklop-glava { width: 100%; display: flex; align-items: center; gap: .45rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
-        .cw .prav-vklop-znak { font-size: 1rem; line-height: 1; }
-        .cw .prav-vklop-naslov { flex: 1; min-width: 0; }
+        .cw .prav-vklop-glava { width: 100%; display: flex; align-items: center; gap: .4rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
+        .cw .prav-vklop-znak { font: 700 1.05rem/1 var(--font-sans), sans-serif; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; }
+        .cw .prav-vklop-naslov { flex: 1; min-width: 0; font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; }
         .cw .prav-vklop-puscica { flex: none; display: grid; place-items: center; }
         .cw .prav-vklop-pripis { font-size: .8rem; line-height: 1.45; color: rgba(17,17,17,.7); }
         .cw .prav-vklop-on { border-style: solid; border-color: rgba(178,84,118,.4); }
