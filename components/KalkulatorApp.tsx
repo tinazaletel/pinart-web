@@ -9755,6 +9755,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       <li><b>{L('Prodajni produkti', 'Retail products')}</b> {L('(majice, embalaža, izdelki): namesto enkratnega odkupa je pošteno honorar +', '(t-shirts, packaging, products): instead of a one-time buyout it is fair to charge a fee +')} <b>{L('tantieme', 'royalties')}</b> {L('od prodaje (npr. 3–10 %).', 'on sales (e.g. 3–10%).')}</li>
                     </ul>
                     <p className="prav-razlaga-vir">{L('Podroben članek s primeri in viri pripravljamo za spletno stran.', 'We are preparing a detailed article with examples and sources for the website.')}</p>
+                    <p className="prav-razlaga-vir">{L('Predlogi in besedila so v pomoč pri poslovanju in niso pravni nasvet — za zavezujoče dogovore se posvetuj z odvetnikom.', 'Suggestions and texts support your business and are not legal advice — consult a lawyer for binding agreements.')}</p>
                   </div>
                 </details>}
                 {r && (r.praviceVrstice.length > 0 || lastnePravice.length > 0) ? (
