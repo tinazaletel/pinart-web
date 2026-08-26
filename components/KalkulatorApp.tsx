@@ -9756,13 +9756,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </p>
                         );
                         if (row.izkljucena === 'vprasaj') return (
-                          <div key={row.sid} className="prav-vprasaj">
-                            <span><b>{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</b> — {L('boš oblikovala tudi izvirno podobo strani?', 'will you also design the original look of the site?')}</span>
-                            <span className="prav-vprasaj-gumbi">
-                              <button type="button" className="pill" onClick={() => setWebIzvirno(o => ({ ...o, [row.sid]: true }))}>{L('Da', 'Yes')}</button>
-                              <button type="button" className="pill" onClick={() => setOdgovori(o => ({ ...o, [`${vrstice.find(v => v.sid === row.sid)?.uid}:ux-ui`]: 'Samo postavitev (dizajn že obstaja)' }))}>{L('Ne, samo postavitev', 'No, build only')}</button>
-                            </span>
-                          </div>
+                          <p key={row.sid} className="prav-ni">
+                            <b>{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</b>{' '}
+                            {L('— predlog pripravim, ko v podrobnostih storitve poveš, kaj od UX/UI prevzameš.', '— I will suggest an amount once the service details say which parts of the UX/UI you take on.')}
+                          </p>
                         );
                         if (!row.nacin) return (
                           <button key={row.sid} type="button" className="prav-vklop"
@@ -9776,30 +9773,32 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </button>
                         );
                         return (
-                          <div key={row.sid} className="prav-vrsta" onClick={() => setPraviceOdprt(row.sid)}>
-                            <span className="prav-ime">
-                              {locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}{row.tantiema ? <small> · {row.tantiema} % {L('tantieme', 'royalties')}</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} {L('klavzul', 'clauses')}</small> : null}</span>
-
-                            {urejamPravSid === row.sid ? (
-                              <span className="prav-cena prav-cena-uredi" onClick={e => e.stopPropagation()}>
-                                <input type="number" min={0} step={50} autoFocus
-                                  aria-label={L('Znesek pravic: ', 'Rights amount: ') + row.ime}
-                                  placeholder={String(zaokrozi(row.znesekAuto * vfx.fx))}
-                                  value={rocnePraviceStoritvi[row.sid] ?? ''}
-                                  onChange={e => setRocnePraviceStoritvi({ ...rocnePraviceStoritvi, [row.sid]: e.target.value })}
-                                  onBlur={() => setUrejamPravSid(null)}
-                                  onKeyDown={e => { if (e.key === 'Enter') setUrejamPravSid(null); }} />
-                                <span className="pe-znak">{vfx.znak}</span>
-                              </span>
-                            ) : (
-                              <button type="button" className={'prav-cena prav-cena-gumb' + (row.rocno ? ' rocno' : '')}
-                                title={L('Izberi za ročni popravek zneska', 'Select to edit the amount manually')} aria-label={L('Ročno popravi znesek: ', 'Edit amount manually: ') + row.ime}
-                                onClick={e => { e.stopPropagation(); setUrejamPravSid(row.sid); }}>{row.nacin === 'posebej' ? val(row.znesek) : <span className="prav-predlog">{L('predlog', 'suggested')} {val(row.znesekAuto)}</span>}</button>
-                            )}
-                            <button type="button" role="checkbox" aria-checked={!!row.nacin} className={'prav-kljuk' + (row.nacin ? ' on' : '')}
-                              aria-label={L('Vključi v ponudbo: ', 'Include in the quote: ') + row.ime}
-                              onClick={e => { e.stopPropagation(); setPraviceNacin(o => { const n = { ...o }; delete n[row.sid]; return n; }); }}>✓</button>
-                            <span className="prav-obseg" title={L('Klikni kartico za podrobnosti', 'Click the card for details')}>{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
+                          <div key={row.sid} className="prav-vklop prav-vklop-on" role="button" tabIndex={0}
+                            onClick={() => setPraviceOdprt(row.sid)}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPraviceOdprt(row.sid); } }}>
+                            <span className="prav-vklop-glava">
+                              <button type="button" role="checkbox" aria-checked className="prav-kljuk on"
+                                aria-label={L('Odstrani iz ponudbe: ', 'Remove from the quote: ') + row.ime}
+                                onClick={e => { e.stopPropagation(); setPraviceNacin(o => { const n = { ...o }; delete n[row.sid]; return n; }); }}>✓</button>
+                              <span className="prav-vklop-naslov">{L('Pravice uporabe', 'Usage rights')} · {locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</span>
+                              {urejamPravSid === row.sid ? (
+                                <span className="prav-cena prav-cena-uredi" onClick={e => e.stopPropagation()}>
+                                  <input type="number" min={0} step={50} autoFocus
+                                    aria-label={L('Znesek pravic: ', 'Rights amount: ') + row.ime}
+                                    placeholder={String(zaokrozi(row.znesekAuto * vfx.fx))}
+                                    value={rocnePraviceStoritvi[row.sid] ?? ''}
+                                    onChange={e => setRocnePraviceStoritvi({ ...rocnePraviceStoritvi, [row.sid]: e.target.value })}
+                                    onBlur={() => setUrejamPravSid(null)}
+                                    onKeyDown={e => { if (e.key === 'Enter') setUrejamPravSid(null); }} />
+                                  <span className="pe-znak">{vfx.znak}</span>
+                                </span>
+                              ) : (
+                                <button type="button" className={'prav-vklop-cena' + (row.rocno ? ' rocno' : '')}
+                                  aria-label={L('Ročno popravi znesek: ', 'Edit amount manually: ') + row.ime}
+                                  onClick={e => { e.stopPropagation(); setUrejamPravSid(row.sid); }}>{val(row.znesek)}</button>
+                              )}
+                            </span>
+                            <span className="prav-vklop-pripis">{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
                           </div>
                         );
                       })}
