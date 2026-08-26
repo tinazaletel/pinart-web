@@ -3,6 +3,8 @@ import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import PaketiSeznam from '@/components/PaketiSeznam';
 import { paketUporabnika } from '@/lib/pravice';
+import { headers } from 'next/headers';
+import { valutaZaDrzavo } from '@/lib/cenaNarocnine';
 import styles from '../pregled/pregled.module.css';
 
 export const metadata: Metadata = {
@@ -30,7 +32,7 @@ export default async function PaketPage({ params }: { params: Promise<{ locale: 
         <div><p className={styles.eyebrow}>{locale === 'en' ? 'PLAN' : 'PAKET'}</p><h1>{locale === 'en' ? 'Plan and subscription.' : 'Paket in naročnina.'}</h1></div>
       </header>
 
-      <PaketiSeznam trenutni={paket === 'pro' ? 'pro' : 'free'} locale={locale} />
+      <PaketiSeznam trenutni={paket === 'pro' ? 'pro' : 'free'} locale={locale} valuta={valutaZaDrzavo((await headers()).get('x-vercel-ip-country'))} />
     </section>
   </main>;
 }

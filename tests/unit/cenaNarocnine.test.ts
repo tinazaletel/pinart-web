@@ -7,6 +7,7 @@ import {
   dolociPonudbo,
   ohraniZaklenjenoCeno,
   zakleniCeno,
+  valutaZaDrzavo,
 } from '@/lib/cenaNarocnine';
 
 describe('katera ponudba pripada novemu narocniku', () => {
@@ -98,5 +99,24 @@ describe('kdaj zaklenjena cena obvelja', () => {
 
   it('zamuda pri placilu je se ne vzame', () => {
     expect(ohraniZaklenjenoCeno('past_due', false)).toBe(true);
+  });
+});
+
+describe('valuta obiskovalca', () => {
+  it('ZDA dobijo dolarski cenik, ostali evrskega', () => {
+    expect(valutaZaDrzavo('US')).toBe('USD');
+    expect(valutaZaDrzavo('us')).toBe('USD');
+    expect(valutaZaDrzavo('SI')).toBe('EUR');
+    expect(valutaZaDrzavo('')).toBe('EUR');
+    expect(valutaZaDrzavo(null)).toBe('EUR');
+    expect(valutaZaDrzavo(undefined)).toBe('EUR');
+  });
+
+  it('dolarski cenik je svoj, ne preracun evrskega', () => {
+    expect(cenaZa('redna', 'premium', 'mesec', 'USD')).toBe(24);
+    expect(cenaZa('redna', 'pro', 'leto', 'USD')).toBe(39);
+    expect(cenaZa('ustanovna', 'premium', 'mesec', 'USD')).toBe(15);
+    /* brez valute ostane evrski — obstojeci klici se ne smejo spremeniti */
+    expect(cenaZa('redna', 'premium', 'mesec')).toBe(19);
   });
 });

@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import { valutaZaDrzavo } from '@/lib/cenaNarocnine';
 import { setRequestLocale } from 'next-intl/server';
 import FlowNav from '@/components/FlowNav';
 import FlowLanding from '@/components/FlowLanding';
@@ -25,11 +27,15 @@ export default async function FlowPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  /* Cenik v dolarjih vidi obiskovalec iz ZDA (glava ponudnika gostovanja).
+     Ce glave ni — lokalni razvoj, drug ponudnik — ostanejo evri. */
+  const drzava = (await headers()).get('x-vercel-ip-country');
+  const valuta = valutaZaDrzavo(drzava);
 
   return (
     <main style={{ minHeight: '100dvh' }}>
       <FlowNav locale={locale} />
-      <FlowLanding locale={locale} />
+      <FlowLanding locale={locale} valuta={valuta} />
     </main>
   );
 }

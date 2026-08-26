@@ -120,7 +120,19 @@ export interface DokPredloga {
 export const DOK_PODLOGE_A4: string[] = [
   '/flow/1a_a4.jpg', '/flow/2_a4.jpg', '/flow/2a_a4.jpg',
   '/flow/it_predloga.jpg', '/flow/it_predloga_1.jpg', '/flow/4_a4.jpg',
+  '/flow/predloga_ponudbe_Page_1.jpg',
 ];
+
+/* Temne podloge: cez njih mora iti BELO besedilo, sicer se crno besedilo
+   izgubi v fotografiji. Seznam je rocni, ker svetlosti slike ne merimo. */
+export const DOK_PODLOGE_TEMNE: string[] = [
+  '/flow/predloga_ponudbe_Page_1.jpg',
+];
+
+/** Ali izbrana podloga zahteva belo besedilo. */
+export function podlogaJeTemna(vir?: string): boolean {
+  return !!vir && DOK_PODLOGE_TEMNE.includes(vir);
+}
 export const DOK_PODLOGE_PPT: string[] = [
   '/flow/1_ptt.jpg', '/flow/2_ptt.jpg', '/flow/3_ptt.jpg', '/flow/4_ptt.jpg',
 ];

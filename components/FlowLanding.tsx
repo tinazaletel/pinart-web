@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import FlowHeroBg from '@/components/FlowHeroBg';
+import { CENIK, CENIK_USD, UVODNA_DO, ZNAK_VALUTE, type Valuta } from '@/lib/cenaNarocnine';
 import dynamic from 'next/dynamic';
 
 const Aurora = dynamic(() => import('@/components/Aurora'), { ssr: false });
@@ -54,7 +55,7 @@ const HERO_TITLES_EN: { pre: string[]; em: string[] }[] = [
   { pre: ['Do', 'you', 'know', 'what'], em: ['your', 'work', 'is', 'worth?'] },
 ];
 
-export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
+export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?: string; valuta?: Valuta }) {
   const isEn = locale === 'en';
   const t = (sl: string, en: string) => isEn ? en : sl;
   const heroTitles = isEn ? HERO_TITLES_EN : HERO_NASLOVI;
@@ -567,13 +568,25 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
      vseh osem stvari iz Pro) in bralec iz enega krizca sklepa, da je razlika ena
      sama. Lestvico nosita "Vse iz Brezplacno" in "Vse iz Premium", vsak paket pa
      pokaze, kaj DODA. */
+  /* Stevilke iz lib/cenaNarocnine.ts — tam je cena, po kateri se tudi zaracuna.
+     »cena« je mesecni znesek ob letnem placilu, »cenaMes« pa redna mesecna. */
+  /* ZDA po lokaciji (glavo prebere stran) — obracun po placilnem sredstvu
+     naredi Merchant of Record, tu gre samo za prikaz. */
+  const C = valuta === 'USD' ? CENIK_USD : CENIK;
+  const zn = ZNAK_VALUTE[valuta];
+  const uvDoSl = (() => { const [l, m, d] = UVODNA_DO.split('-'); return `${Number(d)}. ${Number(m)}. ${l}`; })();
+  const uvDoEn = new Date(UVODNA_DO + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  /* V uvodnem obdobju je mesecna cena enaka letni, zato znacke »CENEJE« ni —
+     obljubljati prihranek, ki ga ni, je slabsi od tihega gumba.
+     TODO po 31. 10. 2026: prikaz preklopi na redne cene (C.redna). */
+  const letnoCeneje = C.uvodna.premium.leto < C.uvodna.premium.mesec;
   const CENIKI = isEn ? [
-    { ime: 'Free', za: 'For getting started and one-off projects', cena: '0', enota: '€ forever', cta: 'Open calculator', href: kalkulator, izpost: false, znacka: '', kmalu: false, vkljuceno: ['Fair-pricing calculator', 'Proposal in three packages', 'Usage-rights and licence calculation', 'Editable proposal document', 'Email and PDF export', 'Cloud-saved proposals', '100 MB attachment storage', 'Proposal numbering'] },
-    { ime: 'Premium', za: 'For regular client work', cena: '15', cenaMes: '18', enota: '€ / month', ustanovna: 'Founding price: €9/month for the first 50 users (limited time) · first month free', cta: 'Coming soon', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Most popular', kmalu: true, vkljuceno: ['Everything in Free', 'Pupa on your own AI key — connect ChatGPT, Claude or Gemini and pay the model to your provider', '1 GB attachment storage', 'Saved proposals, contracts and invoices', 'Retainers', 'Projects and archive', 'Client CRM and price lists', 'Expenses and goals', 'Tasks, calendar and time tracking', 'Attendance log — arrival, break, departure and export', 'Business dashboard'] },
-    { ime: 'Pro', za: 'For small studios and collaborators', cena: '29', cenaMes: '35', enota: '€ / month', cta: 'Coming soon', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Soon', kmalu: true, vkljuceno: ['Everything in Premium', 'Pupa included — 800 messages a month on us, no key of your own needed', '5 GB attachment storage, top up when you need more', 'Anonymous market comparison', 'Revenue and profit analytics by client', 'Advanced Pupa task planning', 'Business framework and taxes', 'Accounting export', 'Project-level collaborator access', 'MCP and API access — your agent reads your Flow data (read only); data export', 'Priority support'] },
+    { ime: 'Free', za: 'For getting started and one-off projects', cena: '0', enota: `${zn} forever`, cta: 'Open calculator', href: kalkulator, izpost: false, znacka: '', kmalu: false, vkljuceno: ['Fair-pricing calculator', 'Proposal in three packages', 'Usage-rights and licence calculation', 'Editable proposal document', 'Email and PDF export', 'Cloud-saved proposals', '100 MB attachment storage', 'Proposal numbering'] },
+    { ime: 'Premium', za: 'For regular client work', cena: String(C.uvodna.premium.leto), cenaMes: String(C.uvodna.premium.mesec), enota: `${zn} / month`, ustanovna: `Introductory ${zn}${C.uvodna.premium.mesec}/month until ${uvDoEn}; regular price ${zn}${C.redna.premium.mesec} · founding ${zn}${C.ustanovna.premium.mesec}/month for the first 50, locked until you cancel`, cta: 'Coming soon', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Most popular', kmalu: true, vkljuceno: ['Everything in Free', 'Pupa on your own AI key — connect ChatGPT, Claude or Gemini and pay the model to your provider', '1 GB attachment storage', 'Saved proposals, contracts and invoices', 'Retainers', 'Projects and archive', 'Client CRM and price lists', 'Expenses and goals', 'Tasks, calendar and time tracking', 'Attendance log — arrival, break, departure and export', 'Business dashboard'] },
+    { ime: 'Pro', za: 'For small studios and collaborators', cena: String(C.uvodna.pro.leto), cenaMes: String(C.uvodna.pro.mesec), enota: `${zn} / month`, ustanovna: `Introductory ${zn}${C.uvodna.pro.mesec}/month until ${uvDoEn}; regular price ${zn}${C.redna.pro.mesec}`, cta: 'Coming soon', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Soon', kmalu: true, vkljuceno: ['Everything in Premium', 'Pupa included — 800 messages a month on us, no key of your own needed', '5 GB attachment storage, top up when you need more', 'Anonymous market comparison', 'Revenue and profit analytics by client', 'Advanced Pupa task planning', 'Business framework and taxes', 'Accounting export', 'Project-level collaborator access', 'MCP and API access — your agent reads your Flow data (read only); data export', 'Priority support'] },
   ] : [
     {
-      ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: '€ za vedno',
+      ime: 'Brezplačno', za: 'Za začetek in enkratne projekte', cena: '0', enota: `${zn} za vedno`,
       cta: 'Odpri kalkulator', href: kalkulator, izpost: false, znacka: '', kmalu: false,
       vkljuceno: ['Kalkulator poštenih cen', 'Ponudba v treh paketih (osnovni · srednji · premium)', 'Izračun avtorskih pravic in licence', 'Oblikovana in urejljiva ponudba', 'Izvoz v e-pošto / PDF', 'Shranjene ponudbe v oblaku', '100 MB prostora za priponke', 'Oštevilčenje ponudb'],
     },
@@ -581,13 +594,14 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
       /* Cena sidrana na orodja, ki jih kreativci ze placujejo (Figma ~12-15 €).
          Ustanovna 9 € za prvih 50 je ČASOVNO omejena (ne "za vedno") — nujnost +
          dokaz pripravljenosti placati. Prvi mesec brezplacno = trial namesto free-forever platforme. */
-      ime: 'Premium', za: 'Za redno delo s strankami', cena: '15', cenaMes: '18', enota: '€ / mesec',
-      ustanovna: 'Ustanovna 9 €/mesec za prvih 50 (časovno) · prvi mesec brezplačno',
+      ime: 'Premium', za: 'Za redno delo s strankami', cena: String(C.uvodna.premium.leto), cenaMes: String(C.uvodna.premium.mesec), enota: `${zn} / mesec`,
+      ustanovna: `Uvodna cena ${C.uvodna.premium.mesec} ${zn}/mesec do ${uvDoSl}; redna cena ${C.redna.premium.mesec} ${zn} · ustanovna ${C.ustanovna.premium.mesec} ${zn}/mesec za prvih 50, zaklenjena do prekinitve`,
       cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: true, znacka: 'Najbolj priljubljeno', kmalu: true,
       vkljuceno: ['Vse iz Brezplačno', 'Pupa s tvojim AI ključem — povežeš ChatGPT, Claude ali Gemini, model plačaš svojemu ponudniku', '1 GB prostora za priponke', 'Ponudbe, pogodbe in računi (shranjeni, oštevilčeni)', 'Dolgoročni retainerji', 'Projekti & arhiv — vse na enem projektu', 'Kartoteka strank (CRM)', 'Ceniki (cenovni profili)', 'Stroški in cilji', 'Task manager: naloge in podnaloge', 'Koledar', 'Merjenje časa — ali se ti je delo splačalo', 'Delovna prisotnost po ZEPDSV — prihod, odmor, odhod in izvoz', 'Nadzorna plošča'],
     },
     {
-      ime: 'Pro', za: 'Za mali studio in sodelavce', cena: '29', cenaMes: '35', enota: '€ / mesec',
+      ime: 'Pro', za: 'Za mali studio in sodelavce', cena: String(C.uvodna.pro.leto), cenaMes: String(C.uvodna.pro.mesec), enota: `${zn} / mesec`,
+      ustanovna: `Uvodna cena ${C.uvodna.pro.mesec} ${zn}/mesec do ${uvDoSl}; redna cena ${C.redna.pro.mesec} ${zn}`,
       cta: 'Kmalu', href: localePath(locale, '/kalkulator/prijava'), izpost: false, znacka: 'Kmalu', kmalu: true,
       vkljuceno: ['Vse iz Premium', 'Pupa vključena — 800 sporočil na mesec na naš račun, svojega ključa ne rabiš', '5 GB prostora za priponke, dodatnega dokupiš po potrebi', 'Primerjava s trgom — koliko za to zaračunajo drugi', 'Celoten analitični pregled — prihodki in dobiček po strankah', 'Napredna Pupa: sama razdeli naloge iz tvojih želja', 'Sinhronizacija med vsemi orodji', 'Poslovni okvir in davki', 'Posredovanje računovodstvu (izvoz)', 'Sodelavci z dostopom samo do izbranih projektov', 'MCP in API dostop — tvoj agent bere podatke iz Flowa (samo branje); izvoz podatkov', 'Prednostna podpora'],
     },
@@ -1789,7 +1803,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
           <p className="uvod">{t('Kalkulator poštenih cen je za vedno brezplačen. Za celo platformo izbereš paket — manj kot ena tvoja delovna ura na mesec.', 'The fair-pricing calculator stays free. Choose a plan for the full workspace for less than the value of one working hour a month.')}</p>
           <div role="group" aria-label={t('Obračun', 'Billing period')} style={{ display: 'inline-flex', gap: '.3rem', padding: '.28rem', margin: '0 auto 2.2rem', borderRadius: 999, background: 'rgba(17,17,17,.06)' }}>
             <button type="button" onClick={() => setLetno(false)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: !letno ? 'var(--ink)' : 'transparent', color: !letno ? 'var(--paper)' : 'var(--ink)' }}>{t('Mesečno', 'Monthly')}</button>
-            <button type="button" onClick={() => setLetno(true)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: letno ? 'var(--ink)' : 'transparent', color: letno ? 'var(--paper)' : 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>{t('Letno', 'Yearly')} <span style={{ fontSize: '.64rem', fontWeight: 800, letterSpacing: '.03em', color: letno ? '#8be6a8' : 'oklch(58% .13 160)' }}>{t('CENEJE', 'SAVE')}</span></button>
+            <button type="button" onClick={() => setLetno(true)} style={{ border: 'none', cursor: 'pointer', borderRadius: 999, padding: '.42rem 1rem', font: '700 .82rem var(--font-sans), sans-serif', background: letno ? 'var(--ink)' : 'transparent', color: letno ? 'var(--paper)' : 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>{t('Letno', 'Yearly')}{letnoCeneje && <span style={{ fontSize: '.64rem', fontWeight: 800, letterSpacing: '.03em', color: letno ? '#8be6a8' : 'oklch(58% .13 160)' }}>{t('CENEJE', 'SAVE')}</span>}</button>
           </div>
           <div className="fl-cenik-mreza">
             {CENIKI.map(c => (
@@ -1799,7 +1813,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
                 <p className="fl-plan-za">{c.za}</p>
                 <div className="fl-plan-cena">
                   <strong>{letno ? c.cena : ((c as { cenaMes?: string }).cenaMes ?? c.cena)}</strong><span>{c.enota}</span>
-                  {'redna' in c && <s className="fl-plan-redna">{(c as { redna?: string }).redna} €</s>}
+                  {'redna' in c && <s className="fl-plan-redna">{(c as { redna?: string }).redna} {zn}</s>}
                 </div>
                 {'cenaMes' in c && <p style={{ margin: '.1rem 0 .5rem', fontSize: '.72rem', color: 'rgba(17,17,17,.55)' }}>{letno ? t('obračunano letno', 'billed annually') : t('mesečno, odpoveš kadarkoli', 'monthly, cancel anytime')}</p>}
                 {'ustanovna' in c && <p className="fl-plan-ustanovna" style={{ marginTop: 0 }}>{(c as { ustanovna?: string }).ustanovna}</p>}
@@ -1812,7 +1826,7 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
               </div>
             ))}
           </div>
-          <p className="fl-cenik-opomba">{t('Cene ne vključujejo DDV. Paket lahko kadarkoli zamenjaš ali odpoveš.', 'Prices exclude VAT. You can change or cancel your plan at any time.')}</p>
+          <p className="fl-cenik-opomba">{t(valuta === 'USD' ? 'Cene so v dolarjih in ne vključujejo davka. Paket lahko kadarkoli zamenjaš ali odpoveš.' : 'Cene ne vključujejo DDV. Paket lahko kadarkoli zamenjaš ali odpoveš.', valuta === 'USD' ? 'Prices are in US dollars and exclude tax. You can change or cancel your plan at any time.' : 'Prices exclude VAT. You can change or cancel your plan at any time.')}</p>
           {/* Osebne primerjave cen ("nazadnje si zaracunala …") NE sodijo sem:
               obiskovalec landinga se nima svojih podatkov. Sodijo v kalkulator ob
               rezultat in na nadzorno plosco — glej docs/CENA-ARGUMENT.md */}

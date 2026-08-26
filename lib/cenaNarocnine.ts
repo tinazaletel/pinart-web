@@ -9,8 +9,10 @@
  * Vse funkcije so čiste: datum in število ustanovnih članov vstopata kot
  * parametra, nikoli new Date() med izvajanjem (glej DESIGN.md, točka 10).
  *
- * Ameriškega cenika tu namenoma NI. Regijske cene in davek prevzame Merchant of
- * Record (Paddle / Lemon Squeezy); lastna tabela valut bi bila delo za v koš.
+ * Ameriški cenik je od 26. 8. 2026 tu (Tina: »za američane druge cene«).
+ * Davek in obračun v valuti prevzame Merchant of Record (Paddle / Lemon
+ * Squeezy), številke pa morajo biti naše — sicer bi ameriški obiskovalec videl
+ * evrsko ceno, preračunano po dnevnem tečaju, in nikoli iste številke dvakrat.
  */
 
 import type { PaketId } from '@/lib/paketi';
@@ -43,6 +45,43 @@ export const CENIK: Record<Ponudba, Record<Exclude<PaketId, 'free'>, Record<Obdo
   },
 };
 
+/* Cene v dolarjih na mesec. Niso preracun evrskih — ameriski B2B trg prenese
+   visjo ceno, zato so zaokrozene na svoje stopnice (predlog 26. 8. 2026). */
+export const CENIK_USD: Record<Ponudba, Record<Exclude<PaketId, 'free'>, Record<Obdobje, number>>> = {
+  ustanovna: {
+    premium: { mesec: 15, leto: 15 },
+    pro: { mesec: 29, leto: 29 },
+  },
+  uvodna: {
+    premium: { mesec: 19, leto: 19 },
+    pro: { mesec: 39, leto: 39 },
+  },
+  redna: {
+    premium: { mesec: 24, leto: 19 },
+    pro: { mesec: 49, leto: 39 },
+  },
+};
+
+export type Valuta = 'EUR' | 'USD';
+
+/** Cenik za dano valuto. Privzeto evrski — ameriski samo, kadar ga izrecno zahtevamo. */
+export function cenikZa(valuta: Valuta = 'EUR') {
+  return valuta === 'USD' ? CENIK_USD : CENIK;
+}
+
+export const ZNAK_VALUTE: Record<Valuta, string> = { EUR: '€', USD: '$' };
+
+/**
+ * Katera valuta pripada obiskovalcu iz dane drzave (koda ISO-3166, npr. »US«).
+ *
+ * Prikaz doloci LOKACIJA, obracun pa placilno sredstvo — kartica z americko
+ * banko pri Merchant of Record vseeno pade v dolarje, tudi ce je stran
+ * pokazala evre. Zato je to samo prikaz in nikoli zapis na narocnino.
+ */
+export function valutaZaDrzavo(koda?: string | null): Valuta {
+  return (koda || '').trim().toUpperCase() === 'US' ? 'USD' : 'EUR';
+}
+
 const naDan = (v: string | Date): string => {
   const d = v instanceof Date ? v : new Date(v);
   if (Number.isNaN(d.getTime())) return '';
@@ -64,10 +103,10 @@ export function dolociPonudbo(danes: string | Date, steviloUstanovnih: number): 
   return dan <= UVODNA_DO ? 'uvodna' : 'redna';
 }
 
-/** Cena v evrih na mesec za dano ponudbo, paket in obdobje. */
-export function cenaZa(ponudba: Ponudba, paket: PaketId, obdobje: Obdobje): number | null {
+/** Cena na mesec za dano ponudbo, paket in obdobje (privzeto v evrih). */
+export function cenaZa(ponudba: Ponudba, paket: PaketId, obdobje: Obdobje, valuta: Valuta = 'EUR'): number | null {
   if (paket === 'free') return 0;
-  const zaPonudbo = CENIK[ponudba];
+  const zaPonudbo = cenikZa(valuta)[ponudba];
   if (!zaPonudbo) return null;
   const zaPaket = zaPonudbo[paket];
   if (!zaPaket) return null;
