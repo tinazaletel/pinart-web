@@ -7166,8 +7166,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             margin-right: 0;
           }
         }
-        .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: .8rem; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); }
-        .cw .prav-ime { font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: .5rem .8rem; margin: .5rem 0; padding: .75rem .85rem; border: 1px solid rgba(17,17,17,.12); border-radius: .75rem; background: #fff; }
+        .cw .prav-vrsta:has(.prav-kljuk.on) { border-color: rgba(178,84,118,.45); }
+        .cw .prav-ime { display: flex; align-items: center; gap: .5rem; font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; }
+        .cw .prav-ime > .prav-kljuk { vertical-align: initial; }
         .cw .prav-ime small { font-weight: 500; color: rgba(17,17,17,.72); font-size: .78rem; }
         .cw .prav-podr { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.1rem; height: 2.1rem; border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.72); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: 0; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s, background .15s; }
         .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); background: rgba(17,17,17,.05); }
@@ -7175,10 +7177,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-recept:focus-visible { border-color: var(--accent); }
         /* isti videz kot crtkana vrstica "Dodaj podatke podjetja" (DESIGN 13e) */
         .cw .prav-ni { margin: .5rem 0; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); font-size: .84rem; line-height: 1.5; color: rgba(17,17,17,.7); }
-        .cw .prav-kljuk { width: 1.05rem; height: 1.05rem; accent-color: var(--accent, #B25476); cursor: pointer; vertical-align: -2px; }
+        .cw .prav-kljuk { box-sizing: border-box; width: 1.35rem; height: 1.35rem; min-height: 0; padding: 0; flex: none; border-radius: 50%; border: 1.5px solid rgba(17,17,17,.3); background: transparent; color: #fff; font: 900 .78rem/1 var(--font-sans), sans-serif; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; vertical-align: -3px; transition: background .18s, border-color .18s; }
+        .cw .prav-kljuk.on { background: var(--accent, #B25476); border-color: var(--accent, #B25476); }
         .cw .prav-predlog { font-weight: 600; color: rgba(17,17,17,.55); font-size: .84rem; }
-        .cw .prav-obseg { grid-column: 1 / -1; font-size: .76rem; color: rgba(17,17,17,.55); margin-top: -.2rem; }
-        .cw .prav-nacin { grid-column: 1 / -1; display: flex; gap: .4rem; flex-wrap: wrap; margin: .1rem 0 .2rem; }
+        .cw .prav-obseg { grid-column: 1 / -1; font-size: .76rem; color: rgba(17,17,17,.55); margin: -.15rem 0 0 1.85rem; }
+        .cw .prav-nacin { grid-column: 1 / -1; display: flex; gap: .4rem; flex-wrap: wrap; margin: .15rem 0 .1rem 1.85rem; }
         .cw .prav-nacin .pill { font-size: .78rem; padding: .28rem .7rem; }
         .cw .prav-nacin .pill.on { background: var(--ink); color: #fff; border-color: var(--ink); }
         .cw .prav-vprasaj { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .8rem; margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; font-size: .88rem; font-weight: 600; }
@@ -9789,9 +9792,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         return (
                           <div key={row.sid} className="prav-vrsta">
                             <span className="prav-ime">
-                              <input type="checkbox" className="prav-kljuk" checked={!!row.nacin}
+                              <button type="button" role="checkbox" aria-checked={!!row.nacin} className={'prav-kljuk' + (row.nacin ? ' on' : '')}
                                 aria-label={L('Vključi pravice v ponudbo: ', 'Include rights in the quote: ') + row.ime}
-                                onChange={e => setPraviceNacin(o => { const n = { ...o }; if (e.target.checked) n[row.sid] = 'posebej'; else delete n[row.sid]; return n; })} />{' '}{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}{row.tantiema ? <small> · {row.tantiema} % {L('tantieme', 'royalties')}</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} {L('klavzul', 'clauses')}</small> : null}</span>
+                                onClick={() => setPraviceNacin(o => { const n = { ...o }; if (n[row.sid]) delete n[row.sid]; else n[row.sid] = 'posebej'; return n; })}>{row.nacin ? '✓' : ''}</button>{' '}{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}{row.tantiema ? <small> · {row.tantiema} % {L('tantieme', 'royalties')}</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} {L('klavzul', 'clauses')}</small> : null}</span>
                             <select className="prav-recept" aria-label={L('Pravice: ', 'Rights: ') + row.ime} value={recId}
                               onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined, tantiema: rc.id === 'tantieme' ? tantiemaZa(row.sid) : undefined }); }}>
                               {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
