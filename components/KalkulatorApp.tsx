@@ -3312,7 +3312,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       const ob = obsegZa(s.id);
       /* raba per postavka: logotip za znamko, kampanja za projekt — vpliva SAMO
          na vrednost pravic te postavke, cena dela ostane pri globalnem odgovoru */
-      const rRaba = rec.raba ?? raba;
+      const rRaba = rec.raba ?? 'znamka';
       const sBaza = (rRaba === 'projekt' ? clampProjektP : clampZnamkaP) * w * trajMult * ob.mult * klavzMult;
       const sAvto = rec.prenos === 'neizkljucni' ? sBaza * 0.6 : rec.prenos === 'licenca' ? 0 : sBaza;
       const znesekAuto = zaokrozi(sAvto);
@@ -9713,45 +9713,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           {((klasicnaOblika && korak === praviceStep) || (vChatu && poMeh >= 3)) && (
             <>
               {vChatu && chatVpr(L('Želiš posebej obračunati pravice uporabe (avtorske pravice)?', 'Do you want to charge the usage rights (copyright) separately?'), L('Flow predlaga zneske glede na izbrane storitve. Vključi želene postavke in jih po potrebi prilagodi.', 'Flow suggests amounts based on the selected services. Include the items you want and adjust them as needed.'))}
-              <div className="kartica">
-                <div className="k-naslov">{L('Za kaj bo naročnik uporabil delo?', 'What will the client use the work for?')} <span className="vec">{L('privzeto za vse postavke — na kartici posamezne spremeniš', 'default for all items — change it on each card')}</span></div>
-                <div className="izbira">
-                  <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => { setRaba('znamka'); if (!pravTrajanjeRocno) setPravTrajanje('neomejeno'); }}>
-                    <h3>{L('Za celotno znamko', 'For the whole brand')}</h3>
-                    <p>{L('Logotip, celostna podoba, spletna stran. Tvoje delo nosi vse, kar podjetje počne, zato vrednost sledi bilanci podjetja.', 'Logo, corporate identity, website. Your work carries everything the company does, so the value follows the company\'s balance sheet.')}</p>
-                  </button>
-                  <button type="button" className={raba === 'projekt' ? 'on' : ''} onClick={() => { setRaba('projekt'); if (!pravTrajanjeRocno) setPravTrajanje('7'); }}>
-                    <h3>{L('Za določen projekt ali izdelek', 'For a specific project or product')}</h3>
-                    <p>{L('Majice, embalaža enega izdelka, konferenca, knjiga. Vrednost sledi pričakovanemu izkupičku projekta, ne velikosti podjetja.', 'T-shirts, packaging for a single product, a conference, a book. The value follows the expected project proceeds, not the size of the company.')}</p>
-                  </button>
-                </div>
-              </div>
-              {!(raba === 'projekt' || (r?.praviceVrstice ?? []).some(v => v.raba === 'projekt')) ? (
-                <p className="hint" style={{ marginTop: '-.4rem', marginBottom: '1.4rem' }}>{L('Vrednost pravic sledi', 'The value of the rights follows')} <b>{L('prometu in dobičku naročnika', 'the client\'s revenue and profit')}</b> {L('— to vneseš pri podatkih naročnika (korak »Kdo je stranka«). Prazno = mikro podjetje.', '— you enter this in the client details (the «Who is the client» step). Blank = micro company.')}</p>
-              ) : (
-                <div className="kartica">
-                  <div className="numgrid">
-                    <div className="polje">
-                      <label htmlFor="cw-pprihodek">{L('Pričakovani letni prihodek projekta (€)', 'Expected annual project revenue (€)')}</label>
-                      <input id="cw-pprihodek" type="number" min={0} step={5000}
-                        placeholder="50000" value={projPrihodek}
-                        onChange={e => setProjPrihodek(e.target.value)} />
-                    </div>
-                    <div className="polje">
-                      <label htmlFor="cw-pdobicek">{L('Pričakovani letni dobiček projekta (€)', 'Expected annual project profit (€)')}</label>
-                      <input id="cw-pdobicek" type="number" min={0} step={5000}
-                        placeholder="15000" value={projDobicek}
-                        onChange={e => setProjDobicek(e.target.value)} />
-                    </div>
-                  </div>
-                  <p className="hint">
-                    Vprašaj naročnika, koliko prodaje pričakuje od izdelka ali projekta; ocena je dovolj.
-                    Pravice so 10 % pričakovanega dobička (ali 2 % prihodka), z varovalkama.
-                    V ponudbi dobi tudi možnost tantiem: {`${5} %`} od prodaje letno.
-                  </p>
-                </div>
-              )}
-
               <div className="kartica pravice-kartica">
                 <div className="k-naslov">{L('Pravice uporabe (avtorske pravice)', 'Usage rights (copyright)')}
                   <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so nastavljeni glede na tip; recept lahko spremeniš. V Podrobnostih nastaviš teritorij (privzeto po sedežu naročnika), medije, naklado in klavzule; tiskovine in ilustracija imajo ponatis privzeto vklopljen. Skupni znesek lahko ročno popraviš s svinčnikom ob vsoti." />
@@ -9920,6 +9881,33 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <button type="button" onClick={() => setPraviceOdprt(null)} aria-label={L('Zapri', 'Close')}>✕</button>
                         </div>
                         <div className="detajl-telo">
+                          <div>
+                            <div className="uredi-naslov">{L('Za kaj bo naročnik uporabil to delo?', 'What will the client use this work for?')} <span className="vec">{L('določa vrednost pravic', 'sets the value of the rights')}</span></div>
+                            <div className="opts">
+                              <button type="button" className={'pill' + ((rec.raba ?? 'znamka') === 'znamka' ? ' on' : '')}
+                                onClick={() => nastaviPravRec(sid, { raba: 'znamka' })}>
+                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Za celotno znamko', 'For the whole brand')}<small>{L('logotip, celostna podoba, spletna stran — vrednost sledi bilanci podjetja', 'logo, corporate identity, website — the value follows the company balance sheet')}</small></span>
+                              </button>
+                              <button type="button" className={'pill' + ((rec.raba ?? 'znamka') === 'projekt' ? ' on' : '')}
+                                onClick={() => nastaviPravRec(sid, { raba: 'projekt' })}>
+                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Za določen projekt ali izdelek', 'For a specific project or product')}<small>{L('majice, embalaža izdelka, konferenca, knjiga — vrednost sledi izkupičku projekta', 't-shirts, product packaging, a conference, a book — the value follows the project proceeds')}</small></span>
+                              </button>
+                            </div>
+                            {(rec.raba ?? 'znamka') === 'projekt' ? (
+                              <div className="numgrid" style={{ marginTop: '.7rem' }}>
+                                <div className="polje">
+                                  <label htmlFor="cw-pprihodek">{L('Pričakovani letni prihodek projekta (€)', 'Expected annual project revenue (€)')}</label>
+                                  <input id="cw-pprihodek" type="number" min={0} step={5000} placeholder="50000" value={projPrihodek} onChange={e => setProjPrihodek(e.target.value)} />
+                                </div>
+                                <div className="polje">
+                                  <label htmlFor="cw-pdobicek">{L('Pričakovani letni dobiček projekta (€)', 'Expected annual project profit (€)')}</label>
+                                  <input id="cw-pdobicek" type="number" min={0} step={5000} placeholder="15000" value={projDobicek} onChange={e => setProjDobicek(e.target.value)} />
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="hint" style={{ marginTop: '.5rem' }}>{L('Vrednost sledi prometu in dobičku naročnika — to vneseš pri podatkih naročnika. Prazno = mikro podjetje.', 'The value follows the client revenue and profit — you enter that in the client details. Blank = micro company.')}</p>
+                            )}
+                          </div>
                           <div>
                             <div className="uredi-naslov">{L('Obračun', 'Billing')}</div>
                             <div className="opts">
