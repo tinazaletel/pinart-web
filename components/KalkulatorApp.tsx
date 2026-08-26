@@ -5663,12 +5663,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vChatu, poMeh, klasicnaOblika, korak, r, stevilkaPonudbe]);
   /* naslov koraka kot chat oblacek (v chat obliki) */
-  const chatVpr = (naslov: string, opis?: string) => (
+  const chatVpr = (naslov: string, opis?: string, dodatek?: React.ReactNode) => (
     /* key=naslov: ob spremembi vprasanja (novo vprasanje ALI menjava produkta) se
        element na novo vgradi -> mehka chatVzid animacija se vsakic ponovi. */
     <div className="chat-bot chat-vpr" key={naslov}>
       <span className="chat-obraz" aria-hidden />
-      <span className="chat-mehur"><b>{naslov}</b>{opis ? <small>{opis}</small> : null}</span>
+      <span className="chat-mehur"><b>{naslov}{dodatek ? <>{' '}{dodatek}</> : null}</b>{opis ? <small>{opis}</small> : null}</span>
     </div>
   );
   /* za mobilni FAB (kosarica): stevilo postavk + okviren skupni znesek */
@@ -9728,7 +9728,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {((klasicnaOblika && korak === praviceStep) || (vChatu && poMeh >= 3)) && (
             <>
-              {vChatu && chatVpr(L('Želiš posebej obračunati pravice uporabe (avtorske pravice)?', 'Do you want to charge the usage rights (copyright) separately?'), L('Flow predlaga zneske glede na izbrane storitve. Vključi želene postavke in jih po potrebi prilagodi.', 'Flow suggests amounts based on the selected services. Include the items you want and adjust them as needed.'))}
+              {vChatu && chatVpr(
+                L('Želiš posebej obračunati pravice uporabe (avtorske pravice)?', 'Do you want to charge the usage rights (copyright) separately?'),
+                L('Flow predlaga zneske glede na izbrane storitve. Vključi želene postavke in jih po potrebi prilagodi.', 'Flow suggests amounts based on the selected services. Include the items you want and adjust them as needed.'),
+                <InfoNamig besedilo="Naročnik plača izvedbo (oblikovanje), pravice do uporabe pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna. Vrednost določajo obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži. V Sloveniji in EU popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno; avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP, DSM 2019). Pri prodajnih produktih (majice, embalaža) je namesto enkratnega odkupa pošteno honorar + tantieme od prodaje (npr. 3–10 %). Predlogi so priporočilo, ne pravni nasvet." locale={locale} />,
+              )}
               <div className="kartica pravice-kartica">
                 {(
                   <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
