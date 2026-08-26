@@ -34,6 +34,10 @@ export type PravVprasanje = {
   kam: 'ponudba' | 'pogodba' | 'zapis';
   opcije: PravOpcija[];
   namig?: { sl: string; en: string };
+  /* Razlaga pod vprasajem (krogec ob vprasanju). Tam, kjer se moznosti
+     razlikujejo v zargonu — »ne vem razlike« ne sme biti razlog za napacen
+     odgovor (Tina, 26. 8. 2026). */
+  razlaga?: { sl: string; en: string };
   /* Odgovor pove tudi, ali gre za celotno znamko ali za posamezen projekt.
      Kjer je preslikava jasna, genericnega vprasanja ne postavljamo dvakrat
      (Codex + Tina, 26. 8. 2026). */
@@ -409,6 +413,16 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     {
       id: 'izdelek', sl: 'Za kateri izdelek velja oblikovanje?', en: 'Which product does the design cover?',
       osnovno: true, kam: 'ponudba', stavek: { sl: 'Oblikovanje velja za', en: 'The design covers' },
+      razlaga: {
+        sl: 'Spletna stran predstavlja podjetje — obiskovalec bere in se poveže (predstavitvena stran, trgovina, blog). '
+          + 'Spletna aplikacija je orodje v brskalniku, v katerem uporabnik dela: prijava, vnašanje podatkov, zasloni s seznami in obrazci (portal, rezervacije, nadzorna plošča). '
+          + 'Mobilna aplikacija je isto, le da se namesti na telefon. '
+          + '»Več povezanih izdelkov« izberi, kadar dela ni mogoče ločiti — na primer stran in aplikacija z isto grafično govorico ali dizajn sistem, ki velja za vse.',
+        en: 'A website presents the company — the visitor reads and gets in touch (a presentation site, a shop, a blog). '
+          + 'A web app is a tool inside the browser where the user works: sign-in, entering data, screens with lists and forms (a portal, bookings, a dashboard). '
+          + 'A mobile app is the same thing, installed on the phone. '
+          + 'Pick «Several connected products» when the work cannot be split — for example a site and an app sharing one visual language, or a design system that covers everything.',
+      },
       preslikavaRabe: { stran: 'projekt', spletna: 'projekt', mobilna: 'projekt', vec: 'znamka' },
       opcije: [
         { id: 'stran', sl: 'Spletno stran', en: 'A website' },
@@ -847,7 +861,10 @@ export function povzetekUporabe(sid: string, odgovori: PravOdgovori | undefined,
   vprasanjaZa(sid).filter(v => v.kam === 'ponudba').forEach(v => {
     const izbire = (odgovori[v.id] || '').split(' + ').filter(Boolean);
     if (!izbire.length) return;
-    const imena = izbire.map(id => (
+    /* »Drugo« brez opisa v ponudbo ne gre — »Izdaja: drugo.« ni dogovor. */
+    const izbrane = izbire.filter(id => id !== 'drugo' || (odgovori[`${v.id}:drugo`] || '').trim());
+    if (!izbrane.length) return;
+    const imena = izbrane.map(id => (
       id === 'drugo' && (odgovori[`${v.id}:drugo`] || '').trim()
         ? (odgovori[`${v.id}:drugo`] || '').trim()
         : imeOpcije(v, id, jeEn).toLowerCase()
