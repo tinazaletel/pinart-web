@@ -2775,7 +2775,9 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
 .paketCena strong { font: 500 2.4rem/1 var(--font-sans), Georgia, serif; }
 .paketCena span { color: var(--muted); font-size: .8rem; }
 .paketCena s { color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .9rem; }
-.paketUstanovna { margin: 0; font-size: .68rem; font-weight: 700; color: oklch(48% .16 350); }
+.paketUstanovna { margin: 0; font-size: .84rem; font-weight: 700; color: oklch(48% .16 350); }
+/* drobni tisk pod ceno — mirnejši od ponudbe, a še vedno berljiv */
+.paketOpomba { margin: .3rem 0 0; font-size: .78rem; line-height: 1.5; color: rgba(17,17,17,.62); }
 .paketSeznam { display: grid; gap: .45rem; margin: .9rem 0 0; padding: 0; list-style: none; }
 .paketSeznam li { position: relative; padding-left: 1.3rem; font-size: .84rem; line-height: 1.45; }
 .paketSeznam li::before {

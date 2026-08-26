@@ -30,6 +30,7 @@ import NovProjektWorkspace from '@/components/NovProjektWorkspace';
 import TaskManagerWorkspace from '@/components/TaskManagerWorkspace';
 import ContractWorkspace from '@/components/ContractWorkspace';
 import RetainerWorkspace from '@/components/RetainerWorkspace';
+import { povzetekNalog, odgovorONalogah, jeVprasanjeONalogah, kontekstNalog } from '@/lib/pupaNaloge';
 
 /* a/b/c izbire za izkušnje — iste kot kalkulator (KalkulatorApp IZKUSNJE); PODROCJA iz lib */
 const IZKUSNJE_IZBIRE = [
@@ -198,6 +199,18 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     const zgo = pupaSpor.slice(-8);
     /* Navedek gre v nit in v vprašanje — Pupa mora vedeti, na kaj odgovarjaš. */
     const zVnosom = navedek ? `> ${navedek}\n\n${q}` : q;
+    /* Stanje nalog Pupa PREBERE, ne ugane. Vprašanje o nalogah zato sploh ne
+       gre v model — številka, ki si jo model izmisli, je slabša od molka. */
+    const danesIso = new Date().toISOString().slice(0, 10);
+    const stanjeNalog = povzetekNalog(preberiNaloge(), danesIso);
+    if (jeVprasanjeONalogah(q)) {
+      const odg = odgovorONalogah(stanjeNalog, jeEn);
+      setPupaSpor(s => [...s, { role: 'user', content: zVnosom }, { role: 'assistant', content: odg }]);
+      let pidN = pogovorId;
+      if (!pidN) { pidN = await ustvariPogovor(q); if (pidN) setPogovorId(pidN); }
+      if (pidN) { void dodajSporocilo(pidN, 'user', zVnosom); void dodajSporocilo(pidN, 'assistant', odg); }
+      return;
+    }
     setPupaSpor(s => [...s, { role: 'user', content: zVnosom }]);
     setPupaCaka(true);
     const krmilnik = new AbortController();
@@ -219,7 +232,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         body: JSON.stringify({
           vprasanje: zVnosom,
           kontekst: L('Uporabnik je v Pupa domu (vstopni pomočnik za samostojne kreativce). Pomagaj z nasvetom; če želi USTVARITI ponudbo/račun/projekt/nalogo, ga usmeri na ustrezen gumb v domu — ne izmišljaj si, da si to naredila.',
-                      'User is in the Pupa home (entry assistant for freelance creatives). Help with advice; if they want to CREATE a quote/invoice/project/task, point them to the matching button in the home — do not pretend you did it.'),
+                      'User is in the Pupa home (entry assistant for freelance creatives). Help with advice; if they want to CREATE a quote/invoice/project/task, point them to the matching button in the home — do not pretend you did it.')
+            + (kontekstNalog(stanjeNalog, jeEn) ? `\n${kontekstNalog(stanjeNalog, jeEn)}` : ''),
           zgodovina: zgo,
         }),
         signal: krmilnik.signal,

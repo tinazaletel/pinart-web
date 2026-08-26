@@ -47,6 +47,7 @@ export default function PaketiSeznam({ trenutni, locale = 'sl', valuta = 'EUR' }
                 {(jeUsd ? p.rednaUsd : p.redna) && <s>{(jeUsd ? p.rednaUsd : p.redna)} {zn}</s>}
               </p>
               {p.ustanovna && <p className={styles.paketUstanovna}>{jeEn && p.ustanovnaEn ? p.ustanovnaEn : p.ustanovna}</p>}
+              {p.opomba && <p className={styles.paketOpomba}>{jeEn && p.opombaEn ? p.opombaEn : p.opomba}</p>}
 
               <ul className={styles.paketSeznam}>
                 {(jeEn && p.vkljucenoEn ? p.vkljucenoEn : p.vkljuceno).map(v => <li key={v}>{v}</li>)}

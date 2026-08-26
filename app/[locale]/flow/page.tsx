@@ -22,15 +22,20 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function FlowPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams?: Promise<{ valuta?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
   /* Cenik v dolarjih vidi obiskovalec iz ZDA (glava ponudnika gostovanja).
-     Ce glave ni — lokalni razvoj, drug ponudnik — ostanejo evri. */
+     Jezik NI merilo: Anglez v Ljubljani placa v evrih, Slovenec v New Yorku v
+     dolarjih. Ce glave ni — lokalni razvoj, drug ponudnik — ostanejo evri.
+     ?valuta=usd oziroma ?valuta=eur je rocni preklop za preizkus. */
+  const rocna = (await searchParams)?.valuta?.toLowerCase();
   const drzava = (await headers()).get('x-vercel-ip-country');
-  const valuta = valutaZaDrzavo(drzava);
+  const valuta = rocna === 'usd' ? 'USD' : rocna === 'eur' ? 'EUR' : valutaZaDrzavo(drzava);
 
   return (
     <main style={{ minHeight: '100dvh' }}>

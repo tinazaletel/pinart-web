@@ -47,6 +47,9 @@ export type Paket = {
   rednaUsd?: string;
   ustanovna?: string;
   ustanovnaEn?: string;
+  /* drobni tisk pod ceno (kdaj se uvodna izteče in kaj velja potem) */
+  opomba?: string;
+  opombaEn?: string;
   znacka?: string;
   znackaEn?: string;
   kmalu?: boolean;
@@ -89,8 +92,10 @@ export const PAKETI: Paket[] = [
     zaEn: 'For regular client work',
     cena: String(CENIK.uvodna.premium.mesec), enota: '€ / mesec', enotaEn: '€ / month', redna: String(CENIK.redna.premium.mesec),
     cenaUsd: String(CENIK_USD.uvodna.premium.mesec), rednaUsd: String(CENIK_USD.redna.premium.mesec),
-    ustanovna: `Uvodna cena do ${uvodnaDoSl} · ustanovna ${CENIK.ustanovna.premium.mesec} €/mesec za prvih 50, zaklenjena do prekinitve`,
-    ustanovnaEn: `Introductory price until ${uvodnaDoEn} · founding $${CENIK_USD.ustanovna.premium.mesec}/month for the first 50, locked until you cancel`,
+    ustanovna: `Ustanovna cena ${CENIK.ustanovna.premium.mesec} €/mesec za prvih 50`,
+    ustanovnaEn: `Founding price $${CENIK_USD.ustanovna.premium.mesec}/month for the first 50`,
+    opomba: `Uvodna cena velja do ${uvodnaDoSl}, nato ${CENIK.redna.premium.mesec} €/mesec.`,
+    opombaEn: `Introductory price until ${uvodnaDoEn}, then $${CENIK_USD.redna.premium.mesec}/month.`,
     znacka: 'Najbolj priljubljeno',
     znackaEn: 'Most popular',
     vkljuceno: [
@@ -120,8 +125,10 @@ export const PAKETI: Paket[] = [
     zaEn: 'For full-scale business',
     cena: String(CENIK.uvodna.pro.mesec), enota: '€ / mesec', enotaEn: '€ / month', redna: String(CENIK.redna.pro.mesec),
     cenaUsd: String(CENIK_USD.uvodna.pro.mesec), rednaUsd: String(CENIK_USD.redna.pro.mesec),
-    ustanovna: `Uvodna cena do ${uvodnaDoSl} · redna ${CENIK.redna.pro.mesec} €/mesec (${CENIK.redna.pro.leto} € ob letnem plačilu)`,
-    ustanovnaEn: `Introductory price until ${uvodnaDoEn} · regular $${CENIK_USD.redna.pro.mesec}/month ($${CENIK_USD.redna.pro.leto} billed yearly)`,
+    ustanovna: 'Uvodna cena',
+    ustanovnaEn: 'Introductory price',
+    opomba: `Velja do ${uvodnaDoSl}, nato ${CENIK.redna.pro.mesec} €/mesec (${CENIK.redna.pro.leto} € ob letnem plačilu).`,
+    opombaEn: `Until ${uvodnaDoEn}, then $${CENIK_USD.redna.pro.mesec}/month ($${CENIK_USD.redna.pro.leto} billed yearly).`,
     znacka: 'Kmalu', znackaEn: 'Coming soon', kmalu: true,
     vkljuceno: [
       'Vse iz Premium',
