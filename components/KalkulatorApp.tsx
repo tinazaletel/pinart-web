@@ -7175,7 +7175,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto auto; align-items: center; gap: .5rem .8rem; margin: .5rem 0; padding: .75rem .85rem; border: 1px solid rgba(17,17,17,.12); border-radius: .75rem; background: #fff; }
         .cw .prav-vrsta:has(.prav-kljuk.on) { border-color: rgba(178,84,118,.45); }
         .cw .prav-ime { display: flex; align-items: center; gap: .5rem; font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; }
-        .cw .prav-uredi { font: 600 .84rem var(--font-sans), sans-serif; color: var(--accent, #B25476); background: none; border: none; padding: .2rem .1rem; cursor: pointer; text-decoration: underline; text-underline-offset: .22em; }
+        .cw .prav-uredi { font: 600 .82rem var(--font-sans), sans-serif; color: var(--ink); background: transparent; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .34rem .8rem; margin-right: .2rem; cursor: pointer; transition: border-color .15s, color .15s; }
+        .cw .prav-uredi:hover { border-color: var(--accent, #B25476); color: var(--accent, #B25476); }
         .cw .prav-ime small { font-weight: 500; color: rgba(17,17,17,.72); font-size: .78rem; }
         .cw .prav-podr { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.1rem; height: 2.1rem; border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.72); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: 0; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s, background .15s; }
         .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); background: rgba(17,17,17,.05); }
@@ -9751,7 +9752,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         );
                         if (row.izkljucena === 'vprasaj') return (
                           <div key={row.sid} className="prav-vprasaj">
-                            <span>{L('Boš oblikovala tudi izvirno podobo strani?', 'Will you also design the original look of the site?')}</span>
+                            <span><b>{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</b> — {L('boš oblikovala tudi izvirno podobo strani?', 'will you also design the original look of the site?')}</span>
                             <span className="prav-vprasaj-gumbi">
                               <button type="button" className="pill" onClick={() => setWebIzvirno(o => ({ ...o, [row.sid]: true }))}>{L('Da', 'Yes')}</button>
                               <button type="button" className="pill" onClick={() => setOdgovori(o => ({ ...o, [`${vrstice.find(v => v.sid === row.sid)?.uid}:ux-ui`]: 'Samo postavitev (dizajn že obstaja)' }))}>{L('Ne, samo postavitev', 'No, build only')}</button>
@@ -9827,7 +9828,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       onClick={dodajLastnoPravico}>{L('+ Dodaj svojo pravico', '+ Add your own right')}</button>
                     {imaVklopljenePravice && (
                       <div className="prav-skupaj">
-                        <span>{L('Skupaj avtorske pravice', 'Total copyright')}</span>
+                        <span>{L('Skupaj pravice uporabe', 'Total usage rights')}</span>
                         <b>{val(r.pravice)}</b>
                       </div>
                     )}
