@@ -7003,6 +7003,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .info-namig { position: relative; display: inline-flex; margin-left: .4rem; vertical-align: middle; }
         .cw .info-gumb { width: 1.15rem; height: 1.15rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.4); background: transparent; color: rgba(17,17,17,.72); font-family: inherit; font-size: .68rem; font-weight: 700; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; flex: none; }
         .cw .info-gumb:hover { border-color: var(--ink); color: var(--ink); }
+        .cw .gumb-tih { font: 600 .88rem var(--font-sans), sans-serif; color: rgba(17,17,17,.7); background: transparent; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .55rem 1.1rem; cursor: pointer; }
+        .cw .gumb-tih:hover { border-color: var(--ink); color: var(--ink); }
         .cw .info-oblacek { position: absolute; z-index: 20; bottom: calc(100% + .5rem); right: 0; left: auto; width: max(220px, 16rem); max-width: min(84vw, 20rem); background: var(--ink); color: var(--paper); font-size: .8rem; font-weight: 400; line-height: 1.5; padding: .75rem .95rem; border-radius: 10px; text-transform: none; letter-spacing: 0; box-shadow: 0 8px 24px rgba(17,17,17,.22); }
         .cw .polje input { width: 100%; border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.62); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .65rem .85rem; color: var(--ink); border-radius: 10px; box-shadow: 0 3px 10px rgba(40,25,40,.045); transition: border-color .18s; box-sizing: border-box; }
         .cw .polje input:focus { border-color: var(--accent, #7C3AED); }
@@ -9785,10 +9787,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         if (!row.nacin) return (
                           <div key={row.sid} className="prav-vklop">
                             <span className="prav-vklop-glava">
-                              <button type="button" className="prav-vklop-znak" aria-label={L('Dodaj pravice uporabe: ', 'Add usage rights: ') + row.ime}
-                                onClick={() => setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' }))}>+</button>
+                              <button type="button" className="prav-vklop-znak" aria-label={L('Odpri pravice uporabe: ', 'Open usage rights: ') + row.ime}
+                                onClick={() => setPraviceOdprt(row.sid)}>+</button>
                               <button type="button" className="prav-vklop-naslov"
-                                onClick={() => setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' }))}>
+                                onClick={() => setPraviceOdprt(row.sid)}>
                                 {locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime} · {L('predlog', 'suggested')} {val(row.znesekAuto)}
                               </button>
                               <select className="prav-recept" aria-label={L('Pravice: ', 'Rights: ') + row.ime} value={recId}
@@ -10069,7 +10071,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <p className="hint" style={{ margin: 0 }}>{L('Obseg zgoraj', 'The scope above')} <b>{L('vpliva na ceno pravic te storitve', 'affects the rights price of this service')}</b> {L('(teritorij privzeto po naročniku; širši teritorij, dodatni mediji ali večja naklada znesek povišajo). Cena pravic te storitve:', '(territory defaults to the client; a wider territory, extra media or a larger print run raise the amount). Rights price of this service:')} <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
                         </div>
                         <div className="detajl-noga">
-                          <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>{L('Zapri', 'Close')}</button>
+                          <button type="button" className="gumb-tih" onClick={() => setPraviceOdprt(null)}>{L('Prekliči', 'Cancel')}</button>
+                          <button type="button" className="gumb" onClick={() => { setPraviceNacin(o => ({ ...o, [sid]: o[sid] ?? 'posebej' })); setPraviceOdprt(null); }}>
+                            {praviceNacin[sid] ? L('Shrani', 'Save') : L('Shrani in vključi v ponudbo', 'Save and include in the quote')}
+                          </button>
                         </div>
                       </div>
                     </div>
