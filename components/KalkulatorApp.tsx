@@ -9743,11 +9743,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <InfoNamig besedilo="Naročnik plača izvedbo (oblikovanje), pravice do uporabe pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna. Vrednost določajo obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži. V Sloveniji in EU popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno; avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP, DSM 2019). Pri prodajnih produktih (majice, embalaža) je namesto enkratnega odkupa pošteno honorar + tantieme od prodaje (npr. 3–10 %). Predlogi so priporočilo, ne pravni nasvet." locale={locale} />,
               )}
               <div className="kartica pravice-kartica">
-                {(
-                  <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
-                    {L('Neoznačeno pomeni brez ločenega doplačila, ne brez pravic. Predlogi so priporočilo, ne pravni nasvet.', 'Unchecked means no separate charge, not no rights. Suggestions are a recommendation, not legal advice.')}
-                  </p>
-                )}
                 {r && (r.praviceVrstice.length > 0 || lastnePravice.length > 0) ? (
                   <>
                     <div className="prav-tabela">
@@ -9883,7 +9878,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 )}
               </div>
 
-                {imaVklopljenePravice && <details className="prav-razlaga prav-razlaga-opomba">
+                <p className="hint" style={{ margin: '.9rem 0 .1rem', fontSize: '.84rem' }}>
+                {L('Neoznačeno pomeni brez ločenega doplačila, ne brez pravic. Predlogi so priporočilo, ne pravni nasvet.', 'Unchecked means no separate charge, not no rights. Suggestions are a recommendation, not legal advice.')}
+              </p>
+              {imaVklopljenePravice && <details className="prav-razlaga prav-razlaga-opomba">
                   <summary>{L('Kaj so avtorske pravice in zakaj so ločena postavka?', 'What is copyright and why is it a separate item?')}</summary>
                   <div className="prav-razlaga-telo">
                     <p>{L('Naročnik plača', 'The client pays for')} <b>{L('izvedbo', 'production')}</b> {L('(oblikovanje),', '(the design),')} <b>{L('pravice do uporabe', 'the usage rights')}</b> {L('pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna.', 'are a separate item — like a license. Separate because the same work can be used by a small local company or an international brand; the value of use differs.')}</p>
