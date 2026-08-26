@@ -5663,6 +5663,168 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vChatu, poMeh, klasicnaOblika, korak, r, stevilkaPonudbe]);
   /* naslov koraka kot chat oblacek (v chat obliki) */
+  /* Telo panela pravic — isti vsebini v razsirjeni kartici (kot »Dodaj podatke
+     podjetja«: klik razpre vsebino pod vrstico, brez modala). */
+  const praviceTelo = (sid: string) => {
+    const s = vseStoritve.find(x => x.id === sid);
+    if (!s) return null;
+    const rec = pravRec(sid);
+    const ob = pravObseg(sid);
+    const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
+    return (
+                        <div className="detajl-telo">
+                          <div>
+                            <div className="uredi-naslov">{L('Za kaj bo naročnik uporabil to delo?', 'What will the client use this work for?')} <span className="vec">{L('določa vrednost pravic', 'sets the value of the rights')}</span></div>
+                            <div className="opts">
+                              <button type="button" className={'pill' + ((rec.raba ?? 'znamka') === 'znamka' ? ' on' : '')}
+                                onClick={() => nastaviPravRec(sid, { raba: 'znamka' })}>
+                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Za celotno znamko', 'For the whole brand')}<small>{L('logotip, celostna podoba, spletna stran — vrednost sledi bilanci podjetja', 'logo, corporate identity, website — the value follows the company balance sheet')}</small></span>
+                              </button>
+                              <button type="button" className={'pill' + ((rec.raba ?? 'znamka') === 'projekt' ? ' on' : '')}
+                                onClick={() => nastaviPravRec(sid, { raba: 'projekt' })}>
+                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Za določen projekt ali izdelek', 'For a specific project or product')}<small>{L('majice, embalaža izdelka, konferenca, knjiga — vrednost sledi izkupičku projekta', 't-shirts, product packaging, a conference, a book — the value follows the project proceeds')}</small></span>
+                              </button>
+                            </div>
+                            {(rec.raba ?? 'znamka') === 'projekt' ? (
+                              <div className="numgrid" style={{ marginTop: '.7rem' }}>
+                                <div className="polje">
+                                  <label htmlFor="cw-pprihodek">{L('Pričakovani letni prihodek projekta (€)', 'Expected annual project revenue (€)')}</label>
+                                  <input id="cw-pprihodek" type="number" min={0} step={5000} placeholder="50000" value={projPrihodek} onChange={e => setProjPrihodek(e.target.value)} />
+                                </div>
+                                <div className="polje">
+                                  <label htmlFor="cw-pdobicek">{L('Pričakovani letni dobiček projekta (€)', 'Expected annual project profit (€)')}</label>
+                                  <input id="cw-pdobicek" type="number" min={0} step={5000} placeholder="15000" value={projDobicek} onChange={e => setProjDobicek(e.target.value)} />
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="hint" style={{ marginTop: '.5rem' }}>{L('Vrednost sledi prometu in dobičku naročnika — to vneseš pri podatkih naročnika. Prazno = mikro podjetje.', 'The value follows the client revenue and profit — you enter that in the client details. Blank = micro company.')}</p>
+                            )}
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">{L('Obračun', 'Billing')}</div>
+                            <div className="opts">
+                              <button type="button" className={'pill' + (praviceNacin[sid] === 'posebej' ? ' on' : '')}
+                                onClick={() => setPraviceNacin(o => ({ ...o, [sid]: 'posebej' }))}>
+                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Obračunaj posebej', 'Charge separately')}<small>{L('svoja postavka v ponudbi', 'its own line in the quote')}</small></span>
+                              </button>
+                              <button type="button" className={'pill' + (praviceNacin[sid] === 'vkljuceno' ? ' on' : '')}
+                                onClick={() => setPraviceNacin(o => ({ ...o, [sid]: 'vkljuceno' }))}>
+                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Vključene v ceno oblikovanja', 'Included in the design fee')}<small>{L('pogoji se zapišejo, doplačila ni', 'terms are written down, no extra charge')}</small></span>
+                              </button>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">{L('Prenos', 'Transfer')}</div>
+                            <div className="opts">
+                              {([['izkljucni', L('Izključni prenos', 'Exclusive transfer'), L('delo uporablja samo naročnik', 'only the client uses the work')], ['neizkljucni', L('Neizključni prenos', 'Non-exclusive transfer'), L('delo lahko prodaš še komu · 60 %', 'you may sell the work again · 60%')], ['licenca', L('Samo licenca', 'License only'), L('odkupa ni, plačuje se letno', 'no buyout, paid annually')]] as Array<[PravRec['prenos'], string, string]>).map(([id, ime, opis]) => (
+                                <button key={id} type="button" className={'pill' + (rec.prenos === id ? ' on' : '')}
+                                  onClick={() => nastaviPravRec(sid, { prenos: id })}>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{ime}<small>{opis}</small></span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">{L('Trajanje licence / prenosa', 'License / transfer duration')}</div>
+                            <div className="opts">
+                              {PRAV_TRAJANJE.map(t => (
+                                <button key={t.id} type="button" className={'pill' + (rec.trajanje === t.id ? ' on' : '')}
+                                  onClick={() => nastaviPravRec(sid, { trajanje: t.id, trajLeta: undefined })}>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? t.imeEn : t.ime}</span>
+                                </button>
+                              ))}
+                            </div>
+                            <div className="cu-vrsta cu-po-meri">
+                              <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta, locale === 'en')}` : ''}</span></span>
+                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label={L('Število', 'Number')} />
+                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label={L('Enota', 'Unit')}>
+                                <option value="teden">{L('tednov', 'weeks')}</option><option value="mesec">{L('mesecev', 'months')}</option><option value="leto">{L('let', 'years')}</option>
+                              </select>
+                              <button type="button" className="gumb cu-uporabi" onClick={() => nastaviPravRec(sid, { trajanje: 'custom', trajLeta: custLeta })}>{L('Uporabi', 'Apply')}</button>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">{L('Klavzule', 'Clauses')} <span className="vec">{L('se zapišejo v ponudbo', 'are written into the quote')}</span></div>
+                            <div className="opts">
+                              {KLAVZULE.map(k => {
+                                const on = (rec.klavzule || []).includes(k.id);
+                                return (
+                                  <button key={k.id} type="button" className={'pill' + (on ? ' on' : '')}
+                                    onClick={() => nastaviPravRec(sid, { klavzule: on ? (rec.klavzule || []).filter(x => x !== k.id) : [...(rec.klavzule || []), k.id] })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? k.imeEn : k.ime}<small>{locale === 'en' ? k.opisEn : k.opis}{k.mult ? ` · +${Math.round(k.mult * 100)} %` : ''}</small></span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          {typeof rec.tantiema === 'number' && (
+                            <div>
+                              <div className="uredi-naslov">{L('Tantieme — prodajni produkt', 'Royalties — retail product')}</div>
+                              <div className="cu-vrsta cu-po-meri">
+                                <input type="number" min={0} max={30} step={1} value={rec.tantiema}
+                                  onChange={e => nastaviPravRec(sid, { tantiema: Math.max(0, Math.min(30, Math.round(Number(e.target.value)) || 0)) })}
+                                  className="cu-num" aria-label={L('Odstotek tantieme', 'Royalty percentage')} />
+                                <span>{L('% od neto veleprodaje', '% of net wholesale')}</span>
+                              </div>
+                              <p className="hint" style={{ marginTop: '.5rem' }}>{L('Cena zgoraj je', 'The price above is')} <b>{L('predujem / minimalna garancija', 'an advance / minimum guarantee')}</b> {L('(nepovraten, ob podpisu). Tantieme se plačujejo', '(non-refundable, on signing). Royalties are paid')} <b>{L('dodatno', 'additionally')}</b> {L('od prodaje; ponudba doda klavzule (predujem, MG, reverzija, letno poročilo). Izhodišče: dizajn 3–10 %, znamka do 15 % (GAG / Licensing International).', 'on sales; the quote adds clauses (advance, MG, reversion, annual report). Starting point: design 3–10%, brand up to 15% (GAG / Licensing International).')}</p>
+                            </div>
+                          )}
+                          <div>
+                            <div className="uredi-naslov">{L('Teritorij', 'Territory')} <span className="vec">{ob.teritorijPrevzet ? L('kje se delo uporablja · po naročniku', 'where the work is used · by client') : L('kje se delo uporablja', 'where the work is used')}</span>
+                              <InfoNamig besedilo="Teritorij se privzeto prevzame po sedežu naročnika (kje se delo uporablja). Širši teritorij poviša ceno pravic. Če ga ročno spremeniš, ga z gumbom »↺ Prevzemi po naročniku« vrneš na privzeto." />
+                            </div>
+                            <div className="opts">
+                              {PRAV_TERITORIJ.map(t => (
+                                <button key={t.id} type="button" className={'pill' + (ob.teritorij === t.id ? ' on' : '')}
+                                  onClick={() => nastaviPravRec(sid, { teritorij: t.id })}>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{t.ime}</span>
+                                </button>
+                              ))}
+                            </div>
+                            {!ob.teritorijPrevzet && (
+                              <button type="button" className="povezava" style={{ marginTop: '.4rem' }}
+                                onClick={() => nastaviPravRec(sid, { teritorij: undefined })}>
+                                ↺ Prevzemi po naročniku ({PRAV_TERITORIJ.find(t => t.id === teritorijIzTrga(trgNarocnika))?.ime})
+                              </button>
+                            )}
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">{L('Dodatni mediji', 'Additional media')} <span className="vec">{L('izven tiska + promocije', 'beyond print + promotion')}</span></div>
+                            <div className="opts">
+                              {PRAV_MEDIJI_DODATNI.map(m => {
+                                const on = ob.mediji.includes(m.id);
+                                return (
+                                  <button key={m.id} type="button" className={'pill' + (on ? ' on' : '')}
+                                    onClick={() => nastaviPravRec(sid, { mediji: on ? ob.mediji.filter(x => x !== m.id) : [...ob.mediji, m.id] })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{m.ime}<small>{m.opis}</small></span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          {NAKLADA_STORITVE.includes(sid) && (
+                            <div>
+                              <div className="uredi-naslov">{L('Naklada / obseg izdaje', 'Print run / edition size')}</div>
+                              <div className="opts">
+                                {PRAV_NAKLADA.map(n => (
+                                  <button key={n.id} type="button" className={'pill' + (ob.naklada === n.id ? ' on' : '')}
+                                    onClick={() => nastaviPravRec(sid, { naklada: n.id })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{n.ime}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div>
+                            <div className="uredi-naslov">{L('Opomba', 'Note')} <span className="vec">{L('neobvezno · zapiše se v ponudbo pod to storitvijo', 'optional · written into the quote under this service')}</span></div>
+                            <input type="text" className="detajl-opomba" placeholder={L('npr. dovoljena uporaba na embalaži do 2027', 'e.g. use permitted on packaging until 2027')}
+                              value={rec.opomba ?? ''} onChange={e => nastaviPravRec(sid, { opomba: e.target.value })} />
+                          </div>
+                          <p className="hint" style={{ margin: 0 }}>{L('Obseg zgoraj', 'The scope above')} <b>{L('vpliva na ceno pravic te storitve', 'affects the rights price of this service')}</b> {L('(teritorij privzeto po naročniku; širši teritorij, dodatni mediji ali večja naklada znesek povišajo). Cena pravic te storitve:', '(territory defaults to the client; a wider territory, extra media or a larger print run raise the amount). Rights price of this service:')} <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
+                        </div>
+    );
+  };
+
   const chatVpr = (naslov: string, opis?: string, dodatek?: React.ReactNode) => (
     /* key=naslov: ob spremembi vprasanja (novo vprasanje ALI menjava produkta) se
        element na novo vgradi -> mehka chatVzid animacija se vsakic ponovi. */
@@ -7214,7 +7376,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-vklop-glava { width: 100%; display: flex; align-items: center; gap: .4rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
         .cw .prav-vklop-znak { font: 700 1.05rem/1 var(--font-sans), sans-serif; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; }
         .cw .prav-vklop-naslov { flex: 1; min-width: 0; font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; }
-        .cw .prav-vklop-puscica { flex: none; display: grid; place-items: center; }
+        .cw .prav-vklop-puscica { flex: none; display: grid; place-items: center; color: rgba(17,17,17,.5); transition: transform .18s ease; }
+        .cw .prav-vklop-puscica.obrni { transform: rotate(180deg); }
         .cw .prav-vklop-pripis { font-size: .8rem; line-height: 1.45; color: rgba(17,17,17,.7); }
         .cw .prav-vklop-on { border-style: solid; border-color: rgba(178,84,118,.4); }
         .cw .prav-vklop-on .prav-vklop-pripis { padding-left: 1.95rem; }
@@ -9801,6 +9964,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
                                 {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{locale === 'en' ? rc.imeEn : rc.ime}</option>)}
                               </select>
+                              <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
                             </span>
                             <span className="prav-vklop-pripis">{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
                           </div>
@@ -9835,6 +9999,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
                                 {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{locale === 'en' ? rc.imeEn : rc.ime}</option>)}
                               </select>
+                              <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
                             </span>
                             <span className="prav-vklop-pripis">{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
                           </div>
@@ -9908,182 +10073,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </div>
                 </details>}
 
-              {praviceOdprt && typeof document !== 'undefined' && (() => {
-                const sid = praviceOdprt;
-                const s = vseStoritve.find(x => x.id === sid);
-                if (!s) return null;
-                const rec = pravRec(sid);
-                const ob = pravObseg(sid);
-                const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
-                return createPortal(
-                  <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
-                    <div className="izbirnik-zastor" onClick={() => setPraviceOdprt(null)}>
-                      <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={L('Pravice: ', 'Rights: ') + storIme(s)} onClick={e => e.stopPropagation()} data-lenis-prevent>
-                        <div className="izbirnik-glava">
-                          <span>Pravice: {s.ime}</span>
-                          <button type="button" onClick={() => setPraviceOdprt(null)} aria-label={L('Zapri', 'Close')}>✕</button>
-                        </div>
-                        <div className="detajl-telo">
-                          <div>
-                            <div className="uredi-naslov">{L('Za kaj bo naročnik uporabil to delo?', 'What will the client use this work for?')} <span className="vec">{L('določa vrednost pravic', 'sets the value of the rights')}</span></div>
-                            <div className="opts">
-                              <button type="button" className={'pill' + ((rec.raba ?? 'znamka') === 'znamka' ? ' on' : '')}
-                                onClick={() => nastaviPravRec(sid, { raba: 'znamka' })}>
-                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Za celotno znamko', 'For the whole brand')}<small>{L('logotip, celostna podoba, spletna stran — vrednost sledi bilanci podjetja', 'logo, corporate identity, website — the value follows the company balance sheet')}</small></span>
-                              </button>
-                              <button type="button" className={'pill' + ((rec.raba ?? 'znamka') === 'projekt' ? ' on' : '')}
-                                onClick={() => nastaviPravRec(sid, { raba: 'projekt' })}>
-                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Za določen projekt ali izdelek', 'For a specific project or product')}<small>{L('majice, embalaža izdelka, konferenca, knjiga — vrednost sledi izkupičku projekta', 't-shirts, product packaging, a conference, a book — the value follows the project proceeds')}</small></span>
-                              </button>
-                            </div>
-                            {(rec.raba ?? 'znamka') === 'projekt' ? (
-                              <div className="numgrid" style={{ marginTop: '.7rem' }}>
-                                <div className="polje">
-                                  <label htmlFor="cw-pprihodek">{L('Pričakovani letni prihodek projekta (€)', 'Expected annual project revenue (€)')}</label>
-                                  <input id="cw-pprihodek" type="number" min={0} step={5000} placeholder="50000" value={projPrihodek} onChange={e => setProjPrihodek(e.target.value)} />
-                                </div>
-                                <div className="polje">
-                                  <label htmlFor="cw-pdobicek">{L('Pričakovani letni dobiček projekta (€)', 'Expected annual project profit (€)')}</label>
-                                  <input id="cw-pdobicek" type="number" min={0} step={5000} placeholder="15000" value={projDobicek} onChange={e => setProjDobicek(e.target.value)} />
-                                </div>
-                              </div>
-                            ) : (
-                              <p className="hint" style={{ marginTop: '.5rem' }}>{L('Vrednost sledi prometu in dobičku naročnika — to vneseš pri podatkih naročnika. Prazno = mikro podjetje.', 'The value follows the client revenue and profit — you enter that in the client details. Blank = micro company.')}</p>
-                            )}
-                          </div>
-                          <div>
-                            <div className="uredi-naslov">{L('Obračun', 'Billing')}</div>
-                            <div className="opts">
-                              <button type="button" className={'pill' + (praviceNacin[sid] === 'posebej' ? ' on' : '')}
-                                onClick={() => setPraviceNacin(o => ({ ...o, [sid]: 'posebej' }))}>
-                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Obračunaj posebej', 'Charge separately')}<small>{L('svoja postavka v ponudbi', 'its own line in the quote')}</small></span>
-                              </button>
-                              <button type="button" className={'pill' + (praviceNacin[sid] === 'vkljuceno' ? ' on' : '')}
-                                onClick={() => setPraviceNacin(o => ({ ...o, [sid]: 'vkljuceno' }))}>
-                                <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Vključene v ceno oblikovanja', 'Included in the design fee')}<small>{L('pogoji se zapišejo, doplačila ni', 'terms are written down, no extra charge')}</small></span>
-                              </button>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="uredi-naslov">{L('Prenos', 'Transfer')}</div>
-                            <div className="opts">
-                              {([['izkljucni', L('Izključni prenos', 'Exclusive transfer'), L('delo uporablja samo naročnik', 'only the client uses the work')], ['neizkljucni', L('Neizključni prenos', 'Non-exclusive transfer'), L('delo lahko prodaš še komu · 60 %', 'you may sell the work again · 60%')], ['licenca', L('Samo licenca', 'License only'), L('odkupa ni, plačuje se letno', 'no buyout, paid annually')]] as Array<[PravRec['prenos'], string, string]>).map(([id, ime, opis]) => (
-                                <button key={id} type="button" className={'pill' + (rec.prenos === id ? ' on' : '')}
-                                  onClick={() => nastaviPravRec(sid, { prenos: id })}>
-                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{ime}<small>{opis}</small></span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="uredi-naslov">{L('Trajanje licence / prenosa', 'License / transfer duration')}</div>
-                            <div className="opts">
-                              {PRAV_TRAJANJE.map(t => (
-                                <button key={t.id} type="button" className={'pill' + (rec.trajanje === t.id ? ' on' : '')}
-                                  onClick={() => nastaviPravRec(sid, { trajanje: t.id, trajLeta: undefined })}>
-                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? t.imeEn : t.ime}</span>
-                                </button>
-                              ))}
-                            </div>
-                            <div className="cu-vrsta cu-po-meri">
-                              <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta, locale === 'en')}` : ''}</span></span>
-                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label={L('Število', 'Number')} />
-                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label={L('Enota', 'Unit')}>
-                                <option value="teden">{L('tednov', 'weeks')}</option><option value="mesec">{L('mesecev', 'months')}</option><option value="leto">{L('let', 'years')}</option>
-                              </select>
-                              <button type="button" className="gumb cu-uporabi" onClick={() => nastaviPravRec(sid, { trajanje: 'custom', trajLeta: custLeta })}>{L('Uporabi', 'Apply')}</button>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="uredi-naslov">{L('Klavzule', 'Clauses')} <span className="vec">{L('se zapišejo v ponudbo', 'are written into the quote')}</span></div>
-                            <div className="opts">
-                              {KLAVZULE.map(k => {
-                                const on = (rec.klavzule || []).includes(k.id);
-                                return (
-                                  <button key={k.id} type="button" className={'pill' + (on ? ' on' : '')}
-                                    onClick={() => nastaviPravRec(sid, { klavzule: on ? (rec.klavzule || []).filter(x => x !== k.id) : [...(rec.klavzule || []), k.id] })}>
-                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? k.imeEn : k.ime}<small>{locale === 'en' ? k.opisEn : k.opis}{k.mult ? ` · +${Math.round(k.mult * 100)} %` : ''}</small></span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                          {typeof rec.tantiema === 'number' && (
-                            <div>
-                              <div className="uredi-naslov">{L('Tantieme — prodajni produkt', 'Royalties — retail product')}</div>
-                              <div className="cu-vrsta cu-po-meri">
-                                <input type="number" min={0} max={30} step={1} value={rec.tantiema}
-                                  onChange={e => nastaviPravRec(sid, { tantiema: Math.max(0, Math.min(30, Math.round(Number(e.target.value)) || 0)) })}
-                                  className="cu-num" aria-label={L('Odstotek tantieme', 'Royalty percentage')} />
-                                <span>{L('% od neto veleprodaje', '% of net wholesale')}</span>
-                              </div>
-                              <p className="hint" style={{ marginTop: '.5rem' }}>{L('Cena zgoraj je', 'The price above is')} <b>{L('predujem / minimalna garancija', 'an advance / minimum guarantee')}</b> {L('(nepovraten, ob podpisu). Tantieme se plačujejo', '(non-refundable, on signing). Royalties are paid')} <b>{L('dodatno', 'additionally')}</b> {L('od prodaje; ponudba doda klavzule (predujem, MG, reverzija, letno poročilo). Izhodišče: dizajn 3–10 %, znamka do 15 % (GAG / Licensing International).', 'on sales; the quote adds clauses (advance, MG, reversion, annual report). Starting point: design 3–10%, brand up to 15% (GAG / Licensing International).')}</p>
-                            </div>
-                          )}
-                          <div>
-                            <div className="uredi-naslov">{L('Teritorij', 'Territory')} <span className="vec">{ob.teritorijPrevzet ? L('kje se delo uporablja · po naročniku', 'where the work is used · by client') : L('kje se delo uporablja', 'where the work is used')}</span>
-                              <InfoNamig besedilo="Teritorij se privzeto prevzame po sedežu naročnika (kje se delo uporablja). Širši teritorij poviša ceno pravic. Če ga ročno spremeniš, ga z gumbom »↺ Prevzemi po naročniku« vrneš na privzeto." />
-                            </div>
-                            <div className="opts">
-                              {PRAV_TERITORIJ.map(t => (
-                                <button key={t.id} type="button" className={'pill' + (ob.teritorij === t.id ? ' on' : '')}
-                                  onClick={() => nastaviPravRec(sid, { teritorij: t.id })}>
-                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{t.ime}</span>
-                                </button>
-                              ))}
-                            </div>
-                            {!ob.teritorijPrevzet && (
-                              <button type="button" className="povezava" style={{ marginTop: '.4rem' }}
-                                onClick={() => nastaviPravRec(sid, { teritorij: undefined })}>
-                                ↺ Prevzemi po naročniku ({PRAV_TERITORIJ.find(t => t.id === teritorijIzTrga(trgNarocnika))?.ime})
-                              </button>
-                            )}
-                          </div>
-                          <div>
-                            <div className="uredi-naslov">{L('Dodatni mediji', 'Additional media')} <span className="vec">{L('izven tiska + promocije', 'beyond print + promotion')}</span></div>
-                            <div className="opts">
-                              {PRAV_MEDIJI_DODATNI.map(m => {
-                                const on = ob.mediji.includes(m.id);
-                                return (
-                                  <button key={m.id} type="button" className={'pill' + (on ? ' on' : '')}
-                                    onClick={() => nastaviPravRec(sid, { mediji: on ? ob.mediji.filter(x => x !== m.id) : [...ob.mediji, m.id] })}>
-                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{m.ime}<small>{m.opis}</small></span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                          {NAKLADA_STORITVE.includes(sid) && (
-                            <div>
-                              <div className="uredi-naslov">{L('Naklada / obseg izdaje', 'Print run / edition size')}</div>
-                              <div className="opts">
-                                {PRAV_NAKLADA.map(n => (
-                                  <button key={n.id} type="button" className={'pill' + (ob.naklada === n.id ? ' on' : '')}
-                                    onClick={() => nastaviPravRec(sid, { naklada: n.id })}>
-                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{n.ime}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          <div>
-                            <div className="uredi-naslov">{L('Opomba', 'Note')} <span className="vec">{L('neobvezno · zapiše se v ponudbo pod to storitvijo', 'optional · written into the quote under this service')}</span></div>
-                            <input type="text" className="detajl-opomba" placeholder={L('npr. dovoljena uporaba na embalaži do 2027', 'e.g. use permitted on packaging until 2027')}
-                              value={rec.opomba ?? ''} onChange={e => nastaviPravRec(sid, { opomba: e.target.value })} />
-                          </div>
-                          <p className="hint" style={{ margin: 0 }}>{L('Obseg zgoraj', 'The scope above')} <b>{L('vpliva na ceno pravic te storitve', 'affects the rights price of this service')}</b> {L('(teritorij privzeto po naročniku; širši teritorij, dodatni mediji ali večja naklada znesek povišajo). Cena pravic te storitve:', '(territory defaults to the client; a wider territory, extra media or a larger print run raise the amount). Rights price of this service:')} <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
-                        </div>
-                        <div className="detajl-noga">
-                          <button type="button" className="gumb-tih" onClick={() => setPraviceOdprt(null)}>{L('Prekliči', 'Cancel')}</button>
-                          <button type="button" className="gumb" onClick={() => { setPraviceNacin(o => ({ ...o, [sid]: o[sid] ?? 'posebej' })); setPraviceOdprt(null); }}>
-                            {praviceNacin[sid] ? L('Shrani', 'Save') : L('Shrani in vključi v ponudbo', 'Save and include in the quote')}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                , document.body);
-              })()}
 
               {lastnaOdprta && typeof document !== 'undefined' && (() => {
                 const l = lastnePravice.find(x => x.id === lastnaOdprta);
