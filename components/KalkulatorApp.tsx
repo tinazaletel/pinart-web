@@ -7385,6 +7385,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-vklop-cena { margin-left: auto; flex: none; font: 700 .95rem var(--font-sans), sans-serif; font-variant-numeric: tabular-nums; color: var(--ink); background: transparent; border: 0; border-bottom: 1px dashed rgba(17,17,17,.25); padding: .1rem .2rem; cursor: pointer; }
         .cw .prav-vklop-cena.rocno { color: var(--accent, #B25476); }
         .cw .prav-vklop-cena-predlog { border-bottom: 0; color: rgba(17,17,17,.68); font-weight: 600; cursor: default; }
+        .cw .prav-vklop-razprt { border-style: solid; border-color: rgba(17,17,17,.18); }
+        .cw .prav-vklop-telo { width: 100%; margin-top: .3rem; padding-top: .9rem; border-top: 1px dashed rgba(17,17,17,.14); }
+        .cw .prav-vklop-telo .detajl-telo { padding: 0; gap: 1.2rem; overflow: visible; }
+        .cw .prav-vklop-telo .detajl-noga { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1.1rem; padding: 0; border: 0; }
         .cw .prav-vklop-on .prav-cena-uredi { margin-left: auto; flex: none; }
         .cw .prav-ni { margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.18); border-radius: .75rem; font-size: .84rem; line-height: 1.5; color: rgba(17,17,17,.7); }
         /* isti videz kot crtkana vrstica "Dodaj podatke podjetja" (DESIGN 13e) */
@@ -9967,6 +9971,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
                             </span>
                             <span className="prav-vklop-pripis">{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
+                            {praviceOdprt === row.sid && (
+                              <div className="prav-vklop-telo">
+                                {praviceTelo(row.sid)}
+                                <div className="detajl-noga">
+                                  <button type="button" className="gumb-tih" onClick={() => setPraviceOdprt(null)}>{L('Prekliči', 'Cancel')}</button>
+                                  <button type="button" className="gumb" onClick={() => { setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' })); setPraviceOdprt(null); }}>{L('Shrani in vključi v ponudbo', 'Save and include in the quote')}</button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                         return (
@@ -9982,7 +9995,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 <span className="prav-cena prav-cena-uredi" onClick={e => e.stopPropagation()}>
                                   <input type="number" min={0} step={50} autoFocus
                                     aria-label={L('Znesek pravic: ', 'Rights amount: ') + row.ime}
-                                    placeholder={String(zaokrozi(row.znesekAuto * vfx.fx))}
+                                    placeholder={`${L('predlog', 'suggested')} ${zaokrozi(row.znesekAuto * vfx.fx)}`}
                                     value={rocnePraviceStoritvi[row.sid] ?? ''}
                                     onChange={e => setRocnePraviceStoritvi({ ...rocnePraviceStoritvi, [row.sid]: e.target.value })}
                                     onBlur={() => setUrejamPravSid(null)}
@@ -10002,6 +10015,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
                             </span>
                             <span className="prav-vklop-pripis">{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
+                            {praviceOdprt === row.sid && (
+                              <div className="prav-vklop-telo" onClick={e => e.stopPropagation()}>
+                                {praviceTelo(row.sid)}
+                                <div className="detajl-noga">
+                                  <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>{L('Shrani', 'Save')}</button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
