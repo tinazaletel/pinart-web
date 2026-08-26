@@ -847,7 +847,11 @@ export function povzetekUporabe(sid: string, odgovori: PravOdgovori | undefined,
   vprasanjaZa(sid).filter(v => v.kam === 'ponudba').forEach(v => {
     const izbire = (odgovori[v.id] || '').split(' + ').filter(Boolean);
     if (!izbire.length) return;
-    const imena = izbire.map(id => imeOpcije(v, id, jeEn).toLowerCase());
+    const imena = izbire.map(id => (
+      id === 'drugo' && (odgovori[`${v.id}:drugo`] || '').trim()
+        ? (odgovori[`${v.id}:drugo`] || '').trim()
+        : imeOpcije(v, id, jeEn).toLowerCase()
+    ));
     const uvod = v.stavek ? (jeEn ? v.stavek.en : v.stavek.sl) : (jeEn ? v.en : v.sl);
     deli.push(`${uvod}: ${imena.join(', ')}`);
   });
@@ -861,6 +865,9 @@ export function povzetekUporabe(sid: string, odgovori: PravOdgovori | undefined,
 export function nedogovorjena(sid: string, odgovori: PravOdgovori | undefined): PravVprasanje[] {
   return vprasanjaZa(sid).filter(v => {
     const a = (odgovori?.[v.id] || '').trim();
-    return !a || a === 'nedogovorjeno';
+    if (!a || a === 'nedogovorjeno') return true;
+    /* »Drugo« brez zapisanega opisa ni odgovor */
+    if (a === 'drugo' && !(odgovori?.[`${v.id}:drugo`] || '').trim()) return true;
+    return false;
   });
 }

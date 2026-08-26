@@ -5723,6 +5723,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             </button>
           ))}
         </div>
+        {izbrano.includes('drugo') && (
+          <input type="text" className="prav-vpr-drugo" autoFocus
+            placeholder={L('Napiši, kaj je dogovorjeno …', 'Describe what is agreed …')}
+            aria-label={L('Opis pri »Drugo«', 'Description for «Other»')}
+            value={(rec.odgovori || {})[`${v.id}:drugo`] || ''}
+            onChange={e => nastaviPravRec(sid, { odgovori: { ...(rec.odgovori || {}), [`${v.id}:drugo`]: e.target.value } })} />
+        )}
         {v.namig && <p className="prav-vpr-namig">{locale === 'en' ? v.namig.en : v.namig.sl}</p>}
       </div>
     );
@@ -7511,6 +7518,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-izbira:hover { border-color: var(--purple, #7C3AED); }
         .cw .prav-izbira.on { border-color: var(--purple, #7C3AED); background: rgba(124,58,237,.05); box-shadow: 0 6px 18px rgba(124,58,237,.14); }
         .cw .prav-izbira.on .prav-chip-kljuk { background: var(--purple, #7C3AED); border-color: var(--purple, #7C3AED); color: #fff; }
+        .cw .prav-vpr-drugo { width: 100%; max-width: 30rem; box-sizing: border-box; margin: .6rem 0 0 .75rem; padding: .6rem .8rem; border: 1px solid rgba(17,17,17,.18); border-radius: 10px; background: #fff; font: inherit; font-size: .9rem; color: var(--ink); }
+        .cw .prav-vpr-drugo:focus { outline: none; border-color: var(--purple, #7C3AED); box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
         .cw .prav-vpr-namig { margin: .85rem 0 0; padding-left: .75rem; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.6); }
         /* opombi pod kartico stojita v isti navpicnici kot vsebina kartice */
         .cw .prav-opomba { margin-left: 1.7rem; margin-right: 1.7rem; max-width: none; }
