@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   PRAV_VPRASANJA, PRAV_STALNE, vprasanjaZa, osnovnaVprasanja, dodatnaVprasanja,
-  povzetekUporabe, nedogovorjena,
+  povzetekUporabe, nedogovorjena, pogodbenaVprasanja,
 } from '@/lib/praviceVprasanja';
 
 /* Vprasalnik o obsegu uporabe je podatek, ne koda — zato ga preverjamo kot
@@ -55,7 +55,8 @@ describe('pravice: vprasanja po storitvah', () => {
   it('na storitev so najvec tri osnovna vprasanja', () => {
     vsi.forEach(([sid]) => {
       expect(osnovnaVprasanja(sid).length, sid).toBeLessThanOrEqual(3);
-      expect(osnovnaVprasanja(sid).length + dodatnaVprasanja(sid).length).toBe(vprasanjaZa(sid).length);
+      /* pogodbena vprasanja se v koraku s ceno ne prikazejo */
+      expect(osnovnaVprasanja(sid).length + dodatnaVprasanja(sid).length + pogodbenaVprasanja(sid).length).toBe(vprasanjaZa(sid).length);
     });
   });
 

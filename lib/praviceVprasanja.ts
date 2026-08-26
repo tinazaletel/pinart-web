@@ -819,10 +819,14 @@ export function vprasanjaZa(sid: string): PravVprasanje[] {
 
 /* Vprašanja, ki stojijo takoj (največ tri), in tista pod »Podrobnosti uporabe«. */
 export function osnovnaVprasanja(sid: string): PravVprasanje[] {
-  return vprasanjaZa(sid).filter(v => v.osnovno);
+  return vprasanjaZa(sid).filter(v => v.osnovno && v.kam !== 'pogodba');
 }
 export function dodatnaVprasanja(sid: string): PravVprasanje[] {
-  return vprasanjaZa(sid).filter(v => !v.osnovno);
+  return vprasanjaZa(sid).filter(v => !v.osnovno && v.kam !== 'pogodba');
+}
+/* Vprasanja, ki so namenjena pogodbi in se v koraku s ceno ne prikazejo. */
+export function pogodbenaVprasanja(sid: string): PravVprasanje[] {
+  return vprasanjaZa(sid).filter(v => v.kam === 'pogodba');
 }
 
 /* Odgovori: id vprašanja -> id-ji izbir (ločeni z ' + '). */
