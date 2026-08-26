@@ -34,6 +34,10 @@ export type PravVprasanje = {
   kam: 'ponudba' | 'pogodba' | 'zapis';
   opcije: PravOpcija[];
   namig?: { sl: string; en: string };
+  /* Odgovor pove tudi, ali gre za celotno znamko ali za posamezen projekt.
+     Kjer je preslikava jasna, genericnega vprasanja ne postavljamo dvakrat
+     (Codex + Tina, 26. 8. 2026). */
+  preslikavaRabe?: Record<string, 'znamka' | 'projekt'>;
 };
 
 /* Povsod na voljo: manjkajoč odgovor NI privolitev v neomejeno uporabo. */
@@ -51,6 +55,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     {
       id: 'kaj-predstavlja', sl: 'Kaj bo logotip predstavljal?', en: 'What will the logo represent?',
       osnovno: true, kam: 'ponudba',
+      preslikavaRabe: { podjetje: 'znamka', podznamka: 'znamka', izdelek: 'projekt', dogodek: 'projekt' },
       opcije: [
         { id: 'podjetje', sl: 'Celotno podjetje ali znamko', en: 'The whole company or brand' },
         { id: 'podznamka', sl: 'Podznamko ali produktno linijo', en: 'A sub-brand or product line' },
@@ -84,6 +89,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     {
       id: 'za-kaj', sl: 'Za kaj velja celostna podoba?', en: 'What does the identity cover?',
       osnovno: true, kam: 'ponudba',
+      preslikavaRabe: { podjetje: 'znamka', podznamka: 'znamka', linija: 'projekt', dogodek: 'projekt' },
       opcije: [
         { id: 'podjetje', sl: 'Celotno podjetje ali znamko', en: 'The whole company or brand' },
         { id: 'podznamka', sl: 'Podznamko', en: 'A sub-brand' },
@@ -192,6 +198,24 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     },
   ],
 };
+
+/**
+ * Raba (celotna znamka / posamezen projekt) iz ze podanih odgovorov.
+ * Vrne undefined, kadar odgovora ni ali kadar preslikava ni enolicna — takrat
+ * uporabnico vprasamo posebej.
+ */
+export function rabaIzOdgovorov(sid: string, odgovori: PravOdgovori | undefined): 'znamka' | 'projekt' | undefined {
+  if (!odgovori) return undefined;
+  const zadetki = new Set<'znamka' | 'projekt'>();
+  (PRAV_VPRASANJA[sid] ?? []).forEach(v => {
+    if (!v.preslikavaRabe) return;
+    (odgovori[v.id] || '').split(' + ').filter(Boolean).forEach(id => {
+      const r = v.preslikavaRabe?.[id];
+      if (r) zadetki.add(r);
+    });
+  });
+  return zadetki.size === 1 ? [...zadetki][0] : undefined;
+}
 
 export function vprasanjaZa(sid: string): PravVprasanje[] {
   return PRAV_VPRASANJA[sid] ?? [];

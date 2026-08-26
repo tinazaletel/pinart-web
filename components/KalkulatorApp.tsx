@@ -8,7 +8,7 @@ import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '
 import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
-import { osnovnaVprasanja, dodatnaVprasanja, PRAV_STALNE, povzetekUporabe, type PravVprasanje } from '@/lib/praviceVprasanja';
+import { osnovnaVprasanja, dodatnaVprasanja, PRAV_STALNE, povzetekUporabe, rabaIzOdgovorov, type PravVprasanje } from '@/lib/praviceVprasanja';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
 import { nastaviNapredek } from '@/lib/flowNapredek';
@@ -5718,6 +5718,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
     return (
                         <div className="detajl-telo">
+                          {osnovnaVprasanja(sid).map(v => praviceVprasanje(sid, v))}
+                          {!rabaIzOdgovorov(sid, rec.odgovori) && (
                           <div>
                             <div className="uredi-naslov">{L('Za kaj bo naročnik uporabil to delo?', 'What will the client use this work for?')} <span className="vec">{L('določa vrednost pravic', 'sets the value of the rights')}</span></div>
                             <div className="izbira">
@@ -5747,7 +5749,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               <p className="hint" style={{ marginTop: '.5rem' }}>{L('Vrednost sledi prometu in dobičku naročnika — to vneseš pri podatkih naročnika. Prazno = mikro podjetje.', 'The value follows the client revenue and profit — you enter that in the client details. Blank = micro company.')}</p>
                             )}
                           </div>
-                          {osnovnaVprasanja(sid).map(v => praviceVprasanje(sid, v))}
+                          )}
+                          {rabaIzOdgovorov(sid, rec.odgovori) && (
+                            <p className="prav-iz-odgovora">{L('Vrednost računam kot', 'Value is calculated as')} <b>{rabaIzOdgovorov(sid, rec.odgovori) === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}</b> {L('— iz odgovora zgoraj.', '— from the answer above.')}</p>
+                          )}
                           <div className="prav-vpr">
                             <p className="prav-vpr-naslov">{L('Kako želiš obračunati te pravice?', 'How do you want to charge these rights?')}</p>
                             <div className="prav-vpr-opcije prav-vpr-opcije-dve">
@@ -5880,6 +5885,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </div>
                             </div>
                           </details>
+                          {(() => {
+                            const povz = povzetekUporabe(sid, rec.odgovori, locale === 'en');
+                            if (!povz) return null;
+                            return <p className="prav-povzetek"><b>{L('V ponudbi bo zapisano:', 'The quote will state:')}</b> {povz}</p>;
+                          })()}
                           <p className="hint" style={{ margin: 0 }}>{L('Obseg zgoraj', 'The scope above')} <b>{L('vpliva na ceno pravic te storitve', 'affects the rights price of this service')}</b> {L('(teritorij privzeto po naročniku; širši teritorij, dodatni mediji ali večja naklada znesek povišajo). Cena pravic te storitve:', '(territory defaults to the client; a wider territory, extra media or a larger print run raise the amount). Rights price of this service:')} <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
                         </div>
     );
@@ -7563,6 +7573,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-ni-klik { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s, background .15s; }
         .cw .prav-ni-klik:hover { border-color: var(--purple, #7C3AED); background: rgba(124,58,237,.03); }
         .cw .prav-ni-klik:hover::before { color: var(--purple, #7C3AED); }
+        .cw .prav-ni-cta { display: inline-block; margin-left: .45rem; font-weight: 700; color: var(--purple, #7C3AED); white-space: nowrap; }
+        .cw .prav-iz-odgovora { margin: -.4rem 0 0; padding-left: .1rem; font-size: .82rem; color: rgba(17,17,17,.66); }
+        .cw .prav-iz-odgovora b { color: var(--ink); }
+        .cw .prav-povzetek { margin: .2rem 0 0; padding: .8rem .95rem; border-left: 3px solid var(--purple, #7C3AED); border-radius: 0 10px 10px 0; background: rgba(124,58,237,.05); font-size: .84rem; line-height: 1.55; color: rgba(17,17,17,.78); }
+        .cw .prav-povzetek b { color: var(--ink); }
         .cw .prav-kljuk { box-sizing: border-box; width: 1.5rem; height: 1.5rem; min-height: 0; padding: 0; flex: none; justify-self: end; border-radius: 50%; border: 1.5px solid rgba(17,17,17,.3); background: transparent; color: #fff; font: 900 .82rem/1 var(--font-sans), sans-serif; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .18s, border-color .18s; }
         .cw .prav-kljuk.on { background: var(--accent, #B25476); border-color: var(--accent, #B25476); }
         .cw .prav-predlog { font-weight: 600; color: rgba(17,17,17,.55); font-size: .84rem; }
@@ -10143,7 +10158,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             title={L('Odpri podrobnosti storitve', 'Open the service details')}
                             onClick={() => { const l = vrstice.find(v => v.sid === row.sid); if (l) odpriDetajl(l.uid); }}>
                             <b>{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</b>
-                            <span>{L('predlog pripravim, ko v specifikaciji izbereš, kaj prevzameš', 'the suggestion appears once the specification says what you take on')}</span>
+                            <span>{L('predlog pripravim, ko v specifikaciji izbereš, kaj prevzameš', 'the suggestion appears once the specification says what you take on')}
+                              <span className="prav-ni-cta">{L('Dopolni specifikacijo', 'Complete the specification')} →</span>
+                            </span>
                           </button>
                         );
                         if (!row.nacin) return (
