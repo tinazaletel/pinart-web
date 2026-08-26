@@ -9345,6 +9345,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <span>{L('Osnovno delo', 'Base work')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
                           <b><CenaCountUp value={okvirno} format={val} /></b>
                         </div>
+                        {r && r.pravice > 0 && (
+                          <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                            <span>{L('Pravice uporabe', 'Usage rights')}</span>
+                            <span>{val(r.pravice)}</span>
+                          </div>
+                        )}
                         {ddvZavezanec && (
                           <div className="ponudba0-vsota-vrsta ponudba0-mini">
                             <span>+ DDV {ddvSt} %</span>
@@ -9855,12 +9861,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     </div>
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
                       onClick={dodajLastnoPravico}>{L('+ Dodaj svojo pravico', '+ Add your own right')}</button>
-                    {imaVklopljenePravice && (
-                      <div className="prav-skupaj">
-                        <span>{L('Skupaj pravice uporabe', 'Total usage rights')}</span>
-                        <b>{val(r.pravice)}</b>
-                      </div>
-                    )}
                     {(() => {
                       const mesecno = lastnePravice.filter(l => l.tip === 'mesecno').reduce((a, l) => a + (Number(l.znesek) || 0), 0);
                       const letno = lastnePravice.filter(l => l.tip === 'letno').reduce((a, l) => a + (Number(l.znesek) || 0), 0);
