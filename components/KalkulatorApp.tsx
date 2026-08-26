@@ -6420,6 +6420,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .sg-blok { padding: 1.05rem 0; border-top: 1px solid oklch(93% .006 82 / .55); }
         .cw .sg-blok:first-child { border-top: none; padding-top: .3rem; }
         .cw .sg-blok:last-child { padding-bottom: .5rem; }
+        /* daljša razlaga pod povezavo — na zaslonu je kratka verzija, dokaz pa
+           mora ostati en klik stran */
+        .cw .sg-vec { border-top: 1px solid oklch(93% .006 82 / .55); padding: .85rem 0 .2rem; }
+        .cw .sg-vec > summary { cursor: pointer; list-style: none; font-size: .86rem; font-weight: 700; color: var(--purple, #7C3AED); }
+        .cw .sg-vec > summary::-webkit-details-marker { display: none; }
+        .cw .sg-vec > summary::after { content: ' ↓'; }
+        .cw .sg-vec[open] > summary::after { content: ' ↑'; }
+        .cw .sg-vec p { margin: .7rem 0 0; font-size: .86rem; line-height: 1.6; color: rgba(17,17,17,.72); }
         .cw .sg-h { margin: 0 0 .4rem; font-size: .76rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
         .cw .sg-t { margin: 0; font-size: 1rem; font-weight: 400; line-height: 1.62; color: rgba(17,17,17,.84); }
         .cw .sg-t b { font-weight: 700; color: var(--ink); }
@@ -8465,18 +8473,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <p className="sg-uvod">{L('Preberi pogoje do konca, potem spodaj potrdi in gremo.', 'Read the terms to the end, then confirm below and off we go.')}</p>
               )
               ) : (<>
+              {/* Ena vrstica na naslov. Daljša razlaga je pod povezavo »Kako
+                  uporabljamo podatke?« — skrajšali smo zaslon, ne pa tega, kar
+                  moraš povedati (Tina, 26. 8. 2026: naslovi ostanejo). */}
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
-                <p className="sg-t">{L('So pametno izhodišče, ne uradni cenik — nastale so na podlagi AI raziskave trga, pravo podatkovno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.', 'They are a smart starting point, not an official price list — they are based on AI market research, and we are still building the real data-backed database. Adjust them freely; the final price in your quotes is always your decision and your responsibility.')}</p>
+                <p className="sg-t">{L('Priporočeno izhodišče, ne uradni cenik. Prilagodiš jih kadarkoli; končna cena je tvoja odločitev in tvoja odgovornost.', 'A recommended starting point, not an official price list. Adjust them any time; the final price is your decision and your responsibility.')}</p>
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Shranjeno pri tebi', 'Stored on your device')}</h3>
-                <p className="sg-t">{L('Ker nisi prijavljen/-a, cene, postavke in podatki ostanejo samo v tvojem brskalniku — pri nas se nič ne shrani. Ko se prijaviš, se varno shranijo v tvoj oblak (Flow) in so na voljo na vseh napravah.', 'Since you are not signed in, your prices, items and data stay only in your browser — nothing is stored on our side. When you sign in, they are securely saved to your cloud (Flow) and available on all your devices.')}</p>
+                <p className="sg-t">{L('Brez prijave podatki ostanejo v tvojem brskalniku — pri nas se ne shrani nič.', 'Without an account your data stays in your browser — nothing is stored on our side.')}</p>
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Vedno anonimno', 'Always anonymous')}</h3>
-                <p className="sg-t">{L('Ob prikazu izračuna anonimno zabeležimo le izbrane kategorije in zneske —', 'When the calculation is shown we anonymously record only the selected categories and amounts —')} <b>{L('brez imena, e-naslova ali IP-naslova', 'without name, email or IP address')}</b>{L(', nikoli povezano s teboj.', ', never linked to you.')}</p>
+                <p className="sg-t">{L('Zabeležimo le kategorijo in znesek —', 'We record only the category and the amount —')} <b>{L('brez imena, e-naslova in IP', 'without name, email or IP')}</b>.</p>
               </div>
+              <details className="sg-vec">
+                <summary>{L('Kako uporabljamo podatke?', 'How do we use the data?')}</summary>
+                <p>{L('Priporočene cene so nastale na podlagi raziskave trga, pravo podatkovno bazo pa šele gradimo — zato so izhodišče in ne uradni cenik.', 'The recommended prices come from market research; the real data-backed database is still being built — which is why they are a starting point, not an official price list.')}</p>
+                <p>{L('Ker nisi prijavljen/-a, cene, postavke in podatki ostanejo samo v tvojem brskalniku. Ko se prijaviš, se varno shranijo v tvoj oblak (Flow) in so na voljo na vseh napravah; izvoziš ali izbrišeš jih lahko kadarkoli.', 'Since you are not signed in, your prices, items and data stay only in your browser. When you sign in they are securely saved to your cloud (Flow) and available on all your devices; you can export or delete them at any time.')}</p>
+                <p>{L('Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske — nikoli imena, e-naslova ali IP-naslova in nikoli povezano s teboj. Iz tega nastaja statistika cen, ki jo boš videl/-a, ko bo baza dovolj velika.', 'When the calculation is shown we anonymously record the selected categories and amounts — never a name, email or IP address, and never linked to you. This is what the pricing statistics are built from, which you will see once the database is large enough.')}</p>
+              </details>
               </>)}
             </div>
             {!vLupini && (
