@@ -229,6 +229,11 @@ const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email',
    (Tina, 26. 8. 2026). Videz je isti kot »Dodaj podatke podjetja«, razlikuje se
    samo privzeto stanje. */
 const PRAVICE_PRIVZETO_ZAPRTE = new Set(['web', 'aplikacija']);
+/* Storitve, kjer avtorskega dela za prenos obicajno NI (vodenje, svetovanje,
+   optimizacija): predloga pravic sploh ne kazemo. Ce uporabnica pravice vseeno
+   potrebuje (npr. avtorska besedila znotraj SMM), jih doda z "+ Dodaj svojo
+   pravico" (Tina, 26. 8. 2026). */
+const PRAVICE_BREZ = new Set(['seo', 'smm', 'email', 'pr', 'direkcija', 'strategija', 'marketing', 'drugo']);
 /* Odgovori na vprasanje »Kaj od UX/UI procesa prevzames?« (SL in EN besedila). */
 const UXUI_AVTORSKO = ['UI oblikovanje', 'UX zasnova', 'Prototip', 'Style guide', 'UI design', 'UX: structure', 'Prototype', 'design system'];
 const UXUI_SAMO_POSTAVITEV = ['Samo postavitev', 'Layout only'];
@@ -3294,7 +3299,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     const izvStoritve = (sid: string) => linije.filter(l => l.sid === sid).reduce((b, l) => b + osnovaZa(l.s) * Math.max(1, Math.round(l.kolicina)), 0) * mult;
     const totStoritevIzv = sez.reduce((a, s) => a + izvStoritve(s.id), 0);
     let praviceBazaSum = 0, praviceAvtoSum = 0, licencaAvtoSum = 0;
-    const praviceVrstice = sez.map(s => {
+    const praviceVrstice = sez.filter(s => !PRAVICE_BREZ.has(s.id)).map(s => {
       const rec = pravicePoStoritvi[s.id] || privzetePraviceZa(s.id);
       const trajMult = rec.trajanje === 'custom' && typeof rec.trajLeta === 'number'
         ? trajMultLeta(rec.trajLeta)
