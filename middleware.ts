@@ -103,8 +103,8 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
 <img class="slika" src="/flow/jorki-404.png" alt="" aria-hidden="true">
 <div class="scrim"></div>
 <div class="w">
-  <div class="ey"><span class="pika"></span>Pinart Flow</div>
   <a class="nazaj" href="${en ? '/en' : '/'}">&larr; ${en ? 'Back to the overview' : 'Nazaj na predstavitev'}</a>
+  <div class="ey"><span class="pika"></span>Pinart Flow</div>
   <h1>${en ? 'Just <em>final testing</em> left.' : 'Še <em>zadnje teste</em> delamo.'}</h1>
   <p class="uvod">${en ? 'Flow is in final testing and launches in early September. Until then the free calculator is open to everyone, with no account and no sign-in.' : 'Flow je v zaključnem testiranju in pride na trg predvidoma v začetku septembra. Do takrat je brezplačni kalkulator odprt za vse — brez računa in brez prijave.'}</p>
   <a class="kalk" href="${en ? '/en' : ''}/kalkulator/orodje">${en ? 'Try the free calculator' : 'Preizkusi brezplačni kalkulator'} &rarr;</a>
