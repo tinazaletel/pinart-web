@@ -6526,7 +6526,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .chat-bot .chat-mehur { position: relative; padding-left: 2.75rem; background: oklch(96% .012 297); color: rgba(17,17,17,.72); border-top-left-radius: 5px; }
         /* majhna Pinart dot ikonica ZNOTRAJ oblacka (kot showcase mockup) */
         .cw .chat-bot .chat-mehur::before { content: ""; position: absolute; left: .9rem; top: .95rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
-        .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
+        .cw .chat-bot .chat-mehur b { display: flex; align-items: flex-start; gap: .6rem; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
+        .cw .chat-bot .chat-mehur b > .info-namig { margin-left: auto; flex: none; }
+        /* vijolicen, da se vidi na svetlem mehurcku */
+        .cw .chat-bot .chat-mehur .info-gumb { border-color: var(--purple, #7C3AED); color: var(--purple, #7C3AED); font-weight: 700; }
+        .cw .chat-bot .chat-mehur .info-gumb:hover { background: var(--purple, #7C3AED); color: #fff; }
         .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.64); font-size: .82rem; }
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
         .cw .chat-jaz .chat-mehur { background: oklch(90% .055 190); color: var(--ink); font-weight: 600; border-top-right-radius: 5px; }
