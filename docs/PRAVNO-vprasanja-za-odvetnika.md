@@ -1,5 +1,10 @@
 # Pinart Flow: vprašanja za pravni pregled
 
+**Različica 2, 26. 8. 2026.** Prva različica je bila poslana 25. 8. 2026 in je
+imela 17 vprašanj. V tej so dodana vprašanja 18 do 27 o pravicah uporabe v
+kalkulatorju (svoje poglavje pred razdelkom »Kam grem naprej«); prvih 17
+vprašanj je nespremenjenih.
+
 Sem Tina Zaletel, oblikovalka. Zadnje leto sem naredila **Pinart Flow**, spletno orodje za samostojne kreativce in male studie. V njem pripravijo
 ponudbo, pogodbo in račun, vodijo projekte in stranke ter hranijo dokumente.
 Del orodja je brezplačni kalkulator cen, ki deluje brez registracije.
@@ -115,6 +120,74 @@ geslo pomeni trajno izgubo. Vprašanja: ali tako šifriranje spremeni moje
 obveznosti po 32. členu in ob morebitni kršitvi; ali za hrambo poverilnic
 tretjih oseb potrebujem še kaj v pogojih; in ali smem zapisati, da vsebine
 "niti mi ne moremo prebrati"?
+
+## Pravice uporabe v kalkulatorju (dopolnjeno 26. 8. 2026)
+
+Ta sklop je nastal po tem, ko sem gradivo prvič poslala. Gre za osrednji del
+orodja: ob ponudbi izvajalka določi, v kakšnem obsegu sme naročnik delo
+uporabljati, orodje pa za to predlaga znesek. Prav tu se mi zdi tveganje
+največje, ker gre za prenos pravic in ne le za ceno.
+
+**18. Postavitev proti oblikovanju.** V orodju trdim, da postavitev spletne
+strani po kupljeni predlogi ni avtorsko delo in da zato zanjo ni prenosa
+pravic; avtorsko delo je oblikovanje, ki ga izvajalka ustvari sama. Ali to
+drži? Zanima me predvsem, kje je meja: koliko prilagoditve tuje predloge
+(barve, tipografija, postavitev sekcij, lastne komponente) že ustvari novo
+avtorsko delo, in kako naj to zapišem, da ne obljubljam nečesa, kar ni moje.
+
+**19. Pravice, vključene v ceno izvedbe.** Izvajalka lahko izbere, da so pravice
+uporabe zajete v ceni oblikovanja in se ne zaračunajo posebej. Ali mora biti
+obseg (teritorij, mediji, doba, izključnost) tudi v tem primeru izrecno
+zapisan, da je prenos veljaven? Bojim se položaja, ko se izvajalka odloči za
+»vključeno v ceno«, misli pa, da je s tem obseg samoumevno neomejen.
+
+**20. Kaj pomeni molk.** Privzeto pravilo v orodju je, da neodgovorjeno
+vprašanje ne pomeni dovoljenja: če obseg ni dogovorjen, se ne šteje za
+dovoljeno uporabo, ampak za nedogovorjeno. Vsako vprašanje ima izrecno izbiro
+»Še ni dogovorjeno«. Ali je taka razlaga skladna z zakonom in kako naj bo
+zapisana v ponudbi, da drži tudi ob sporu?
+
+**21. Ali ponudba zadošča pisni obliki.** Prenos materialnih avtorskih pravic
+mora biti pisen. V praksi izvajalka pošlje PDF ponudbo, v kateri so pogoji
+uporabe izpisani pri vsaki storitvi, naročnik pa jo potrdi po elektronski
+pošti ali s klikom. Ali to zadošča, ali je za veljaven prenos nujna ločena
+podpisana pogodba? Če zadošča, kaj mora ponudba nujno vsebovati?
+
+**22. Tuja gradiva v izdelku.** V delo pogosto vstopijo predloge, pisave,
+fotografije in vtičniki drugih avtorjev. V orodju jih ločujem od avtorskih
+pravic izvajalke in jih imenujem licence. Kaj mora ponudba povedati, da
+odgovornost za njihove licence nosi naročnik in ne izvajalka, in kaj se zgodi,
+če izvajalka licenco kupi na svoje ime, izdelek pa uporablja naročnik?
+
+**23. Logotip in znamka.** Prenos avtorskih pravic na logotipu ni registracija
+znamke. Ali naj pogodba to izrecno loči, kdo nosi stroške registracije in ali
+mora izvajalka naročnika na to opozoriti? Zanima me tudi, ali je za oblikovalko
+kakšno tveganje, če naročnik logotip registrira kot znamko, izvajalka pa
+podobno rešitev pozneje uporabi pri drugem naročniku.
+
+**24. Časovno omejene licence.** Pri kampanjah in oglasnih materialih orodje
+privzeto predlaga licenco za obdobje (na primer tri mesece). Kaj se zgodi, če
+naročnik gradivo uporablja po izteku: je to kršitev pogodbe ali avtorske
+pravice, in katero določbo naj vključim, da je posledica jasna vnaprej?
+
+**25. Tantieme pri prodajnih produktih.** Pri izdelkih za prodajo orodje
+namesto enkratnega odkupa predlaga honorar in tantieme od prodaje, s predujmom
+kot minimalno garancijo, vračilom pravic ob prekinitvi in letnim poročanjem o
+prodaji. Ali so take določbe v Sloveniji uveljavljive in kaj mora pogodba
+vsebovati, da je poročanje izvršljivo?
+
+**26. Poimenovanje v orodju.** V vmesniku uporabljam izraz »pravice uporabe
+(avtorske pravice)« za delo izvajalke in »licenca« za tuja gradiva, ker je
+uporabnicam razumljivejši; v pogodbi pa piše »materialne avtorske pravice«.
+Ali je tako dvojno poimenovanje sprejemljivo, dokler je pogodbeno besedilo
+pravno pravilno?
+
+**27. Predlagani zneski.** Orodje predlaga ceno pravic na podlagi obsega
+uporabe in podatkov o naročniku, izvajalka pa jo lahko kadar koli spremeni.
+Ob predlogu piše, da gre za priporočilo in ne za pravni nasvet. Je tak zapis
+dovolj, ali naj bo opozorilo tudi v sami ponudbi, ki jo prejme naročnik?
+
+---
 
 ## Kam grem naprej
 
