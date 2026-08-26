@@ -7379,6 +7379,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-vklop-puscica { flex: none; display: grid; place-items: center; color: var(--purple, #7C3AED); transition: transform .18s ease; }
         .cw .prav-vklop-puscica.obrni { transform: rotate(180deg); }
         .cw .prav-vklop-pripis { font-size: .8rem; line-height: 1.45; color: rgba(17,17,17,.7); }
+        .cw .prav-vklop-pripis-vrsta { width: 100%; display: flex; align-items: center; gap: .45rem; }
+        .cw .prav-vklop-pripis-vrsta .prav-vklop-puscica { order: 2; margin-left: auto; }
         .cw .prav-vklop-on { border-style: solid; border-color: rgba(178,84,118,.4); }
         .cw .prav-vklop-on .prav-vklop-pripis { padding-left: 1.95rem; }
         .cw .prav-vklop-glava .prav-recept { border-color: rgba(17,17,17,.12); background-color: rgba(255,255,255,.9); box-shadow: none; }
@@ -9968,9 +9970,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
                                 {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{locale === 'en' ? rc.imeEn : rc.ime}</option>)}
                               </select>
-                              <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
                             </span>
-                            <span className="prav-vklop-pripis">{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
+                            <span className="prav-vklop-pripis prav-vklop-pripis-vrsta">
+                              <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
+                              {(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
                             {praviceOdprt === row.sid && (
                               <div className="prav-vklop-telo">
                                 {praviceTelo(row.sid)}
@@ -10012,9 +10015,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
                                 {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{locale === 'en' ? rc.imeEn : rc.ime}</option>)}
                               </select>
-                              <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
                             </span>
-                            <span className="prav-vklop-pripis">{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
+                            <span className="prav-vklop-pripis prav-vklop-pripis-vrsta">
+                              <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
+                              {(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
                             {praviceOdprt === row.sid && (
                               <div className="prav-vklop-telo" onClick={e => e.stopPropagation()}>
                                 {praviceTelo(row.sid)}
