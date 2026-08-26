@@ -8,7 +8,7 @@ import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '
 import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
-import { osnovnaVprasanja, dodatnaVprasanja, PRAV_STALNE, povzetekUporabe, rabaIzOdgovorov, type PravVprasanje } from '@/lib/praviceVprasanja';
+import { osnovnaVprasanja, dodatnaVprasanja, PRAV_STALNE, povzetekUporabe, rabaIzOdgovorov, nedogovorjena, type PravVprasanje } from '@/lib/praviceVprasanja';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
 import { nastaviNapredek } from '@/lib/flowNapredek';
@@ -3227,6 +3227,24 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     return m;
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [vrstice, odgovori, praviceNacin, webIzvirno]);
+
+  /* Kaj pri pravicah se ni dokoncano. Ne blokira nicesar — samo pove, da
+     ponudba ne bo popolna, in pelje tja, kjer se to uredi (Tina, 26. 8.). */
+  const praviceNedokoncano = useMemo(() => {
+    const sidi = Array.from(new Set(vrstice.map(v => v.sid)));
+    const brezVkljucitve: string[] = [];
+    const brezSpecifikacije: string[] = [];
+    const brezOdgovorov: string[] = [];
+    sidi.forEach(sid => {
+      if (praviceIzkljucene[sid] === 'vprasaj') { brezSpecifikacije.push(sid); return; }
+      if (praviceIzkljucene[sid]) return;                       /* postavitev ali v CGP */
+      const odg = pravicePoStoritvi[sid]?.odgovori;
+      const manjka = nedogovorjena(sid, odg);
+      if (!praviceNacin[sid]) { brezVkljucitve.push(sid); return; }
+      if (manjka.length) brezOdgovorov.push(sid);
+    });
+    return { brezVkljucitve, brezSpecifikacije, brezOdgovorov };
+  }, [vrstice, praviceIzkljucene, praviceNacin, pravicePoStoritvi]);
 
   const r = useMemo(() => {
     /* linije = vrstice ponudbe z razreseno storitvijo (njen drag-vrstni red) */
@@ -7578,6 +7596,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-iz-odgovora b { color: var(--ink); }
         .cw .prav-povzetek { margin: .2rem 0 0; padding: .8rem .95rem; border-left: 3px solid var(--purple, #7C3AED); border-radius: 0 10px 10px 0; background: rgba(124,58,237,.05); font-size: .84rem; line-height: 1.55; color: rgba(17,17,17,.78); }
         .cw .prav-povzetek b { color: var(--ink); }
+        /* mirno opozorilo o nedokoncanem — pove in pelje tja, ne blokira */
+        .cw .prav-nedokoncano { margin: 1rem 0 .2rem; padding: .95rem 1.1rem; border: 1px solid rgba(178,84,118,.3); border-radius: 14px; background: rgba(178,84,118,.05); }
+        .cw .prav-nedokoncano > b { display: block; margin-bottom: .4rem; font: 700 .92rem var(--font-sans), sans-serif; color: var(--ink); }
+        .cw .prav-nedokoncano ul { margin: 0; padding-left: 1.1rem; }
+        .cw .prav-nedokoncano li { margin: .2rem 0; font-size: .85rem; line-height: 1.5; color: rgba(17,17,17,.75); }
+        .cw .prav-nedokoncano small { display: block; margin-top: .5rem; font-size: .78rem; line-height: 1.45; color: rgba(17,17,17,.6); }
         .cw .prav-kljuk { box-sizing: border-box; width: 1.5rem; height: 1.5rem; min-height: 0; padding: 0; flex: none; justify-self: end; border-radius: 50%; border: 1.5px solid rgba(17,17,17,.3); background: transparent; color: #fff; font: 900 .82rem/1 var(--font-sans), sans-serif; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .18s, border-color .18s; }
         .cw .prav-kljuk.on { background: var(--accent, #B25476); border-color: var(--accent, #B25476); }
         .cw .prav-predlog { font-weight: 600; color: rgba(17,17,17,.55); font-size: .84rem; }
@@ -10261,6 +10285,40 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         </div>
                       ))}
                     </div>
+                    {(() => {
+                      const { brezVkljucitve, brezSpecifikacije, brezOdgovorov } = praviceNedokoncano;
+                      if (!brezVkljucitve.length && !brezSpecifikacije.length && !brezOdgovorov.length) return null;
+                      const ime = (sid: string) => { const st = vseStoritve.find(x => x.id === sid); return st ? storIme(st) : sid; };
+                      return (
+                        <div className="prav-nedokoncano">
+                          <b>{L('Ponudba še ne bo popolna', 'The quote is not complete yet')}</b>
+                          <ul>
+                            {brezVkljucitve.length > 0 && (
+                              <li>{L('Pravice niso vključene v ponudbo pri:', 'Rights are not included in the quote for:')}{' '}
+                                {brezVkljucitve.map((sid, i) => (
+                                  <span key={sid}>{i > 0 ? ', ' : ''}<button type="button" className="povezava" onClick={() => setPraviceOdprt(sid)}>{ime(sid)}</button></span>
+                                ))}
+                              </li>
+                            )}
+                            {brezSpecifikacije.length > 0 && (
+                              <li>{L('Manjka specifikacija pri:', 'The specification is missing for:')}{' '}
+                                {brezSpecifikacije.map((sid, i) => (
+                                  <span key={sid}>{i > 0 ? ', ' : ''}<button type="button" className="povezava" onClick={() => { const l = vrstice.find(v => v.sid === sid); if (l) odpriDetajl(l.uid); }}>{ime(sid)}</button></span>
+                                ))}
+                              </li>
+                            )}
+                            {brezOdgovorov.length > 0 && (
+                              <li>{L('Obseg uporabe še ni v celoti dogovorjen pri:', 'The scope of use is not fully agreed for:')}{' '}
+                                {brezOdgovorov.map((sid, i) => (
+                                  <span key={sid}>{i > 0 ? ', ' : ''}<button type="button" className="povezava" onClick={() => setPraviceOdprt(sid)}>{ime(sid)}</button></span>
+                                ))}
+                              </li>
+                            )}
+                          </ul>
+                          <small>{L('Nedogovorjeno ne pomeni dovoljenja za neomejeno uporabo — v ponudbi se izpiše kot nedogovorjeno.', 'Not agreed does not mean permission for unlimited use — it is printed in the quote as not agreed.')}</small>
+                        </div>
+                      );
+                    })()}
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
                       onClick={dodajLastnoPravico}>{L('+ Dodaj svojo pravico', '+ Add your own right')}</button>
                     {(() => {

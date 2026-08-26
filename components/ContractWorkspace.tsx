@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Toast from '@/components/Toast';
 import { createPortal } from 'react-dom';
-import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, Plus, ArrowUp, ArrowDown } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB, TextItalic, X, FloppyDisk, FilePdf, Plus, ArrowUp, ArrowDown, Warning } from '@phosphor-icons/react';
 import GumbNazaj from '@/components/ui/GumbNazaj';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
@@ -1347,7 +1347,11 @@ export default function ContractWorkspace({ base }: { base: string }) {
         );
       })()}
       <p className="pg-uvod">{L('Prenesi pogodbo', 'Download the contract')}{narocnikIme() ? L(' za ', ' for ') + narocnikIme() : ''}{L(', jo shrani ali pošlji naročniku.', ', save it or send it to the client.')}</p>
-      <p className="pg-disc">{L('Pripravljeno iz vzorčne predloge kot pripomoček — ', 'Prepared from a sample template as an aid — ')}<b>{L('ni pravni nasvet', 'not legal advice')}</b>{L('. Pred podpisom priporočamo pregled pri odvetniku in prilagoditev konkretnemu poslu.', '. Before signing, we recommend a review by a lawyer and adaptation to the specific deal.')}</p>
+      <p className="pg-disc pg-disc-opozorilo">
+        <Warning size={18} weight="fill" aria-hidden />
+        <span><b>{L('Pred podpisom priporočamo pregled pri odvetniku.', 'Before signing, we recommend a review by a lawyer.')}</b>{' '}
+        {L('Pogodba je pripravljena iz vzorčne predloge kot pripomoček in ni pravni nasvet; prilagodi jo konkretnemu poslu.', 'The contract is prepared from a sample template as an aid and is not legal advice; adapt it to the specific deal.')}</span>
+      </p>
       <div className="pg-epodpis">
         <b>{L('Elektronska potrditev soglasja', 'Electronic consent confirmation')}</b>
         <p>{L('Zabeležijo se oba podpisnika, čas, IP in SHA-256 vsebine. To ni kvalificiran elektronski podpis po eIDAS in ga ne nadomešča. Po podpisu naročnika se pogodba zaklene.', 'Both signers, time, IP and the SHA-256 content hash are recorded. This is not a qualified electronic signature under eIDAS and does not replace one. The contract is locked after the client signs.')}</p>
@@ -1465,6 +1469,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-prenosi{display:flex;flex-wrap:wrap;justify-content:center;gap:.9rem 1.6rem;margin:1.2rem 0 .4rem}
       .pg-disc{margin:-.4rem auto 1.4rem;padding:.7rem .95rem;max-width:34rem;text-align:center;font-size:.76rem;line-height:1.5;color:rgba(17,17,17,.66);background:oklch(97% .02 85);border:1px solid oklch(92% .03 82 / .7);border-radius:.7rem}
       .pg-disc b{color:rgba(17,17,17,.82)}
+      /* pred podpisom mora opozorilo v oci, zato rdeca in ikona, ne siva vrstica */
+      .pg-disc-opozorilo{display:flex;align-items:flex-start;gap:.6rem;max-width:38rem;text-align:left;font-size:.84rem;color:oklch(42% .12 25);background:oklch(97% .035 25);border-color:oklch(72% .16 25 / .5)}
+      .pg-disc-opozorilo svg{flex:none;margin-top:.1rem;color:oklch(58% .19 25)}
+      .pg-disc-opozorilo b{color:oklch(38% .14 25)}
       .pg-epodpis{display:grid;gap:.65rem;width:min(100%,38rem);margin:0 auto 1.2rem;padding:1rem;border:1px solid color-mix(in oklch,#6E4FA6 24%,transparent);border-radius:.9rem;background:color-mix(in oklch,#6E4FA6 6%,#fff);box-sizing:border-box}
       .pg-epodpis>p{margin:0;color:#625b54;font-size:.76rem;line-height:1.5}
       .pg-epodpis .pg-gumb{justify-self:start}
