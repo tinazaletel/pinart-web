@@ -8,6 +8,7 @@ import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '
 import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
+import { osnovnaVprasanja, dodatnaVprasanja, PRAV_STALNE, povzetekUporabe, rabaIzOdgovorov, nedogovorjena, type PravVprasanje } from '@/lib/praviceVprasanja';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
 import { nastaviNapredek } from '@/lib/flowNapredek';
@@ -207,8 +208,8 @@ const RECEPTI: { id: string; ime: string; imeEn: string; prenos: 'izkljucni' | '
   { id: 'trajno',      ime: 'Trajno izključno',     imeEn: 'Permanent exclusive',    prenos: 'izkljucni',   trajanje: 'neomejeno' },
   { id: 'doba',        ime: 'Izključno za dobo',    imeEn: 'Exclusive for a term',   prenos: 'izkljucni',   trajanje: '7' },
   { id: 'neizkljucni', ime: 'Neizključno',          imeEn: 'Non-exclusive',          prenos: 'neizkljucni', trajanje: '7' },
-  { id: 'licenca',     ime: 'Samo licenca',         imeEn: 'Licence only',           prenos: 'licenca',     trajanje: '7' },
-  { id: 'kampanja',    ime: 'Kampanjska licenca',   imeEn: 'Campaign licence',       prenos: 'licenca',     trajanje: '3m' },
+  { id: 'licenca',     ime: 'Letno plačilo za uporabo', imeEn: 'Annual usage fee',   prenos: 'licenca',     trajanje: '7' },
+  { id: 'kampanja',    ime: 'Za čas kampanje',      imeEn: 'For the campaign period', prenos: 'licenca',    trajanje: '3m' },
   { id: 'tantieme',    ime: 'Prodajni produkt (tantieme)', imeEn: 'Retail product (royalties)', prenos: 'izkljucni', trajanje: '3' },
 ];
 /* priporocena tantiema (% neto veleprodaje) po tipu storitve — iz raziskave (GAG/Licensing Intl):
@@ -221,7 +222,23 @@ const tantiemaZa = (sid: string): number => {
 };
 /* privzeta vrsta pravic + trajanje po storitvi (za tabelo pri vec storitvah) */
 const PRAVICE_TRAJNO = new Set(['logo', 'cgp', 'web', 'embalaza', 'interier', 'arhitektura', 'produktni', 'uxui', 'aplikacija', 'dizajnsistem']);
-const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email', 'pr']);
+const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email', 'pr', 'marketing']);
+/* Storitve, kjer avtorstvo NI samoumevno: pri spletni strani in aplikaciji je
+   odvisno od tega, kaj izvajalka prevzame. Postavitev tujega dizajna ni avtorsko
+   delo, zato pravic ne postavimo vnaprej — vrstica stoji crtkana, dokler je
+   uporabnica ne odpre ali dokler iz podrobnosti ne postane jasno, da oblikuje
+   (Tina, 26. 8. 2026). Videz je isti kot »Dodaj podatke podjetja«, razlikuje se
+   samo privzeto stanje. */
+const PRAVICE_PRIVZETO_ZAPRTE = new Set(['web', 'aplikacija']);
+/* Storitve, kjer avtorskega dela za prenos obicajno NI (optimizacija, vodenje
+   kanalov, odnosi z javnostmi): predloga pravic ne kazemo. Direkcija in
+   marketing ostaneta S predlogom — kreativna direkcija je avtorsko delo,
+   marketing pa avtorske vizuale/besedila pogosto vsebuje (Tina, 26. 8. 2026).
+   Rocno se pravice vedno lahko dodajo z "+ Dodaj svojo pravico". */
+const PRAVICE_BREZ = new Set(['seo', 'smm', 'email', 'pr', 'drugo']);
+/* Odgovori na vprasanje »Kaj od UX/UI procesa prevzames?« (SL in EN besedila). */
+const UXUI_AVTORSKO = ['UI oblikovanje', 'UX zasnova', 'Prototip', 'Style guide', 'UI design', 'UX: structure', 'Prototype', 'design system'];
+const UXUI_SAMO_POSTAVITEV = ['Samo postavitev', 'Layout only'];
 /* storitve, pri katerih ima NAKLADA / PONATIS smisel (delo se tiska ali prodaja
    v nakladi) — te dobijo privzeto vklopljeno klavzulo o ponatisu in izbiro naklade */
 const NAKLADA_STORITVE = ['embalaza', 'ilustracija', 'publikacija', 'produktni', 'fotografija'];
@@ -1670,7 +1687,10 @@ const K_LOGO = 'pinart-kalkulator-logo';   /* logo (data URL) v LOCENEM kljucu �
 const K_STEVEC = 'pinart-kalkulator-stevec';   /* zaporedni stevec ponudb po letu: { "2026": 4 } */
 const K_STEVEC_RACUN = 'pinart-kalkulator-stevec-racun';   /* zaporedni stevec racunov po letu: { "2026": 3 } */
 /* pravice po storitvi (recept, obseg, klavzule, opomba); manjka = privzeto */
-type PravRec = { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string; trajLeta?: number; klavzule?: string[]; tantiema?: number; teritorij?: string; mediji?: string[]; naklada?: string; opomba?: string };
+type PravRec = { prenos: 'izkljucni' | 'neizkljucni' | 'licenca'; trajanje: string; trajLeta?: number; klavzule?: string[]; tantiema?: number; teritorij?: string; mediji?: string[]; naklada?: string; opomba?: string; raba?: 'znamka' | 'projekt';
+  /* odgovori na vprasanja o obsegu uporabe (lib/praviceVprasanja) — gredo v
+     besedilo ponudbe in pogodbe, NE v ceno */
+  odgovori?: Record<string, string> };
 /* lastna pravica (ni vezana na storitev): ime + znesek (v valuti ponudbe) + tip;
    Podrobnosti (opisno, gre v ponudbo): trajanje, klavzule, opomba */
 type LastnaPravica = { id: string; ime: string; znesek: string; tip: 'enkratno' | 'letno' | 'mesecno'; trajanje?: string; trajLeta?: number; klavzule?: string[]; opomba?: string };
@@ -1691,7 +1711,7 @@ type ShranjenaP = {
   promet: string; dobicek: string; projPrihodek: string; projDobicek: string;
   popust: string; dodatki: string[];
   prenosPravic: 'izkljucni' | 'neizkljucni' | 'licenca';
-  rocnePravice: string; rocnaLicenca: string; rocnePraviceStoritvi?: Record<string, string>; pravicePoStoritvi?: Record<string, PravRec>; lastnePravice?: LastnaPravica[]; izjemePravice?: string;
+  rocnePravice: string; rocnaLicenca: string; rocnePraviceStoritvi?: Record<string, string>; pravicePoStoritvi?: Record<string, PravRec>; praviceNacin?: Record<string, 'posebej' | 'vkljuceno'>; lastnePravice?: LastnaPravica[]; izjemePravice?: string;
   nazivPonudbe: string; narocnikPonudbe: string; narocnikEmail?: string;
   narocnikOseba?: string; narocnikNaslov?: string; narocnikDavcna?: string;
   obsegPonudbe: 'kratka' | 'razsirjena'; tonPonudbe: TonPonudbe; avansPct: string;
@@ -1987,7 +2007,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     document.body.dataset.drsenje = 'gor';
     return () => { delete document.body.dataset.detajlOdprt; };
   }, [razprtaVrstica]);
-  const [praviceOdprt, setPraviceOdprt] = useState<string | null>(null);   /* sid odprte Podrobnosti popup pravic */
+  const [praviceOdprt, setPraviceOdprt] = useState<string | null>(null);   /* sid odprtih Podrobnosti uporabe */
+  /* En klik kamorkoli po kartici odpre ali zapre — prej je bil odziven samo
+     naslov, zato je bilo videti, kot da je treba klikniti dvakrat. */
+  const preklopiPrav = (sid: string) => setPraviceOdprt(p => (p === sid ? null : sid));
   const [lastnaOdprta, setLastnaOdprta] = useState<string | null>(null);   /* id lastne pravice z odprtimi Podrobnostmi */
   const [konfetiKljuc, setKonfetiKljuc] = useState(0);   /* povecanje kljuca znova sprozi konfeti animacijo na Zakljucku */
   const proslaviKonfeti = () => setKonfetiKljuc(k => k + 1);   /* sprozi ob kopiranju / posljanju / prenosu ponudbe */
@@ -2347,7 +2370,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      med njima stran zadaj zaklenemo. */
   useEffect(() => {
     /* onboarding NI zaklenjen — stran se normalno premika (Lenis). Zaklep velja le za modalne overlaye. */
-    if (!onboardingOdprt && !kazemProfil && !razprtaVrstica && !kazemUredi && !praviceOdprt && !lastnaOdprta) return;
+    if (!onboardingOdprt && !kazemProfil && !razprtaVrstica && !kazemUredi && !lastnaOdprta) return;
     /* Stran uporablja Lenis smooth-scroll (window.__pinartLenis), ki prestreza wheel
        in skrola ozadje MIMO overflow:hidden. Zato ga ob odprtem oknu ustavimo. */
     const lenis = (window as unknown as { __pinartLenis?: { stop: () => void; start: () => void } }).__pinartLenis;
@@ -2358,7 +2381,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     html.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     return () => { lenis?.start(); html.style.overflow = prejHtml; document.body.style.overflow = prejBody; };
-  }, [onboardingOdprt, kazemProfil, razprtaVrstica, kazemUredi, praviceOdprt, lastnaOdprta]);
+  }, [onboardingOdprt, kazemProfil, razprtaVrstica, kazemUredi, lastnaOdprta]);
 
   const [obIzbor, setObIzbor] = useState<Set<string>>(new Set());
   /* Poljuben vrstni red storitev (razporejanje z drag-rocajem); prazno = naravni. */
@@ -2493,6 +2516,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [custStev, setCustStev] = useState('3');
   const [custEnota, setCustEnota] = useState<'teden' | 'mesec' | 'leto'>('teden');
   const pravRec = (sid: string): PravRec => pravicePoStoritvi[sid] || privzetePraviceZa(sid);
+  /* Koliko vprasanj o uporabi te storitve se caka odgovor (pogodbenih v tem
+     koraku ne stejemo — ta se ne prikazejo). Vodi napis na kartici:
+     »Izpolni« dokler kaj manjka, sicer mirno »Podrobnosti«. */
+  const pravManjka = (sid: string) =>
+    nedogovorjena(sid, pravRec(sid).odgovori).filter(v => v.kam !== 'pogodba').length;
   const nastaviPravRec = (sid: string, del: Partial<PravRec>) =>
     setPravicePoStoritvi(prev => ({ ...prev, [sid]: { ...pravRec(sid), ...del } }));
   /* obseg pravic per storitev; kadar ni rocno nastavljen, se PREVZAME iz trga
@@ -2519,6 +2547,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      urejamPravSid = katera vrstica se trenutno ureja inline. */
   const [rocnePraviceStoritvi, setRocnePraviceStoritvi] = useState<Record<string, string>>({});
   const [urejamPravSid, setUrejamPravSid] = useState<string | null>(null);
+  /* Kljukica pri storitvi = pravice gredo v ponudbo; vrednost pove, KAKO:
+     'posebej' = svoja postavka, 'vkljuceno' = zajeto v ceni oblikovanja.
+     Manjka = neoznaceno, kar pomeni brez locenega doplacila (NE brez pravic).
+     Flow predlaga znesek, uporabnica potrdi (Tina + ChatGPT, 26. 8. 2026). */
+  const [praviceNacin, setPraviceNacin] = useState<Record<string, 'posebej' | 'vkljuceno'>>({});
+  /* odgovor na »Bos oblikovala tudi izvirno podobo strani?«, ko iz podrobnosti ni jasno */
+  const [webIzvirno, setWebIzvirno] = useState<Record<string, boolean>>({});
   /* lastne pravice (niso vezane na storitev): enkratni odkup steje v skupni znesek
      pravic; letno/mesecno je ponavljajoca licenca (glej tip LastnaPravica) */
   const [lastnePravice, setLastnePravice] = useState<LastnaPravica[]>([]);
@@ -3132,6 +3167,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setRocnePravice('');
     setRocnaLicenca('');
     setRocnePraviceStoritvi({});
+    setPraviceNacin({});
+    setWebIzvirno({});
     setUrejamPravSid(null);
     setLastnePravice([]);
     setLastnaOdprta(null);
@@ -3169,6 +3206,53 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* privzeta osnova, prilagojena mojemu trgu; rocno nastavljena jo povozi */
   const osnovaZa = (s: Storitev) =>
     osnove[s.id] > 0 ? osnove[s.id] : zaokrozi(s.osnova * trg(mojTrg).lvl);
+
+  /* 'avtorsko' = izbrano je oblikovanje (pravice se odprejo same),
+     'postavitev' = samo izvedba tujega dizajna (pravic ni),
+     'neznano' = vprasanje se ni izpolnjeno (crtkana vrstica caka). */
+  const uxuiStatus = (sid: string): 'avtorsko' | 'postavitev' | 'neznano' => {
+    const odg = vrstice.filter(v => v.sid === sid)
+      .map(v => (odgovori[`${v.uid}:ux-ui`] || '') + ' ' + (odgovori[`${v.uid}:ux-ui:drugo`] || ''))
+      .join(' + ').trim();
+    if (!odg) return 'neznano';
+    if (UXUI_AVTORSKO.some(k => odg.includes(k))) return 'avtorsko';
+    if (UXUI_SAMO_POSTAVITEV.some(k => odg.includes(k))) return 'postavitev';
+    return 'neznano';
+  };
+  /* sid -> zakaj pravic (se) ni: 'postavitev' (ni avtorsko delo) ali 'zaprto' */
+  const praviceIzkljucene = useMemo(() => {
+    const m: Record<string, 'postavitev' | 'vprasaj' | 'vcgp'> = {};
+    const sidi = Array.from(new Set(vrstice.map(v => v.sid)));
+    sidi.forEach(sid => {
+      if (!PRAVICE_PRIVZETO_ZAPRTE.has(sid)) return;
+      if (webIzvirno[sid]) return;                     /* rekla je, da oblikuje */
+      const st = uxuiStatus(sid);
+      if (st === 'postavitev') m[sid] = 'postavitev';
+      else if (st === 'neznano') m[sid] = 'vprasaj';
+    });
+    /* CGP praviloma zajema logotip: ne predlagaj pravic dvakrat za isto delo */
+    if (sidi.includes('cgp') && sidi.includes('logo') && !praviceNacin['logo']) m['logo'] = 'vcgp';
+    return m;
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [vrstice, odgovori, praviceNacin, webIzvirno]);
+
+  /* Kaj pri pravicah se ni dokoncano. Ne blokira nicesar — samo pove, da
+     ponudba ne bo popolna, in pelje tja, kjer se to uredi (Tina, 26. 8.). */
+  const praviceNedokoncano = useMemo(() => {
+    const sidi = Array.from(new Set(vrstice.map(v => v.sid)));
+    const brezVkljucitve: string[] = [];
+    const brezSpecifikacije: string[] = [];
+    const brezOdgovorov: string[] = [];
+    sidi.forEach(sid => {
+      if (praviceIzkljucene[sid] === 'vprasaj') { brezSpecifikacije.push(sid); return; }
+      if (praviceIzkljucene[sid]) return;                       /* postavitev ali v CGP */
+      const odg = pravicePoStoritvi[sid]?.odgovori;
+      const manjka = nedogovorjena(sid, odg);
+      if (!praviceNacin[sid]) { brezVkljucitve.push(sid); return; }
+      if (manjka.length) brezOdgovorov.push(sid);
+    });
+    return { brezVkljucitve, brezSpecifikacije, brezOdgovorov };
+  }, [vrstice, praviceIzkljucene, praviceNacin, pravicePoStoritvi]);
 
   const r = useMemo(() => {
     /* linije = vrstice ponudbe z razreseno storitvijo (njen drag-vrstni red) */
@@ -3211,9 +3295,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
     /* pravice: znamka = 1 % letnega dobicka podjetja;
        projekt = 10 % pricakovanega dobicka projekta (ali 2 % prihodka) */
-    const surove = raba === 'projekt'
-      ? (pd > 0 ? pd * 0.10 : pp * 0.02)
-      : (d > 0 ? d * 0.01 : p * 0.002);
+    const suroveZnamka = d > 0 ? d * 0.01 : p * 0.002;
+    const suroveProjekt = pd > 0 ? pd * 0.10 : pp * 0.02;
+    const surove = raba === 'projekt' ? suroveProjekt : suroveZnamka;
     /* praviceBaza = polna vrednost izkljucnega prenosa (kot doslej).
        neizkljucni prenos (delo lahko prodas se komu) = 60 %; samo licenca =
        odkup NI vkljucen v ceno (0), placa se skozi letno licenco. Licenca
@@ -3242,11 +3326,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* pravice PER STORITEV: baza (surove) razdeljena po delezu izvedbe storitve;
        vsaka storitev x svoj mnozitelj trajanja x svoj obseg (obsegZa) x faktor prenosa.
        Ce so obseg in pravice enotni, se vsota ujema z nekdanjim globalnim izracunom. */
-    const clampBaseP = clamp(surove, delo * 0.25, delo * 3);
+    const clampZnamkaP = clamp(suroveZnamka, delo * 0.25, delo * 3);
+    const clampProjektP = clamp(suroveProjekt, delo * 0.25, delo * 3);
+    const clampBaseP = raba === 'projekt' ? clampProjektP : clampZnamkaP;
     const izvStoritve = (sid: string) => linije.filter(l => l.sid === sid).reduce((b, l) => b + osnovaZa(l.s) * Math.max(1, Math.round(l.kolicina)), 0) * mult;
     const totStoritevIzv = sez.reduce((a, s) => a + izvStoritve(s.id), 0);
     let praviceBazaSum = 0, praviceAvtoSum = 0, licencaAvtoSum = 0;
-    const praviceVrstice = sez.map(s => {
+    const praviceVrstice = sez.filter(s => !PRAVICE_BREZ.has(s.id)).map(s => {
       const rec = pravicePoStoritvi[s.id] || privzetePraviceZa(s.id);
       const trajMult = rec.trajanje === 'custom' && typeof rec.trajLeta === 'number'
         ? trajMultLeta(rec.trajLeta)
@@ -3254,17 +3340,23 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       const klavzMult = 1 + (rec.klavzule || []).reduce((a, k) => a + (KLAVZULE.find(x => x.id === k)?.mult || 0), 0);
       const w = totStoritevIzv > 0 ? izvStoritve(s.id) / totStoritevIzv : 0;
       const ob = obsegZa(s.id);
-      const sBaza = clampBaseP * w * trajMult * ob.mult * klavzMult;
+      /* raba per postavka: logotip za znamko, kampanja za projekt — vpliva SAMO
+         na vrednost pravic te postavke, cena dela ostane pri globalnem odgovoru */
+      const rRaba = rec.raba ?? 'znamka';
+      const sBaza = (rRaba === 'projekt' ? clampProjektP : clampZnamkaP) * w * trajMult * ob.mult * klavzMult;
       const sAvto = rec.prenos === 'neizkljucni' ? sBaza * 0.6 : rec.prenos === 'licenca' ? 0 : sBaza;
       const znesekAuto = zaokrozi(sAvto);
       const rocnoStorEur = zaokrozi((Number(rocnePraviceStoritvi[s.id]) || 0) / vfx.fx);
-      const znesek = rocnoStorEur > 0 ? rocnoStorEur : znesekAuto;
-      praviceBazaSum += sBaza; praviceAvtoSum += znesek; licencaAvtoSum += zaokrozi(sBaza * 0.2);
+      const izkljucena = praviceIzkljucene[s.id];
+      const nacin = praviceNacin[s.id];
+      const steje = !izkljucena && nacin === 'posebej';
+      const znesek = steje ? (rocnoStorEur > 0 ? rocnoStorEur : znesekAuto) : 0;
+      if (steje) { praviceBazaSum += sBaza; praviceAvtoSum += znesek; licencaAvtoSum += zaokrozi(sBaza * 0.2); }
       const trajRec = PRAV_TRAJANJE.find(t => t.id === rec.trajanje);
       const trajanjeIme = rec.trajanje === 'custom' && typeof rec.trajLeta === 'number'
         ? trajLetaVBesedo(rec.trajLeta, locale === 'en')
         : ((locale === 'en' ? trajRec?.imeEn : trajRec?.ime) ?? rec.trajanje);
-      return { sid: s.id, ime: s.ime, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek, znesekAuto, rocno: rocnoStorEur > 0, klavzule: rec.klavzule || [], tantiema: rec.tantiema, obsegOpis: ob.opis, obsegMult: ob.mult, opomba: (rec.opomba || '').trim() };
+      return { sid: s.id, ime: s.ime, izkljucena, nacin, raba: rRaba, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek, znesekAuto, rocno: rocnoStorEur > 0, klavzule: rec.klavzule || [], tantiema: rec.tantiema, obsegOpis: ob.opis, obsegMult: ob.mult, opomba: (rec.opomba || '').trim() };
     });
     /* lastne pravice z enkratnim odkupom pristejemo k skupnemu znesku pravic
        (letno/mesecno so ponavljajoce licence in NE gredo v enkratno ceno) */
@@ -3303,7 +3395,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       vrsticeIzvedbe, raba, tantiemePct, prenos: prenosPravic, praviceVrstice,
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
     };
-  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi, lastnePravice, valuta, pravicePoStoritvi, rocniPaketi]);
+  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi, lastnePravice, valuta, pravicePoStoritvi, rocniPaketi, praviceIzkljucene, praviceNacin]);
 
   /* Pupa copilot — svetovalni pregled ponudbe (lib/copilot). Vhod izluscimo iz
      `r` + state: referenca = postena AUTO cena priporocenega paketa (redna, brez
@@ -3332,6 +3424,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       })),
     });
   }, [r, ddvZavezanec, trgNarocnika]);
+
+  /* je sploh kaj vklopljenega? ce ne, blok ne razlaga in ne sesteva */
+  const imaVklopljenePravice = useMemo(() =>
+    (r?.praviceVrstice || []).some(v => v.nacin) || lastnePravice.length > 0,
+    [r, lastnePravice]);
 
   /* Pupin obraz (barvna krogla + veseli obraz) v poljubni velikosti. */
   const pupaObraz = (px: number) => (
@@ -3802,6 +3899,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           const vrsta = pv.prenos === 'licenca' ? L('licenca za rabo', 'usage licence') : pv.prenos === 'neizkljucni' ? L('neizključni prenos', 'non-exclusive transfer') : L('izključni prenos', 'exclusive transfer');
           const zn = pv.prenos === 'licenca' ? L('prek letne licence', 'via annual licence') : val(pv.znesek);
           v.push(`· ${pvNaziv} — ${vrsta}, ${pv.trajanjeIme}, ${pv.obsegOpis} (${zn})`);
+        }
+        {
+          /* dogovorjeni obseg iz odgovorov (lib/praviceVprasanja) — besedilo, ne cena */
+          const sidPv = (pv as { sid?: string }).sid ?? '';
+          const povz = povzetekUporabe(sidPv, pravicePoStoritvi[sidPv]?.odgovori, locale === 'en');
+          if (povz) v.push(`  · ${povz}`);
         }
         pv.klavzule.forEach(kid => { const k = KLAVZULE.find(x => x.id === kid); if (k) v.push(`  · ${locale === 'en' ? k.opisEn : k.opis}`); });
         if (pv.opomba) v.push(`  · ${L('opomba', 'note')}: ${pv.opomba}`);
@@ -5003,7 +5106,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       izbrane: [...izbrane], vrstice,
       odgovori, urejenePodrobnosti: [...urejenePodrobnosti], postavke, raba,
       promet, dobicek, projPrihodek, projDobicek, popust, dodatki: [...dodatki],
-      prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi: Object.keys(rocnePraviceStoritvi).length ? rocnePraviceStoritvi : undefined, pravicePoStoritvi: Object.keys(pravicePoStoritvi).length ? pravicePoStoritvi : undefined, lastnePravice: lastnePravice.length ? lastnePravice : undefined, izjemePravice: izjemePravice || undefined,
+      prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi: Object.keys(rocnePraviceStoritvi).length ? rocnePraviceStoritvi : undefined, pravicePoStoritvi: Object.keys(pravicePoStoritvi).length ? pravicePoStoritvi : undefined, praviceNacin: Object.keys(praviceNacin).length ? praviceNacin : undefined, lastnePravice: lastnePravice.length ? lastnePravice : undefined, izjemePravice: izjemePravice || undefined,
       nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, avansPct,
       kaziUre, nogaZnak, izkusnje, mojTrg, trgNarocnika, valuta, valutaRocna,
       rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '', podlogaCover: podlogaCover || undefined, logo: logo || undefined, predlogaPinart: predlogaPinart || undefined,
@@ -5050,6 +5153,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setPrenosPravic(p.prenosPravic); setRocnePravice(p.rocnePravice); setRocnaLicenca(p.rocnaLicenca);
     setRocnePraviceStoritvi(p.rocnePraviceStoritvi || {});
     setPravicePoStoritvi(p.pravicePoStoritvi || {});
+    if (p.praviceNacin) setPraviceNacin(p.praviceNacin);
+    else {
+      /* stara ponudba, shranjena pred kljukicami: pravice so bile vracunane
+         samodejno, zato jih oznacimo, da se znesek ob odprtju ne spremeni */
+      const n: Record<string, 'posebej' | 'vkljuceno'> = {};
+      (p.vrstice || []).forEach(v => { n[v.sid] = 'posebej'; });
+      [...(p.izbrane || [])].forEach(sid => { n[sid] = 'posebej'; });
+      setPraviceNacin(n);
+    }
     setLastnePravice(p.lastnePravice || []);
     setIzjemePravice(p.izjemePravice || '');
     setNazivPonudbe(p.nazivPonudbe); setNarocnikPonudbe(p.narocnikPonudbe);
@@ -5374,7 +5486,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const opisKoraka = korak === 0 ? L('Izberi storitve za to ponudbo — eno ali več.', 'Pick the services for this quote — one or more.')
     : korak === narocnikStep ? L('Vpišeš za vsako ponudbo posebej.', 'You fill this in for each quote separately.')
       : korak === trgNarocnikaStep ? L('Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.', 'A wealthier market pays more, a poorer one less. The currency follows the market.')
-        : korak === praviceStep ? L('Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.', 'The tool suggests an amount that you can adjust at any time.')
+        : korak === praviceStep ? L('Flow predlaga znesek za vsako storitev — ti odločiš, ali ga vključiš in koliko znaša.', 'Flow suggests an amount for each service — you decide whether to include it and how much it is.')
           : korak === posebnostiStep ? L('Vse je neobvezno; pusti prazno in pojdi naprej.', 'Everything is optional; leave it blank and move on.')
             : korak === ponudbaStep ? L('Besedilo lahko poljubno urejaš in dopišeš.', 'You can freely edit and add to the text.')
               : korak === zakljucekStep ? L('Kopiraj, pošlji ali shrani ponudbo.', 'Copy, send or save the quote.')
@@ -5587,12 +5699,252 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vChatu, poMeh, klasicnaOblika, korak, r, stevilkaPonudbe]);
   /* naslov koraka kot chat oblacek (v chat obliki) */
-  const chatVpr = (naslov: string, opis?: string) => (
+  /* Telo panela pravic — isti vsebini v razsirjeni kartici (kot »Dodaj podatke
+     podjetja«: klik razpre vsebino pod vrstico, brez modala). */
+  /* Eno vprasanje o obsegu uporabe. Odgovor gre v zapis in v besedilo ponudbe,
+     na ceno NE vpliva (pravilo: brez novih cenovnih mnoziteljev). */
+  const praviceVprasanje = (sid: string, v: PravVprasanje) => {
+    const rec = pravRec(sid);
+    const izbrano = ((rec.odgovori || {})[v.id] || '').split(' + ').filter(Boolean);
+    const preklopi = (id: string) => {
+      const bilo = izbrano.includes(id);
+      let novo: string[];
+      if (id === 'nedogovorjeno') novo = bilo ? [] : ['nedogovorjeno'];
+      else if (v.vec) novo = (bilo ? izbrano.filter(x => x !== id) : [...izbrano.filter(x => x !== 'nedogovorjeno'), id]);
+      else novo = bilo ? [] : [id];
+      nastaviPravRec(sid, { odgovori: { ...(rec.odgovori || {}), [v.id]: novo.join(' + ') } });
+    };
+    return (
+      <div key={v.id} className="prav-vpr">
+        <p className="prav-vpr-naslov">{locale === 'en' ? v.en : v.sl}
+          {v.razlaga && <InfoNamig besedilo={locale === 'en' ? v.razlaga.en : v.razlaga.sl} locale={locale} />}
+          {v.vec ? <span>{L('izbereš lahko več', 'you can pick several')}</span> : null}</p>
+        <div className="prav-vpr-opcije">
+          {v.opcije.map(o => (
+            <button key={o.id} type="button" className={'prav-chip' + (izbrano.includes(o.id) ? ' on' : '')} onClick={() => preklopi(o.id)}>
+              <span className="prav-chip-kljuk" aria-hidden>{izbrano.includes(o.id) ? <Check size={11} weight="bold" /> : null}</span>
+              {locale === 'en' ? o.en : o.sl}
+            </button>
+          ))}
+          <span className="prav-vpr-loci" aria-hidden />
+          {PRAV_STALNE.map(o => (
+            <button key={o.id} type="button" className={'prav-chip prav-chip-tih' + (izbrano.includes(o.id) ? ' on' : '')} onClick={() => preklopi(o.id)}>
+              {locale === 'en' ? o.en : o.sl}
+            </button>
+          ))}
+        </div>
+        {izbrano.includes('drugo') && (
+          <input type="text" className="prav-vpr-drugo" autoFocus
+            placeholder={L('Napiši, kaj je dogovorjeno …', 'Describe what is agreed …')}
+            aria-label={L('Opis pri »Drugo«', 'Description for «Other»')}
+            value={(rec.odgovori || {})[`${v.id}:drugo`] || ''}
+            onChange={e => nastaviPravRec(sid, { odgovori: { ...(rec.odgovori || {}), [`${v.id}:drugo`]: e.target.value } })} />
+        )}
+        {v.namig && <p className="prav-vpr-namig">{locale === 'en' ? v.namig.en : v.namig.sl}</p>}
+      </div>
+    );
+  };
+
+  const praviceTelo = (sid: string) => {
+    const s = vseStoritve.find(x => x.id === sid);
+    if (!s) return null;
+    const rec = pravRec(sid);
+    const ob = pravObseg(sid);
+    /* Koliko vprasanj v predalu se caka odgovor. Dokler jih je kaj, je predal
+       crtkan (nedokoncano); ko so vsa urejena, dobi mirno polno crto. */
+    const dodatniVpr = dodatnaVprasanja(sid);
+    const manjkaDodatnih = nedogovorjena(sid, rec.odgovori).filter(v => dodatniVpr.some(d => d.id === v.id)).length;
+    const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
+    return (
+                        <div className="detajl-telo">
+                          {osnovnaVprasanja(sid).map(v => praviceVprasanje(sid, v))}
+                          {!rabaIzOdgovorov(sid, rec.odgovori) && (
+                          <div>
+                            <div className="uredi-naslov">{L('Za kaj bo naročnik uporabil to delo?', 'What will the client use this work for?')} <span className="vec">{L('določa vrednost pravic', 'sets the value of the rights')}</span></div>
+                            <div className="izbira">
+                              <button type="button" className={(rec.raba ?? 'znamka') === 'znamka' ? 'on' : ''}
+                                onClick={() => nastaviPravRec(sid, { raba: 'znamka' })}>
+                                <h3>{L('Za celotno znamko', 'For the whole brand')}</h3>
+                                <p>{L('Logotip, celostna podoba, spletna stran. Tvoje delo nosi vse, kar podjetje počne, zato vrednost sledi bilanci podjetja.', 'Logo, corporate identity, website. Your work carries everything the company does, so the value follows the company\'s balance sheet.')}</p>
+                              </button>
+                              <button type="button" className={(rec.raba ?? 'znamka') === 'projekt' ? 'on' : ''}
+                                onClick={() => nastaviPravRec(sid, { raba: 'projekt' })}>
+                                <h3>{L('Za določen projekt ali izdelek', 'For a specific project or product')}</h3>
+                                <p>{L('Majice, embalaža enega izdelka, konferenca, knjiga. Vrednost sledi pričakovanemu izkupičku projekta, ne velikosti podjetja.', 'T-shirts, packaging for a single product, a conference, a book. The value follows the expected project proceeds, not the size of the company.')}</p>
+                              </button>
+                            </div>
+                            {(rec.raba ?? 'znamka') === 'projekt' ? (
+                              <div className="numgrid" style={{ marginTop: '.7rem' }}>
+                                <div className="polje">
+                                  <label htmlFor="cw-pprihodek">{L('Pričakovani letni prihodek projekta (€)', 'Expected annual project revenue (€)')}</label>
+                                  <input id="cw-pprihodek" type="number" min={0} step={5000} placeholder="50000" value={projPrihodek} onChange={e => setProjPrihodek(e.target.value)} />
+                                </div>
+                                <div className="polje">
+                                  <label htmlFor="cw-pdobicek">{L('Pričakovani letni dobiček projekta (€)', 'Expected annual project profit (€)')}</label>
+                                  <input id="cw-pdobicek" type="number" min={0} step={5000} placeholder="15000" value={projDobicek} onChange={e => setProjDobicek(e.target.value)} />
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="hint" style={{ marginTop: '.5rem' }}>{L('Vrednost sledi prometu in dobičku naročnika — to vneseš pri podatkih naročnika. Prazno = mikro podjetje.', 'The value follows the client revenue and profit — you enter that in the client details. Blank = micro company.')}</p>
+                            )}
+                          </div>
+                          )}
+                          {rabaIzOdgovorov(sid, rec.odgovori) && (
+                            <p className="prav-iz-odgovora">{L('Vrednost računam kot', 'Value is calculated as')} <b>{rabaIzOdgovorov(sid, rec.odgovori) === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}</b> {L('— iz odgovora zgoraj.', '— from the answer above.')}</p>
+                          )}
+                          <div className="prav-vpr">
+                            <p className="prav-vpr-naslov">{L('Kako želiš obračunati te pravice?', 'How do you want to charge these rights?')}</p>
+                            <div className="prav-vpr-opcije prav-vpr-opcije-dve">
+                              <button type="button" className={'prav-izbira' + (praviceNacin[sid] === 'posebej' ? ' on' : '')}
+                                onClick={() => setPraviceNacin(o => ({ ...o, [sid]: 'posebej' }))}>
+                                <span className="prav-chip-kljuk" aria-hidden>{praviceNacin[sid] === 'posebej' ? <Check size={11} weight="bold" /> : null}</span>
+                                <span><b>{L('Obračunaj posebej', 'Charge separately')}</b><small>{L('svoja postavka v ponudbi', 'its own line in the quote')}</small></span>
+                              </button>
+                              <button type="button" className={'prav-izbira' + (praviceNacin[sid] === 'vkljuceno' ? ' on' : '')}
+                                onClick={() => setPraviceNacin(o => ({ ...o, [sid]: 'vkljuceno' }))}>
+                                <span className="prav-chip-kljuk" aria-hidden>{praviceNacin[sid] === 'vkljuceno' ? <Check size={11} weight="bold" /> : null}</span>
+                                <span><b>{L('Vključene v ceno oblikovanja', 'Included in the design fee')}</b><small>{L('pogoji se zapišejo, doplačila ni', 'terms are written down, no extra charge')}</small></span>
+                              </button>
+                            </div>
+                          </div>
+                          <details className={'prav-podrobnosti' + (manjkaDodatnih === 0 ? ' prav-podrobnosti-ok' : '')}>
+                            <summary>
+                              <span className="prav-podrobnosti-naslov">{L('Podrobnosti uporabe', 'Usage details')}</span>
+                              <span className="prav-podrobnosti-pripis">{L('izključnost, trajanje, teritorij, mediji, klavzule', 'exclusivity, duration, territory, media, clauses')}</span>
+                              <span className="prav-podrobnosti-desno">
+                                {manjkaDodatnih > 0
+                                  ? <span className="prav-podrobnosti-znacka">{L('Izpolni', 'Complete')} · {manjkaDodatnih}</span>
+                                  : <span className="prav-podrobnosti-znacka prav-podrobnosti-znacka-ok"><Check size={11} weight="bold" aria-hidden /> {L('dopolnjeno', 'complete')}</span>}
+                                <span className="prav-podrobnosti-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
+                              </span>
+                            </summary>
+                            <div className="prav-podrobnosti-telo">
+                          {dodatnaVprasanja(sid).map(v => praviceVprasanje(sid, v))}
+                          <div>
+                            <div className="uredi-naslov">{L('Ali je uporaba dogovorjena izključno za tega naročnika?', 'Is the use agreed exclusively for this client?')}</div>
+                            <div className="opts">
+                              {([['izkljucni', L('Da, izključno', 'Yes, exclusive'), L('delo uporablja samo ta naročnik', 'only this client uses the work')], ['neizkljucni', L('Ne, neizključno', 'No, non-exclusive'), L('delo lahko ponudiš še komu · 60 %', 'you may offer the work to others · 60%')], ['licenca', L('Letno plačilo za uporabo', 'Annual usage fee'), L('odkupa ni, uporaba se plačuje letno', 'no buyout, use is paid annually')]] as Array<[PravRec['prenos'], string, string]>).map(([id, ime, opis]) => (
+                                <button key={id} type="button" className={'pill' + (rec.prenos === id ? ' on' : '')}
+                                  onClick={() => nastaviPravRec(sid, { prenos: id })}>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{ime}<small>{opis}</small></span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">{L('Kako dolgo bo naročnik uporabljal tvoje delo?', 'How long will the client use your work?')}</div>
+                            <div className="opts">
+                              {PRAV_TRAJANJE.map(t => (
+                                <button key={t.id} type="button" className={'pill' + (rec.trajanje === t.id ? ' on' : '')}
+                                  onClick={() => nastaviPravRec(sid, { trajanje: t.id, trajLeta: undefined })}>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? t.imeEn : t.ime}</span>
+                                </button>
+                              ))}
+                            </div>
+                            <div className="cu-vrsta cu-po-meri">
+                              <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta, locale === 'en')}` : ''}</span></span>
+                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label={L('Število', 'Number')} />
+                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label={L('Enota', 'Unit')}>
+                                <option value="teden">{L('tednov', 'weeks')}</option><option value="mesec">{L('mesecev', 'months')}</option><option value="leto">{L('let', 'years')}</option>
+                              </select>
+                              <button type="button" className="gumb cu-uporabi" onClick={() => nastaviPravRec(sid, { trajanje: 'custom', trajLeta: custLeta })}>{L('Uporabi', 'Apply')}</button>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">{L('Klavzule', 'Clauses')} <span className="vec">{L('se zapišejo v ponudbo', 'are written into the quote')}</span></div>
+                            <div className="opts">
+                              {KLAVZULE.map(k => {
+                                const on = (rec.klavzule || []).includes(k.id);
+                                return (
+                                  <button key={k.id} type="button" className={'pill' + (on ? ' on' : '')}
+                                    onClick={() => nastaviPravRec(sid, { klavzule: on ? (rec.klavzule || []).filter(x => x !== k.id) : [...(rec.klavzule || []), k.id] })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? k.imeEn : k.ime}<small>{locale === 'en' ? k.opisEn : k.opis}{k.mult ? ` · +${Math.round(k.mult * 100)} %` : ''}</small></span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          {typeof rec.tantiema === 'number' && (
+                            <div>
+                              <div className="uredi-naslov">{L('Tantieme — prodajni produkt', 'Royalties — retail product')}</div>
+                              <div className="cu-vrsta cu-po-meri">
+                                <input type="number" min={0} max={30} step={1} value={rec.tantiema}
+                                  onChange={e => nastaviPravRec(sid, { tantiema: Math.max(0, Math.min(30, Math.round(Number(e.target.value)) || 0)) })}
+                                  className="cu-num" aria-label={L('Odstotek tantieme', 'Royalty percentage')} />
+                                <span>{L('% od neto veleprodaje', '% of net wholesale')}</span>
+                              </div>
+                              <p className="hint" style={{ marginTop: '.5rem' }}>{L('Cena zgoraj je', 'The price above is')} <b>{L('predujem / minimalna garancija', 'an advance / minimum guarantee')}</b> {L('(nepovraten, ob podpisu). Tantieme se plačujejo', '(non-refundable, on signing). Royalties are paid')} <b>{L('dodatno', 'additionally')}</b> {L('od prodaje; ponudba doda klavzule (predujem, MG, reverzija, letno poročilo). Izhodišče: dizajn 3–10 %, znamka do 15 % (GAG / Licensing International).', 'on sales; the quote adds clauses (advance, MG, reversion, annual report). Starting point: design 3–10%, brand up to 15% (GAG / Licensing International).')}</p>
+                            </div>
+                          )}
+                          <div>
+                            <div className="uredi-naslov">{L('Teritorij', 'Territory')} <span className="vec">{ob.teritorijPrevzet ? L('kje se delo uporablja · po naročniku', 'where the work is used · by client') : L('kje se delo uporablja', 'where the work is used')}</span>
+                              <InfoNamig besedilo="Teritorij se privzeto prevzame po sedežu naročnika (kje se delo uporablja). Širši teritorij poviša ceno pravic. Če ga ročno spremeniš, ga z gumbom »↺ Prevzemi po naročniku« vrneš na privzeto." />
+                            </div>
+                            <div className="opts">
+                              {PRAV_TERITORIJ.map(t => (
+                                <button key={t.id} type="button" className={'pill' + (ob.teritorij === t.id ? ' on' : '')}
+                                  onClick={() => nastaviPravRec(sid, { teritorij: t.id })}>
+                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{t.ime}</span>
+                                </button>
+                              ))}
+                            </div>
+                            {!ob.teritorijPrevzet && (
+                              <button type="button" className="povezava" style={{ marginTop: '.4rem' }}
+                                onClick={() => nastaviPravRec(sid, { teritorij: undefined })}>
+                                ↺ Prevzemi po naročniku ({PRAV_TERITORIJ.find(t => t.id === teritorijIzTrga(trgNarocnika))?.ime})
+                              </button>
+                            )}
+                          </div>
+                          <div>
+                            <div className="uredi-naslov">{L('Dodatni mediji', 'Additional media')} <span className="vec">{L('izven tiska + promocije', 'beyond print + promotion')}</span></div>
+                            <div className="opts">
+                              {PRAV_MEDIJI_DODATNI.map(m => {
+                                const on = ob.mediji.includes(m.id);
+                                return (
+                                  <button key={m.id} type="button" className={'pill' + (on ? ' on' : '')}
+                                    onClick={() => nastaviPravRec(sid, { mediji: on ? ob.mediji.filter(x => x !== m.id) : [...ob.mediji, m.id] })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{m.ime}<small>{m.opis}</small></span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          {NAKLADA_STORITVE.includes(sid) && (
+                            <div>
+                              <div className="uredi-naslov">{L('Naklada / obseg izdaje', 'Print run / edition size')}</div>
+                              <div className="opts">
+                                {PRAV_NAKLADA.map(n => (
+                                  <button key={n.id} type="button" className={'pill' + (ob.naklada === n.id ? ' on' : '')}
+                                    onClick={() => nastaviPravRec(sid, { naklada: n.id })}>
+                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{n.ime}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div>
+                            <div className="uredi-naslov">{L('Opomba', 'Note')} <span className="vec">{L('neobvezno · zapiše se v ponudbo pod to storitvijo', 'optional · written into the quote under this service')}</span></div>
+                            <input type="text" className="detajl-opomba" placeholder={L('npr. dovoljena uporaba na embalaži do 2027', 'e.g. use permitted on packaging until 2027')}
+                              value={rec.opomba ?? ''} onChange={e => nastaviPravRec(sid, { opomba: e.target.value })} />
+                          </div>
+                            </div>
+                          </details>
+                          {(() => {
+                            const povz = povzetekUporabe(sid, rec.odgovori, locale === 'en');
+                            if (!povz) return null;
+                            return <p className="prav-povzetek"><b>{L('V ponudbi bo zapisano:', 'The quote will state:')}</b> {povz}</p>;
+                          })()}
+                          <p className="hint" style={{ margin: 0 }}>{L('Obseg zgoraj', 'The scope above')} <b>{L('vpliva na ceno pravic te storitve', 'affects the rights price of this service')}</b> {L('(teritorij privzeto po naročniku; širši teritorij, dodatni mediji ali večja naklada znesek povišajo). Cena pravic te storitve:', '(territory defaults to the client; a wider territory, extra media or a larger print run raise the amount). Rights price of this service:')} <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
+                        </div>
+    );
+  };
+
+  const chatVpr = (naslov: string, opis?: string, dodatek?: React.ReactNode) => (
     /* key=naslov: ob spremembi vprasanja (novo vprasanje ALI menjava produkta) se
        element na novo vgradi -> mehka chatVzid animacija se vsakic ponovi. */
     <div className="chat-bot chat-vpr" key={naslov}>
       <span className="chat-obraz" aria-hidden />
-      <span className="chat-mehur"><b>{naslov}</b>{opis ? <small>{opis}</small> : null}</span>
+      <span className="chat-mehur"><b>{naslov}{dodatek ? <>{' '}{dodatek}</> : null}</b>{opis ? <small>{opis}</small> : null}</span>
     </div>
   );
   /* za mobilni FAB (kosarica): stevilo postavk + okviren skupni znesek */
@@ -6392,7 +6744,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .stepper0 b { min-width: 1.3em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; font-size: .92rem; }
         .cw .vrst0-x { width: 1.55rem; height: 1.55rem; border-radius: 50%; border: 1px solid oklch(93% .006 82 / .55); background: transparent; color: rgba(17,17,17,.72); cursor: pointer; font-size: .95rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
         .cw .vrst0-x:hover { border-color: var(--accent); color: var(--accent); }
-        .cw .vrst0-cena { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.02rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .cw .vrst0-cena { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.02rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+        .cw .vrst0-pravice { grid-column: 2 / 5; display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; margin: -.15rem 0 .1rem; font-size: .78rem; color: var(--purple, #7C3AED); }
+        .cw .vrst0-pravice b { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+        .cw .ponudba0-skupaj { margin-top: .35rem; padding-top: .5rem; border-top: 1px solid rgba(17,17,17,.14); }
+        .cw .ponudba0-skupaj b { font-size: 1.05rem; }
 
         .cw .vrst0-detajl { background: rgba(255,255,255,.85); border: 1px solid rgba(17,17,17,.1); border-radius: 14px; padding: 1rem 1.1rem; margin: .5rem 0 .9rem; animation: detajlDrsni .42s cubic-bezier(.16,1,.3,1) both; }
         @keyframes detajlDrsni { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
@@ -6450,7 +6806,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .chat-bot .chat-mehur { position: relative; padding-left: 2.75rem; background: oklch(96% .012 297); color: rgba(17,17,17,.72); border-top-left-radius: 5px; }
         /* majhna Pinart dot ikonica ZNOTRAJ oblacka (kot showcase mockup) */
         .cw .chat-bot .chat-mehur::before { content: ""; position: absolute; left: .9rem; top: .95rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: radial-gradient(58% 48% at 30% 24%, rgba(255,255,255,.92), rgba(255,255,255,0) 62%), conic-gradient(from 210deg, #7C3AED, #EC4899, #F59E0B, #38BDF8, #7C3AED); box-shadow: 0 2px 6px rgba(124,58,237,.28); }
-        .cw .chat-bot .chat-mehur b { display: block; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
+        .cw .chat-bot .chat-mehur b { display: flex; align-items: flex-start; gap: .6rem; color: var(--ink); font-weight: 700; font-size: 1.02rem; }
+        .cw .chat-bot .chat-mehur b > .info-namig { margin-left: auto; flex: none; }
+        /* vijolicen, da se vidi na svetlem mehurcku */
+        .cw .chat-bot .chat-mehur .info-gumb { border-color: var(--purple, #7C3AED); color: var(--purple, #7C3AED); font-weight: 700; }
+        .cw .chat-bot .chat-mehur .info-gumb:hover { background: var(--purple, #7C3AED); color: #fff; }
         .cw .chat-bot .chat-mehur small { display: block; margin-top: .1rem; color: rgba(17,17,17,.64); font-size: .82rem; }
         .cw .chat-jaz { align-self: flex-end; max-width: 88%; }
         .cw .chat-jaz .chat-mehur { background: oklch(90% .055 190); color: var(--ink); font-weight: 600; border-top-right-radius: 5px; }
@@ -6923,6 +7283,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .info-namig { position: relative; display: inline-flex; margin-left: .4rem; vertical-align: middle; }
         .cw .info-gumb { width: 1.15rem; height: 1.15rem; border-radius: 50%; border: 1px solid rgba(17,17,17,.4); background: transparent; color: rgba(17,17,17,.72); font-family: inherit; font-size: .68rem; font-weight: 700; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; flex: none; }
         .cw .info-gumb:hover { border-color: var(--ink); color: var(--ink); }
+        .cw .gumb-tih { font: 600 .88rem var(--font-sans), sans-serif; color: rgba(17,17,17,.7); background: transparent; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .55rem 1.1rem; cursor: pointer; }
+        .cw .gumb-tih:hover { border-color: var(--ink); color: var(--ink); }
         .cw .info-oblacek { position: absolute; z-index: 20; bottom: calc(100% + .5rem); right: 0; left: auto; width: max(220px, 16rem); max-width: min(84vw, 20rem); background: var(--ink); color: var(--paper); font-size: .8rem; font-weight: 400; line-height: 1.5; padding: .75rem .95rem; border-radius: 10px; text-transform: none; letter-spacing: 0; box-shadow: 0 8px 24px rgba(17,17,17,.22); }
         .cw .polje input { width: 100%; border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.62); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .65rem .85rem; color: var(--ink); border-radius: 10px; box-shadow: 0 3px 10px rgba(40,25,40,.045); transition: border-color .18s; box-sizing: border-box; }
         .cw .polje input:focus { border-color: var(--accent, #7C3AED); }
@@ -7080,10 +7442,126 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-napredno-telo { margin-top: .6rem; }
         .cw .prav-napredno:not([open]) > .prav-napredno-telo { display: none; }
         .cw .prav-razlaga { margin: 0 0 1.1rem; border: 1px solid oklch(93% .006 82 / .55); border-radius: 12px; background: rgba(178,84,118,.05); overflow: hidden; }
+        /* pod kartico stoji kot opomba: brez okvirja in podlage, drobnejsa */
+        .cw .prav-razlaga-opomba { margin: .1rem 0 1.4rem; border: 0; border-radius: 0; background: transparent; }
+        /* Predal ni okras: poln obris in rahel vijolicni podstat, da se vidi kot gumb. */
+        .cw .prav-podrobnosti { border: 1px dashed rgba(124,58,237,.45); border-radius: .75rem; background: rgba(124,58,237,.05); }
+        .cw .prav-podrobnosti[open] { background: #fff; }
+        .cw .prav-podrobnosti:hover { border-color: var(--purple, #7C3AED); background: rgba(124,58,237,.09); }
+        /* dopolnjeno = nic vec ne caka: polna crta, brez vijolicnega vabila */
+        .cw .prav-podrobnosti-ok { border-style: solid; border-color: rgba(17,17,17,.12); background: #fff; }
+        .cw .prav-podrobnosti-ok:hover { border-color: rgba(17,17,17,.28); background: #fff; }
+        .cw .prav-podrobnosti > summary { list-style: none; cursor: pointer; padding: .95rem 1.1rem; display: grid; grid-template-columns: auto 1fr auto; column-gap: .55rem; align-items: baseline; }
+        .cw .prav-podrobnosti > summary::-webkit-details-marker { display: none; }
+        .cw .prav-podrobnosti > summary::before { content: '+'; grid-row: 1 / span 2; align-self: center; display: inline-block; color: var(--purple, #7C3AED); font: 700 1.15rem/1 var(--font-sans), sans-serif; }
+        .cw .prav-podrobnosti[open] > summary::before { content: '−'; }
+        .cw .prav-podrobnosti > summary:hover .prav-podrobnosti-naslov { text-decoration: underline; text-underline-offset: .22em; }
+        .cw .prav-podrobnosti-naslov { font: 700 .95rem var(--font-sans), sans-serif; color: var(--purple, #7C3AED); }
+        .cw .prav-podrobnosti-pripis { grid-column: 2; font-size: .82rem; color: rgba(17,17,17,.62); }
+        .cw .prav-podrobnosti-desno { grid-column: 3; grid-row: 1 / span 2; align-self: center; display: inline-flex; align-items: center; gap: .5rem; }
+        .cw .prav-podrobnosti-znacka { display: inline-flex; align-items: center; gap: .25rem; padding: .2rem .55rem; border-radius: 999px; background: rgba(124,58,237,.14); color: var(--purple, #7C3AED); font: 700 .72rem var(--font-sans), sans-serif; white-space: nowrap; }
+        .cw .prav-podrobnosti-znacka-ok { background: rgba(17,17,17,.06); color: rgba(17,17,17,.6); }
+        .cw .prav-podrobnosti-puscica { display: grid; place-items: center; color: var(--purple, #7C3AED); transition: transform .18s ease; }
+        .cw .prav-podrobnosti[open] .prav-podrobnosti-puscica { transform: rotate(180deg); }
+        .cw .prav-podrobnosti[open] > summary { border-bottom: 0; }
+        .cw .prav-podrobnosti-telo { display: flex; flex-direction: column; gap: 1.9rem; padding: 1.2rem 1.1rem 1.3rem; }
+        /* Vsebina podrobnosti bere isto kot vprasanja zgoraj: vsak sklop svoja
+           kartica z vijolicno crto, naslov v stavku (ne drobna verzalka),
+           odgovori manjsi in zracnejsi (Tina, 26. 8.). */
+        .cw .prav-podrobnosti-telo > div { position: relative; padding: 1.15rem 1.25rem 1.2rem; border: 1px solid rgba(17,17,17,.07); border-radius: 16px; background: #FCFBF7; box-shadow: 0 2px 10px rgba(17,17,17,.03); }
+        .cw .prav-podrobnosti-telo > div::before { content: ''; position: absolute; left: 0; top: 1.15rem; bottom: 1.2rem; width: 3px; border-radius: 3px; background: var(--purple, #7C3AED); opacity: .55; }
+        .cw .prav-podrobnosti-telo > .prav-vpr { padding: 1.15rem 1.25rem 1.2rem; }
+        .cw .prav-podrobnosti-telo .uredi-naslov { margin: 0 0 .9rem; padding-left: .75rem; font: 600 1.05rem/1.35 var(--font-sans), sans-serif; letter-spacing: 0; text-transform: none; color: var(--ink); }
+        .cw .prav-podrobnosti-telo .uredi-naslov .vec { display: block; margin-top: .2rem; font-size: .8rem; font-weight: 400; letter-spacing: 0; text-transform: none; color: rgba(17,17,17,.58); }
+        /* izbire z opisom: mreza enako sirokih kartic, ne razlicno dolge pilule */
+        .cw .prav-podrobnosti-telo .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .6rem; padding-left: .75rem; }
+        .cw .prav-podrobnosti-telo .pill { display: block; padding: .8rem 1rem; border-radius: 14px; border: 1px solid rgba(17,17,17,.14); background: #fff; box-shadow: 0 1px 4px rgba(17,17,17,.04); font-size: .92rem; font-weight: 600; line-height: 1.35; transform: none; }
+        .cw .prav-podrobnosti-telo .pill:hover { transform: none; border-color: var(--purple, #7C3AED); }
+        .cw .prav-podrobnosti-telo .pill small { margin-top: .15rem; font-size: .8rem; font-weight: 400; color: rgba(17,17,17,.6); }
+        .cw .prav-podrobnosti-telo .pill.on { background: rgba(124,58,237,.05); border-color: var(--purple, #7C3AED); color: var(--ink); box-shadow: 0 6px 18px rgba(124,58,237,.14); }
+        .cw .prav-podrobnosti-telo .pill.on small { color: rgba(17,17,17,.66); }
+        .cw .prav-podrobnosti-telo .pill .pill-fill { display: none; }
+        /* kratke izbire brez opisa (trajanje) ostanejo pilule v vrsti */
+        .cw .prav-podrobnosti-telo .opts:not(:has(small)) { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .cw .prav-podrobnosti-telo .opts:not(:has(small)) .pill { display: inline-flex; align-items: center; padding: .5rem .95rem; border-radius: 999px; font-size: .88rem; font-weight: 500; }
+        /* vrstica »Po meri«: drobna, ne tekmuje z odgovori */
+        .cw .prav-podrobnosti-telo .cu-po-meri { margin-top: .7rem; padding-left: .75rem; gap: .45rem; }
+        .cw .prav-podrobnosti-telo .cu-num { width: 4rem; }
+        .cw .prav-podrobnosti-telo .cu-uporabi { padding: .5rem 1rem; font-size: .82rem; background: transparent; color: var(--purple, #7C3AED); border: 1px solid var(--purple, #7C3AED); }
+        .cw .prav-podrobnosti-telo .cu-uporabi:hover { background: var(--purple, #7C3AED); color: #fff; }
+        .cw .prav-podrobnosti-telo .hint { padding-left: .75rem; }
+        .cw .prav-podrobnosti-telo .numgrid, .cw .prav-podrobnosti-telo .detajl-opomba { margin-left: .75rem; }
+        /* TELEFON: kartice cez celo sirino, manj robov, tapne tarce >= 44 px */
+        @media (max-width: 640px) {
+          .cw .prav-vklop { padding: .7rem .7rem .9rem; }
+          .cw .prav-vklop-glava { flex-wrap: wrap; row-gap: .45rem; }
+          .cw .prav-vklop-naslov { flex: 1 1 100%; order: 1; }
+          .cw .prav-vklop-znak { order: 0; }
+          .cw .prav-vklop-predlog-oznaka { order: 2; margin-left: 0; }
+          .cw .prav-vklop-cena { order: 3; margin-left: auto; min-height: 44px; }
+          .cw .prav-vklop-telo { padding: .9rem 0 .2rem; }
+          .cw .prav-vklop-telo .detajl-noga { flex-direction: column-reverse; align-items: stretch; gap: .55rem; }
+          .cw .prav-vklop-telo .detajl-noga .gumb, .cw .prav-vklop-telo .detajl-noga .gumb-tih { width: 100%; min-height: 46px; }
+          .cw .prav-vpr, .cw .prav-podrobnosti-telo > div { padding: 1rem .9rem 1.05rem; border-radius: 14px; }
+          .cw .prav-vpr-naslov, .cw .prav-podrobnosti-telo .uredi-naslov { padding-left: .6rem; font-size: 1rem; }
+          .cw .prav-vpr-opcije, .cw .prav-podrobnosti-telo .opts { padding-left: 0; }
+          .cw .prav-vpr-opcije-dve, .cw .prav-podrobnosti-telo .opts { grid-template-columns: minmax(0, 1fr); }
+          .cw .prav-chip, .cw .prav-izbira, .cw .prav-podrobnosti-telo .pill { min-height: 44px; }
+          .cw .prav-chip { padding: .6rem .9rem; }
+          .cw .prav-podrobnosti-telo .cu-po-meri { flex-wrap: wrap; padding-left: 0; }
+          .cw .prav-podrobnosti-telo .cu-num { width: 4.5rem; min-height: 44px; }
+          .cw .prav-podrobnosti-telo .cu-select { min-height: 44px; }
+          .cw .prav-podrobnosti-telo .cu-uporabi { min-height: 44px; }
+          .cw .prav-podrobnosti-telo .numgrid, .cw .prav-podrobnosti-telo .detajl-opomba { margin-left: 0; }
+          .cw .prav-podrobnosti-telo .hint { padding-left: 0; }
+          .cw .prav-podrobnosti > summary { padding: .85rem .9rem; }
+          .cw .prav-podrobnosti-telo { padding: 1rem .9rem 1.1rem; gap: 1.2rem; }
+          .cw .prav-opomba { margin-left: .2rem; margin-right: .2rem; }
+        }
+        /* Vprasanje o obsegu: naslov je naslov, odgovori dihajo, nedogovorjeno
+           je ločeno od pravih odgovorov (Tina, 26. 8.). */
+        .cw .prav-vpr { position: relative; padding: 1.15rem 1.25rem 1.2rem; border: 1px solid rgba(17,17,17,.07); border-radius: 16px; background: #FCFBF7; box-shadow: 0 2px 10px rgba(17,17,17,.03); }
+        .cw .prav-vpr::before { content: ''; position: absolute; left: 0; top: 1.15rem; bottom: 1.2rem; width: 3px; border-radius: 3px; background: var(--purple, #7C3AED); opacity: .55; }
+        .cw .prav-vpr + .prav-vpr { margin-top: .1rem; }
+        .cw .prav-vpr-naslov { margin: 0 0 .9rem; padding-left: .75rem; font: 600 1.05rem/1.35 var(--font-sans), sans-serif; color: var(--ink); }
+        .cw .prav-vpr-naslov span { display: block; margin-top: .2rem; font-size: .8rem; font-weight: 400; color: rgba(17,17,17,.58); }
+        .cw .prav-vpr-opcije { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; padding-left: .75rem; }
+        .cw .prav-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .55rem .95rem; border: 1px solid rgba(17,17,17,.16); border-radius: 999px; background: #fff; box-shadow: 0 1px 3px rgba(17,17,17,.04); font: 500 .88rem var(--font-sans), sans-serif; color: var(--ink); cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+        .cw .prav-chip:hover { border-color: var(--purple, #7C3AED); }
+        .cw .prav-chip.on { background: var(--purple, #7C3AED); border-color: var(--purple, #7C3AED); color: #fff; box-shadow: 0 6px 16px rgba(124,58,237,.22); }
+        .cw .prav-chip-kljuk { display: grid; place-items: center; box-sizing: border-box; width: 1.1rem; min-width: 1.1rem; max-width: 1.1rem; height: 1.1rem; min-height: 1.1rem; max-height: 1.1rem; flex: 0 0 1.1rem; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid rgba(17,17,17,.22); color: var(--purple, #7C3AED); transition: border-color .15s, background .15s, color .15s; }
+        .cw .prav-chip.on .prav-chip-kljuk { border-color: rgba(255,255,255,.85); background: rgba(255,255,255,.22); color: #fff; }
+        .cw .prav-chip:hover { transform: translateY(-1px); }
+        .cw .prav-chip-tih { border-style: dashed; border-color: rgba(17,17,17,.22); color: rgba(17,17,17,.6); font-weight: 400; }
+        .cw .prav-chip-tih.on { background: rgba(17,17,17,.72); border-color: rgba(17,17,17,.72); color: #fff; }
+        .cw .prav-vpr-loci { flex-basis: 100%; height: 0; }
+        /* dve enakovredni izbiri drug ob drugem, s krogcem in opisom */
+        .cw .prav-vpr-opcije-dve { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .65rem; }
+        .cw .prav-izbira { display: flex; align-items: flex-start; gap: .6rem; padding: .85rem 1rem; border: 1px solid rgba(17,17,17,.14); border-radius: 14px; background: #fff; box-shadow: 0 1px 4px rgba(17,17,17,.04); text-align: left; cursor: pointer; transition: border-color .15s, box-shadow .15s, background .15s; }
+        .cw .prav-izbira b { display: block; font: 600 .92rem var(--font-sans), sans-serif; color: var(--ink); }
+        .cw .prav-izbira small { display: block; margin-top: .15rem; font-size: .8rem; line-height: 1.4; color: rgba(17,17,17,.6); }
+        .cw .prav-izbira .prav-chip-kljuk { margin-top: .12rem; }
+        .cw .prav-izbira:hover { border-color: var(--purple, #7C3AED); }
+        .cw .prav-izbira.on { border-color: var(--purple, #7C3AED); background: rgba(124,58,237,.05); box-shadow: 0 6px 18px rgba(124,58,237,.14); }
+        .cw .prav-izbira.on .prav-chip-kljuk { background: var(--purple, #7C3AED); border-color: var(--purple, #7C3AED); color: #fff; }
+        .cw .prav-vpr-drugo { width: 100%; max-width: 30rem; box-sizing: border-box; margin: .6rem 0 0 .75rem; padding: .6rem .8rem; border: 1px solid rgba(17,17,17,.18); border-radius: 10px; background: #fff; font: inherit; font-size: .9rem; color: var(--ink); }
+        .cw .prav-vpr-drugo:focus { outline: none; border-color: var(--purple, #7C3AED); box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
+        .cw .prav-vpr-namig { margin: .85rem 0 0; padding-left: .75rem; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.6); }
+        /* opombi pod kartico stojita v isti navpicnici kot vsebina kartice */
+        .cw .prav-opomba { margin-left: 1.7rem; margin-right: 1.7rem; max-width: none; }
+        .cw p.prav-opomba { margin-top: .9rem; margin-bottom: .1rem; font-size: .84rem; }
+        @media (max-width: 640px) { .cw .prav-opomba { margin-left: 1.06rem; margin-right: 1.06rem; } }
+        /* zvezdica spredaj: opomba je videti kot opomba, ne kot besedilo */
+        .cw p.prav-opomba { position: relative; padding-left: .9rem; }
+        .cw p.prav-opomba::before { content: '*'; position: absolute; left: 0; top: .1rem; color: var(--purple, #7C3AED); font-weight: 700; }
+        .cw .prav-razlaga-opomba > summary { padding-left: .9rem; }
+        .cw .prav-razlaga-opomba > summary { padding: .3rem 0; font-size: .84rem; font-weight: 600; color: rgba(17,17,17,.72); }
+        .cw .prav-razlaga-opomba .prav-razlaga-telo { padding: .2rem 0 .3rem; }
+        .cw .prav-razlaga-opomba .prav-razlaga-telo p, .cw .prav-razlaga-opomba .prav-razlaga-telo li { font-size: .84rem; color: rgba(17,17,17,.7); }
         .cw .prav-razlaga > summary { list-style: none; cursor: pointer; padding: .8rem 1rem; font-weight: 600; font-size: .92rem; color: var(--ink); display: flex; align-items: center; gap: .5rem; }
         .cw .prav-razlaga > summary::-webkit-details-marker { display: none; }
-        .cw .prav-razlaga > summary::before { content: "＋"; color: var(--accent); font-weight: 700; }
-        .cw .prav-razlaga[open] > summary::before { content: "－"; }
+        .cw .prav-razlaga > summary::before { content: "▸"; color: var(--accent); font-weight: 700; transition: transform .15s; display: inline-block; }
+        .cw .prav-razlaga[open] > summary::before { content: "▸"; transform: rotate(90deg); }
         .cw .prav-razlaga-telo { padding: 0 1rem 1rem; }
         .cw .prav-razlaga-telo p { margin: .2rem 0 .6rem; font-size: .9rem; line-height: 1.5; color: var(--ink); }
         .cw .prav-razlaga-telo ul { margin: .2rem 0 .6rem; padding-left: 1.1rem; }
@@ -7101,13 +7579,78 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             margin-right: 0;
           }
         }
-        .cw .prav-vrsta { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: .8rem; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); }
-        .cw .prav-ime { font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cw .prav-vrsta { cursor: pointer; display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: .5rem .8rem; margin: .5rem 0; padding: .75rem .85rem; border: 1px solid rgba(17,17,17,.12); border-radius: .75rem; background: #fff; }
+        .cw .prav-vrsta:has(.prav-kljuk.on) { border-color: rgba(178,84,118,.45); }
+        .cw .prav-ime { display: flex; align-items: center; gap: .5rem; font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; }
+        .cw .prav-uredi { font: 600 .82rem var(--font-sans), sans-serif; color: var(--ink); background: transparent; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .34rem .8rem; margin-right: .2rem; cursor: pointer; transition: border-color .15s, color .15s; }
+        .cw .prav-uredi:hover { border-color: var(--accent, #B25476); color: var(--accent, #B25476); }
         .cw .prav-ime small { font-weight: 500; color: rgba(17,17,17,.72); font-size: .78rem; }
         .cw .prav-podr { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 2.1rem; height: 2.1rem; border: 1px solid rgba(17,17,17,.2); background: transparent; color: rgba(17,17,17,.72); font-family: inherit; font-size: .76rem; font-weight: 600; border-radius: 999px; padding: 0; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s, background .15s; }
         .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); background: rgba(17,17,17,.05); }
         .cw .prav-recept { border: 1px solid rgba(255,255,255,.6); border-radius: 8px; outline: 0; background-color: rgba(255,255,255,.62); backdrop-filter: blur(12px) saturate(1.25); -webkit-backdrop-filter: blur(12px) saturate(1.25); box-shadow: 0 2px 8px rgba(40,25,40,.04); font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .38rem 1.5rem .38rem .7rem; appearance: none; -webkit-appearance: none; cursor: pointer; transition: border-color .15s; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .55rem center; }
         .cw .prav-recept:focus-visible { border-color: var(--accent); }
+        /* Kartica pravic — ISTA predloga kot »Dodaj podatke podjetja« (DESIGN 13e):
+           crtkan rob, vijolicna glava z znakom, pripis pod njo. Vkljucena postavka
+           ima poln rob in kljukico namesto plusa (Tina, 26. 8. 2026). */
+        .cw .prav-vklop { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .6rem; margin: .5rem 0; padding: .7rem .85rem 1rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+        .cw .prav-vklop:hover { border-color: var(--purple, #7C3AED); }
+        .cw .prav-vklop-glava { width: 100%; display: flex; align-items: center; gap: .4rem; color: var(--accent, #B25476); font: 700 .95rem var(--font-sans), sans-serif; }
+        .cw .prav-vklop-znak { font: 700 1.05rem/1 var(--font-sans), sans-serif; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; }
+        .cw .prav-vklop-naslov { flex: 1; min-width: 0; font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; }
+        .cw .prav-vklop-puscica { flex: none; display: grid; place-items: center; color: var(--purple, #7C3AED); transition: transform .18s ease; }
+        .cw .prav-vklop-puscica.obrni { transform: rotate(180deg); }
+        .cw .prav-vklop-pripis { font-size: .8rem; line-height: 1.45; color: rgba(17,17,17,.7); }
+        .cw .prav-vklop-pripis-vrsta { width: 100%; display: flex; align-items: center; gap: .45rem; }
+        .cw .prav-vklop-pripis-vrsta .prav-vklop-odpri { order: 2; margin-left: auto; display: inline-flex; align-items: center; gap: .3rem; flex: none; color: var(--purple, #7C3AED); font-weight: 600; font-size: .78rem; white-space: nowrap; }
+        .cw .prav-vklop:hover .prav-vklop-odpri { text-decoration: underline; text-underline-offset: 3px; }
+        /* izpolnjeno = nic vec ne caka, napis se umakne v ozadje */
+        .cw .prav-vklop-odpri-ok { color: rgba(17,17,17,.55); font-weight: 500; }
+        .cw .prav-vklop-odpri-ok .prav-vklop-puscica { color: rgba(17,17,17,.45); }
+        @media (max-width: 640px) { .cw .prav-vklop-pripis-vrsta { flex-wrap: wrap; row-gap: .35rem; } }
+        .cw .prav-vklop-on { border-style: solid; border-color: rgba(178,84,118,.4); }
+        .cw .prav-vklop-on .prav-vklop-pripis { padding-left: 1.95rem; }
+        .cw .prav-vklop-glava .prav-recept { border-color: rgba(17,17,17,.12); background-color: rgba(255,255,255,.9); box-shadow: none; }
+        .cw .prav-vklop-cena { margin-left: auto; flex: none; display: inline-flex; align-items: center; justify-content: space-between; gap: .5rem; min-width: 7.5rem; cursor: pointer; font: 700 .95rem var(--font-sans), sans-serif; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink); background: #fff; border: 1px solid rgba(17,17,17,.28); border-radius: .6rem; padding: .38rem .7rem; transition: border-color .15s, box-shadow .15s; }
+        .cw .prav-vklop-cena.rocno { border-color: var(--purple, #7C3AED); }
+        .cw .prav-vklop-cena svg { flex: none; color: var(--purple, #7C3AED); }
+        .cw .prav-vklop-cena:hover { border-color: var(--purple, #7C3AED); box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
+        .cw .prav-vklop-cena.rocno { color: var(--accent, #B25476); }
+        .cw .prav-vklop-predlog-oznaka { margin-left: auto; flex: none; font: 600 .78rem var(--font-sans), sans-serif; color: rgba(17,17,17,.6); }
+        .cw .prav-vklop-glava .prav-vklop-predlog-oznaka + .prav-vklop-cena { margin-left: 0; }
+        .cw .prav-vklop-razprt { border-style: solid; border-color: rgba(17,17,17,.18); }
+        .cw .prav-vklop-telo { width: 100%; margin-top: .3rem; padding: .9rem 0 .3rem; border-top: 1px dashed rgba(124,58,237,.35); }
+        .cw .prav-vklop-telo .detajl-telo { padding: 0; gap: 1.2rem; overflow: visible; max-height: none; }
+        .cw .prav-vklop-telo .detajl-noga { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1.4rem; padding: 0 0 .4rem; border: 0; }
+        .cw .prav-vklop-on .prav-cena-uredi { margin-left: auto; flex: none; min-width: 7.5rem; }
+        .cw .prav-vklop-glava .prav-cena-uredi input { width: 5.6rem; }
+        .cw .prav-ni { margin: .5rem 0; padding: .7rem .95rem 1rem .95rem; border: 1px dashed rgba(17,17,17,.18); border-radius: .75rem; font-size: .84rem; line-height: 1.5; color: rgba(17,17,17,.7); }
+        .cw .prav-ni-plus { display: grid; grid-template-columns: auto 1fr; column-gap: .55rem; row-gap: .35rem; align-items: baseline; }
+        .cw .prav-ni-plus::before { content: '+'; grid-row: 1 / span 2; align-self: center; color: rgba(17,17,17,.35); font: 700 1.15rem/1 var(--font-sans), sans-serif; }
+        .cw .prav-ni-plus b { font: 700 .95rem var(--font-sans), sans-serif; color: rgba(17,17,17,.75); }
+        .cw .prav-ni-plus > span { grid-column: 2; }
+        .cw .prav-ni-klik { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s, background .15s; }
+        .cw .prav-ni-klik:hover { border-color: var(--purple, #7C3AED); background: rgba(124,58,237,.03); }
+        .cw .prav-ni-klik:hover::before { color: var(--purple, #7C3AED); }
+        .cw .prav-ni-cta { display: inline-block; margin-left: .45rem; font-weight: 700; color: var(--purple, #7C3AED); white-space: nowrap; }
+        .cw .prav-iz-odgovora { margin: -.4rem 0 0; padding-left: .1rem; font-size: .82rem; color: rgba(17,17,17,.66); }
+        .cw .prav-iz-odgovora b { color: var(--ink); }
+        .cw .prav-povzetek { margin: .2rem 0 0; padding: .8rem .95rem; border-left: 3px solid var(--purple, #7C3AED); border-radius: 0 10px 10px 0; background: rgba(124,58,237,.05); font-size: .84rem; line-height: 1.55; color: rgba(17,17,17,.78); }
+        .cw .prav-povzetek b { color: var(--ink); }
+        /* mirno opozorilo o nedokoncanem — pove in pelje tja, ne blokira */
+        .cw .prav-nedokoncano { margin: 1rem 0 .2rem; padding: .95rem 1.1rem; border: 1px solid rgba(178,84,118,.3); border-radius: 14px; background: rgba(178,84,118,.05); }
+        .cw .prav-nedokoncano > b { display: block; margin-bottom: .4rem; font: 700 .92rem var(--font-sans), sans-serif; color: var(--ink); }
+        .cw .prav-nedokoncano ul { margin: 0; padding-left: 1.1rem; }
+        .cw .prav-nedokoncano li { margin: .2rem 0; font-size: .85rem; line-height: 1.5; color: rgba(17,17,17,.75); }
+        .cw .prav-nedokoncano small { display: block; margin-top: .5rem; font-size: .78rem; line-height: 1.45; color: rgba(17,17,17,.6); }
+        .cw .prav-kljuk { box-sizing: border-box; width: 1.5rem; height: 1.5rem; min-height: 0; padding: 0; flex: none; justify-self: end; border-radius: 50%; border: 1.5px solid rgba(17,17,17,.3); background: transparent; color: #fff; font: 900 .82rem/1 var(--font-sans), sans-serif; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .18s, border-color .18s; }
+        .cw .prav-kljuk.on { background: var(--accent, #B25476); border-color: var(--accent, #B25476); }
+        .cw .prav-predlog { font-weight: 600; color: rgba(17,17,17,.55); font-size: .84rem; }
+        .cw .prav-obseg { grid-column: 1 / -1; font-size: .76rem; color: rgba(17,17,17,.55); margin-top: -.15rem; }
+        .cw .prav-nacin { grid-column: 1 / -1; display: flex; gap: .4rem; flex-wrap: wrap; margin: .15rem 0 .1rem; }
+        .cw .prav-nacin .pill { font-size: .78rem; padding: .28rem .7rem; }
+        .cw .prav-nacin .pill.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+        .cw .prav-vprasaj { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .8rem; margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; font-size: .88rem; font-weight: 600; }
+        .cw .prav-vprasaj-gumbi { display: flex; gap: .4rem; }
         /* IZVZEM kompaktnih izbirnikov iz teznih .shell select globalov (font 16px!important,
            padding-right 3rem!important, velika 1.25rem kljukica) — sicer napihnejo kontrole in
            pokvarijo puscice; visja specificnost + !important povozi globalno pravilo starsa. */
@@ -7130,8 +7673,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-skupaj { display: flex; justify-content: space-between; align-items: baseline; margin-top: .9rem; padding-top: .8rem; border-top: 2px solid var(--ink); }
         .cw .prav-skupaj b { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
         @media (max-width: 560px) {
-          .cw .prav-vrsta { grid-template-columns: minmax(9.25rem,1fr) auto 2.1rem; grid-template-areas: 'ime ime ime' 'recept cena podr'; gap: .25rem .35rem; align-items: center; }
+          .cw .prav-vrsta { grid-template-columns: minmax(9.25rem,1fr) auto 2.1rem; grid-template-areas: 'ime cena kljuk'; gap: .25rem .35rem; align-items: center; }
           .cw .prav-ime { grid-area: ime; white-space: normal; }
+          .cw .prav-kljuk { grid-area: kljuk; }
           /* Vizualno ostaneta samo napis in puščica, dejanska dotikalna
              površina pa je WCAG-prijaznih 44 px in zapolni svoj stolpec. */
           .cw .prav-recept { grid-area: recept; width: 100%; min-width: 0; min-height: 44px !important; padding: .6rem 1.6rem .6rem .7rem !important; background-position: right .6rem center !important; }
@@ -7142,7 +7686,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @media (max-width: 360px) {
           .cw .prav-vrsta {
             grid-template-columns: minmax(0, 1fr) 2.1rem;
-            grid-template-areas: 'ime ime' 'recept recept' 'cena podr';
+            grid-template-areas: 'ime kljuk' 'cena cena';
           }
         }
         .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
@@ -8530,7 +9074,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         <header className="lupina-glava">
           <p className="lg-kicker">{L('Ponudba', 'Quote')}</p>
           <h1 className="lg-naslov">{L('Kalkulator ponudbe.', 'Quote calculator.')}</h1>
-          <p className="lg-uvod">{L('Za enkraten projekt; izračuna', 'For a one-off project; it calculates')} <b>{L('izvedbo', 'production')}</b>, <b>{L('avtorske pravice', 'copyright')}</b> {L('in', 'and')} <b>{L('licenco', 'a license')}</b> {L('ter iz njih sestavi ponudbo v treh različicah.', 'and assembles them into a quote in three versions.')}</p>
+          <p className="lg-uvod">{L('Za enkraten projekt; izračuna', 'For a one-off project; it calculates')} <b>{L('izvedbo', 'production')}</b>, <b>{L('pravice uporabe', 'usage rights')}</b> {L('in', 'and')} <b>{L('licenco za tuja gradiva', 'licences for third-party materials')}</b> {L('ter iz njih sestavi ponudbo v treh različicah.', 'and assembles them into a quote in three versions.')}</p>
         </header>
       )}
 
@@ -9055,6 +9599,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 misli, da dobi dokumentacijo za dovoljenje, dobi pa
                                 idejni projekt — in cena izpade prenizka ali previsoka. */}
                             {storObseg(s) && <small className="vrst0-obseg">{storObseg(s)}</small>}
+
                           </button>
                           <span className="stepper0">
                             <button type="button" aria-label={L('Ena manj: ', 'One less: ') + storIme(s)} onClick={() => spremeniKolicino(l.uid, -1)}>–</button>
@@ -9065,6 +9610,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <span className="vrst0-cena">{val(osnovaZa(s) * q)}</span>
                           <button type="button" className="vrst0-x" aria-label={'Odstrani: ' + prikazVrstice(l, s)}
                             onClick={() => odstraniVrstico(l.uid)}>×</button>
+                          {(() => {
+                            /* pravice te storitve: svoja vrstica pod postavko — naziv levo,
+                               znesek desno, poravnan s ceno zgoraj (Tina, 26. 8.) */
+                            const pv = r?.praviceVrstice.find(x => x.sid === l.sid);
+                            const nacin = praviceNacin[l.sid];
+                            if (!pv || pv.izkljucena || !nacin) return null;
+                            return (
+                              <span className="vrst0-pravice">
+                                <span>{L('pravice uporabe', 'usage rights')}</span>
+                                <b>{nacin === 'vkljuceno' ? L('vključene', 'included') : val(pv.znesek)}</b>
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
                     );
@@ -9221,10 +9779,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <span>{L('Osnovno delo', 'Base work')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
                           <b><CenaCountUp value={okvirno} format={val} /></b>
                         </div>
+                        {r && r.pravice > 0 && (
+                          <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                            <span>{L('Pravice uporabe', 'Usage rights')} <InfoNamig locale={locale} besedilo={L('Naročnik plača izvedbo (oblikovanje), pravice do uporabe pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna. Vrednost določajo obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži. V Sloveniji in EU popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno; avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP, DSM 2019). Predlogi so priporočilo, ne pravni nasvet.', 'The client pays for production (the design); the usage rights are a separate item, like a licence. Separate because the same work can be used by a small local company or an international brand. The value is set by scope (territory, media, duration), exclusivity and how much the client earns with the work. In Slovenia and the EU a full buyout is not legally possible — only individual economic rights transfer, in writing and limited; the author keeps moral rights and the right to fair remuneration. Suggestions are a recommendation, not legal advice.')} /></span>
+                            <span>{val(r.pravice)}</span>
+                          </div>
+                        )}
+                        {r && r.pravice > 0 && (
+                          <div className="ponudba0-vsota-vrsta ponudba0-skupaj">
+                            <span>{L('Skupaj', 'Total')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
+                            <b>{val(okvirno + r.pravice)}</b>
+                          </div>
+                        )}
                         {ddvZavezanec && (
                           <div className="ponudba0-vsota-vrsta ponudba0-mini">
                             <span>+ DDV {ddvSt} %</span>
-                            <span>z DDV {val(okvirno * (1 + ddvSt / 100))}</span>
+                            <span>z DDV {val((okvirno + (r?.pravice ?? 0)) * (1 + ddvSt / 100))}</span>
                           </div>
                         )}
                         {/* Pove FORMULO, ne le da se bo cena spremenila. Uporabnik
@@ -9621,95 +10191,129 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {((klasicnaOblika && korak === praviceStep) || (vChatu && poMeh >= 3)) && (
             <>
-              {vChatu && chatVpr(L('Avtorske pravice', 'Copyright'), L('Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.', 'The tool suggests an amount that you can adjust at any time.'))}
-              <div className="kartica">
-                <div className="k-naslov">{L('Za kaj bo naročnik uporabil delo?', 'What will the client use the work for?')} <span className="vec">{L('določa vrednost pravic', 'sets the value of the rights')}</span></div>
-                <div className="izbira">
-                  <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => { setRaba('znamka'); if (!pravTrajanjeRocno) setPravTrajanje('neomejeno'); }}>
-                    <h3>{L('Za celotno znamko', 'For the whole brand')}</h3>
-                    <p>{L('Logotip, celostna podoba, spletna stran. Tvoje delo nosi vse, kar podjetje počne, zato vrednost sledi bilanci podjetja.', 'Logo, corporate identity, website. Your work carries everything the company does, so the value follows the company\'s balance sheet.')}</p>
-                  </button>
-                  <button type="button" className={raba === 'projekt' ? 'on' : ''} onClick={() => { setRaba('projekt'); if (!pravTrajanjeRocno) setPravTrajanje('7'); }}>
-                    <h3>{L('Za določen projekt ali izdelek', 'For a specific project or product')}</h3>
-                    <p>{L('Majice, embalaža enega izdelka, konferenca, knjiga. Vrednost sledi pričakovanemu izkupičku projekta, ne velikosti podjetja.', 'T-shirts, packaging for a single product, a conference, a book. The value follows the expected project proceeds, not the size of the company.')}</p>
-                  </button>
-                </div>
-              </div>
-              {raba === 'znamka' ? (
-                <p className="hint" style={{ marginTop: '-.4rem', marginBottom: '1.4rem' }}>{L('Vrednost pravic sledi', 'The value of the rights follows')} <b>{L('prometu in dobičku naročnika', 'the client\'s revenue and profit')}</b> {L('— to vneseš pri podatkih naročnika (korak »Kdo je stranka«). Prazno = mikro podjetje.', '— you enter this in the client details (the «Who is the client» step). Blank = micro company.')}</p>
-              ) : (
-                <div className="kartica">
-                  <div className="numgrid">
-                    <div className="polje">
-                      <label htmlFor="cw-pprihodek">{L('Pričakovani letni prihodek projekta (€)', 'Expected annual project revenue (€)')}</label>
-                      <input id="cw-pprihodek" type="number" min={0} step={5000}
-                        placeholder="50000" value={projPrihodek}
-                        onChange={e => setProjPrihodek(e.target.value)} />
-                    </div>
-                    <div className="polje">
-                      <label htmlFor="cw-pdobicek">{L('Pričakovani letni dobiček projekta (€)', 'Expected annual project profit (€)')}</label>
-                      <input id="cw-pdobicek" type="number" min={0} step={5000}
-                        placeholder="15000" value={projDobicek}
-                        onChange={e => setProjDobicek(e.target.value)} />
-                    </div>
-                  </div>
-                  <p className="hint">
-                    Vprašaj naročnika, koliko prodaje pričakuje od izdelka ali projekta; ocena je dovolj.
-                    Pravice so 10 % pričakovanega dobička (ali 2 % prihodka), z varovalkama.
-                    V ponudbi dobi tudi možnost tantiem: {`${5} %`} od prodaje letno.
-                  </p>
-                </div>
+              {vChatu && chatVpr(
+                L('Želiš posebej obračunati pravice uporabe (avtorske pravice)?', 'Do you want to charge the usage rights (copyright) separately?'),
+                L('Flow predlaga zneske glede na izbrane storitve. Vključi želene postavke in jih po potrebi prilagodi.', 'Flow suggests amounts based on the selected services. Include the items you want and adjust them as needed.'),
+                <InfoNamig besedilo="Naročnik plača izvedbo (oblikovanje), pravice do uporabe pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna. Vrednost določajo obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži. V Sloveniji in EU popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno; avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP, DSM 2019). Pri prodajnih produktih (majice, embalaža) je namesto enkratnega odkupa pošteno honorar + tantieme od prodaje (npr. 3–10 %). Predlogi so priporočilo, ne pravni nasvet." locale={locale} />,
               )}
-              <div className="kartica pravice-kartica">
-                <div className="k-naslov">{L('Avtorske pravice po storitvah', 'Copyright by service')}
-                  <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so nastavljeni glede na tip; recept lahko spremeniš. V Podrobnostih nastaviš teritorij (privzeto po sedežu naročnika), medije, naklado in klavzule; tiskovine in ilustracija imajo ponatis privzeto vklopljen. Skupni znesek lahko ročno popraviš s svinčnikom ob vsoti." />
-                  <span className="vec">{L('vsaka storitev svoje', 'each service its own')}</span>
-                </div>
-                <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
-                  {L('Privzetki so nastavljeni glede na tip storitve — spremeni recept, kjer je treba. Vsaka storitev pokaže svojo ceno pravic.', 'Defaults are set according to the service type — change the recipe where needed. Each service shows its own rights price.')}
-                </p>
-                <details className="prav-razlaga">
-                  <summary>{L('Kaj so avtorske pravice in zakaj so ločena postavka?', 'What is copyright and why is it a separate item?')}</summary>
-                  <div className="prav-razlaga-telo">
-                    <p>{L('Naročnik plača', 'The client pays for')} <b>{L('izvedbo', 'production')}</b> {L('(oblikovanje),', '(the design),')} <b>{L('pravice do uporabe', 'the usage rights')}</b> {L('pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna.', 'are a separate item — like a license. Separate because the same work can be used by a small local company or an international brand; the value of use differs.')}</p>
-                    <ul>
-                      <li><b>{L('Vrednost določajo', 'The value is set by')}</b> {L('obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži.', 'scope (territory, media, duration), exclusivity and how much the client earns with the work.')}</li>
-                      <li><b>{L('Slovenija / EU:', 'Slovenia / EU:')}</b> {L('popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno. Avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP; DSM 2019).', 'a full «buyout of everything» is not legally possible — only individual economic rights are transferred, in writing and limited. The author keeps moral rights and the right to fair remuneration (ZASP; DSM 2019).')}</li>
-                      <li><b>{L('Prodajni produkti', 'Retail products')}</b> {L('(majice, embalaža, izdelki): namesto enkratnega odkupa je pošteno honorar +', '(t-shirts, packaging, products): instead of a one-time buyout it is fair to charge a fee +')} <b>{L('tantieme', 'royalties')}</b> {L('od prodaje (npr. 3–10 %).', 'on sales (e.g. 3–10%).')}</li>
-                    </ul>
-                    <p className="prav-razlaga-vir">{L('Podroben članek s primeri in viri pripravljamo za spletno stran.', 'We are preparing a detailed article with examples and sources for the website.')}</p>
-                  </div>
-                </details>
+              <div className="pravice-kartica">
                 {r && (r.praviceVrstice.length > 0 || lastnePravice.length > 0) ? (
                   <>
                     <div className="prav-tabela">
                       {r.praviceVrstice.map(row => {
                         const recId = row.tantiema ? 'tantieme' : (RECEPTI.find(rc => rc.prenos === row.prenos && rc.trajanje === row.trajanje && rc.id !== 'tantieme')?.id ?? '');
-                        return (
-                          <div key={row.sid} className="prav-vrsta">
-                            <span className="prav-ime">{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}{row.tantiema ? <small> · {row.tantiema} % {L('tantieme', 'royalties')}</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} {L('klavzul', 'clauses')}</small> : null}</span>
-                            <select className="prav-recept" aria-label={L('Pravice: ', 'Rights: ') + row.ime} value={recId}
-                              onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined, tantiema: rc.id === 'tantieme' ? tantiemaZa(row.sid) : undefined }); }}>
-                              {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
-                              {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{locale === 'en' ? rc.imeEn : rc.ime}</option>)}
-                            </select>
-                            {urejamPravSid === row.sid ? (
-                              <span className="prav-cena prav-cena-uredi">
-                                <input type="number" min={0} step={50} autoFocus
-                                  aria-label={L('Znesek pravic: ', 'Rights amount: ') + row.ime}
-                                  placeholder={String(zaokrozi(row.znesekAuto * vfx.fx))}
-                                  value={rocnePraviceStoritvi[row.sid] ?? ''}
-                                  onChange={e => setRocnePraviceStoritvi({ ...rocnePraviceStoritvi, [row.sid]: e.target.value })}
-                                  onBlur={() => setUrejamPravSid(null)}
-                                  onKeyDown={e => { if (e.key === 'Enter') setUrejamPravSid(null); }} />
-                                <span className="pe-znak">{vfx.znak}</span>
-                              </span>
-                            ) : (
-                              <button type="button" className={'prav-cena prav-cena-gumb' + (row.rocno ? ' rocno' : '')}
-                                title={L('Izberi za ročni popravek zneska', 'Select to edit the amount manually')} aria-label={L('Ročno popravi znesek: ', 'Edit amount manually: ') + row.ime}
-                                onClick={() => setUrejamPravSid(row.sid)}>{val(row.znesek)}</button>
+                        if (row.izkljucena === 'postavitev') return (
+                          <p key={row.sid} className="prav-ni prav-ni-plus">
+                            <b>{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</b>
+                            <span>{L('postavitev po tujem dizajnu ni avtorsko delo', 'building on someone else\'s design is not an authored work')}</span>
+                          </p>
+                        );
+                        if (row.izkljucena === 'vcgp') return (
+                          <p key={row.sid} className="prav-ni prav-ni-plus">
+                            <b>{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</b>
+                            <span>{L('zajeto v celostni grafični podobi', 'covered by the brand identity')}{' · '}
+                              <button type="button" className="povezava"
+                                onClick={() => setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' }))}>{L('vseeno obračunaj', 'charge anyway')}</button>
+                            </span>
+                          </p>
+                        );
+                        if (row.izkljucena === 'vprasaj') return (
+                          <button key={row.sid} type="button" className="prav-ni prav-ni-plus prav-ni-klik"
+                            title={L('Odpri podrobnosti storitve', 'Open the service details')}
+                            onClick={() => { const l = vrstice.find(v => v.sid === row.sid); if (l) odpriDetajl(l.uid); }}>
+                            <b>{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</b>
+                            <span>{L('predlog pripravim, ko v specifikaciji izbereš, kaj prevzameš', 'the suggestion appears once the specification says what you take on')}
+                              <span className="prav-ni-cta">{L('Dopolni specifikacijo', 'Complete the specification')} →</span>
+                            </span>
+                          </button>
+                        );
+                        if (!row.nacin) return (
+                          <div key={row.sid} className="prav-vklop" onClick={() => preklopiPrav(row.sid)}>
+                            <span className="prav-vklop-glava">
+                              <button type="button" className="prav-vklop-znak" aria-label={L('Odpri pravice uporabe: ', 'Open usage rights: ') + row.ime}
+                                onClick={e => { e.stopPropagation(); preklopiPrav(row.sid); }}>+</button>
+                              <button type="button" className="prav-vklop-naslov"
+                                onClick={e => { e.stopPropagation(); preklopiPrav(row.sid); }}>
+                                {locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}
+                              </button>
+                              <span className="prav-vklop-predlog-oznaka">{L('predlog:', 'suggested:')}</span>
+                              <button type="button" className="prav-vklop-cena"
+                                title={L('Klikni in vpiši svojo ceno', 'Click and enter your own price')}
+                                aria-label={L('Popravi znesek: ', 'Edit amount: ') + row.ime}
+                                onClick={e => { e.stopPropagation(); setPraviceNacin(o => ({ ...o, [row.sid]: o[row.sid] ?? 'posebej' })); setUrejamPravSid(row.sid); }}>
+                                {val(row.znesekAuto)}<PencilSimple size={13} weight="bold" aria-hidden />
+                              </button>
+                            </span>
+                            <span className="prav-vklop-pripis prav-vklop-pripis-vrsta">
+                              {(() => {
+                                const manjka = pravManjka(row.sid);
+                                return (
+                                  <span className={'prav-vklop-odpri' + (manjka ? '' : ' prav-vklop-odpri-ok')}>
+                                    {manjka ? `${L('Izpolni', 'Complete')} · ${manjka}` : L('Podrobnosti', 'Details')}
+                                    <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
+                                  </span>
+                                );
+                              })()}
+                              {(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
+                            {praviceOdprt === row.sid && (
+                              <div className="prav-vklop-telo" onClick={e => e.stopPropagation()}>
+                                {praviceTelo(row.sid)}
+                                <div className="detajl-noga">
+                                  <button type="button" className="gumb-tih" onClick={() => setPraviceOdprt(null)}>{L('Prekliči', 'Cancel')}</button>
+                                  <button type="button" className="gumb" onClick={() => { setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' })); setPraviceOdprt(null); }}>{L('Shrani in vključi v ponudbo', 'Save and include in the quote')}</button>
+                                </div>
+                              </div>
                             )}
-                            <button type="button" className="prav-podr" onClick={() => setPraviceOdprt(row.sid)} title={L('Podrobnosti — trajanje, klavzule', 'Details — duration, clauses')} aria-label={'Podrobnosti: ' + row.ime}><DotsThree size={20} weight="bold" /></button>
+                          </div>
+                        );
+                        return (
+                          <div key={row.sid} className="prav-vklop prav-vklop-on" role="button" tabIndex={0}
+                            onClick={() => preklopiPrav(row.sid)}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); preklopiPrav(row.sid); } }}>
+                            <span className="prav-vklop-glava">
+                              <button type="button" role="checkbox" aria-checked className="prav-kljuk on"
+                                aria-label={L('Odstrani iz ponudbe: ', 'Remove from the quote: ') + row.ime}
+                                onClick={e => { e.stopPropagation(); setPraviceNacin(o => { const n = { ...o }; delete n[row.sid]; return n; }); }}>✓</button>
+                              <span className="prav-vklop-naslov">{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</span>
+                              {urejamPravSid === row.sid ? (
+                                <span className="prav-cena prav-cena-uredi" onClick={e => e.stopPropagation()}>
+                                  <input type="number" min={0} step={50} autoFocus
+                                    aria-label={L('Znesek pravic: ', 'Rights amount: ') + row.ime}
+                                    placeholder={`${L('predlog', 'suggested')} ${zaokrozi(row.znesekAuto * vfx.fx)}`}
+                                    value={rocnePraviceStoritvi[row.sid] ?? ''}
+                                    onChange={e => setRocnePraviceStoritvi({ ...rocnePraviceStoritvi, [row.sid]: e.target.value })}
+                                    onBlur={() => setUrejamPravSid(null)}
+                                    onKeyDown={e => { if (e.key === 'Enter') setUrejamPravSid(null); }} />
+                                  <span className="pe-znak">{vfx.znak}</span>
+                                </span>
+                              ) : (
+                                <button type="button" className={'prav-vklop-cena' + (row.rocno ? ' rocno' : '')}
+                                  title={L('Klikni in vpiši svojo ceno', 'Click and enter your own price')}
+                                  aria-label={L('Popravi znesek: ', 'Edit amount: ') + row.ime}
+                                  onClick={e => { e.stopPropagation(); setUrejamPravSid(row.sid); }}>
+                                  {val(row.znesek)}<PencilSimple size={13} weight="bold" aria-hidden />
+                                </button>
+                              )}
+                            </span>
+                            <span className="prav-vklop-pripis prav-vklop-pripis-vrsta">
+                              {(() => {
+                                const manjka = pravManjka(row.sid);
+                                return (
+                                  <span className={'prav-vklop-odpri' + (manjka ? '' : ' prav-vklop-odpri-ok')}>
+                                    {manjka ? `${L('Izpolni', 'Complete')} · ${manjka}` : L('Podrobnosti', 'Details')}
+                                    <span className={'prav-vklop-puscica' + (praviceOdprt === row.sid ? ' obrni' : '')} aria-hidden><ArrowDown size={14} weight="bold" /></span>
+                                  </span>
+                                );
+                              })()}
+                              {(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
+                            {praviceOdprt === row.sid && (
+                              <div className="prav-vklop-telo" onClick={e => e.stopPropagation()}>
+                                {praviceTelo(row.sid)}
+                                <div className="detajl-noga">
+                                  <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>{L('Shrani', 'Save')}</button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -9737,12 +10341,42 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         </div>
                       ))}
                     </div>
+                    {(() => {
+                      const { brezVkljucitve, brezSpecifikacije, brezOdgovorov } = praviceNedokoncano;
+                      if (!brezVkljucitve.length && !brezSpecifikacije.length && !brezOdgovorov.length) return null;
+                      const ime = (sid: string) => { const st = vseStoritve.find(x => x.id === sid); return st ? storIme(st) : sid; };
+                      return (
+                        <div className="prav-nedokoncano">
+                          <b>{L('Ponudba še ne bo popolna', 'The quote is not complete yet')}</b>
+                          <ul>
+                            {brezVkljucitve.length > 0 && (
+                              <li>{L('Pravice niso vključene v ponudbo pri:', 'Rights are not included in the quote for:')}{' '}
+                                {brezVkljucitve.map((sid, i) => (
+                                  <span key={sid}>{i > 0 ? ', ' : ''}<button type="button" className="povezava" onClick={() => setPraviceOdprt(sid)}>{ime(sid)}</button></span>
+                                ))}
+                              </li>
+                            )}
+                            {brezSpecifikacije.length > 0 && (
+                              <li>{L('Manjka specifikacija pri:', 'The specification is missing for:')}{' '}
+                                {brezSpecifikacije.map((sid, i) => (
+                                  <span key={sid}>{i > 0 ? ', ' : ''}<button type="button" className="povezava" onClick={() => { const l = vrstice.find(v => v.sid === sid); if (l) odpriDetajl(l.uid); }}>{ime(sid)}</button></span>
+                                ))}
+                              </li>
+                            )}
+                            {brezOdgovorov.length > 0 && (
+                              <li>{L('Obseg uporabe še ni v celoti dogovorjen pri:', 'The scope of use is not fully agreed for:')}{' '}
+                                {brezOdgovorov.map((sid, i) => (
+                                  <span key={sid}>{i > 0 ? ', ' : ''}<button type="button" className="povezava" onClick={() => setPraviceOdprt(sid)}>{ime(sid)}</button></span>
+                                ))}
+                              </li>
+                            )}
+                          </ul>
+                          <small>{L('Nedogovorjeno ne pomeni dovoljenja za neomejeno uporabo — v ponudbi se izpiše kot nedogovorjeno.', 'Not agreed does not mean permission for unlimited use — it is printed in the quote as not agreed.')}</small>
+                        </div>
+                      );
+                    })()}
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
-                      onClick={dodajLastnoPravico}>{L('+ Dodaj pravico', '+ Add right')}</button>
-                    <div className="prav-skupaj">
-                      <span>{L('Skupaj avtorske pravice', 'Total copyright')}</span>
-                      <b>{val(r.pravice)}</b>
-                    </div>
+                      onClick={dodajLastnoPravico}>{L('+ Dodaj svojo pravico', '+ Add your own right')}</button>
                     {(() => {
                       const mesecno = lastnePravice.filter(l => l.tip === 'mesecno').reduce((a, l) => a + (Number(l.znesek) || 0), 0);
                       const letno = lastnePravice.filter(l => l.tip === 'letno').reduce((a, l) => a + (Number(l.znesek) || 0), 0);
@@ -9763,133 +10397,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <>
                     <p className="hint" style={{ margin: 0 }}>{L('Dodaj storitve ali lastno pravico, da nastaviš pravice.', 'Add services or a custom right to set up rights.')}</p>
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
-                      onClick={dodajLastnoPravico}>{L('+ Dodaj pravico', '+ Add right')}</button>
+                      onClick={dodajLastnoPravico}>{L('+ Dodaj svojo pravico', '+ Add your own right')}</button>
                   </>
                 )}
               </div>
 
-              {praviceOdprt && typeof document !== 'undefined' && (() => {
-                const sid = praviceOdprt;
-                const s = vseStoritve.find(x => x.id === sid);
-                if (!s) return null;
-                const rec = pravRec(sid);
-                const ob = pravObseg(sid);
-                const custLeta = (Number(custStev) || 0) * (custEnota === 'teden' ? 1 / 52 : custEnota === 'mesec' ? 1 / 12 : 1);
-                return createPortal(
-                  <div className={`cw${vLupini ? ' cw-lupina' : ''}`}>
-                    <div className="izbirnik-zastor" onClick={() => setPraviceOdprt(null)}>
-                      <div className="detajl-modal" role="dialog" aria-modal="true" aria-label={L('Pravice: ', 'Rights: ') + storIme(s)} onClick={e => e.stopPropagation()} data-lenis-prevent>
-                        <div className="izbirnik-glava">
-                          <span>Pravice: {s.ime}</span>
-                          <button type="button" onClick={() => setPraviceOdprt(null)} aria-label={L('Zapri', 'Close')}>✕</button>
-                        </div>
-                        <div className="detajl-telo">
-                          <div>
-                            <div className="uredi-naslov">{L('Trajanje licence / prenosa', 'License / transfer duration')}</div>
-                            <div className="opts">
-                              {PRAV_TRAJANJE.map(t => (
-                                <button key={t.id} type="button" className={'pill' + (rec.trajanje === t.id ? ' on' : '')}
-                                  onClick={() => nastaviPravRec(sid, { trajanje: t.id, trajLeta: undefined })}>
-                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? t.imeEn : t.ime}</span>
-                                </button>
-                              ))}
-                            </div>
-                            <div className="cu-vrsta cu-po-meri">
-                              <span className={'pill' + (rec.trajanje === 'custom' ? ' on' : '')} style={{ pointerEvents: 'none' }}><span className="pill-tekst">{L('Po meri', 'Custom')}{rec.trajanje === 'custom' && typeof rec.trajLeta === 'number' ? `: ${trajLetaVBesedo(rec.trajLeta, locale === 'en')}` : ''}</span></span>
-                              <input type="number" min={1} value={custStev} onChange={e => setCustStev(e.target.value)} className="cu-num" aria-label={L('Število', 'Number')} />
-                              <select value={custEnota} onChange={e => setCustEnota(e.target.value as 'teden' | 'mesec' | 'leto')} className="cu-select" aria-label={L('Enota', 'Unit')}>
-                                <option value="teden">{L('tednov', 'weeks')}</option><option value="mesec">{L('mesecev', 'months')}</option><option value="leto">{L('let', 'years')}</option>
-                              </select>
-                              <button type="button" className="gumb cu-uporabi" onClick={() => nastaviPravRec(sid, { trajanje: 'custom', trajLeta: custLeta })}>{L('Uporabi', 'Apply')}</button>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="uredi-naslov">{L('Klavzule', 'Clauses')} <span className="vec">{L('se zapišejo v ponudbo', 'are written into the quote')}</span></div>
-                            <div className="opts">
-                              {KLAVZULE.map(k => {
-                                const on = (rec.klavzule || []).includes(k.id);
-                                return (
-                                  <button key={k.id} type="button" className={'pill' + (on ? ' on' : '')}
-                                    onClick={() => nastaviPravRec(sid, { klavzule: on ? (rec.klavzule || []).filter(x => x !== k.id) : [...(rec.klavzule || []), k.id] })}>
-                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{locale === 'en' ? k.imeEn : k.ime}<small>{locale === 'en' ? k.opisEn : k.opis}{k.mult ? ` · +${Math.round(k.mult * 100)} %` : ''}</small></span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                          {typeof rec.tantiema === 'number' && (
-                            <div>
-                              <div className="uredi-naslov">{L('Tantieme — prodajni produkt', 'Royalties — retail product')}</div>
-                              <div className="cu-vrsta cu-po-meri">
-                                <input type="number" min={0} max={30} step={1} value={rec.tantiema}
-                                  onChange={e => nastaviPravRec(sid, { tantiema: Math.max(0, Math.min(30, Math.round(Number(e.target.value)) || 0)) })}
-                                  className="cu-num" aria-label={L('Odstotek tantieme', 'Royalty percentage')} />
-                                <span>{L('% od neto veleprodaje', '% of net wholesale')}</span>
-                              </div>
-                              <p className="hint" style={{ marginTop: '.5rem' }}>{L('Cena zgoraj je', 'The price above is')} <b>{L('predujem / minimalna garancija', 'an advance / minimum guarantee')}</b> {L('(nepovraten, ob podpisu). Tantieme se plačujejo', '(non-refundable, on signing). Royalties are paid')} <b>{L('dodatno', 'additionally')}</b> {L('od prodaje; ponudba doda klavzule (predujem, MG, reverzija, letno poročilo). Izhodišče: dizajn 3–10 %, znamka do 15 % (GAG / Licensing International).', 'on sales; the quote adds clauses (advance, MG, reversion, annual report). Starting point: design 3–10%, brand up to 15% (GAG / Licensing International).')}</p>
-                            </div>
-                          )}
-                          <div>
-                            <div className="uredi-naslov">{L('Teritorij', 'Territory')} <span className="vec">{ob.teritorijPrevzet ? L('kje se delo uporablja · po naročniku', 'where the work is used · by client') : L('kje se delo uporablja', 'where the work is used')}</span>
-                              <InfoNamig besedilo="Teritorij se privzeto prevzame po sedežu naročnika (kje se delo uporablja). Širši teritorij poviša ceno pravic. Če ga ročno spremeniš, ga z gumbom »↺ Prevzemi po naročniku« vrneš na privzeto." />
-                            </div>
-                            <div className="opts">
-                              {PRAV_TERITORIJ.map(t => (
-                                <button key={t.id} type="button" className={'pill' + (ob.teritorij === t.id ? ' on' : '')}
-                                  onClick={() => nastaviPravRec(sid, { teritorij: t.id })}>
-                                  <span className="pill-fill" aria-hidden /><span className="pill-tekst">{t.ime}</span>
-                                </button>
-                              ))}
-                            </div>
-                            {!ob.teritorijPrevzet && (
-                              <button type="button" className="povezava" style={{ marginTop: '.4rem' }}
-                                onClick={() => nastaviPravRec(sid, { teritorij: undefined })}>
-                                ↺ Prevzemi po naročniku ({PRAV_TERITORIJ.find(t => t.id === teritorijIzTrga(trgNarocnika))?.ime})
-                              </button>
-                            )}
-                          </div>
-                          <div>
-                            <div className="uredi-naslov">{L('Dodatni mediji', 'Additional media')} <span className="vec">{L('izven tiska + promocije', 'beyond print + promotion')}</span></div>
-                            <div className="opts">
-                              {PRAV_MEDIJI_DODATNI.map(m => {
-                                const on = ob.mediji.includes(m.id);
-                                return (
-                                  <button key={m.id} type="button" className={'pill' + (on ? ' on' : '')}
-                                    onClick={() => nastaviPravRec(sid, { mediji: on ? ob.mediji.filter(x => x !== m.id) : [...ob.mediji, m.id] })}>
-                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{m.ime}<small>{m.opis}</small></span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                          {NAKLADA_STORITVE.includes(sid) && (
-                            <div>
-                              <div className="uredi-naslov">{L('Naklada / obseg izdaje', 'Print run / edition size')}</div>
-                              <div className="opts">
-                                {PRAV_NAKLADA.map(n => (
-                                  <button key={n.id} type="button" className={'pill' + (ob.naklada === n.id ? ' on' : '')}
-                                    onClick={() => nastaviPravRec(sid, { naklada: n.id })}>
-                                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{n.ime}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          <div>
-                            <div className="uredi-naslov">{L('Opomba', 'Note')} <span className="vec">{L('neobvezno · zapiše se v ponudbo pod to storitvijo', 'optional · written into the quote under this service')}</span></div>
-                            <input type="text" className="detajl-opomba" placeholder={L('npr. dovoljena uporaba na embalaži do 2027', 'e.g. use permitted on packaging until 2027')}
-                              value={rec.opomba ?? ''} onChange={e => nastaviPravRec(sid, { opomba: e.target.value })} />
-                          </div>
-                          <p className="hint" style={{ margin: 0 }}>{L('Obseg zgoraj', 'The scope above')} <b>{L('vpliva na ceno pravic te storitve', 'affects the rights price of this service')}</b> {L('(teritorij privzeto po naročniku; širši teritorij, dodatni mediji ali večja naklada znesek povišajo). Cena pravic te storitve:', '(territory defaults to the client; a wider territory, extra media or a larger print run raise the amount). Rights price of this service:')} <b>{r ? val(r.praviceVrstice.find(x => x.sid === sid)?.znesek || 0) : '—'}</b>.</p>
-                        </div>
-                        <div className="detajl-noga">
-                          <button type="button" className="gumb" onClick={() => setPraviceOdprt(null)}>{L('Zapri', 'Close')}</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                , document.body);
-              })()}
+                <p className="hint prav-opomba">
+                {L('Neoznačeno pomeni brez ločenega doplačila, ne brez pravic. Predlogi so priporočilo, ne pravni nasvet.', 'Unchecked means no separate charge, not no rights. Suggestions are a recommendation, not legal advice.')}
+              </p>
+
 
               {lastnaOdprta && typeof document !== 'undefined' && (() => {
                 const l = lastnePravice.find(x => x.id === lastnaOdprta);
