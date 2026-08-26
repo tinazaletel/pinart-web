@@ -7162,6 +7162,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-razlaga { margin: 0 0 1.1rem; border: 1px solid oklch(93% .006 82 / .55); border-radius: 12px; background: rgba(178,84,118,.05); overflow: hidden; }
         /* pod kartico stoji kot opomba: brez okvirja in podlage, drobnejsa */
         .cw .prav-razlaga-opomba { margin: .1rem 0 1.4rem; border: 0; border-radius: 0; background: transparent; }
+        /* opombi pod kartico stojita v isti navpicnici kot vsebina kartice */
+        .cw .prav-opomba { margin-left: 1.7rem; margin-right: 1.7rem; max-width: none; }
+        .cw p.prav-opomba { margin-top: .9rem; margin-bottom: .1rem; font-size: .84rem; }
+        @media (max-width: 640px) { .cw .prav-opomba { margin-left: 1.06rem; margin-right: 1.06rem; } }
+        /* zvezdica spredaj: opomba je videti kot opomba, ne kot besedilo */
+        .cw p.prav-opomba { position: relative; padding-left: .9rem; }
+        .cw p.prav-opomba::before { content: '*'; position: absolute; left: 0; top: .1rem; color: var(--purple, #7C3AED); font-weight: 700; }
+        .cw .prav-razlaga-opomba > summary { padding-left: .9rem; }
         .cw .prav-razlaga-opomba > summary { padding: .3rem 0; font-size: .84rem; font-weight: 600; color: rgba(17,17,17,.72); }
         .cw .prav-razlaga-opomba .prav-razlaga-telo { padding: .2rem 0 .3rem; }
         .cw .prav-razlaga-opomba .prav-razlaga-telo p, .cw .prav-razlaga-opomba .prav-razlaga-telo li { font-size: .84rem; color: rgba(17,17,17,.7); }
@@ -9878,10 +9886,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 )}
               </div>
 
-                <p className="hint" style={{ margin: '.9rem 0 .1rem', fontSize: '.84rem' }}>
+                <p className="hint prav-opomba">
                 {L('Neoznačeno pomeni brez ločenega doplačila, ne brez pravic. Predlogi so priporočilo, ne pravni nasvet.', 'Unchecked means no separate charge, not no rights. Suggestions are a recommendation, not legal advice.')}
               </p>
-              {imaVklopljenePravice && <details className="prav-razlaga prav-razlaga-opomba">
+              {imaVklopljenePravice && <details className="prav-razlaga prav-razlaga-opomba prav-opomba">
                   <summary>{L('Kaj so avtorske pravice in zakaj so ločena postavka?', 'What is copyright and why is it a separate item?')}</summary>
                   <div className="prav-razlaga-telo">
                     <p>{L('Naročnik plača', 'The client pays for')} <b>{L('izvedbo', 'production')}</b> {L('(oblikovanje),', '(the design),')} <b>{L('pravice do uporabe', 'the usage rights')}</b> {L('pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna.', 'are a separate item — like a license. Separate because the same work can be used by a small local company or an international brand; the value of use differs.')}</p>
