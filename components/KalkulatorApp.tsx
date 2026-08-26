@@ -229,11 +229,12 @@ const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email',
    (Tina, 26. 8. 2026). Videz je isti kot »Dodaj podatke podjetja«, razlikuje se
    samo privzeto stanje. */
 const PRAVICE_PRIVZETO_ZAPRTE = new Set(['web', 'aplikacija']);
-/* Storitve, kjer avtorskega dela za prenos obicajno NI (vodenje, svetovanje,
-   optimizacija): predloga pravic sploh ne kazemo. Ce uporabnica pravice vseeno
-   potrebuje (npr. avtorska besedila znotraj SMM), jih doda z "+ Dodaj svojo
-   pravico" (Tina, 26. 8. 2026). */
-const PRAVICE_BREZ = new Set(['seo', 'smm', 'email', 'pr', 'direkcija', 'strategija', 'marketing', 'drugo']);
+/* Storitve, kjer avtorskega dela za prenos obicajno NI (optimizacija, vodenje
+   kanalov, odnosi z javnostmi): predloga pravic ne kazemo. Direkcija in
+   marketing ostaneta S predlogom — kreativna direkcija je avtorsko delo,
+   marketing pa avtorske vizuale/besedila pogosto vsebuje (Tina, 26. 8. 2026).
+   Rocno se pravice vedno lahko dodajo z "+ Dodaj svojo pravico". */
+const PRAVICE_BREZ = new Set(['seo', 'smm', 'email', 'pr', 'drugo']);
 /* Odgovori na vprasanje »Kaj od UX/UI procesa prevzames?« (SL in EN besedila). */
 const UXUI_AVTORSKO = ['UI oblikovanje', 'UX zasnova', 'Prototip', 'Style guide', 'UI design', 'UX: structure', 'Prototype', 'design system'];
 const UXUI_SAMO_POSTAVITEV = ['Samo postavitev', 'Layout only'];
