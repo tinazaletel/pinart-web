@@ -7209,7 +7209,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Kartica pravic — ISTA predloga kot »Dodaj podatke podjetja« (DESIGN 13e):
            crtkan rob, vijolicna glava z znakom, pripis pod njo. Vkljucena postavka
            ima poln rob in kljukico namesto plusa (Tina, 26. 8. 2026). */
-        .cw .prav-vklop { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+        .cw .prav-vklop { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .6rem; margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
         .cw .prav-vklop:hover { border-color: rgba(17,17,17,.45); }
         .cw .prav-vklop-glava { width: 100%; display: flex; align-items: center; gap: .4rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
         .cw .prav-vklop-znak { font: 700 1.05rem/1 var(--font-sans), sans-serif; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; }
@@ -7218,7 +7218,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-vklop-pripis { font-size: .8rem; line-height: 1.45; color: rgba(17,17,17,.7); }
         .cw .prav-vklop-on { border-style: solid; border-color: rgba(178,84,118,.4); }
         .cw .prav-vklop-on .prav-vklop-pripis { padding-left: 1.95rem; }
-        .cw .prav-vklop-glava .prav-recept { margin-left: auto; }
+        .cw .prav-vklop-glava .prav-recept { margin-left: auto; border-color: rgba(17,17,17,.12); background-color: rgba(255,255,255,.9); box-shadow: none; }
         .cw .prav-vklop-cena { flex: none; font: 700 .95rem var(--font-sans), sans-serif; font-variant-numeric: tabular-nums; color: var(--ink); background: transparent; border: 0; border-bottom: 1px dashed rgba(17,17,17,.25); padding: .1rem .2rem; cursor: pointer; }
         .cw .prav-vklop-cena.rocno { color: var(--accent, #B25476); }
         .cw .prav-vklop-cena-predlog { border-bottom: 0; color: rgba(17,17,17,.68); font-weight: 600; cursor: default; }
