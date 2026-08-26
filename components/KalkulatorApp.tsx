@@ -2531,6 +2531,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [urejamPravSid, setUrejamPravSid] = useState<string | null>(null);
   /* rocno odprte pravice pri storitvah iz PRAVICE_PRIVZETO_ZAPRTE */
   const [praviceVklop, setPraviceVklop] = useState<Record<string, boolean>>({});
+  /* rocno zaprte pravice pri storitvah, ki so privzeto odprte */
+  const [praviceZaprte, setPraviceZaprte] = useState<Record<string, boolean>>({});
   /* lastne pravice (niso vezane na storitev): enkratni odkup steje v skupni znesek
      pravic; letno/mesecno je ponavljajoca licenca (glej tip LastnaPravica) */
   const [lastnePravice, setLastnePravice] = useState<LastnaPravica[]>([]);
@@ -3203,9 +3205,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       if (st === 'postavitev') m[sid] = 'postavitev';
       else if (st === 'neznano' && !praviceVklop[sid]) m[sid] = 'zaprto';
     });
+    /* rocno zaprte: velja za katero koli storitev, tudi privzeto odprto */
+    Object.keys(praviceZaprte).forEach(sid => { if (praviceZaprte[sid] && !m[sid]) m[sid] = 'zaprto'; });
     return m;
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [vrstice, odgovori, praviceVklop]);
+  }, [vrstice, odgovori, praviceVklop, praviceZaprte]);
 
   const r = useMemo(() => {
     /* linije = vrstice ponudbe z razreseno storitvijo (njen drag-vrstni red) */
@@ -3370,6 +3374,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       })),
     });
   }, [r, ddvZavezanec, trgNarocnika]);
+
+  /* je sploh kaj vklopljenega? ce ne, blok ne razlaga in ne sesteva */
+  const imaVklopljenePravice = useMemo(() =>
+    (r?.praviceVrstice || []).some(v => !v.izkljucena) || lastnePravice.length > 0,
+    [r, lastnePravice]);
 
   /* Pupin obraz (barvna krogla + veseli obraz) v poljubni velikosti. */
   const pupaObraz = (px: number) => (
@@ -7147,6 +7156,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-recept { border: 1px solid rgba(255,255,255,.6); border-radius: 8px; outline: 0; background-color: rgba(255,255,255,.62); backdrop-filter: blur(12px) saturate(1.25); -webkit-backdrop-filter: blur(12px) saturate(1.25); box-shadow: 0 2px 8px rgba(40,25,40,.04); font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .38rem 1.5rem .38rem .7rem; appearance: none; -webkit-appearance: none; cursor: pointer; transition: border-color .15s; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .55rem center; }
         .cw .prav-recept:focus-visible { border-color: var(--accent); }
         /* isti videz kot crtkana vrstica "Dodaj podatke podjetja" (DESIGN 13e) */
+        .cw .prav-zapri { flex: none; width: 1.3rem; height: 1.3rem; padding: 0; border: 1px solid rgba(17,17,17,.2); border-radius: 50%; background: transparent; color: rgba(17,17,17,.55); font: 700 .9rem/1 var(--font-sans), sans-serif; cursor: pointer; transition: border-color .15s, color .15s; }
+        .cw .prav-zapri:hover { border-color: var(--accent, #B25476); color: var(--accent, #B25476); }
         .cw .prav-vklop { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
         .cw .prav-vklop:hover { background: rgba(17,17,17,.02); }
         .cw .prav-vklop-glava { width: 100%; display: flex; align-items: center; gap: .45rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
@@ -9712,10 +9723,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so nastavljeni glede na tip; recept lahko spremeniš. V Podrobnostih nastaviš teritorij (privzeto po sedežu naročnika), medije, naklado in klavzule; tiskovine in ilustracija imajo ponatis privzeto vklopljen. Skupni znesek lahko ročno popraviš s svinčnikom ob vsoti." />
                   <span className="vec">{L('vsaka storitev svoje', 'each service its own')}</span>
                 </div>
-                <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
-                  {L('Privzetki so nastavljeni glede na tip storitve — spremeni recept, kjer je treba. Vsaka storitev pokaže svojo ceno pravic.', 'Defaults are set according to the service type — change the recipe where needed. Each service shows its own rights price.')}
-                </p>
-                <details className="prav-razlaga">
+                {imaVklopljenePravice && (
+                  <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
+                    {L('Privzetki so nastavljeni glede na tip storitve — spremeni recept, kjer je treba. Vsaka storitev pokaže svojo ceno pravic.', 'Defaults are set according to the service type — change the recipe where needed. Each service shows its own rights price.')}
+                  </p>
+                )}
+                {imaVklopljenePravice && <details className="prav-razlaga">
                   <summary>{L('Kaj so avtorske pravice in zakaj so ločena postavka?', 'What is copyright and why is it a separate item?')}</summary>
                   <div className="prav-razlaga-telo">
                     <p>{L('Naročnik plača', 'The client pays for')} <b>{L('izvedbo', 'production')}</b> {L('(oblikovanje),', '(the design),')} <b>{L('pravice do uporabe', 'the usage rights')}</b> {L('pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna.', 'are a separate item — like a license. Separate because the same work can be used by a small local company or an international brand; the value of use differs.')}</p>
@@ -9726,7 +9739,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     </ul>
                     <p className="prav-razlaga-vir">{L('Podroben članek s primeri in viri pripravljamo za spletno stran.', 'We are preparing a detailed article with examples and sources for the website.')}</p>
                   </div>
-                </details>
+                </details>}
                 {r && (r.praviceVrstice.length > 0 || lastnePravice.length > 0) ? (
                   <>
                     <div className="prav-tabela">
@@ -9740,7 +9753,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         );
                         if (row.izkljucena === 'zaprto') return (
                           <button key={row.sid} type="button" className="prav-vklop"
-                            onClick={() => setPraviceVklop(o => ({ ...o, [row.sid]: true }))}>
+                            onClick={() => { setPraviceVklop(o => ({ ...o, [row.sid]: true })); setPraviceZaprte(o => ({ ...o, [row.sid]: false })); }}>
                             <span className="prav-vklop-glava">
                               <span className="prav-vklop-znak" aria-hidden>+</span>
                               <span className="prav-vklop-naslov">{L('Dodaj avtorske pravice', 'Add copyright')} · {locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</span>
@@ -9751,7 +9764,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         );
                         return (
                           <div key={row.sid} className="prav-vrsta">
-                            <span className="prav-ime">{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}{row.tantiema ? <small> · {row.tantiema} % {L('tantieme', 'royalties')}</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} {L('klavzul', 'clauses')}</small> : null}</span>
+                            <span className="prav-ime">
+                              <button type="button" className="prav-zapri" aria-label={L('Zapri pravice za to storitev', 'Close rights for this service')}
+                                title={L('Brez pravic pri tej storitvi', 'No rights for this service')}
+                                onClick={() => { setPraviceZaprte(o => ({ ...o, [row.sid]: true })); setPraviceVklop(o => ({ ...o, [row.sid]: false })); }}>−</button>{' '}{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}{row.tantiema ? <small> · {row.tantiema} % {L('tantieme', 'royalties')}</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} {L('klavzul', 'clauses')}</small> : null}</span>
                             <select className="prav-recept" aria-label={L('Pravice: ', 'Rights: ') + row.ime} value={recId}
                               onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined, tantiema: rc.id === 'tantieme' ? tantiemaZa(row.sid) : undefined }); }}>
                               {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
@@ -9802,11 +9818,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       ))}
                     </div>
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
-                      onClick={dodajLastnoPravico}>{L('+ Dodaj pravico', '+ Add right')}</button>
-                    <div className="prav-skupaj">
-                      <span>{L('Skupaj avtorske pravice', 'Total copyright')}</span>
-                      <b>{val(r.pravice)}</b>
-                    </div>
+                      onClick={dodajLastnoPravico}>{L('+ Dodaj svojo pravico', '+ Add your own right')}</button>
+                    {imaVklopljenePravice && (
+                      <div className="prav-skupaj">
+                        <span>{L('Skupaj avtorske pravice', 'Total copyright')}</span>
+                        <b>{val(r.pravice)}</b>
+                      </div>
+                    )}
                     {(() => {
                       const mesecno = lastnePravice.filter(l => l.tip === 'mesecno').reduce((a, l) => a + (Number(l.znesek) || 0), 0);
                       const letno = lastnePravice.filter(l => l.tip === 'letno').reduce((a, l) => a + (Number(l.znesek) || 0), 0);
@@ -9827,7 +9845,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <>
                     <p className="hint" style={{ margin: 0 }}>{L('Dodaj storitve ali lastno pravico, da nastaviš pravice.', 'Add services or a custom right to set up rights.')}</p>
                     <button type="button" className="dodaj-gumb" style={{ marginTop: '.85rem' }}
-                      onClick={dodajLastnoPravico}>{L('+ Dodaj pravico', '+ Add right')}</button>
+                      onClick={dodajLastnoPravico}>{L('+ Dodaj svojo pravico', '+ Add your own right')}</button>
                   </>
                 )}
               </div>
