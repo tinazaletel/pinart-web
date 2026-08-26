@@ -9715,14 +9715,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {vChatu && chatVpr(L('Želiš posebej obračunati pravice uporabe (avtorske pravice)?', 'Do you want to charge the usage rights (copyright) separately?'), L('Flow predlaga zneske glede na izbrane storitve. Vključi želene postavke in jih po potrebi prilagodi.', 'Flow suggests amounts based on the selected services. Include the items you want and adjust them as needed.'))}
               <div className="kartica">
                 <div className="k-naslov">{L('Za kaj bo naročnik uporabil delo?', 'What will the client use the work for?')} <span className="vec">{L('privzeto za vse postavke — na kartici posamezne spremeniš', 'default for all items — change it on each card')}</span></div>
-                <div className="opts">
-                  <button type="button" className={'pill' + (raba === 'znamka' ? ' on' : '')}
-                    onClick={() => { setRaba('znamka'); if (!pravTrajanjeRocno) setPravTrajanje('neomejeno'); }}>
-                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Za celotno znamko', 'For the whole brand')}<small>{L('logotip, podoba, stran — vrednost sledi bilanci podjetja', 'logo, identity, site — value follows the company')}</small></span>
+                <div className="izbira">
+                  <button type="button" className={raba === 'znamka' ? 'on' : ''} onClick={() => { setRaba('znamka'); if (!pravTrajanjeRocno) setPravTrajanje('neomejeno'); }}>
+                    <h3>{L('Za celotno znamko', 'For the whole brand')}</h3>
+                    <p>{L('Logotip, celostna podoba, spletna stran. Tvoje delo nosi vse, kar podjetje počne, zato vrednost sledi bilanci podjetja.', 'Logo, corporate identity, website. Your work carries everything the company does, so the value follows the company\'s balance sheet.')}</p>
                   </button>
-                  <button type="button" className={'pill' + (raba === 'projekt' ? ' on' : '')}
-                    onClick={() => { setRaba('projekt'); if (!pravTrajanjeRocno) setPravTrajanje('7'); }}>
-                    <span className="pill-fill" aria-hidden /><span className="pill-tekst">{L('Za določen projekt ali izdelek', 'For a specific project or product')}<small>{L('embalaža izdelka, knjiga, konferenca — vrednost sledi izkupičku', 'product packaging, a book, a conference — value follows the proceeds')}</small></span>
+                  <button type="button" className={raba === 'projekt' ? 'on' : ''} onClick={() => { setRaba('projekt'); if (!pravTrajanjeRocno) setPravTrajanje('7'); }}>
+                    <h3>{L('Za določen projekt ali izdelek', 'For a specific project or product')}</h3>
+                    <p>{L('Majice, embalaža enega izdelka, konferenca, knjiga. Vrednost sledi pričakovanemu izkupičku projekta, ne velikosti podjetja.', 'T-shirts, packaging for a single product, a conference, a book. The value follows the expected project proceeds, not the size of the company.')}</p>
                   </button>
                 </div>
               </div>
