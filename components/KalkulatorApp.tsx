@@ -9730,10 +9730,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             <>
               {vChatu && chatVpr(L('Želiš posebej obračunati pravice uporabe (avtorske pravice)?', 'Do you want to charge the usage rights (copyright) separately?'), L('Flow predlaga zneske glede na izbrane storitve. Vključi želene postavke in jih po potrebi prilagodi.', 'Flow suggests amounts based on the selected services. Include the items you want and adjust them as needed.'))}
               <div className="kartica pravice-kartica">
-                <div className="k-naslov">{L('Pravice uporabe (avtorske pravice)', 'Usage rights (copyright)')}
-                  <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so nastavljeni glede na tip; recept lahko spremeniš. V Podrobnostih nastaviš teritorij (privzeto po sedežu naročnika), medije, naklado in klavzule; tiskovine in ilustracija imajo ponatis privzeto vklopljen. Skupni znesek lahko ročno popraviš s svinčnikom ob vsoti." />
-                  <span className="vec">{L('vsaka storitev svoje', 'each service its own')}</span>
-                </div>
                 {(
                   <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
                     {L('Neoznačeno pomeni brez ločenega doplačila, ne brez pravic. Predlogi so priporočilo, ne pravni nasvet.', 'Unchecked means no separate charge, not no rights. Suggestions are a recommendation, not legal advice.')}
@@ -9778,15 +9774,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </p>
                         );
                         if (!row.nacin) return (
-                          <button key={row.sid} type="button" className="prav-vklop"
-                            onClick={() => setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' }))}>
+                          <div key={row.sid} className="prav-vklop">
                             <span className="prav-vklop-glava">
-                              <span className="prav-vklop-znak" aria-hidden>+</span>
-                              <span className="prav-vklop-naslov">{L('Dodaj pravice uporabe', 'Add usage rights')} · {locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</span>
-                              <span className="prav-vklop-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
+                              <button type="button" className="prav-vklop-znak" aria-label={L('Dodaj pravice uporabe: ', 'Add usage rights: ') + row.ime}
+                                onClick={() => setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' }))}>+</button>
+                              <button type="button" className="prav-vklop-naslov"
+                                onClick={() => setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' }))}>
+                                {locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime} · {L('predlog', 'suggested')} {val(row.znesekAuto)}
+                              </button>
+                              <select className="prav-recept" aria-label={L('Pravice: ', 'Rights: ') + row.ime} value={recId}
+                                onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined, tantiema: rc.id === 'tantieme' ? tantiemaZa(row.sid) : undefined }); }}>
+                                {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
+                                {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{locale === 'en' ? rc.imeEn : rc.ime}</option>)}
+                              </select>
                             </span>
-                            <span className="prav-vklop-pripis">{L('Predlog', 'Suggested')} {val(row.znesekAuto)} · {(() => { const rc = RECEPTI.find(x => x.id === recId); return rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; })()} · {row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}</span>
-                          </button>
+                            <span className="prav-vklop-pripis">{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
+                          </div>
                         );
                         return (
                           <div key={row.sid} className="prav-vklop prav-vklop-on" role="button" tabIndex={0}
@@ -9796,7 +9799,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                               <button type="button" role="checkbox" aria-checked className="prav-kljuk on"
                                 aria-label={L('Odstrani iz ponudbe: ', 'Remove from the quote: ') + row.ime}
                                 onClick={e => { e.stopPropagation(); setPraviceNacin(o => { const n = { ...o }; delete n[row.sid]; return n; }); }}>✓</button>
-                              <span className="prav-vklop-naslov">{L('Pravice uporabe', 'Usage rights')} · {locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</span>
+                              <span className="prav-vklop-naslov">{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</span>
+                              <select className="prav-recept" aria-label={L('Pravice: ', 'Rights: ') + row.ime} value={recId} onClick={e => e.stopPropagation()}
+                                onChange={e => { e.stopPropagation(); const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined, tantiema: rc.id === 'tantieme' ? tantiemaZa(row.sid) : undefined }); }}>
+                                {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
+                                {RECEPTI.map(rc => <option key={rc.id} value={rc.id}>{locale === 'en' ? rc.imeEn : rc.ime}</option>)}
+                              </select>
                               {urejamPravSid === row.sid ? (
                                 <span className="prav-cena prav-cena-uredi" onClick={e => e.stopPropagation()}>
                                   <input type="number" min={0} step={50} autoFocus
