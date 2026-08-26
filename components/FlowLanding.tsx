@@ -535,9 +535,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: FolderOpen, ime: 'A whole project in one place', opis: 'Keep documents, deadlines and communication together instead of scattered across email.' },
     { Ikona: ListChecks, ime: 'Tasks that stay organised', opis: 'Turn project wishes into clear tasks and keep every project moving.' },
     { Ikona: Receipt, ime: 'From proposal to invoice', opis: 'The same data flows through proposals, contracts, invoices and expenses without retyping.' },
-    { Ikona: Megaphone, ime: 'Marketing included', opis: 'Plan posts and campaigns alongside your projects in the same workspace.' },
     { Ikona: ShieldCheck, ime: 'Secure cloud storage', opis: 'Your data is stored in the EU and remains yours. Prices are only aggregated anonymously.' },
     { Ikona: Handshake, ime: 'Grows with you', opis: 'Start solo, then invite collaborators or clients only to the projects they need.' },
+    { Ikona: Megaphone, ime: 'Marketing included', opis: 'Plan posts and campaigns alongside your projects in the same workspace.' },
   ] : [
     { Ikona: Robot, ime: 'AI, ki pozna trg in ceno', opis: 'AI asistentka Pupa pozna trg in avtorske pravice: pove ti pošteno ceno in te opozori, če se podcenjuješ.' },
     { Ikona: SquaresFour, ime: 'En program namesto štirih', opis: 'Vse-v-enem SaaS: ponudbe, pogodbe, računi, CRM, projekti in naloge na enem mestu. Konec skakanja med štirimi programi.' },
@@ -545,9 +545,9 @@ export default function FlowLanding({ locale = 'sl' }: { locale?: string }) {
     { Ikona: FolderOpen, ime: 'Cel projekt na enem mestu', opis: 'Vsak projekt z dokumenti, roki in vso komunikacijo — pregledno, veliko bolje kot razmetani Gmail.' },
     { Ikona: ListChecks, ime: 'Naloge, ki se uredijo same', opis: 'Task manager drži projekt v teku. Poveš Pupi želje, ona jih razdeli v naloge.' },
     { Ikona: Receipt, ime: 'Od ponudbe do računa', opis: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov — brez podvajanja in prepisovanja.' },
-    { Ikona: Megaphone, ime: 'Tudi marketing', opis: 'Objave in kampanje načrtuješ ob projektih — marketing je del istega mesta.' },
     { Ikona: ShieldCheck, ime: 'Varno oblačno shranjevanje', opis: 'Podatki v oblaku (EU) — dostop imaš samo ti. Ne prodamo in ne delimo; cene se združijo anonimno, nikoli ime.' },
     { Ikona: Handshake, ime: 'Raste s tabo', opis: 'Začneš sam(a); ko studio zraste, povabiš sodelavca ali stranko na projekt — z dostopom samo do potrebnega.' },
+    { Ikona: Megaphone, ime: 'Tudi marketing', opis: 'Objave in kampanje načrtuješ ob projektih — marketing je del istega mesta.' },
   ];
 
   const KORAKI = isEn ? [
