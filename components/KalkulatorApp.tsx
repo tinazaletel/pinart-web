@@ -221,7 +221,7 @@ const tantiemaZa = (sid: string): number => {
 };
 /* privzeta vrsta pravic + trajanje po storitvi (za tabelo pri vec storitvah) */
 const PRAVICE_TRAJNO = new Set(['logo', 'cgp', 'web', 'embalaza', 'interier', 'arhitektura', 'produktni', 'uxui', 'aplikacija', 'dizajnsistem']);
-const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email', 'pr']);
+const PRAVICE_KAMPANJA = new Set(['kampanja', 'smm', 'razstava', 'seo', 'email', 'pr', 'marketing']);
 /* Storitve, kjer avtorstvo NI samoumevno: pri spletni strani in aplikaciji je
    odvisno od tega, kaj izvajalka prevzame. Postavitev tujega dizajna ni avtorsko
    delo, zato pravic ne postavimo vnaprej — vrstica stoji crtkana, dokler je
