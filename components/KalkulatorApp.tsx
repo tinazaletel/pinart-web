@@ -7560,6 +7560,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-ni-plus::before { content: '+'; grid-row: 1 / span 2; align-self: center; color: rgba(17,17,17,.35); font: 700 1.15rem/1 var(--font-sans), sans-serif; }
         .cw .prav-ni-plus b { font: 700 .95rem var(--font-sans), sans-serif; color: rgba(17,17,17,.75); }
         .cw .prav-ni-plus > span { grid-column: 2; }
+        .cw .prav-ni-klik { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s, background .15s; }
+        .cw .prav-ni-klik:hover { border-color: var(--purple, #7C3AED); background: rgba(124,58,237,.03); }
+        .cw .prav-ni-klik:hover::before { color: var(--purple, #7C3AED); }
         .cw .prav-kljuk { box-sizing: border-box; width: 1.5rem; height: 1.5rem; min-height: 0; padding: 0; flex: none; justify-self: end; border-radius: 50%; border: 1.5px solid rgba(17,17,17,.3); background: transparent; color: #fff; font: 900 .82rem/1 var(--font-sans), sans-serif; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .18s, border-color .18s; }
         .cw .prav-kljuk.on { background: var(--accent, #B25476); border-color: var(--accent, #B25476); }
         .cw .prav-predlog { font-weight: 600; color: rgba(17,17,17,.55); font-size: .84rem; }
@@ -10136,10 +10139,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </p>
                         );
                         if (row.izkljucena === 'vprasaj') return (
-                          <p key={row.sid} className="prav-ni prav-ni-plus">
+                          <button key={row.sid} type="button" className="prav-ni prav-ni-plus prav-ni-klik"
+                            title={L('Odpri podrobnosti storitve', 'Open the service details')}
+                            onClick={() => { const l = vrstice.find(v => v.sid === row.sid); if (l) odpriDetajl(l.uid); }}>
                             <b>{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</b>
                             <span>{L('predlog pripravim, ko v specifikaciji izbereš, kaj prevzameš', 'the suggestion appears once the specification says what you take on')}</span>
-                          </p>
+                          </button>
                         );
                         if (!row.nacin) return (
                           <div key={row.sid} className="prav-vklop">
