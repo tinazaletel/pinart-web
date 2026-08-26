@@ -32,6 +32,9 @@ import ContractWorkspace from '@/components/ContractWorkspace';
 import RetainerWorkspace from '@/components/RetainerWorkspace';
 import { povzetekNalog, odgovorONalogah, jeVprasanjeONalogah, kontekstNalog } from '@/lib/pupaNaloge';
 import { usePredogled } from '@/lib/predogled';
+import DatumUra from '@/components/DatumUra';
+import { loadFlowData } from '@/lib/pinartFlowStore';
+import { preberiObvestila, KOM_DOGODEK } from '@/lib/komObvestila';
 
 /* a/b/c izbire za izkušnje — iste kot kalkulator (KalkulatorApp IZKUSNJE); PODROCJA iz lib */
 const IZKUSNJE_IZBIRE = [
@@ -477,13 +480,62 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   /* PLAVAJOČE kartice (ambient) — podatki, kot jih imamo na nadzorni plošči.
      poz = položaj okoli sredine (desktop); h = odtenek; d = zamik animacije. */
   /* klikljive plavajoče kartice (Tina želi VEČ); varni odmiki od robov (nič odrezano) */
+  /* Razpored po NUJNOSTI, ne po lepoti: kar te čaka danes, stoji zgoraj (levo
+     pa desno), denar in cilji spodaj. Bralno oko gre od zgornjega levega kota
+     navzdol — tja sodi tisto, kar zahteva potezo (Tina, 26. 8. 2026). */
+  /* Stevilke na karticah so TVOJE STANJE, ne vzorec (Tina, 26. 8. 2026:
+     »številke ne smejo biti izmišljene«). Beremo iste vire kot orodja sama;
+     dokler se ne nalozijo, stoji pomisljaj — nikoli izmisljena stevilka.
+     Racun tece v useEffect (brskalnik), zato ne drami hidracije. */
+  const [stanje, setStanje] = useState<{ nalogeDanes: number; zamujene: number; projekti: number; zaPlacilo: number; prihodek: number; cilj: number; sporocila: number } | null>(null);
+  useEffect(() => {
+    let ziv = true;
+    const izracunaj = async () => {
+      const prazno = predogled === 'empty';
+      const danesIso = new Date().toISOString().slice(0, 10);
+      const mesec = danesIso.slice(0, 7);
+      const nal = povzetekNalog(prazno ? [] : preberiNaloge(), danesIso);
+      const proj = prazno ? [] : preberiProjekti();
+      const racuni = prazno ? [] : loadFlowData().invoices;
+      const placani = racuni.filter(r => (r.paid || r.status === 'paid') && (r.date || '').slice(0, 7) === mesec);
+      const odprti = racuni.filter(r => !r.paid && r.status !== 'paid' && r.status !== 'draft' && r.status !== 'cancelled');
+      const prihodek = placani.reduce((v, r) => v + (Number(r.amount) || 0), 0);
+      const ciljMesecni = Number(typeof window === 'undefined' ? 0 : localStorage.getItem('pinart-dashboard-goal')) || 0;
+      let sporocila = 0;
+      try { sporocila = prazno ? 0 : (await preberiObvestila()).poste; } catch { sporocila = 0; }
+      if (!ziv) return;
+      setStanje({
+        nalogeDanes: nal.danes.length,
+        zamujene: nal.zamujene.length,
+        projekti: proj.filter(p => p.status === 'aktiven').length,
+        zaPlacilo: odprti.reduce((v, r) => v + (Number(r.amount) || 0), 0),
+        prihodek,
+        cilj: ciljMesecni > 0 ? Math.round((prihodek / ciljMesecni) * 100) : 0,
+        sporocila,
+      });
+    };
+    void izracunaj();
+    window.addEventListener('focus', izracunaj);
+    window.addEventListener(KOM_DOGODEK, izracunaj);
+    return () => { ziv = false; window.removeEventListener('focus', izracunaj); window.removeEventListener(KOM_DOGODEK, izracunaj); };
+  }, [predogled]);
+
+  const stev = (v: number | undefined) => (stanje ? String(v ?? 0) : '—');
+  const evri = (v: number | undefined) => (stanje ? new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v ?? 0) : '—');
+
   const plava: { labela: string; vrednost: string; h: number; poz: string; d: number; href: string }[] = [
-    { labela: L('Prihodek ta mesec', 'Revenue this month'), vrednost: '4.850 €', h: 150, poz: 'top:9%;left:4%', d: 0, href: `${base}/kalkulator/racuni` },
-    { labela: L('Aktivni projekti', 'Active projects'), vrednost: '3', h: 200, poz: 'top:35%;left:6%', d: 1.4, href: `${base}/kalkulator/projekti` },
-    { labela: L('Za plačilo', 'Awaiting payment'), vrednost: '1.350 €', h: 25, poz: 'bottom:18%;left:5%', d: 2.6, href: `${base}/kalkulator/racuni` },
-    { labela: L('Naloge danes', 'Tasks today'), vrednost: '4', h: 297, poz: 'top:9%;right:5%', d: .7, href: `${base}/kalkulator/naloge` },
-    { labela: L('Mesečni cilj', 'Monthly goal'), vrednost: '68 %', h: 60, poz: 'top:35%;right:7%', d: 2, href: `${base}/kalkulator/cilji` },
-    { labela: L('Nova sporočila', 'New messages'), vrednost: '2', h: 320, poz: 'bottom:18%;right:5%', d: 3.2, href: `${base}/kalkulator/komunikacija` },
+    /* Zamujene naloge prevzamejo mesto »danes«: kar je ze zamujeno, je bolj
+       nujno od tega, kar sele zapade. */
+    stanje && stanje.zamujene > 0
+      ? { labela: L('Zamujene naloge', 'Overdue tasks'), vrednost: stev(stanje.zamujene), h: 297, poz: 'top:9%;left:4%', d: 0, href: `${base}/kalkulator/naloge` }
+      : { labela: L('Naloge danes', 'Tasks today'), vrednost: stev(stanje?.nalogeDanes), h: 297, poz: 'top:9%;left:4%', d: 0, href: `${base}/kalkulator/naloge` },
+    { labela: L('Nova sporočila', 'New messages'), vrednost: stev(stanje?.sporocila), h: 320, poz: 'top:9%;right:5%', d: .7, href: `${base}/kalkulator/komunikacija` },
+    { labela: L('Aktivni projekti', 'Active projects'), vrednost: stev(stanje?.projekti), h: 200, poz: 'top:35%;left:6%', d: 1.4, href: `${base}/kalkulator/projekti` },
+    { labela: L('Za plačilo', 'Awaiting payment'), vrednost: evri(stanje?.zaPlacilo), h: 25, poz: 'top:35%;right:7%', d: 2, href: `${base}/kalkulator/racuni` },
+    /* Kadar cilja ni, kartica ne izpisuje dolge povedi (ta se je lomila cez rob),
+       ampak povabi k dejanju — klik pelje na Cilje. */
+    { labela: L('Mesečni cilj', 'Monthly goal'), vrednost: stanje ? (stanje.cilj > 0 ? `${stanje.cilj} %` : L('Nastavi', 'Set')) : '—', h: 60, poz: 'bottom:18%;left:5%', d: 2.6, href: `${base}/kalkulator/cilji` },
+    { labela: L('Prihodek ta mesec', 'Revenue this month'), vrednost: evri(stanje?.prihodek), h: 150, poz: 'bottom:18%;right:5%', d: 3.2, href: `${base}/kalkulator/racuni` },
   ];
 
   /* Devet gumbov naenkrat je seznam, ne ponudba. Prvih sest pokrije vsakdan,
@@ -506,8 +558,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     { ime: L('Izdaj račun', 'Issue an invoice'), tip: 'racun', h: 200, ikona: <Receipt size={16} weight="bold" /> },
     { ime: L('Ustvari projekt', 'Start a project'), tip: 'projekt', h: 150, ikona: <FolderPlus size={16} weight="bold" /> },
     { ime: L('Ustvari nalogo', 'Create task'), tip: 'naloga', h: 250, ikona: <ListChecks size={16} weight="bold" /> },
-    /* Strosek in brief sta se pod »Vec«: vstop naj ponudi stiri dejanja v eni
-       vrsti, ne dveh (Tina, 26. 8. 2026). Brief je prva akcija, kjer se pogovor
+    /* Vstop ponudi STIRI dejanja (ponudba, racun, projekt, naloga), na telefonu
+       pa se cetrto skrije, da ostane ena vrsta. Vse ostalo je pod »Vec«
+       (Tina, 26. 8. 2026). Brief je prva akcija, kjer se pogovor
        konca z ZAPISOM na projektu — ne z nasvetom, kateri gumb klikniti. */
     { ime: L('Napiši brief', 'Write a brief'), tip: 'brief', h: 120, ikona: <FileText size={16} weight="bold" /> },
     { ime: L('Dodaj strošek', 'Add an expense'), tip: 'strosek', h: 60, ikona: <Coins size={16} weight="bold" /> },
@@ -555,6 +608,18 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
         )}
       </button>}
+
+      {/* Datum in ura: v isti vrsti z okroglima gumboma, levo od njiju — ne v
+          vrstici s pozdravom (tam je delala stopnico ob Pupinem orbu).
+          POZOR: styled-jsx oblikuje samo elemente, ki jih izrise TA datoteka,
+          zato mora postavitev viseti na TEM ovoju, ne na razredu, ki ga podamo
+          tuji komponenti — sicer pravilo tiho odpade in pilula obvisi sredi
+          strani (ujelo naju je 27. 8. 2026). */}
+      {!zgodovinaOdprta && (
+        <div className="pd-datum">
+          <DatumUra jeEn={jeEn} zgoscen />
+        </div>
+      )}
 
       {/* Zgodovina Pupinih pogovorov — subtilen gumb desno, panel ZDRSNE z desne (kot ChatGPT/Claude) */}
       {!zgodovinaOdprta && (
@@ -946,9 +1011,15 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd:not(.pogovor) .pd-hitre { order: 4; margin-bottom: 1.15rem; }
         .pd:not(.pogovor) .pd-vnos { order: 5; }
         .pd-glava { display: flex; align-items: center; gap: .8rem; margin-bottom: .4rem; }
+        .pd-glava > div { min-width: 0; }
         .pd-orb { flex: none; width: 3rem; height: 3rem; border-radius: 50%; background: conic-gradient(from 210deg, oklch(70% .19 300), oklch(72% .16 200), oklch(80% .13 150), oklch(78% .17 25), oklch(70% .19 300)); box-shadow: 0 8px 22px oklch(60% .18 300 / .38), inset -3px -4px 8px oklch(100% 0 0 / .35), inset 3px 4px 8px oklch(30% .1 300 / .25); animation: pdOrb 8s ease-in-out infinite; }
         @keyframes pdOrb { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(8deg); } }
         .pd-eyebrow { margin: 0 0 .15rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .18em; color: var(--purple, oklch(60% .2 297)); }
+        /* postavitev; videz (steklo, serif ura) nosi komponenta DatumUra.
+           Gumba sta na right:1.6rem in right:4.6rem, zato se pilula postavi za
+           njiju — brez prekrivanja. */
+        .pd-datum { position: fixed; top: 4.3rem; right: 7.6rem; z-index: 63; }
+        @media (max-width: 900px) { .pd-datum { display: none; } }
         .pd-naslov { margin: 0; font: 500 clamp(1.45rem, 3.4vw, 2.05rem)/1.1 var(--font-serif), Georgia, serif; font-synthesis: none; color: var(--ink, #1a1a1a); letter-spacing: -.01em; text-wrap: balance; }
         .pd-uvod { margin: .15rem 0 1.1rem; font: 500 .98rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); }
         /* Zgodovina: subtilen gumb desno (levo od razpored) + panel zdrsne z desne */
@@ -1028,6 +1099,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         @media (min-width: 1024px) { .pd-povzetek { display: none; } }
 
         .pd-hitre { display: flex; flex-wrap: wrap; gap: .45rem; margin: 1rem 0 .9rem; }
+        /* na telefonu cetrti cip odpade — sicer se vrstica prelomi; dejanje
+           ostane dosegljivo pod »Vec« */
+        @media (max-width: 640px) { .pd-hitre .pd-cip:nth-child(4) { display: none; } }
         .pd-cip { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.5rem; padding: .55rem 1rem; border: 1px solid rgba(255,255,255,.6); border-radius: 999px; background: color-mix(in oklch, oklch(72% .14 var(--h)) 14%, rgba(255,255,255,.6)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 700 .8rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
         .pd-cip-ik { display: inline-flex; color: color-mix(in oklch, oklch(58% .2 var(--h)) 85%, var(--ink, #1a1a1a)); }
         .pd-vec { align-self: center; padding: .55rem .3rem; border: 0; background: none; font: 700 .8rem var(--font-sans), sans-serif; color: #6E4FA6; text-decoration: underline; text-underline-offset: .22em; cursor: pointer; }

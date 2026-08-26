@@ -108,3 +108,41 @@ export function kontekstNalog(p: PovzetekNalog, jeEn = false): string {
     ? `Task board right now: ${p.odprte} open, ${p.zamujene.length} overdue, ${p.danes.length} due today, ${p.vTeku} in progress.`
     : `Stanje nalog zdaj: ${p.odprte} odprtih, ${p.zamujene.length} zamujenih, ${p.danes.length} zapade danes, ${p.vTeku} v teku.`;
 }
+
+/* Slovenska ednina/dvojina/mnozina: 1 naloga, 2 nalogi, 3 naloge, 5 nalog. */
+export function oblika(n: number, oblike: [string, string, string, string]): string {
+  const o = Math.abs(n) % 100;
+  if (o === 1) return oblike[0];
+  if (o === 2) return oblike[1];
+  if (o === 3 || o === 4) return oblike[2];
+  return oblike[3];
+}
+
+/**
+ * Ena mirna vrstica pod pozdravom (telefon): kaj te danes res caka.
+ * Prazna vrnjena vrednost ni mogoca — kadar ni nicesar, to tudi pise.
+ */
+export function vrsticaDanes(
+  stanje: { zamujene: number; danes: number; neplacani: number },
+  jeEn = false,
+): string {
+  const deli: string[] = [];
+  if (stanje.zamujene > 0) {
+    deli.push(jeEn
+      ? `${stanje.zamujene} overdue ${stanje.zamujene === 1 ? 'task' : 'tasks'}`
+      : `${stanje.zamujene} ${oblika(stanje.zamujene, ['zamujena naloga', 'zamujeni nalogi', 'zamujene naloge', 'zamujenih nalog'])}`);
+  }
+  if (stanje.danes > 0) {
+    deli.push(jeEn
+      ? `${stanje.danes} due today`
+      : `${stanje.danes} ${oblika(stanje.danes, ['naloga zapade', 'nalogi zapadeta', 'naloge zapadejo', 'nalog zapade'])} danes`);
+  }
+  if (stanje.neplacani > 0) {
+    deli.push(jeEn
+      ? `${stanje.neplacani} unpaid ${stanje.neplacani === 1 ? 'invoice' : 'invoices'}`
+      : `${stanje.neplacani} ${oblika(stanje.neplacani, ['neplacan racun', 'neplacana racuna', 'neplacani racuni', 'neplacanih racunov'])}`
+        .replace('neplacan', 'neplačan').replace('racun', 'račun'));
+  }
+  if (!deli.length) return jeEn ? 'Nothing urgent today.' : 'Danes te ne čaka nič nujnega.';
+  return `${jeEn ? 'Today' : 'Danes'}: ${deli.join(', ')}.`;
+}

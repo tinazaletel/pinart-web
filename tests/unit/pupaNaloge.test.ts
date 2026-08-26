@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { povzetekNalog, odgovorONalogah, jeVprasanjeONalogah, kontekstNalog } from '@/lib/pupaNaloge';
+import { povzetekNalog, odgovorONalogah, jeVprasanjeONalogah, kontekstNalog, vrsticaDanes, oblika } from '@/lib/pupaNaloge';
 import type { Naloga } from '@/lib/naloge';
 
 const n = (del: Partial<Naloga> & { naslov: string }): Naloga => ({
@@ -60,5 +60,25 @@ describe('pupa bere naloge', () => {
   it('kontekst za AI je kratek in prazen, kadar ni nicesar', () => {
     expect(kontekstNalog(p)).toContain('4 odprtih');
     expect(kontekstNalog(povzetekNalog([], '2026-08-26'))).toBe('');
+  });
+});
+
+describe('vrstica »kaj te danes caka«', () => {
+  it('slovenske oblike so pravilne', () => {
+    expect(oblika(1, ['a', 'b', 'c', 'd'])).toBe('a');
+    expect(oblika(2, ['a', 'b', 'c', 'd'])).toBe('b');
+    expect(oblika(3, ['a', 'b', 'c', 'd'])).toBe('c');
+    expect(oblika(5, ['a', 'b', 'c', 'd'])).toBe('d');
+  });
+
+  it('nasteje samo tisto, cesar je kaj', () => {
+    const v = vrsticaDanes({ zamujene: 2, danes: 3, neplacani: 1 });
+    expect(v).toBe('Danes: 2 zamujeni nalogi, 3 naloge zapadejo danes, 1 neplačan račun.');
+    expect(vrsticaDanes({ zamujene: 0, danes: 1, neplacani: 0 })).toBe('Danes: 1 naloga zapade danes.');
+  });
+
+  it('kadar ni nicesar, to tudi pise', () => {
+    expect(vrsticaDanes({ zamujene: 0, danes: 0, neplacani: 0 })).toBe('Danes te ne čaka nič nujnega.');
+    expect(vrsticaDanes({ zamujene: 0, danes: 0, neplacani: 0 }, true)).toBe('Nothing urgent today.');
   });
 });

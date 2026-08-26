@@ -3,6 +3,7 @@ import { setRequestLocale } from 'next-intl/server';
 import BusinessOverview from '@/components/BusinessOverview';
 import { paketUporabnika } from '@/lib/pravice';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import DatumUra from '@/components/DatumUra';
 import OnboardingKartica from '@/components/OnboardingKartica';
 import PozdravPregled from '@/components/PozdravPregled';
 import styles from './pregled.module.css';
@@ -35,6 +36,8 @@ export default async function PoslovniPregledPage({
             <PozdravPregled jeEn={locale === 'en'} />
             <p className={styles.topbarSub}>{locale === 'en' ? 'Here you can quickly create a proposal, track projects and keep an overview of everything that matters.' : 'Tukaj lahko hitro ustvariš ponudbo, slediš projektom in imaš pregled nad vsem, kar je pomembno.'}</p>
           </div>
+          {/* datum in ura: desno v glavi, poravnana z vrhom (Tina, 26. 8. 2026) */}
+          <DatumUra jeEn={locale === 'en'} className={styles.topbarDatum} />
         </header>
 
         {/* nad pregledom, ne pod njim: kdor nastavitve ni koncal, vidi
