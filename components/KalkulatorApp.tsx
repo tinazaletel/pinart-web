@@ -7160,6 +7160,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-napredno-telo { margin-top: .6rem; }
         .cw .prav-napredno:not([open]) > .prav-napredno-telo { display: none; }
         .cw .prav-razlaga { margin: 0 0 1.1rem; border: 1px solid oklch(93% .006 82 / .55); border-radius: 12px; background: rgba(178,84,118,.05); overflow: hidden; }
+        /* pod kartico stoji kot opomba: brez okvirja in podlage, drobnejsa */
+        .cw .prav-razlaga-opomba { margin: .1rem 0 1.4rem; border: 0; border-radius: 0; background: transparent; }
+        .cw .prav-razlaga-opomba > summary { padding: .3rem 0; font-size: .84rem; font-weight: 600; color: rgba(17,17,17,.72); }
+        .cw .prav-razlaga-opomba .prav-razlaga-telo { padding: .2rem 0 .3rem; }
+        .cw .prav-razlaga-opomba .prav-razlaga-telo p, .cw .prav-razlaga-opomba .prav-razlaga-telo li { font-size: .84rem; color: rgba(17,17,17,.7); }
         .cw .prav-razlaga > summary { list-style: none; cursor: pointer; padding: .8rem 1rem; font-weight: 600; font-size: .92rem; color: var(--ink); display: flex; align-items: center; gap: .5rem; }
         .cw .prav-razlaga > summary::-webkit-details-marker { display: none; }
         .cw .prav-razlaga > summary::before { content: "▸"; color: var(--accent); font-weight: 700; transition: transform .15s; display: inline-block; }
@@ -9743,19 +9748,6 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     {L('Neoznačeno pomeni brez ločenega doplačila, ne brez pravic. Predlogi so priporočilo, ne pravni nasvet.', 'Unchecked means no separate charge, not no rights. Suggestions are a recommendation, not legal advice.')}
                   </p>
                 )}
-                {imaVklopljenePravice && <details className="prav-razlaga">
-                  <summary>{L('Kaj so avtorske pravice in zakaj so ločena postavka?', 'What is copyright and why is it a separate item?')}</summary>
-                  <div className="prav-razlaga-telo">
-                    <p>{L('Naročnik plača', 'The client pays for')} <b>{L('izvedbo', 'production')}</b> {L('(oblikovanje),', '(the design),')} <b>{L('pravice do uporabe', 'the usage rights')}</b> {L('pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna.', 'are a separate item — like a license. Separate because the same work can be used by a small local company or an international brand; the value of use differs.')}</p>
-                    <ul>
-                      <li><b>{L('Vrednost določajo', 'The value is set by')}</b> {L('obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži.', 'scope (territory, media, duration), exclusivity and how much the client earns with the work.')}</li>
-                      <li><b>{L('Slovenija / EU:', 'Slovenia / EU:')}</b> {L('popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno. Avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP; DSM 2019).', 'a full «buyout of everything» is not legally possible — only individual economic rights are transferred, in writing and limited. The author keeps moral rights and the right to fair remuneration (ZASP; DSM 2019).')}</li>
-                      <li><b>{L('Prodajni produkti', 'Retail products')}</b> {L('(majice, embalaža, izdelki): namesto enkratnega odkupa je pošteno honorar +', '(t-shirts, packaging, products): instead of a one-time buyout it is fair to charge a fee +')} <b>{L('tantieme', 'royalties')}</b> {L('od prodaje (npr. 3–10 %).', 'on sales (e.g. 3–10%).')}</li>
-                    </ul>
-                    <p className="prav-razlaga-vir">{L('Podroben članek s primeri in viri pripravljamo za spletno stran.', 'We are preparing a detailed article with examples and sources for the website.')}</p>
-                    <p className="prav-razlaga-vir">{L('Predlogi in besedila so v pomoč pri poslovanju in niso pravni nasvet — za zavezujoče dogovore se posvetuj z odvetnikom.', 'Suggestions and texts support your business and are not legal advice — consult a lawyer for binding agreements.')}</p>
-                  </div>
-                </details>}
                 {r && (r.praviceVrstice.length > 0 || lastnePravice.length > 0) ? (
                   <>
                     <div className="prav-tabela">
@@ -9890,6 +9882,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </>
                 )}
               </div>
+
+                {imaVklopljenePravice && <details className="prav-razlaga prav-razlaga-opomba">
+                  <summary>{L('Kaj so avtorske pravice in zakaj so ločena postavka?', 'What is copyright and why is it a separate item?')}</summary>
+                  <div className="prav-razlaga-telo">
+                    <p>{L('Naročnik plača', 'The client pays for')} <b>{L('izvedbo', 'production')}</b> {L('(oblikovanje),', '(the design),')} <b>{L('pravice do uporabe', 'the usage rights')}</b> {L('pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna.', 'are a separate item — like a license. Separate because the same work can be used by a small local company or an international brand; the value of use differs.')}</p>
+                    <ul>
+                      <li><b>{L('Vrednost določajo', 'The value is set by')}</b> {L('obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži.', 'scope (territory, media, duration), exclusivity and how much the client earns with the work.')}</li>
+                      <li><b>{L('Slovenija / EU:', 'Slovenia / EU:')}</b> {L('popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno. Avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP; DSM 2019).', 'a full «buyout of everything» is not legally possible — only individual economic rights are transferred, in writing and limited. The author keeps moral rights and the right to fair remuneration (ZASP; DSM 2019).')}</li>
+                      <li><b>{L('Prodajni produkti', 'Retail products')}</b> {L('(majice, embalaža, izdelki): namesto enkratnega odkupa je pošteno honorar +', '(t-shirts, packaging, products): instead of a one-time buyout it is fair to charge a fee +')} <b>{L('tantieme', 'royalties')}</b> {L('od prodaje (npr. 3–10 %).', 'on sales (e.g. 3–10%).')}</li>
+                    </ul>
+                    <p className="prav-razlaga-vir">{L('Podroben članek s primeri in viri pripravljamo za spletno stran.', 'We are preparing a detailed article with examples and sources for the website.')}</p>
+                    <p className="prav-razlaga-vir">{L('Predlogi in besedila so v pomoč pri poslovanju in niso pravni nasvet — za zavezujoče dogovore se posvetuj z odvetnikom.', 'Suggestions and texts support your business and are not legal advice — consult a lawyer for binding agreements.')}</p>
+                  </div>
+                </details>}
 
               {praviceOdprt && typeof document !== 'undefined' && (() => {
                 const sid = praviceOdprt;
