@@ -159,6 +159,12 @@ export default function PupaDom({ base = '' }: { base?: string }) {
      Orodja odpreš prek gumbov (ali kasneje prek Pupine potrditve). Vezano na obstoječi /api/pupa. */
   const [pupaSpor, setPupaSpor] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
   const [pupaCaka, setPupaCaka] = useState(false);
+  /* Medtem ko Pupa razmišlja, se vprašanja NE zavržejo — postavijo se v vrsto
+     in jih do obdelave lahko popraviš ali izbrišeš (Tina, 26. 8. 2026). */
+  const [vrsta, setVrsta] = useState<{ id: number; besedilo: string; citat?: string }[]>([]);
+  const [urejamVrsto, setUrejamVrsto] = useState<number | null>(null);
+  /* Odgovor na konkreten Pupin mehurček — brez prepisovanja starega besedila. */
+  const [citat, setCitat] = useState<string | null>(null);
   const prekiniRef = useRef<AbortController | null>(null);
   const klepet = pupaSpor.length > 0;
   const pupaNitRef = useRef<HTMLDivElement>(null);
@@ -186,30 +192,32 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     if (id === pogovorId) { setPupaSpor([]); setPogovorId(null); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
   }
 
-  async function posljiPupi(besedilo: string) {
+  async function posljiPupi(besedilo: string, navedek?: string) {
     const q = besedilo.trim();
     if (!q || pupaCaka) return;
     const zgo = pupaSpor.slice(-8);
-    setPupaSpor(s => [...s, { role: 'user', content: q }]);
+    /* Navedek gre v nit in v vprašanje — Pupa mora vedeti, na kaj odgovarjaš. */
+    const zVnosom = navedek ? `> ${navedek}\n\n${q}` : q;
+    setPupaSpor(s => [...s, { role: 'user', content: zVnosom }]);
     setPupaCaka(true);
     const krmilnik = new AbortController();
     prekiniRef.current = krmilnik;
     // OBLAK: zagotovi pogovor + shrani uporabnikovo sporočilo (degradira brez prijave/oblaka)
     let pid = pogovorId;
     if (!pid) { pid = await ustvariPogovor(q); if (pid) setPogovorId(pid); }
-    if (pid) void dodajSporocilo(pid, 'user', q);
+    if (pid) void dodajSporocilo(pid, 'user', zVnosom);
     try {
       const naMoj = aiNacin === 'moj' && agent && orgRef.current;
       const res = naMoj
         ? await fetch('/api/ai/izvedi', {
           method: 'POST', headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ organizationId: orgRef.current, connectionId: agent, prompt: q }),
+          body: JSON.stringify({ organizationId: orgRef.current, connectionId: agent, prompt: zVnosom }),
           signal: krmilnik.signal,
         })
         : await fetch('/api/pupa', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          vprasanje: q,
+          vprasanje: zVnosom,
           kontekst: L('Uporabnik je v Pupa domu (vstopni pomočnik za samostojne kreativce). Pomagaj z nasvetom; če želi USTVARITI ponudbo/račun/projekt/nalogo, ga usmeri na ustrezen gumb v domu — ne izmišljaj si, da si to naredila.',
                       'User is in the Pupa home (entry assistant for freelance creatives). Help with advice; if they want to CREATE a quote/invoice/project/task, point them to the matching button in the home — do not pretend you did it.'),
           zgodovina: zgo,
@@ -230,6 +238,16 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       prekiniRef.current = null;
     }
   }
+
+  /* Ko Pupa konca, sama vzame naslednje vprasanje iz vrste. Uredis ali izbrises
+     ga lahko, dokler se caka — potem gre v nit kot vsako drugo sporocilo. */
+  useEffect(() => {
+    if (pupaCaka || !vrsta.length || urejamVrsto !== null) return;
+    const [prvo, ...ostalo] = vrsta;
+    setVrsta(ostalo);
+    void posljiPupi(prvo.besedilo, prvo.citat);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pupaCaka, vrsta, urejamVrsto]);
 
   /* Stop: prekine zahtevo do Pupe in ustavi morebitni govor. */
   const prekini = () => {
@@ -322,15 +340,30 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     const t = vnos.trim();
     if (!t) return;
     const el = textRef.current;
+    /* Pupa razmišlja: vprašanje gre v vrsto, ne v koš. Urejanje vrstnega zapisa
+       samo posodobi zapis in ga pusti v vrsti. */
+    if ((aiNacin === 'pupa' || aiNacin === 'moj') && (pupaCaka || vrsta.length > 0 || urejamVrsto !== null)) {
+      if (urejamVrsto !== null) {
+        const idU = urejamVrsto;
+        setVrsta(v => v.map(x => (x.id === idU ? { ...x, besedilo: t } : x)));
+        setUrejamVrsto(null);
+      } else {
+        setVrsta(v => [...v, { id: Date.now() + v.length, besedilo: t, citat: citat || undefined }]);
+      }
+      setCitat(null);
+      setVnos(''); if (el) el.style.height = 'auto';
+      return;
+    }
     const cilj = zaznajTip(t.toLowerCase());
     // NALOGO Pupa napiše sama — a najprej pokaže osnutek v potrditveni kartici.
     // Teče PRED izbiro AI načina, ker razčlenjevanje ne rabi AI: vse ostane v brskalniku.
     if (ponudiNalogo(t)) { setVnos(''); if (el) el.style.height = 'auto'; return; }
     // AI način (Pupa / Moj AI): JASEN namen ustvarjanja → odpre orodje; sicer = KLEPET (NE vsili ponudbe).
     if (aiNacin === 'pupa' || aiNacin === 'moj') {
+      const nav = citat; setCitat(null);
       setVnos(''); if (el) el.style.height = 'auto';
       if (cilj) { intentRef.current = t; setTip(cilj); }
-      else posljiPupi(t);
+      else posljiPupi(t, nav || undefined);
       return;
     }
     // Brez AI: ni pogovora — prosto besedilo odpre orodje po tipu; privzeto ponudba.
@@ -617,14 +650,57 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         {/* UNIVERZALNA PUPA: prosto besedilo = klepet (vezan na /api/pupa); jasen namen odpre orodje */}
         {klepet && (
           <div className="pd-nit" ref={pupaNitRef}>
-            {pupaSpor.map((m, i) => (
-              <div key={i} className={`pd-vr ${m.role === 'user' ? 'jaz' : 'pupa'}`}>
-                <div className="pd-vr-body"><div className="pd-mehur">{m.content}</div></div>
-              </div>
-            ))}
+            {pupaSpor.map((m, i) => {
+              /* Sporočilo z navedkom se je poslalo kot »> navedek\n\nvprašanje«;
+                 v niti ga pokažemo kot navedek nad besedilom, ne kot znak >. */
+              const jeNavedek = m.role === 'user' && m.content.startsWith('> ');
+              const nav = jeNavedek ? m.content.slice(2, m.content.indexOf('\n\n')) : '';
+              const telo = jeNavedek ? m.content.slice(m.content.indexOf('\n\n') + 2) : m.content;
+              return (
+                <div key={i} className={`pd-vr ${m.role === 'user' ? 'jaz' : 'pupa'}`}>
+                  <div className="pd-vr-body">
+                    <div className="pd-mehur">
+                      {nav && <span className="pd-navedek">{nav}</span>}
+                      {telo}
+                    </div>
+                    {m.role === 'assistant' && (
+                      <div className="pd-vr-meta">
+                        <button type="button" className="pd-odgovori" onClick={() => { setCitat(m.content.length > 160 ? m.content.slice(0, 160).trimEnd() + '…' : m.content); textRef.current?.focus(); }}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 17l-6-5 6-5" /><path d="M3 12h11a6 6 0 0 1 6 6v2" /></svg>
+                          {L('Odgovori', 'Reply')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
             {pupaCaka && (
               <div className="pd-vr pupa"><div className="pd-vr-body"><div className="pd-mehur pd-tipka"><span /><span /><span /></div></div></div>
             )}
+            {/* Vrsta: kar si napisala med tem, ko Pupa razmišlja. Do obdelave
+                se da urediti ali izbrisati. */}
+            {vrsta.map(v => (
+              <div key={v.id} className="pd-vr jaz">
+                <div className="pd-vr-body">
+                  <div className={'pd-mehur caka' + (urejamVrsto === v.id ? ' ureja' : '')}>
+                    {v.citat && <span className="pd-navedek">{v.citat}</span>}
+                    {v.besedilo}
+                  </div>
+                  <div className="pd-vr-meta">
+                    <span className="pd-caka-znak">{L('v čakanju', 'queued')}</span>
+                    <button type="button" className="pd-vr-ikona" title={L('Uredi', 'Edit')} aria-label={L('Uredi', 'Edit')}
+                      onClick={() => { setVnos(v.besedilo); setUrejamVrsto(v.id); textRef.current?.focus(); }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
+                    </button>
+                    <button type="button" className="pd-vr-ikona" title={L('Izbriši', 'Delete')} aria-label={L('Izbriši', 'Delete')}
+                      onClick={() => { setVrsta(prev => prev.filter(x => x.id !== v.id)); if (urejamVrsto === v.id) { setUrejamVrsto(null); setVnos(''); } }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
 
             {/* POTRDITEV PRED ZAPISOM: kartica pokaže, KAJ bo Pupa ustvarila.
                 Naslov in rok se dasta popraviti (razčlenjevanje se lahko zmoti),
@@ -691,6 +767,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               )}
             </div>
           </div>
+          {citat && (
+            <div className="pd-citat">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 17l-6-5 6-5" /><path d="M3 12h11a6 6 0 0 1 6 6v2" /></svg>
+              <span>{citat}</span>
+              <button type="button" className="pd-citat-x" onClick={() => setCitat(null)} aria-label={L('Prekliči odgovor', 'Cancel reply')}>×</button>
+            </div>
+          )}
           {priponka && (
             <div className="pd-priponka">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
@@ -716,12 +799,19 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               <button type="button" className={`pd-mik${poslusam ? ' posluam' : ''}`} onClick={glas} title={poslusam ? L('Poslušam … zaključi tukaj', 'Listening … click to stop') : L('Govori', 'Speak')} aria-label={L('Glas', 'Voice')} aria-pressed={poslusam}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" /></svg>
               </button>
-              {pupaCaka ? (
-                <button type="button" className="pd-poslji" onClick={prekini} aria-label={L('Ustavi', 'Stop')} title={L('Ustavi', 'Stop')}>
-                  <span aria-hidden style={{ width: '.62rem', height: '.62rem', background: 'currentColor', borderRadius: 2, display: 'inline-block', marginRight: '.4rem', verticalAlign: 'middle' }} />{L('Ustavi', 'Stop')}
+              {/* Med razmišljanjem se da še vedno pisati: gumb takrat postavi
+                  vprašanje v vrsto, ustavljanje pa dobi svoj gumb ob strani. */}
+              {pupaCaka && (
+                <button type="button" className="pd-ustavi" onClick={prekini} aria-label={L('Ustavi', 'Stop')} title={L('Ustavi', 'Stop')}>
+                  <span aria-hidden style={{ width: '.6rem', height: '.6rem', background: 'currentColor', borderRadius: 2, display: 'inline-block' }} />
                 </button>
-              ) : (
-                <button type="button" className="pd-poslji" onClick={posljiVnos}>{klepet ? L('Pošlji', 'Send') : L('Začni', 'Start')} <span aria-hidden>→</span></button>
+              )}
+              {pupaCaka && !vnos.trim() ? null : (
+                <button type="button" className="pd-poslji" onClick={posljiVnos}>
+                  {urejamVrsto !== null ? L('Shrani', 'Save')
+                    : pupaCaka || vrsta.length ? L('V vrsto', 'Queue')
+                      : klepet ? L('Pošlji', 'Send') : L('Začni', 'Start')} <span aria-hidden>→</span>
+                </button>
               )}
             </div>
           </div>
@@ -987,6 +1077,19 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr-ikona:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 9%, transparent); color: var(--ink, #1a1a1a); }
         .pd-vr-meta { display: flex; align-items: center; gap: .15rem; padding: 0 .2rem; opacity: 0; transition: opacity .15s ease; }
         .pd-vr:hover .pd-vr-meta, .pd-vr .pd-mehur.caka ~ .pd-vr-meta { opacity: 1; }
+        /* »v čakanju«: kar si napisala, medtem ko je Pupa razmišljala */
+        .pd-caka-znak { margin-right: .25rem; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
+        .pd-vr.jaz .pd-mehur.caka.ureja { opacity: .85; outline: 2px dashed color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); outline-offset: 2px; }
+        /* odgovor na konkreten mehurček */
+        .pd-odgovori { display: inline-flex; align-items: center; gap: .3rem; padding: .18rem .5rem; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 52%, transparent); font: 600 .74rem var(--font-sans), sans-serif; cursor: pointer; transition: background .15s ease, color .15s ease; }
+        .pd-odgovori:hover { background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 12%, transparent); color: var(--purple, oklch(58% .2 297)); }
+        .pd-navedek { display: block; margin-bottom: .4rem; padding-left: .6rem; border-left: 2px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); font-size: .82rem; line-height: 1.45; color: color-mix(in oklch, var(--ink, #1a1a1a) 58%, transparent); }
+        .pd-citat { display: flex; align-items: center; gap: .45rem; padding: .5rem .65rem; border-left: 2px solid var(--purple, oklch(66% .2 297)); border-radius: 0 8px 8px 0; background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 7%, transparent); font-size: .82rem; color: color-mix(in oklch, var(--ink, #1a1a1a) 70%, transparent); }
+        .pd-citat > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pd-citat svg { flex: none; color: var(--purple, oklch(58% .2 297)); }
+        .pd-ustavi { display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 16%, transparent); border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; }
+        .pd-ustavi:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 7%, transparent); color: var(--ink, #1a1a1a); }
+        .pd-citat-x { flex: none; border: 0; background: transparent; color: inherit; font-size: 1.05rem; line-height: 1; cursor: pointer; padding: 0 .1rem; }
         .pd-cak { display: inline-flex; align-items: center; gap: .3rem; color: color-mix(in oklch, var(--ink, #1a1a1a) 48%, transparent); }
         .pd-cakp { width: .3rem; height: .3rem; border-radius: 50%; background: var(--purple, oklch(60% .2 297)); animation: pdCak 1.1s ease-in-out infinite; }
         .pd-cakp:nth-child(2) { animation-delay: .18s; }

@@ -60,6 +60,7 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?
   const t = (sl: string, en: string) => isEn ? en : sl;
   const heroTitles = isEn ? HERO_TITLES_EN : HERO_NASLOVI;
   const prijava = localePath(locale, '/kalkulator/prijava');
+  const testiranje = `${prijava}?nov=1`;
   const kalkulator = localePath(locale, '/kalkulator/orodje') + '?od=flow';
 
   const [taRubrika, setTaRubrika] = useState('vse');
@@ -400,7 +401,7 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?
   ];
 
   const ORODJA = [
-    { Ikona: FileText, kat: 'ponudbe', h: 297, ime: t('Kalkulator ponudb', 'Proposal calculator'), opis: t('Poštena cena projekta: izvedba, avtorske pravice in licenca. Trije paketi in urejljivo besedilo.', 'A fair project price: production, usage rights and licensing. Three packages with editable copy.'), href: kalkulator, brezplacno: true },
+    { Ikona: FileText, kat: 'ponudbe', h: 297, ime: t('Kalkulator ponudb', 'Proposal calculator'), opis: t('Poštena cena projekta: izvedba, avtorske pravice in licenca. Trije paketi in urejljivo besedilo.', 'A fair project price: production, usage rights and licensing. Three packages with editable copy.'), href: kalkulator, brezplacno: true, stanje: 'available' as const },
     { Ikona: FolderOpen, kat: 'stranke', h: 285, ime: t('Projekti & arhiv', 'Projects & archive'), opis: t('Vsak projekt na enem mestu — ponudbe, pogodbe, računi, roki in vsa komunikacija, pregledno.', 'Keep proposals, contracts, invoices, deadlines and communication together for every project.'), href: localePath(locale, '/kalkulator/projekti') },
     { Ikona: Scroll, kat: 'dogovori', h: 245, ime: t('Pogodbe', 'Contracts'), opis: t('Pogodbe o sodelovanju in prenosu pravic, pripravljene za podpis.', 'Collaboration and rights-transfer agreements, ready to sign.'), href: localePath(locale, '/kalkulator/pogodbe') },
     { Ikona: ShieldCheck, kat: 'dogovori', h: 220, ime: t('Sef avtorstva', 'Authorship vault'), opis: t('Dokaži, kdaj in s čim si delo ustvarila — kriptografski odtis in časovni žig proti AI kraji.', 'Prove when and how you made your work — a cryptographic fingerprint and timestamp against AI theft.'), href: localePath(locale, '/kalkulator/sef') },
@@ -419,34 +420,34 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?
     { Ikona: ClipboardText, kat: 'finance', h: 135, ime: t('Delovna prisotnost', 'Attendance'), opis: t('Prihod, odmor in odhod po ZEPDSV — mesečna tabela in izvoz za kadrovsko.', 'Arrival, break and departure as Slovenian law requires — monthly table and HR export.'), href: localePath(locale, '/kalkulator/evidenca-casa') },
     { Ikona: Suitcase, kat: 'finance', h: 200, ime: t('Poslovni okvir', 'Business framework'), opis: t('Širša slika: rezerva, davki in spodnja meja poštene cene.', 'Understand reserves, taxes and the minimum sustainable price.'), href: localePath(locale, '/kalkulator/poslovni-nacrt') },
     { Ikona: CalendarBlank, kat: 'stranke', h: 200, ime: t('Koledar', 'Calendar'), opis: t('Sestanki, klici in roki projektov na enem koledarju.', 'Meetings, calls and project deadlines in one calendar.'), href: localePath(locale, '/kalkulator/koledar') },
-  ];
+  ].map(orodje => ({ stanje: 'testing' as const, ...orodje }));
   const vidnaOrodja = ORODJA.filter(o => taRubrika === 'vse' || o.kat === taRubrika);
 
   /* Interaktivni prikaz (Magnific slog): pill-i zgoraj, spodaj velik predogled ki
      se menja ob kliku. Prihodnji zmožnosti nosijo značko (Agent = Beta). Povezave so od 20. 8. 2026 na voljo. */
-  const ZAVIHKI: { id: string; Ikona: React.ElementType; label: string; znacka?: string; zvrst?: 'free' | 'beta' | 'soon'; h: string; p: string; tocke: string[]; cta: string; href: string }[] = isEn ? [
-    { id: 'kalkulator', Ikona: FileText, label: 'Calculator', znacka: 'Free', zvrst: 'free', h: 'A fair price in a few clicks', p: 'Break the price into production, usage rights and licensing, then get a clear number without guessing or signing up.', tocke: ['Three packages with editable copy', 'Usage rights and licensing included', 'Download a PDF or turn it into an invoice'], cta: 'Open calculator', href: kalkulator },
-    { id: 'dokumenti', Ikona: Receipt, label: 'Documents', h: 'From proposal to invoice, without duplicate work', p: 'Proposals, contracts, invoices and expenses share the same data. Turn an approved proposal into an invoice in one click.', tocke: ['Numbering, due dates and payment status', 'Collaboration and rights-transfer agreements', 'A consistent look across documents'], cta: 'Explore tools', href: '#orodja' },
-    { id: 'pregled', Ikona: ChartLineUp, label: 'Insights', h: 'Know what your work is worth', p: 'An anonymous market benchmark shows where your price sits, while the dashboard tracks revenue, payments and profit.', tocke: ['Market benchmark from anonymous prices', 'Revenue, payments and estimated profit', 'Goals and client profitability'], cta: 'Open dashboard', href: localePath(locale, '/kalkulator/pregled') },
-    { id: 'agent', Ikona: Robot, label: 'Pupa', znacka: 'New', zvrst: 'beta', h: 'An AI assistant who understands creative pricing', p: 'Pupa understands the market and usage rights, helps you price fairly, writes clear proposal copy and answers questions by text or voice.', tocke: ['Flags underpricing', 'Understands usage rights and licensing', 'Text and voice interaction'], cta: 'Meet Pupa', href: prijava },
+  const ZAVIHKI: { id: string; Ikona: React.ElementType; label: string; znacka: string; zvrst: 'free' | 'beta' | 'soon'; h: string; p: string; tocke: string[]; cta: string; href: string }[] = isEn ? [
+    { id: 'kalkulator', Ikona: FileText, label: 'Calculator', znacka: 'Available', zvrst: 'free', h: 'A fair price in a few clicks', p: 'Break the price into production, usage rights and licensing, then get a clear number without guessing or signing up.', tocke: ['Three packages with editable copy', 'Usage rights and licensing included', 'Download a PDF or turn it into an invoice'], cta: 'Open calculator', href: kalkulator },
+    { id: 'dokumenti', Ikona: Receipt, label: 'Documents', znacka: 'In testing', zvrst: 'beta', h: 'From proposal to invoice, without duplicate work', p: 'Proposals, contracts, invoices and expenses share the same data. Turn an approved proposal into an invoice in one click.', tocke: ['Numbering, due dates and payment status', 'Collaboration and rights-transfer agreements', 'A consistent look across documents'], cta: 'Explore tools', href: '#orodja' },
+    { id: 'pregled', Ikona: ChartLineUp, label: 'Insights', znacka: 'In testing', zvrst: 'beta', h: 'Know what your work is worth', p: 'An anonymous market benchmark shows where your price sits, while the dashboard tracks revenue, payments and profit.', tocke: ['Market benchmark from anonymous prices', 'Revenue, payments and estimated profit', 'Goals and client profitability'], cta: 'Open dashboard', href: localePath(locale, '/kalkulator/pregled') },
+    { id: 'agent', Ikona: Robot, label: 'Pupa', znacka: 'In testing', zvrst: 'beta', h: 'An AI assistant who understands creative pricing', p: 'Pupa understands the market and usage rights, helps you price fairly, writes clear proposal copy and answers questions by text or voice.', tocke: ['Flags underpricing', 'Understands usage rights and licensing', 'Text and voice interaction'], cta: 'Meet Pupa', href: prijava },
     { id: 'mcpapi', Ikona: Plugs, label: 'Connections', znacka: 'Available', zvrst: 'free', h: 'Say what you need — Flow makes it', p: 'Brief, pitch, quote. Say it in plain words and the result lands on the project — tidy and yours. Pupa is included in your plan; nothing to set up.', tocke: ['Pupa is included — nothing to set up', 'Results land on the project, not in someone else\'s chat', 'Bring your own agent if you like (ChatGPT, Claude, Gemini)'], cta: 'How it works', href: 'mailto:tina@pinart.si?subject=Flow%20%E2%80%94%20data%20export' },
   ] : [
-    { id: 'kalkulator', Ikona: FileText, label: 'Kalkulator', znacka: 'Brezplačno', zvrst: 'free',
+    { id: 'kalkulator', Ikona: FileText, label: 'Kalkulator', znacka: 'Na voljo', zvrst: 'free',
       h: 'Poštena cena v nekaj klikih',
       p: 'Kalkulator razbije ceno na izvedbo, avtorske pravice in licenco ter pokaže pošteno številko — brez ugibanja in brez prijave.',
       tocke: ['Trije paketi in urejljivo besedilo', 'Avtorske pravice in licenca vračunane', 'Prenos v PDF ali pretvorba v račun'],
       cta: 'Odpri kalkulator', href: kalkulator },
-    { id: 'dokumenti', Ikona: Receipt, label: 'Dokumenti',
+    { id: 'dokumenti', Ikona: Receipt, label: 'Dokumenti', znacka: 'V testiranju', zvrst: 'beta',
       h: 'Od ponudbe do računa, brez podvajanja',
       p: 'Ponudba, pogodba, račun in stroški tečejo iz istih podatkov. En klik in dogovorjena ponudba postane račun.',
       tocke: ['Oštevilčenje, rok in status plačila', 'Pogodbe o sodelovanju in prenosu pravic', 'Enoten videz vseh dokumentov'],
       cta: 'Poglej orodja', href: '#orodja' },
-    { id: 'pregled', Ikona: ChartLineUp, label: 'Pregled',
+    { id: 'pregled', Ikona: ChartLineUp, label: 'Pregled', znacka: 'V testiranju', zvrst: 'beta',
       h: 'Veš, koliko je vredno tvoje delo',
       p: 'Anonimen tržni pregled pokaže, kje je tvoja cena — bližje dnu ali vrhu. Nadzorna plošča spremlja promet, plačila in dobiček.',
       tocke: ['Tržni benchmark iz vpisanih cen', 'Promet, plačila in ocenjeni dobiček', 'Cilji in donosnost strank'],
       cta: 'Odpri pregled', href: localePath(locale, '/kalkulator/pregled') },
-    { id: 'agent', Ikona: Robot, label: 'Pupa', znacka: 'Novo', zvrst: 'beta',
+    { id: 'agent', Ikona: Robot, label: 'Pupa', znacka: 'V testiranju', zvrst: 'beta',
       h: 'AI asistentka, ki pozna trg in ceno',
       p: 'Pupa je tvoja AI asistentka: pozna trg in avtorske pravice, pove ti pošteno ceno, ubesedi ponudbo in odgovori na tvoja vprašanja — pisno ali glasovno.',
       tocke: ['Pove pošteno ceno in te opozori na podcenjevanje', 'Pozna avtorske pravice in licence', 'Klepet in glasovno upravljanje'],
@@ -647,6 +648,9 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?
         .fl .cta:hover::after { left: 170%; }
         .fl .cta.duh { background: transparent; color: var(--ink); border-color: rgba(17,17,17,.72); }
         .fl .cta.duh::after { background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.6) 50%, transparent 100%); }
+        .fl .cta-geslo { color: rgba(17,17,17,.72); font-size: .82rem; font-weight: 650; text-underline-offset: .22em; }
+        .fl .cta-geslo:hover { color: var(--ink); }
+        .fl .cta-podvrsta { flex: 0 0 100%; display: flex; align-items: center; flex-wrap: wrap; gap: .45rem .8rem; }
         .fl .cta-note { font-size: .8rem; color: rgba(17,17,17,.72); }
         .fl-hero-vid-mob { display: none; }
         /* SCENA (slika + odsev + teg-i) — GLOBALNO, da velja v PORTRETU IN LANDSCAPE (prej je bila
@@ -843,6 +847,10 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?
         .fl-sc-badge.beta { color: oklch(50% .17 297); background: oklch(93% .06 300); }
         .fl-sc-badge.soon { color: rgba(17,17,17,.62); background: rgba(17,17,17,.08); }
         .fl-sc-pill.on .fl-sc-badge { background: rgba(255,255,255,.18); color: rgba(255,255,255,.92); }
+        .fl-stanje { display: inline-flex; align-items: center; width: fit-content; border-radius: 999px; padding: .2rem .52rem; font-size: .58rem; font-weight: 750; letter-spacing: .065em; line-height: 1; text-transform: uppercase; }
+        .fl-stanje.available { color: #2F5D50; background: color-mix(in srgb, #2F5D50 11%, transparent); }
+        .fl-stanje.testing { color: #6E4FA6; background: color-mix(in srgb, #6E4FA6 11%, transparent); }
+        .fl-stanje.soon { color: rgba(17,17,17,.62); background: rgba(17,17,17,.07); }
         .fl-sc-track { position: relative; }
         /* Desktop: viden je LE aktiven panel (.on) — po starem. */
         .fl-sc-panel { position: relative; display: none; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: clamp(1.6rem, 4vw, 3.2rem); align-items: center; border-radius: 26px; padding: clamp(2rem, 4vw, 3.2rem); background: linear-gradient(135deg, oklch(96% .03 297), oklch(95% .035 320), oklch(95% .03 165)); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(40,25,60,.1); overflow: hidden; }
@@ -1397,9 +1405,12 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?
             {isEn ? <><b>One workspace instead of four:</b> proposals, contracts, invoices, projects, tasks and communication in one clear flow. <b>Pupa, your AI assistant,</b> understands the creative market and helps you value your work.</> : <><b>En program namesto štirih:</b> ponudbe, pogodbe, računi, projekti in naloge — z vso komunikacijo pregledno na enem mestu. Ob strani ti stoji <b>AI asistentka Pupa</b>, ki pozna trg in ti pove, koliko je vredno tvoje delo.</>}
           </p>
           <div className="cta-vrsta">
-            <a className="cta" href={prijava}>{t('Vstopi v Flow', 'Enter Flow')} <ArrowRight size={17} weight="bold" /></a>
-            <a className="cta duh" href={kalkulator}>{t('Preizkusi kalkulator', 'Try the calculator')}</a>
-            <span className="cta-note">{t('Kalkulator je brezplačen, brez prijave.', 'The calculator is free. No account required.')}</span>
+            <a className="cta" href={kalkulator}>{t('Preizkusi kalkulator', 'Try the calculator')} <ArrowRight size={17} weight="bold" /></a>
+            <a className="cta duh" href={testiranje}>{t('Prijavi se za testiranje', 'Join the beta')}</a>
+            <span className="cta-podvrsta">
+              <a className="cta-geslo" href={prijava}>{t('Imam geslo', 'I have a password')}</a>
+              <span className="cta-note">{t('Kalkulator je brezplačen, brez prijave.', 'The calculator is free. No account required.')}</span>
+            </span>
           </div>
           {/* Mobile: hero video kot cist blok POD gumbi (na desktopu skrit — tam je bg) */}
           <div className="fl-hero-vid-mob" aria-hidden>
@@ -1545,6 +1556,7 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?
               return (
                 <a className="fl-tkarta" href={o.href} key={o.ime}>
                   <span className="fl-tkarta-ikona" style={{ ['--h' as string]: o.h } as React.CSSProperties}><Ikona size={22} weight="regular" /></span>
+                  <span className={`fl-stanje ${o.stanje}`}>{o.stanje === 'available' ? t('Na voljo', 'Available') : t('V testiranju', 'In testing')}</span>
                   <h3>{o.ime} {o.brezplacno && <span className="fl-znacka">{t('Brezplačno', 'Free')}</span>}</h3>
                   <p>{o.opis}</p>
                 </a>
@@ -1719,7 +1731,9 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?
         <section className="fl-konec">
           <h2>{t('Pripravljena na bolj mirno poslovanje?', 'Ready for a calmer way to run your business?')}</h2>
           <div className="cta-vrsta">
-            <a className="cta" href={prijava}>{t('Vstopi v Flow', 'Enter Flow')} <ArrowRight size={17} weight="bold" /></a>
+            <a className="cta" href={kalkulator}>{t('Preizkusi kalkulator', 'Try the calculator')} <ArrowRight size={17} weight="bold" /></a>
+            <a className="cta duh" href={testiranje}>{t('Prijavi se za testiranje', 'Join the beta')}</a>
+            <a className="cta-geslo" href={prijava}>{t('Imam geslo', 'I have a password')}</a>
           </div>
           <div className="zakljucki">
             <span><CheckCircle size={20} weight="fill" /> {t('Brez kartice za začetek', 'No card required to start')}</span>

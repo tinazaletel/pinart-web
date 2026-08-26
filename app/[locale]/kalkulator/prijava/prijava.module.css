@@ -103,3 +103,16 @@
   font-size: .78rem; line-height: 1.45; font-weight: 400;
 }
 .gesloNamig b { font-weight: 700; }
+
+/* Pojasnilo o zaprti beti nad obrazcem za nov racun */
+.betaNota {
+  margin: -.7rem 0 1.4rem;
+  padding: .85rem 1rem;
+  border: 1px dashed rgba(124, 58, 237, .4);
+  border-radius: 12px;
+  background: rgba(124, 58, 237, .05);
+  font-size: .84rem;
+  line-height: 1.55;
+  color: rgba(17, 17, 17, .78);
+}
+.betaNota b { color: oklch(46% .19 297); }

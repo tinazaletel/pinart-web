@@ -234,6 +234,18 @@ export default function AuthForm({ base }: { base: string }) {
         <span>{t.pod}</span>
       </div>
 
+      {/* Kaj pomeni testiranje — pove se PRED registracijo. Brez tega clovek ne
+          ve, v kaj se spusca, in klik izostane (Tina + ChatGPT, 26. 8. 2026). */}
+      {mode === 'signup' && (
+        <p className={styles.betaNota}>
+          <b>{L('Flow je v zaprti beti.', 'Flow is in closed beta.')}</b>{' '}
+          {L(
+            'Dostop je med testiranjem brezplačen, izdelek pa še ni dokončan — kaj se lahko zatakne. V zameno te prosimo za kratko sporočilo, kaj ti je delalo težave. Nehaš lahko kadarkoli, podatke pa lahko kadarkoli izvoziš ali izbrišeš.',
+            'Access is free while we are testing, and the product is not finished yet — things can still break. In return we ask for a short note on what got in your way. You can stop at any time, and export or delete your data whenever you want.',
+          )}
+        </p>
+      )}
+
       {mode !== 'reset' && (
         <>
           <button className={styles.googleButton} type="button" onClick={signInWithGoogle} disabled={loading}>
