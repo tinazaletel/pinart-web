@@ -42,6 +42,10 @@ export type PravVprasanje = {
      Kjer je preslikava jasna, genericnega vprasanja ne postavljamo dvakrat
      (Codex + Tina, 26. 8. 2026). */
   preslikavaRabe?: Record<string, 'znamka' | 'projekt'>;
+  /* Kako se odgovor bere v PogodbI: cel stavek na izbrano moznost. Moznosti so
+     pisane uporabnici (»Ti«), pogodba pa govori o izvajalcu — zato lastna
+     besedila in ne mehansko sestavljanje. */
+  clen?: Record<string, { sl: string; en: string }>;
   /* Kako se odgovor bere v ponudbi. V dokument gre STAVEK, ne vprašanje z
      odgovorom: »Logotip predstavlja: celotno podjetje ali znamko.« */
   stavek?: { sl: string; en: string };
@@ -120,6 +124,11 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     },
     {
       id: 'kdo-pripravlja', sl: 'Kdo bo pripravljal nadaljnja gradiva?', en: 'Who will produce the further materials?',
+      clen: {
+        jaz: { sl: 'Nadaljnja gradiva po celostni podobi pripravlja izvajalec; naročnik jih naroči po dogovorjeni ceni.', en: 'Further materials based on the brand identity are produced by the contractor; the client orders them at the agreed price.' },
+        narocnik: { sl: 'Nadaljnja gradiva po celostni podobi pripravlja naročnikova ekipa v skladu s predanim priročnikom.', en: 'Further materials based on the brand identity are produced by the client\'s own team in line with the delivered guidelines.' },
+        drugi: { sl: 'Nadaljnja gradiva po celostni podobi smejo pripravljati tudi drugi izvajalci naročnika v skladu s predanim priročnikom.', en: 'Further materials based on the brand identity may also be produced by other contractors engaged by the client, in line with the delivered guidelines.' },
+      },
       stavek: { sl: 'Nadaljnja gradiva pripravlja', en: 'Further materials are produced by' },
       kam: 'pogodba',
       opcije: [
@@ -442,6 +451,11 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     },
     {
       id: 'razvija', sl: 'Kdo bo oblikovanje razvijal naprej?', en: 'Who will develop the design further?',
+      clen: {
+        jaz: { sl: 'Oblikovanje izdelka razvija naprej izvajalec; nadaljnje delo se naroči posebej.', en: 'The product design is developed further by the contractor; further work is commissioned separately.' },
+        narocnik: { sl: 'Oblikovanje izdelka sme naročnikova ekipa razvijati naprej v okviru dogovorjene uporabe.', en: 'The client\'s team may develop the product design further within the agreed scope of use.' },
+        drugi: { sl: 'Oblikovanje izdelka smejo razvijati naprej tudi drugi izvajalci naročnika v okviru dogovorjene uporabe.', en: 'Other contractors engaged by the client may also develop the product design further, within the agreed scope of use.' },
+      },
       kam: 'pogodba', stavek: { sl: 'Oblikovanje razvija naprej', en: 'The design is developed further by' },
       opcije: [
         { id: 'jaz', sl: 'Ti', en: 'You' },
@@ -465,6 +479,11 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     },
     {
       id: 'nadaljnji-razvoj', sl: 'Kaj je dogovorjeno za nadaljnji razvoj?', en: 'What is agreed for further development?',
+      clen: {
+        jaz: { sl: 'Vzdrževanje in nadaljnji razvoj aplikacije ostaneta pri izvajalcu; obseg in cena se dogovorita posebej.', en: 'Maintenance and further development of the application stay with the contractor; scope and price are agreed separately.' },
+        narocnik: { sl: 'Nadaljnji razvoj aplikacije prevzame naročnik; izvajalec mu ob predaji izroči izvorno kodo in dokumentacijo v dogovorjenem obsegu.', en: 'The client takes over further development of the application; on handover the contractor delivers the source code and documentation in the agreed scope.' },
+        drugi: { sl: 'Nadaljnji razvoj aplikacije sme prevzeti tudi drug izvajalec naročnika; izvajalec mu ob predaji izroči izvorno kodo in dokumentacijo v dogovorjenem obsegu.', en: 'Another contractor engaged by the client may also take over further development; on handover the contractor delivers the source code and documentation in the agreed scope.' },
+      },
       osnovno: true, kam: 'pogodba', stavek: { sl: 'Nadaljnji razvoj', en: 'Further development' },
       opcije: [
         { id: 'jaz', sl: 'Vzdrževanje in razvoj ostaneta pri tebi', en: 'Maintenance and development stay with you' },
@@ -879,6 +898,29 @@ export function povzetekUporabe(sid: string, odgovori: PravOdgovori | undefined,
 
 /* Vprašanja brez odgovora — pred pošiljanjem ponudbe jih pokažemo, da nihče
    ne bere praznega polja kot dovoljenja. */
+/**
+ * Stavki za pogodbo iz ze danih odgovorov. Vrne prazno, kadar odgovora ni —
+ * pogodba ne sme trditi necesa, o cemer se nista dogovorila.
+ */
+export function clenIzOdgovorov(sid: string, odgovori: PravOdgovori | undefined, jeEn = false): string[] {
+  if (!odgovori) return [];
+  const ven: string[] = [];
+  pogodbenaVprasanja(sid).forEach(v => {
+    const izbire = (odgovori[v.id] || '').split(' + ').filter(Boolean);
+    izbire.forEach(id => {
+      if (id === 'nedogovorjeno') return;
+      if (id === 'drugo') {
+        const lastno = (odgovori[`${v.id}:drugo`] || '').trim();
+        if (lastno) ven.push(lastno.endsWith('.') ? lastno : lastno + '.');
+        return;
+      }
+      const b = v.clen?.[id];
+      if (b) ven.push(jeEn ? b.en : b.sl);
+    });
+  });
+  return ven;
+}
+
 export function nedogovorjena(sid: string, odgovori: PravOdgovori | undefined): PravVprasanje[] {
   return vprasanjaZa(sid).filter(v => {
     const a = (odgovori?.[v.id] || '').trim();

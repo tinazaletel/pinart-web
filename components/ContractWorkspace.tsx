@@ -17,6 +17,7 @@ import { pdfZahteva } from '@/lib/pdfZahteva';
 import { deleteBusinessDocument, getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, aktivniLogo, migrirajStariFont } from '@/lib/dokVidez';
+import { pogodbenaVprasanja, clenIzOdgovorov, type PravVprasanje } from '@/lib/praviceVprasanja';
 import PosljiBlok from '@/components/PosljiBlok';
 import { posljiMail } from '@/lib/posta';
 
@@ -129,6 +130,13 @@ export default function ContractWorkspace({ base }: { base: string }) {
   /* izklopljeni opcijski cleni (po id) za trenutno vrsto; ob menjavi vrste se ponastavi na privzeto */
   const [izklKlavzule, setIzklKlavzule] = useState<Set<string>>(() => privzetoIzklop('sodelovanje'));
   const [offerId, setOfferId] = useState('');
+  /* Vprasanja, ki po naravi ne sodijo v ponudbo, ampak v pogodbo (kdo razvija
+     naprej, kdo pripravlja nadaljnja gradiva). V kalkulatorju se namenoma ne
+     prikazujejo; tu se pokazejo SAMO tista, ki pripadajo storitvam iz izbrane
+     ponudbe (Tina, 26. 8. 2026). Ce je odgovor ze podan v kalkulatorju, se
+     prevzame — istega ne sprasujemo dvakrat. */
+  const [pogVpr, setPogVpr] = useState<Array<{ sid: string; ime: string; v: PravVprasanje }>>([]);
+  const [pogOdg, setPogOdg] = useState<Record<string, string>>({});
   /* pot "Od stranke" (naloz. dokument) je locena od ustvarjanja — vklopi se s povezavo, ne s pilulo */
   const [odStranke, setOdStranke] = useState(false);
   const [datum, setDatum] = useState(() => new Date().toISOString().slice(0, 10));
@@ -247,6 +255,31 @@ export default function ContractWorkspace({ base }: { base: string }) {
     setNarEmail(stranka?.email || '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offerId, vir, clients]);
+
+  /* iz arhiva ponudbe: katere storitve so v njej in kaj je o njih ze odgovorjeno */
+  useEffect(() => {
+    if (vir !== 'ponudba' || !offerId) { setPogVpr([]); setPogOdg({}); return; }
+    type ArhVrstica = { sid?: string; ime?: string };
+    type ArhZapis = { vrstice?: ArhVrstica[]; pravicePoStoritvi?: Record<string, { odgovori?: Record<string, string> }> };
+    let zapis: ArhZapis | undefined;
+    try { zapis = (JSON.parse(localStorage.getItem('pinart-kalkulator-arhiv') || '{}') as Record<string, ArhZapis>)[offerId]; } catch { zapis = undefined; }
+    const seznam: Array<{ sid: string; ime: string; v: PravVprasanje }> = [];
+    const odg: Record<string, string> = {};
+    const videni = new Set<string>();
+    (zapis?.vrstice || []).forEach(row => {
+      const sid = row.sid;
+      if (!sid || videni.has(sid)) return;
+      videni.add(sid);
+      pogodbenaVprasanja(sid).forEach(v => {
+        seznam.push({ sid, ime: row.ime || sid, v });
+        const ze = zapis?.pravicePoStoritvi?.[sid]?.odgovori?.[v.id];
+        if (ze && ze !== 'nedogovorjeno') odg[`${sid}:${v.id}`] = ze;
+      });
+    });
+    setPogVpr(seznam);
+    setPogOdg(odg);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offerId, vir]);
 
   const narocnikIme = () => (vir === 'ponudba' ? selectedOffer?.client || '' : rocniNarocnik).trim();
   /* Best-effort e-maili kontaktov stranke (glavni + kontaktne osebe) za
@@ -495,7 +528,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
 
   /* sestavi telo dokumenta: ovoj/glava (kick/h1/meta/parties) + oštevilčeni cleni (brez izklopljenih) + podpis.
      Za 'sodelovanje' in 'nda' je izpis vsebinsko enak prejsnjima generatorjema. */
-  const sestaviTelo = (v: VrstaPog, izkl: Set<string> = izklKlavzule) => {
+  const sestaviTelo = (v: VrstaPog, izkl: Set<string> = izklKlavzule, odg: Record<string, string> = pogOdg) => {
     const slMeta = VRSTE_POG.find(x => x.id === v)!;
     const meta = jeEn ? { ...slMeta, ...VRSTE_POG_EN[v] } : slMeta;
     const narPlaceholder = jeEn ? '[Client]' : '[Naročnik]';
@@ -508,7 +541,20 @@ export default function ContractWorkspace({ base }: { base: string }) {
     const zaimek = v === 'nda' ? 'ga' : 'jo'; /* sporazum (m) → ga, pogodba (ž) → jo */
     const partiesSklep = v === 'nda' ? '(v nadaljevanju: pogodbeni stranki) kot sledi:' : 'kot sledi:';
     const cleni = cleniZaVrsto(v).filter(c => !(c.opcijski && izkl.has(c.id)));
-    const cleniHtml = cleni.map((c, i) => `<div class="pog-clen"><h2>${i + 1}. ${jeEn ? 'Clause' : 'člen'} — ${c.naslov}</h2>${c.telo}</div>`).join('');
+    /* Odgovori o nadaljnjem delu postanejo svoj clen — stoji pred koncnimi
+       dolocbami. Pri NDA in DPA ga ni: tam ni izvedbe, o kateri bi govoril. */
+    const nadStavki = (v === 'nda' || v === 'dpa') ? [] : Array.from(new Set(pogVpr.map(x => x.sid))).flatMap(sid => {
+      const rec: Record<string, string> = {};
+      pogVpr.filter(x => x.sid === sid).forEach(({ v: vpr }) => { const izbrano = odg[`${sid}:${vpr.id}`]; if (izbrano) rec[vpr.id] = izbrano; });
+      return Object.keys(rec).length ? clenIzOdgovorov(sid, rec, jeEn) : [];
+    });
+    const cleniVsi = [...cleni];
+    if (nadStavki.length) {
+      const clen = { id: 'nadaljnje-delo', naslov: jeEn ? 'Further work' : 'Nadaljnje delo', telo: nadStavki.map(t => `<p>${esc(t)}</p>`).join('') };
+      const kje = cleniVsi.findIndex(c => c.id.endsWith('-koncne'));
+      if (kje >= 0) cleniVsi.splice(kje, 0, clen); else cleniVsi.push(clen);
+    }
+    const cleniHtml = cleniVsi.map((c, i) => `<div class="pog-clen"><h2>${i + 1}. ${jeEn ? 'Clause' : 'člen'} — ${c.naslov}</h2>${c.telo}</div>`).join('');
     const datumBeseda = jeEn ? 'Date' : 'Datum';
     const narLabel = jeEn ? 'Client' : 'Naročnik';
     const izvLabel = jeEn ? 'Contractor' : 'Izvajalec';
@@ -606,6 +652,17 @@ export default function ContractWorkspace({ base }: { base: string }) {
     setIzklKlavzule(izkl);
     setRocnoTelo(false);
     const html = sestaviTelo(vrstaPog, izkl);
+    setTeloHtml(html);
+    if (editorRef.current) editorRef.current.innerHTML = html;
+  };
+
+  /* odgovor o nadaljnjem delu: kot preklop clena tudi tu ponovno sestavimo telo */
+  const nastaviPogOdg = (kljuc: string, vrednost: string) => {
+    const novi = { ...pogOdg };
+    if (vrednost) novi[kljuc] = vrednost; else delete novi[kljuc];
+    setPogOdg(novi);
+    setRocnoTelo(false);
+    const html = sestaviTelo(vrstaPog, izklKlavzule, novi);
     setTeloHtml(html);
     if (editorRef.current) editorRef.current.innerHTML = html;
   };
@@ -1044,6 +1101,35 @@ export default function ContractWorkspace({ base }: { base: string }) {
             </div>
           );
         })()}
+        {/* Vprasanja, ki sodijo v pogodbo — samo za storitve iz te ponudbe.
+            Odgovor postane clen; brez odgovora clena ni. */}
+        {!odStranke && pogVpr.length > 0 && (
+          <div className="pg-klavzule pg-nad">
+            <span className="pg-klavzule-label">{L('Nadaljnje delo', 'Further work')}</span>
+            <p className="pg-nad-uvod">{L('Odgovor se zapiše kot člen pogodbe. Če odgovora ni, člena ni.', 'The answer becomes a clause in the contract. No answer, no clause.')}</p>
+            {pogVpr.map(({ sid, ime, v }) => {
+              const kljuc = `${sid}:${v.id}`;
+              const izbrano = pogOdg[kljuc] || '';
+              return (
+                <div key={sid + v.id} className="pg-nad-vpr">
+                  <span className="pg-nad-vpr-naslov"><b>{ime}</b> · {jeEn ? v.en : v.sl}</span>
+                  <div className="pg-klavzule-seznam" role="group" aria-label={jeEn ? v.en : v.sl}>
+                    {v.opcije.map(o => {
+                      const on = izbrano === o.id;
+                      return (
+                        <button key={o.id} type="button" aria-pressed={on} className={'pg-klavzula' + (on ? ' on' : '')}
+                          onClick={() => nastaviPogOdg(kljuc, on ? '' : o.id)}>
+                          <span className="pg-klavzula-kv" aria-hidden>{on ? '✓' : '+'}</span>
+                          <span className="pg-klavzula-txt"><strong>{jeEn ? o.en : o.sl}</strong></span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
         {/* TRI POTI ENAKOVREDNO (ChatGPT/Codex tocka 4): tretja je bila skrita
             kot povezava na dnu in je nihce ni nasel. */}
         <div className="pg-poti" role="group" aria-label={L('Iz česa nastane pogodba', 'What the contract is built from')}>
@@ -1573,6 +1659,10 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-pot strong{font-size:.92rem}
       .pg-pot small{font-size:.8rem;font-weight:400;color:rgba(17,17,17,.72);line-height:1.4}
       .pg-klavzule-seznam{display:grid;gap:.45rem}
+      .pg-nad-uvod{margin:0 0 .7rem;font-size:.88rem;line-height:1.5;color:rgba(17,17,17,.62)}
+      .pg-nad-vpr{margin:0 0 .9rem}
+      .pg-nad-vpr:last-child{margin-bottom:0}
+      .pg-nad-vpr-naslov{display:block;margin:0 0 .4rem;font-size:.92rem;line-height:1.45;color:rgba(17,17,17,.8)}
       .pg-klavzula{display:flex;gap:.7rem;align-items:flex-start;width:100%;text-align:left;
         padding:.7rem .85rem;border:1px solid rgba(17,17,17,.14);border-radius:12px;
         background:#fff;cursor:pointer;font:inherit;transition:border-color .15s ease,background .15s ease}
