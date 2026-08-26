@@ -38,6 +38,9 @@ export type PravVprasanje = {
      Kjer je preslikava jasna, genericnega vprasanja ne postavljamo dvakrat
      (Codex + Tina, 26. 8. 2026). */
   preslikavaRabe?: Record<string, 'znamka' | 'projekt'>;
+  /* Kako se odgovor bere v ponudbi. V dokument gre STAVEK, ne vprašanje z
+     odgovorom: »Logotip predstavlja: celotno podjetje ali znamko.« */
+  stavek?: { sl: string; en: string };
 };
 
 /* Povsod na voljo: manjkajoč odgovor NI privolitev v neomejeno uporabo. */
@@ -48,12 +51,14 @@ export const PRAV_STALNE: PravOpcija[] = [
 
 const kje = (opcije: PravOpcija[], sl = 'Kje bo naročnik uporabljal delo?', en = 'Where will the client use the work?'): PravVprasanje => ({
   id: 'kje', sl, en, vec: true, osnovno: true, kam: 'ponudba', opcije,
+  stavek: { sl: 'Uporaba', en: 'Use' },
 });
 
 export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
   logo: [
     {
       id: 'kaj-predstavlja', sl: 'Kaj bo logotip predstavljal?', en: 'What will the logo represent?',
+      stavek: { sl: 'Logotip predstavlja', en: 'The logo represents' },
       osnovno: true, kam: 'ponudba',
       preslikavaRabe: { podjetje: 'znamka', podznamka: 'znamka', izdelek: 'projekt', dogodek: 'projekt' },
       opcije: [
@@ -72,6 +77,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     ], 'Kje bo naročnik uporabljal logotip?', 'Where will the client use the logo?'),
     {
       id: 'kdo', sl: 'Kdo ga bo uporabljal?', en: 'Who will use it?',
+      stavek: { sl: 'Logotip uporabljajo', en: 'The logo is used by' },
       osnovno: true, kam: 'ponudba',
       opcije: [
         { id: 'narocnik', sl: 'Samo naročnik', en: 'The client only' },
@@ -88,6 +94,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
   cgp: [
     {
       id: 'za-kaj', sl: 'Za kaj velja celostna podoba?', en: 'What does the identity cover?',
+      stavek: { sl: 'Celostna podoba velja za', en: 'The identity covers' },
       osnovno: true, kam: 'ponudba',
       preslikavaRabe: { podjetje: 'znamka', podznamka: 'znamka', linija: 'projekt', dogodek: 'projekt' },
       opcije: [
@@ -99,6 +106,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     },
     {
       id: 'nadaljnja-uporaba', sl: 'Kako bo naročnik podobo uporabljal naprej?', en: 'How will the client use the identity further?',
+      stavek: { sl: 'Naročnik podobo uporablja tako', en: 'The client uses the identity as follows' },
       vec: true, osnovno: true, kam: 'ponudba',
       opcije: [
         { id: 'pripravljena', sl: 'Uporabljal bo pripravljena gradiva', en: 'Will use the prepared materials' },
@@ -108,6 +116,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     },
     {
       id: 'kdo-pripravlja', sl: 'Kdo bo pripravljal nadaljnja gradiva?', en: 'Who will produce the further materials?',
+      stavek: { sl: 'Nadaljnja gradiva pripravlja', en: 'Further materials are produced by' },
       kam: 'pogodba',
       opcije: [
         { id: 'jaz', sl: 'Ti', en: 'You' },
@@ -120,6 +129,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
   web: [
     {
       id: 'ponovna-uporaba', sl: 'Kje bo naročnik ponovno uporabljal rešitev?', en: 'Where will the client reuse the solution?',
+      stavek: { sl: 'Rešitev se uporablja', en: 'The solution is used' },
       vec: true, osnovno: true, kam: 'ponudba',
       opcije: [
         { id: 'dogovorjena', sl: 'Samo na dogovorjeni spletni strani', en: 'Only on the agreed website' },
@@ -134,6 +144,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     },
     {
       id: 'licenca-predloge', sl: 'Kdo zagotovi licenco predloge, pisav in fotografij?', en: 'Who provides the licence for the template, fonts and photos?',
+      stavek: { sl: 'Licenco predloge, pisav in fotografij zagotovi', en: 'The licence for the template, fonts and photos is provided by' },
       osnovno: true, kam: 'ponudba',
       opcije: [
         { id: 'narocnik', sl: 'Naročnik', en: 'The client' },
@@ -158,6 +169,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     ], 'Kje bo ilustracija uporabljena?', 'Where will the illustration be used?'),
     {
       id: 'razvoj', sl: 'Ali jo bo naročnik razvijal naprej?', en: 'Will the client develop it further?',
+      stavek: { sl: 'Naročnik ilustracijo', en: 'The client uses the illustration as follows' },
       osnovno: true, kam: 'ponudba',
       opcije: [
         { id: 'koncna', sl: 'Uporabljal bo končno ilustracijo', en: 'Will use the final illustration' },
@@ -179,6 +191,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     ], 'Za kaj bodo fotografije uporabljene?', 'What will the photos be used for?'),
     {
       id: 'kdo', sl: 'Kdo jih bo uporabljal?', en: 'Who will use them?',
+      stavek: { sl: 'Fotografije uporabljajo', en: 'The photos are used by' },
       vec: true, osnovno: true, kam: 'ponudba',
       opcije: [
         { id: 'narocnik', sl: 'Samo naročnik', en: 'The client only' },
@@ -188,6 +201,7 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
     },
     {
       id: 'obdelave', sl: 'Katere obdelave so dogovorjene?', en: 'Which edits are agreed?',
+      stavek: { sl: 'Dovoljene obdelave', en: 'Permitted edits' },
       vec: true, kam: 'ponudba',
       opcije: [
         { id: 'izrez', sl: 'Izrez in sprememba velikosti', en: 'Cropping and resizing' },
@@ -248,9 +262,12 @@ export function povzetekUporabe(sid: string, odgovori: PravOdgovori | undefined,
     const izbire = (odgovori[v.id] || '').split(' + ').filter(Boolean);
     if (!izbire.length) return;
     const imena = izbire.map(id => imeOpcije(v, id, jeEn).toLowerCase());
-    deli.push(`${jeEn ? v.en : v.sl} ${imena.join(', ')}`);
+    const uvod = v.stavek ? (jeEn ? v.stavek.en : v.stavek.sl) : (jeEn ? v.en : v.sl);
+    deli.push(`${uvod}: ${imena.join(', ')}`);
   });
-  return deli.join(' · ');
+  if (!deli.length) return '';
+  const stavek = deli.join('; ');
+  return `${stavek.charAt(0).toUpperCase()}${stavek.slice(1)}.`;
 }
 
 /* Vprašanja brez odgovora — pred pošiljanjem ponudbe jih pokažemo, da nihče

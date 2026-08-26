@@ -72,9 +72,13 @@ describe('pravice: vprasanja po storitvah', () => {
 describe('pravice: povzetek uporabe za ponudbo', () => {
   it('sestavi stavek samo iz odgovorov, ki gredo v ponudbo', () => {
     const povz = povzetekUporabe('logo', { 'kje': 'splet + tisk', 'kdo': 'narocnik' });
-    expect(povz).toContain('Kje bo naročnik uporabljal logotip?');
+    /* v ponudbo gre stavek, ne vprasanje z odgovorom */
+    expect(povz).not.toContain('?');
+    expect(povz).toContain('Uporaba:');
+    expect(povz).toContain('Logotip uporabljajo:');
     expect(povz.toLowerCase()).toContain('splet in družbena omrežja');
     expect(povz.toLowerCase()).toContain('samo naročnik');
+    expect(povz.endsWith('.')).toBe(true);
   });
 
   it('brez odgovorov ne izpise nicesar', () => {
@@ -83,7 +87,7 @@ describe('pravice: povzetek uporabe za ponudbo', () => {
 
   it('anglesko besedilo uporabi angleske nazive', () => {
     const povz = povzetekUporabe('logo', { 'kje': 'splet' }, true);
-    expect(povz).toContain('Where will the client use the logo?');
+    expect(povz).toContain('Use:');
     expect(povz.toLowerCase()).toContain('web and social media');
   });
 });
