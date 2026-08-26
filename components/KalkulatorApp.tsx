@@ -7187,6 +7187,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-podr:hover { border-color: var(--ink); color: var(--ink); background: rgba(17,17,17,.05); }
         .cw .prav-recept { border: 1px solid rgba(255,255,255,.6); border-radius: 8px; outline: 0; background-color: rgba(255,255,255,.62); backdrop-filter: blur(12px) saturate(1.25); -webkit-backdrop-filter: blur(12px) saturate(1.25); box-shadow: 0 2px 8px rgba(40,25,40,.04); font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .38rem 1.5rem .38rem .7rem; appearance: none; -webkit-appearance: none; cursor: pointer; transition: border-color .15s; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .55rem center; }
         .cw .prav-recept:focus-visible { border-color: var(--accent); }
+        /* Kartica pravic — ISTA predloga kot »Dodaj podatke podjetja« (DESIGN 13e):
+           crtkan rob, vijolicna glava z znakom, pripis pod njo. Vkljucena postavka
+           ima poln rob in kljukico namesto plusa (Tina, 26. 8. 2026). */
+        .cw .prav-vklop { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+        .cw .prav-vklop:hover { border-color: rgba(17,17,17,.45); }
+        .cw .prav-vklop-glava { width: 100%; display: flex; align-items: center; gap: .45rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
+        .cw .prav-vklop-znak { font-size: 1rem; line-height: 1; }
+        .cw .prav-vklop-naslov { flex: 1; min-width: 0; }
+        .cw .prav-vklop-puscica { flex: none; display: grid; place-items: center; }
+        .cw .prav-vklop-pripis { font-size: .8rem; line-height: 1.45; color: rgba(17,17,17,.7); }
+        .cw .prav-vklop-on { border-style: solid; border-color: rgba(178,84,118,.4); }
+        .cw .prav-vklop-on .prav-vklop-pripis { padding-left: 1.95rem; }
+        .cw .prav-vklop-cena { margin-left: auto; flex: none; font: 700 .95rem var(--font-sans), sans-serif; font-variant-numeric: tabular-nums; color: var(--ink); background: transparent; border: 0; border-bottom: 1px dashed rgba(17,17,17,.25); padding: .1rem .2rem; cursor: pointer; }
+        .cw .prav-vklop-cena.rocno { color: var(--accent, #B25476); }
+        .cw .prav-vklop-on .prav-cena-uredi { margin-left: auto; }
+        .cw .prav-ni { margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.18); border-radius: .75rem; font-size: .84rem; line-height: 1.5; color: rgba(17,17,17,.7); }
         /* isti videz kot crtkana vrstica "Dodaj podatke podjetja" (DESIGN 13e) */
         .cw .prav-ni { margin: .5rem 0; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); font-size: .84rem; line-height: 1.5; color: rgba(17,17,17,.7); }
         .cw .prav-kljuk { box-sizing: border-box; width: 1.5rem; height: 1.5rem; min-height: 0; padding: 0; flex: none; justify-self: end; border-radius: 50%; border: 1.5px solid rgba(17,17,17,.3); background: transparent; color: #fff; font: 900 .82rem/1 var(--font-sans), sans-serif; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .18s, border-color .18s; }
