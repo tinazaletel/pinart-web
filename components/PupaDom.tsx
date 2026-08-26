@@ -31,6 +31,7 @@ import TaskManagerWorkspace from '@/components/TaskManagerWorkspace';
 import ContractWorkspace from '@/components/ContractWorkspace';
 import RetainerWorkspace from '@/components/RetainerWorkspace';
 import { povzetekNalog, odgovorONalogah, jeVprasanjeONalogah, kontekstNalog } from '@/lib/pupaNaloge';
+import { usePredogled } from '@/lib/predogled';
 
 /* a/b/c izbire za izkušnje — iste kot kalkulator (KalkulatorApp IZKUSNJE); PODROCJA iz lib */
 const IZKUSNJE_IZBIRE = [
@@ -160,6 +161,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
      Orodja odpreš prek gumbov (ali kasneje prek Pupine potrditve). Vezano na obstoječi /api/pupa. */
   const [pupaSpor, setPupaSpor] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
   const [pupaCaka, setPupaCaka] = useState(false);
+  const [predogled] = usePredogled();
   /* Medtem ko Pupa razmišlja, se vprašanja NE zavržejo — postavijo se v vrsto
      in jih do obdelave lahko popraviš ali izbrišeš (Tina, 26. 8. 2026). */
   const [vrsta, setVrsta] = useState<{ id: number; besedilo: string; citat?: string }[]>([]);
@@ -202,7 +204,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     /* Stanje nalog Pupa PREBERE, ne ugane. Vprašanje o nalogah zato sploh ne
        gre v model — številka, ki si jo model izmisli, je slabša od molka. */
     const danesIso = new Date().toISOString().slice(0, 10);
-    const stanjeNalog = povzetekNalog(preberiNaloge(), danesIso);
+    /* V praznem predogledu tabla ne kaze nicesar — Pupa mora govoriti isto,
+       sicer bi trdila »90 odprtih« ob prazni tabli. */
+    const stanjeNalog = povzetekNalog(predogled === 'empty' ? [] : preberiNaloge(), danesIso);
     if (jeVprasanjeONalogah(q)) {
       const odg = odgovorONalogah(stanjeNalog, jeEn);
       setPupaSpor(s => [...s, { role: 'user', content: zVnosom }, { role: 'assistant', content: odg }]);
@@ -500,12 +504,13 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const hitre: { ime: string; tip?: typeof tip; href?: string; h: number; ikona: React.ReactNode }[] = [
     { ime: L('Pripravi ponudbo', 'Create a quote'), tip: 'ponudba', h: 297, ikona: <FileText size={16} weight="bold" /> },
     { ime: L('Izdaj račun', 'Issue an invoice'), tip: 'racun', h: 200, ikona: <Receipt size={16} weight="bold" /> },
-    { ime: L('Dodaj strošek', 'Add an expense'), tip: 'strosek', h: 60, ikona: <Coins size={16} weight="bold" /> },
     { ime: L('Ustvari projekt', 'Start a project'), tip: 'projekt', h: 150, ikona: <FolderPlus size={16} weight="bold" /> },
     { ime: L('Ustvari nalogo', 'Create task'), tip: 'naloga', h: 250, ikona: <ListChecks size={16} weight="bold" /> },
-    /* Brief je prva akcija, kjer pogovor konca z ZAPISOM na projektu — ne z
-       nasvetom, kateri gumb klikniti. Pitch pride po istem vzorcu kasneje. */
+    /* Strosek in brief sta se pod »Vec«: vstop naj ponudi stiri dejanja v eni
+       vrsti, ne dveh (Tina, 26. 8. 2026). Brief je prva akcija, kjer se pogovor
+       konca z ZAPISOM na projektu — ne z nasvetom, kateri gumb klikniti. */
     { ime: L('Napiši brief', 'Write a brief'), tip: 'brief', h: 120, ikona: <FileText size={16} weight="bold" /> },
+    { ime: L('Dodaj strošek', 'Add an expense'), tip: 'strosek', h: 60, ikona: <Coins size={16} weight="bold" /> },
     { ime: L('Napiši pitch', 'Write a pitch'), tip: 'pitch', h: 180, ikona: <FileText size={16} weight="bold" /> },
     { ime: L('Napiši canvas', 'Write the canvas'), tip: 'canvas', h: 210, ikona: <FileText size={16} weight="bold" /> },
     { ime: L('Več nalog hkrati', 'Several tasks at once'), tip: 'tabla', h: 140, ikona: <ListChecks size={16} weight="bold" /> },
@@ -846,10 +851,10 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             </div>
 
             <div className="pd-hitre">
-              {(vseAkcije ? hitre : hitre.slice(0, 6)).map(h => (
+              {(vseAkcije ? hitre : hitre.slice(0, 4)).map(h => (
                 <button type="button" key={h.ime} className="pd-cip" style={{ ['--h' as string]: String(h.h) }} onClick={() => { if (h.href) { if (typeof window !== 'undefined') window.location.href = h.href; } else if (h.tip) setTip(h.tip); }}><span className="pd-cip-ik" aria-hidden>{h.ikona}</span>{h.ime}</button>
               ))}
-              {hitre.length > 6 && (
+              {hitre.length > 4 && (
                 <button type="button" className="pd-vec" aria-expanded={vseAkcije}
                   onClick={() => setVseAkcije(v => !v)}>
                   {vseAkcije ? L('Manj', 'Less') : L('Več', 'More')}
