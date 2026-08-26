@@ -7177,7 +7177,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             margin-right: 0;
           }
         }
-        .cw .prav-vrsta { cursor: pointer; display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: .5rem .8rem; margin: .5rem 0; padding: .75rem .85rem; border: 1px solid rgba(17,17,17,.12); border-radius: .75rem; background: #fff; }
+        .cw .prav-vrsta { cursor: pointer; display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: .5rem .8rem; margin: .5rem 0; padding: .75rem .85rem; border: 1px solid rgba(17,17,17,.12); border-radius: .75rem; background: #fff; }
         .cw .prav-vrsta:has(.prav-kljuk.on) { border-color: rgba(178,84,118,.45); }
         .cw .prav-ime { display: flex; align-items: center; gap: .5rem; font-weight: 650; font-size: .98rem; color: var(--ink); min-width: 0; }
         .cw .prav-uredi { font: 600 .82rem var(--font-sans), sans-serif; color: var(--ink); background: transparent; border: 1px solid rgba(17,17,17,.2); border-radius: 999px; padding: .34rem .8rem; margin-right: .2rem; cursor: pointer; transition: border-color .15s, color .15s; }
@@ -7220,7 +7220,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-skupaj { display: flex; justify-content: space-between; align-items: baseline; margin-top: .9rem; padding-top: .8rem; border-top: 2px solid var(--ink); }
         .cw .prav-skupaj b { font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
         @media (max-width: 560px) {
-          .cw .prav-vrsta { grid-template-columns: minmax(9.25rem,1fr) auto 2.1rem; grid-template-areas: 'ime ime kljuk' 'recept cena podr'; gap: .25rem .35rem; align-items: center; }
+          .cw .prav-vrsta { grid-template-columns: minmax(9.25rem,1fr) auto 2.1rem; grid-template-areas: 'ime cena kljuk'; gap: .25rem .35rem; align-items: center; }
           .cw .prav-ime { grid-area: ime; white-space: normal; }
           .cw .prav-kljuk { grid-area: kljuk; }
           /* Vizualno ostaneta samo napis in puščica, dejanska dotikalna
@@ -7233,7 +7233,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         @media (max-width: 360px) {
           .cw .prav-vrsta {
             grid-template-columns: minmax(0, 1fr) 2.1rem;
-            grid-template-areas: 'ime kljuk' 'recept recept' 'cena podr';
+            grid-template-areas: 'ime kljuk' 'cena cena';
           }
         }
         .cw .kartica > .k-naslov { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1rem; margin: 0 0 1.1rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
@@ -9796,15 +9796,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                                 title={L('Izberi za ročni popravek zneska', 'Select to edit the amount manually')} aria-label={L('Ročno popravi znesek: ', 'Edit amount manually: ') + row.ime}
                                 onClick={e => { e.stopPropagation(); setUrejamPravSid(row.sid); }}>{row.nacin === 'posebej' ? val(row.znesek) : <span className="prav-predlog">{L('predlog', 'suggested')} {val(row.znesekAuto)}</span>}</button>
                             )}
-                            <button type="button" className="prav-podr prav-uredi" onClick={e => { e.stopPropagation(); setPraviceOdprt(row.sid); }} title={L('Uredi — znesek, trajanje, klavzule', 'Edit — amount, duration, clauses')} aria-label={L('Uredi: ', 'Edit: ') + row.ime}>{L('Uredi', 'Edit')}</button>
                             <button type="button" role="checkbox" aria-checked={!!row.nacin} className={'prav-kljuk' + (row.nacin ? ' on' : '')}
                               aria-label={L('Vključi v ponudbo: ', 'Include in the quote: ') + row.ime}
                               onClick={e => { e.stopPropagation(); setPraviceNacin(o => { const n = { ...o }; delete n[row.sid]; return n; }); }}>✓</button>
-                            <span className="prav-obseg">{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
-                            <span className="prav-nacin" role="group" aria-label={L('Uporaba dela: ', 'Use of the work: ') + row.ime}>
-                              <button type="button" className={'pill' + (row.raba === 'znamka' ? ' on' : '')} onClick={e => { e.stopPropagation(); nastaviPravRec(row.sid, { raba: 'znamka' }); }}>{L('za celotno znamko', 'for the whole brand')}</button>
-                              <button type="button" className={'pill' + (row.raba === 'projekt' ? ' on' : '')} onClick={e => { e.stopPropagation(); nastaviPravRec(row.sid, { raba: 'projekt' }); }}>{L('za določen projekt', 'for a specific project')}</button>
-                            </span>
+                            <span className="prav-obseg" title={L('Klikni kartico za podrobnosti', 'Click the card for details')}>{(() => { const rc = RECEPTI.find(x => x.id === recId); const pIme = rc ? (locale === 'en' ? rc.imeEn : rc.ime) : row.trajanjeIme; return `${pIme} · ${row.raba === 'projekt' ? L('za določen projekt', 'for a specific project') : L('za celotno znamko', 'for the whole brand')}${row.obsegOpis ? ' · ' + row.obsegOpis : ''}`; })()}</span>
                           </div>
                         );
                       })}
