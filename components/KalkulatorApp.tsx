@@ -1701,7 +1701,7 @@ type ShranjenaP = {
   promet: string; dobicek: string; projPrihodek: string; projDobicek: string;
   popust: string; dodatki: string[];
   prenosPravic: 'izkljucni' | 'neizkljucni' | 'licenca';
-  rocnePravice: string; rocnaLicenca: string; rocnePraviceStoritvi?: Record<string, string>; pravicePoStoritvi?: Record<string, PravRec>; lastnePravice?: LastnaPravica[]; izjemePravice?: string;
+  rocnePravice: string; rocnaLicenca: string; rocnePraviceStoritvi?: Record<string, string>; pravicePoStoritvi?: Record<string, PravRec>; praviceNacin?: Record<string, 'posebej' | 'vkljuceno'>; lastnePravice?: LastnaPravica[]; izjemePravice?: string;
   nazivPonudbe: string; narocnikPonudbe: string; narocnikEmail?: string;
   narocnikOseba?: string; narocnikNaslov?: string; narocnikDavcna?: string;
   obsegPonudbe: 'kratka' | 'razsirjena'; tonPonudbe: TonPonudbe; avansPct: string;
@@ -2529,10 +2529,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
      urejamPravSid = katera vrstica se trenutno ureja inline. */
   const [rocnePraviceStoritvi, setRocnePraviceStoritvi] = useState<Record<string, string>>({});
   const [urejamPravSid, setUrejamPravSid] = useState<string | null>(null);
-  /* rocno odprte pravice pri storitvah iz PRAVICE_PRIVZETO_ZAPRTE */
-  const [praviceVklop, setPraviceVklop] = useState<Record<string, boolean>>({});
-  /* rocno zaprte pravice pri storitvah, ki so privzeto odprte */
-  const [praviceZaprte, setPraviceZaprte] = useState<Record<string, boolean>>({});
+  /* Kljukica pri storitvi = pravice gredo v ponudbo; vrednost pove, KAKO:
+     'posebej' = svoja postavka, 'vkljuceno' = zajeto v ceni oblikovanja.
+     Manjka = neoznaceno, kar pomeni brez locenega doplacila (NE brez pravic).
+     Flow predlaga znesek, uporabnica potrdi (Tina + ChatGPT, 26. 8. 2026). */
+  const [praviceNacin, setPraviceNacin] = useState<Record<string, 'posebej' | 'vkljuceno'>>({});
+  /* odgovor na »Bos oblikovala tudi izvirno podobo strani?«, ko iz podrobnosti ni jasno */
+  const [webIzvirno, setWebIzvirno] = useState<Record<string, boolean>>({});
   /* lastne pravice (niso vezane na storitev): enkratni odkup steje v skupni znesek
      pravic; letno/mesecno je ponavljajoca licenca (glej tip LastnaPravica) */
   const [lastnePravice, setLastnePravice] = useState<LastnaPravica[]>([]);
@@ -3146,6 +3149,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setRocnePravice('');
     setRocnaLicenca('');
     setRocnePraviceStoritvi({});
+    setPraviceNacin({});
+    setWebIzvirno({});
     setUrejamPravSid(null);
     setLastnePravice([]);
     setLastnaOdprta(null);
@@ -3198,18 +3203,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   };
   /* sid -> zakaj pravic (se) ni: 'postavitev' (ni avtorsko delo) ali 'zaprto' */
   const praviceIzkljucene = useMemo(() => {
-    const m: Record<string, 'postavitev' | 'zaprto'> = {};
-    Array.from(new Set(vrstice.map(v => v.sid))).forEach(sid => {
+    const m: Record<string, 'postavitev' | 'vprasaj' | 'vcgp'> = {};
+    const sidi = Array.from(new Set(vrstice.map(v => v.sid)));
+    sidi.forEach(sid => {
       if (!PRAVICE_PRIVZETO_ZAPRTE.has(sid)) return;
+      if (webIzvirno[sid]) return;                     /* rekla je, da oblikuje */
       const st = uxuiStatus(sid);
       if (st === 'postavitev') m[sid] = 'postavitev';
-      else if (st === 'neznano' && !praviceVklop[sid]) m[sid] = 'zaprto';
+      else if (st === 'neznano') m[sid] = 'vprasaj';
     });
-    /* rocno zaprte: velja za katero koli storitev, tudi privzeto odprto */
-    Object.keys(praviceZaprte).forEach(sid => { if (praviceZaprte[sid] && !m[sid]) m[sid] = 'zaprto'; });
+    /* CGP praviloma zajema logotip: ne predlagaj pravic dvakrat za isto delo */
+    if (sidi.includes('cgp') && sidi.includes('logo') && !praviceNacin['logo']) m['logo'] = 'vcgp';
     return m;
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [vrstice, odgovori, praviceVklop, praviceZaprte]);
+  }, [vrstice, odgovori, praviceNacin, webIzvirno]);
 
   const r = useMemo(() => {
     /* linije = vrstice ponudbe z razreseno storitvijo (njen drag-vrstni red) */
@@ -3300,13 +3307,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       const znesekAuto = zaokrozi(sAvto);
       const rocnoStorEur = zaokrozi((Number(rocnePraviceStoritvi[s.id]) || 0) / vfx.fx);
       const izkljucena = praviceIzkljucene[s.id];
-      const znesek = izkljucena ? 0 : (rocnoStorEur > 0 ? rocnoStorEur : znesekAuto);
-      if (!izkljucena) { praviceBazaSum += sBaza; praviceAvtoSum += znesek; licencaAvtoSum += zaokrozi(sBaza * 0.2); }
+      const nacin = praviceNacin[s.id];
+      const steje = !izkljucena && nacin === 'posebej';
+      const znesek = steje ? (rocnoStorEur > 0 ? rocnoStorEur : znesekAuto) : 0;
+      if (steje) { praviceBazaSum += sBaza; praviceAvtoSum += znesek; licencaAvtoSum += zaokrozi(sBaza * 0.2); }
       const trajRec = PRAV_TRAJANJE.find(t => t.id === rec.trajanje);
       const trajanjeIme = rec.trajanje === 'custom' && typeof rec.trajLeta === 'number'
         ? trajLetaVBesedo(rec.trajLeta, locale === 'en')
         : ((locale === 'en' ? trajRec?.imeEn : trajRec?.ime) ?? rec.trajanje);
-      return { sid: s.id, ime: s.ime, izkljucena, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek, znesekAuto, rocno: rocnoStorEur > 0, klavzule: rec.klavzule || [], tantiema: rec.tantiema, obsegOpis: ob.opis, obsegMult: ob.mult, opomba: (rec.opomba || '').trim() };
+      return { sid: s.id, ime: s.ime, izkljucena, nacin, prenos: rec.prenos, trajanje: rec.trajanje, trajanjeIme, znesek, znesekAuto, rocno: rocnoStorEur > 0, klavzule: rec.klavzule || [], tantiema: rec.tantiema, obsegOpis: ob.opis, obsegMult: ob.mult, opomba: (rec.opomba || '').trim() };
     });
     /* lastne pravice z enkratnim odkupom pristejemo k skupnemu znesku pravic
        (letno/mesecno so ponavljajoce licence in NE gredo v enkratno ceno) */
@@ -3345,7 +3354,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       vrsticeIzvedbe, raba, tantiemePct, prenos: prenosPravic, praviceVrstice,
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
     };
-  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi, lastnePravice, valuta, pravicePoStoritvi, rocniPaketi, praviceIzkljucene]);
+  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi, lastnePravice, valuta, pravicePoStoritvi, rocniPaketi, praviceIzkljucene, praviceNacin]);
 
   /* Pupa copilot — svetovalni pregled ponudbe (lib/copilot). Vhod izluscimo iz
      `r` + state: referenca = postena AUTO cena priporocenega paketa (redna, brez
@@ -3377,7 +3386,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
   /* je sploh kaj vklopljenega? ce ne, blok ne razlaga in ne sesteva */
   const imaVklopljenePravice = useMemo(() =>
-    (r?.praviceVrstice || []).some(v => !v.izkljucena) || lastnePravice.length > 0,
+    (r?.praviceVrstice || []).some(v => v.nacin) || lastnePravice.length > 0,
     [r, lastnePravice]);
 
   /* Pupin obraz (barvna krogla + veseli obraz) v poljubni velikosti. */
@@ -5050,7 +5059,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       izbrane: [...izbrane], vrstice,
       odgovori, urejenePodrobnosti: [...urejenePodrobnosti], postavke, raba,
       promet, dobicek, projPrihodek, projDobicek, popust, dodatki: [...dodatki],
-      prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi: Object.keys(rocnePraviceStoritvi).length ? rocnePraviceStoritvi : undefined, pravicePoStoritvi: Object.keys(pravicePoStoritvi).length ? pravicePoStoritvi : undefined, lastnePravice: lastnePravice.length ? lastnePravice : undefined, izjemePravice: izjemePravice || undefined,
+      prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi: Object.keys(rocnePraviceStoritvi).length ? rocnePraviceStoritvi : undefined, pravicePoStoritvi: Object.keys(pravicePoStoritvi).length ? pravicePoStoritvi : undefined, praviceNacin: Object.keys(praviceNacin).length ? praviceNacin : undefined, lastnePravice: lastnePravice.length ? lastnePravice : undefined, izjemePravice: izjemePravice || undefined,
       nazivPonudbe, narocnikPonudbe, obsegPonudbe, tonPonudbe, avansPct,
       kaziUre, nogaZnak, izkusnje, mojTrg, trgNarocnika, valuta, valutaRocna,
       rocnoBesedilo, besediloHtml: rocnoBesedilo ? (editorRef.current?.innerHTML || besediloHtml) : '', podlogaCover: podlogaCover || undefined, logo: logo || undefined, predlogaPinart: predlogaPinart || undefined,
@@ -5097,6 +5106,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setPrenosPravic(p.prenosPravic); setRocnePravice(p.rocnePravice); setRocnaLicenca(p.rocnaLicenca);
     setRocnePraviceStoritvi(p.rocnePraviceStoritvi || {});
     setPravicePoStoritvi(p.pravicePoStoritvi || {});
+    if (p.praviceNacin) setPraviceNacin(p.praviceNacin);
+    else {
+      /* stara ponudba, shranjena pred kljukicami: pravice so bile vracunane
+         samodejno, zato jih oznacimo, da se znesek ob odprtju ne spremeni */
+      const n: Record<string, 'posebej' | 'vkljuceno'> = {};
+      (p.vrstice || []).forEach(v => { n[v.sid] = 'posebej'; });
+      [...(p.izbrane || [])].forEach(sid => { n[sid] = 'posebej'; });
+      setPraviceNacin(n);
+    }
     setLastnePravice(p.lastnePravice || []);
     setIzjemePravice(p.izjemePravice || '');
     setNazivPonudbe(p.nazivPonudbe); setNarocnikPonudbe(p.narocnikPonudbe);
@@ -5421,7 +5439,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const opisKoraka = korak === 0 ? L('Izberi storitve za to ponudbo — eno ali več.', 'Pick the services for this quote — one or more.')
     : korak === narocnikStep ? L('Vpišeš za vsako ponudbo posebej.', 'You fill this in for each quote separately.')
       : korak === trgNarocnikaStep ? L('Bogatejši trg plača več, revnejši manj. Valuta sledi trgu.', 'A wealthier market pays more, a poorer one less. The currency follows the market.')
-        : korak === praviceStep ? L('Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.', 'The tool suggests an amount that you can adjust at any time.')
+        : korak === praviceStep ? L('Flow predlaga znesek za vsako storitev — ti odločiš, ali ga vključiš in koliko znaša.', 'Flow suggests an amount for each service — you decide whether to include it and how much it is.')
           : korak === posebnostiStep ? L('Vse je neobvezno; pusti prazno in pojdi naprej.', 'Everything is optional; leave it blank and move on.')
             : korak === ponudbaStep ? L('Besedilo lahko poljubno urejaš in dopišeš.', 'You can freely edit and add to the text.')
               : korak === zakljucekStep ? L('Kopiraj, pošlji ali shrani ponudbo.', 'Copy, send or save the quote.')
@@ -7156,16 +7174,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-recept { border: 1px solid rgba(255,255,255,.6); border-radius: 8px; outline: 0; background-color: rgba(255,255,255,.62); backdrop-filter: blur(12px) saturate(1.25); -webkit-backdrop-filter: blur(12px) saturate(1.25); box-shadow: 0 2px 8px rgba(40,25,40,.04); font-family: inherit; font-weight: 600; font-size: .9rem; color: var(--ink); padding: .38rem 1.5rem .38rem .7rem; appearance: none; -webkit-appearance: none; cursor: pointer; transition: border-color .15s; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .55rem center; }
         .cw .prav-recept:focus-visible { border-color: var(--accent); }
         /* isti videz kot crtkana vrstica "Dodaj podatke podjetja" (DESIGN 13e) */
-        .cw .prav-zapri { flex: none; width: 1.3rem; height: 1.3rem; padding: 0; border: 1px solid rgba(17,17,17,.2); border-radius: 50%; background: transparent; color: rgba(17,17,17,.55); font: 700 .9rem/1 var(--font-sans), sans-serif; cursor: pointer; transition: border-color .15s, color .15s; }
-        .cw .prav-zapri:hover { border-color: var(--accent, #B25476); color: var(--accent, #B25476); }
-        .cw .prav-vklop { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
-        .cw .prav-vklop:hover { background: rgba(17,17,17,.02); }
-        .cw .prav-vklop-glava { width: 100%; display: flex; align-items: center; gap: .45rem; color: var(--accent, #B25476); font: 700 .84rem var(--font-sans), sans-serif; }
-        .cw .prav-vklop-znak { font-size: 1rem; line-height: 1; }
-        .cw .prav-vklop-naslov { flex: 1; }
-        .cw .prav-vklop-puscica { flex: none; display: grid; place-items: center; }
-        .cw .prav-vklop-pripis { font-size: .8rem; line-height: 1.45; color: rgba(17,17,17,.7); }
         .cw .prav-ni { margin: .5rem 0; padding: .7rem 0; border-bottom: 1px solid rgba(17,17,17,.1); font-size: .84rem; line-height: 1.5; color: rgba(17,17,17,.7); }
+        .cw .prav-kljuk { width: 1.05rem; height: 1.05rem; accent-color: var(--accent, #B25476); cursor: pointer; vertical-align: -2px; }
+        .cw .prav-predlog { font-weight: 600; color: rgba(17,17,17,.55); font-size: .84rem; }
+        .cw .prav-obseg { grid-column: 1 / -1; font-size: .76rem; color: rgba(17,17,17,.55); margin-top: -.2rem; }
+        .cw .prav-nacin { grid-column: 1 / -1; display: flex; gap: .4rem; flex-wrap: wrap; margin: .1rem 0 .2rem; }
+        .cw .prav-nacin .pill { font-size: .78rem; padding: .28rem .7rem; }
+        .cw .prav-nacin .pill.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+        .cw .prav-vprasaj { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .8rem; margin: .5rem 0; padding: .7rem .85rem; border: 1px dashed rgba(17,17,17,.3); border-radius: .75rem; background: #fff; font-size: .88rem; font-weight: 600; }
+        .cw .prav-vprasaj-gumbi { display: flex; gap: .4rem; }
         /* IZVZEM kompaktnih izbirnikov iz teznih .shell select globalov (font 16px!important,
            padding-right 3rem!important, velika 1.25rem kljukica) — sicer napihnejo kontrole in
            pokvarijo puscice; visja specificnost + !important povozi globalno pravilo starsa. */
@@ -9679,7 +9696,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {((klasicnaOblika && korak === praviceStep) || (vChatu && poMeh >= 3)) && (
             <>
-              {vChatu && chatVpr(L('Avtorske pravice', 'Copyright'), L('Orodje predlaga znesek, ki ga lahko kadar koli prilagodiš.', 'The tool suggests an amount that you can adjust at any time.'))}
+              {vChatu && chatVpr(L('Avtorske pravice', 'Copyright'), L('Flow predlaga znesek za vsako storitev — ti odločiš, ali ga vključiš in koliko znaša.', 'Flow suggests an amount for each service — you decide whether to include it and how much it is.'))}
               <div className="kartica">
                 <div className="k-naslov">{L('Za kaj bo naročnik uporabil delo?', 'What will the client use the work for?')} <span className="vec">{L('določa vrednost pravic', 'sets the value of the rights')}</span></div>
                 <div className="izbira">
@@ -9723,9 +9740,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <InfoNamig besedilo="Vsaka storitev ima svoje pravice. Logotip/CGP je praviloma trajen izključni prenos, ilustracija licenca za dobo (npr. 7 let), kampanja kratka licenca. Privzetki so nastavljeni glede na tip; recept lahko spremeniš. V Podrobnostih nastaviš teritorij (privzeto po sedežu naročnika), medije, naklado in klavzule; tiskovine in ilustracija imajo ponatis privzeto vklopljen. Skupni znesek lahko ročno popraviš s svinčnikom ob vsoti." />
                   <span className="vec">{L('vsaka storitev svoje', 'each service its own')}</span>
                 </div>
-                {imaVklopljenePravice && (
+                {(
                   <p className="hint" style={{ marginTop: 0, marginBottom: '.8rem' }}>
-                    {L('Privzetki so nastavljeni glede na tip storitve — spremeni recept, kjer je treba. Vsaka storitev pokaže svojo ceno pravic.', 'Defaults are set according to the service type — change the recipe where needed. Each service shows its own rights price.')}
+                    {L('Flow predlaga zneske glede na izbrane storitve. Predlog je priporočilo, ne cenik — vključi, kar želiš, in znesek prilagodi. Neoznačeno pomeni brez ločenega doplačila, ne brez pravic; dogovorjeni pogoji uporabe se zapišejo v ponudbo in pogodbo v vsakem primeru.', 'Flow suggests amounts based on the selected services. A suggestion is a recommendation, not a price list — include what you want and adjust the amount. Unchecked means no separate charge, not no rights; the agreed terms of use are written into the quote and contract either way.')}
                   </p>
                 )}
                 {imaVklopljenePravice && <details className="prav-razlaga">
@@ -9751,23 +9768,29 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             {L('— postavitev po obstoječem dizajnu ni avtorsko delo, zato pravic ni.', '— building on an existing design is not an authored work, so there are no rights.')}
                           </p>
                         );
-                        if (row.izkljucena === 'zaprto') return (
-                          <button key={row.sid} type="button" className="prav-vklop"
-                            onClick={() => { setPraviceVklop(o => ({ ...o, [row.sid]: true })); setPraviceZaprte(o => ({ ...o, [row.sid]: false })); }}>
-                            <span className="prav-vklop-glava">
-                              <span className="prav-vklop-znak" aria-hidden>+</span>
-                              <span className="prav-vklop-naslov">{L('Dodaj avtorske pravice', 'Add copyright')} · {locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</span>
-                              <span className="prav-vklop-puscica" aria-hidden><ArrowDown size={14} weight="bold" /></span>
+                        if (row.izkljucena === 'vcgp') return (
+                          <p key={row.sid} className="prav-ni">
+                            <b>{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}</b>{' '}
+                            {L('— pravice so zajete v celostni grafični podobi, zato jih ne predlagam dvakrat.', '— rights are covered by the brand identity, so they are not proposed twice.')}{' '}
+                            <button type="button" className="povezava"
+                              onClick={() => setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' }))}>{L('Vseeno obračunaj posebej', 'Charge separately anyway')}</button>
+                          </p>
+                        );
+                        if (row.izkljucena === 'vprasaj') return (
+                          <div key={row.sid} className="prav-vprasaj">
+                            <span>{L('Boš oblikovala tudi izvirno podobo strani?', 'Will you also design the original look of the site?')}</span>
+                            <span className="prav-vprasaj-gumbi">
+                              <button type="button" className="pill" onClick={() => setWebIzvirno(o => ({ ...o, [row.sid]: true }))}>{L('Da', 'Yes')}</button>
+                              <button type="button" className="pill" onClick={() => setOdgovori(o => ({ ...o, [`${vrstice.find(v => v.sid === row.sid)?.uid}:ux-ui`]: 'Samo postavitev (dizajn že obstaja)' }))}>{L('Ne, samo postavitev', 'No, build only')}</button>
                             </span>
-                            <span className="prav-vklop-pripis">{L('Če prevzameš oblikovanje (UI/UX), so na mestu; pri sami postavitvi ne.', 'They apply if you take on the design (UI/UX); not for build-only work.')}</span>
-                          </button>
+                          </div>
                         );
                         return (
                           <div key={row.sid} className="prav-vrsta">
                             <span className="prav-ime">
-                              <button type="button" className="prav-zapri" aria-label={L('Zapri pravice za to storitev', 'Close rights for this service')}
-                                title={L('Brez pravic pri tej storitvi', 'No rights for this service')}
-                                onClick={() => { setPraviceZaprte(o => ({ ...o, [row.sid]: true })); setPraviceVklop(o => ({ ...o, [row.sid]: false })); }}>−</button>{' '}{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}{row.tantiema ? <small> · {row.tantiema} % {L('tantieme', 'royalties')}</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} {L('klavzul', 'clauses')}</small> : null}</span>
+                              <input type="checkbox" className="prav-kljuk" checked={!!row.nacin}
+                                aria-label={L('Vključi pravice v ponudbo: ', 'Include rights in the quote: ') + row.ime}
+                                onChange={e => setPraviceNacin(o => { const n = { ...o }; if (e.target.checked) n[row.sid] = 'posebej'; else delete n[row.sid]; return n; })} />{' '}{locale === 'en' ? (STORITVE.find(x => x.id === row.sid)?.imeEn ?? row.ime) : row.ime}{row.tantiema ? <small> · {row.tantiema} % {L('tantieme', 'royalties')}</small> : row.klavzule.length > 0 ? <small> · {row.klavzule.length} {L('klavzul', 'clauses')}</small> : null}</span>
                             <select className="prav-recept" aria-label={L('Pravice: ', 'Rights: ') + row.ime} value={recId}
                               onChange={e => { const rc = RECEPTI.find(x => x.id === e.target.value); if (rc) nastaviPravRec(row.sid, { prenos: rc.prenos, trajanje: rc.trajanje, trajLeta: undefined, tantiema: rc.id === 'tantieme' ? tantiemaZa(row.sid) : undefined }); }}>
                               {recId === '' && <option value="">{L('Po meri', 'Custom')} ({row.trajanjeIme})</option>}
@@ -9787,9 +9810,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             ) : (
                               <button type="button" className={'prav-cena prav-cena-gumb' + (row.rocno ? ' rocno' : '')}
                                 title={L('Izberi za ročni popravek zneska', 'Select to edit the amount manually')} aria-label={L('Ročno popravi znesek: ', 'Edit amount manually: ') + row.ime}
-                                onClick={() => setUrejamPravSid(row.sid)}>{val(row.znesek)}</button>
+                                onClick={() => setUrejamPravSid(row.sid)}>{row.nacin === 'posebej' ? val(row.znesek) : <span className="prav-predlog">{L('predlog', 'suggested')} {val(row.znesekAuto)}</span>}</button>
                             )}
                             <button type="button" className="prav-podr" onClick={() => setPraviceOdprt(row.sid)} title={L('Podrobnosti — trajanje, klavzule', 'Details — duration, clauses')} aria-label={'Podrobnosti: ' + row.ime}><DotsThree size={20} weight="bold" /></button>
+                            <span className="prav-obseg">{row.trajanjeIme}{row.obsegOpis ? ` · ${row.obsegOpis}` : ''}</span>
+                            {row.nacin && (
+                              <span className="prav-nacin" role="group" aria-label={L('Kako obračunati pravice', 'How to charge the rights')}>
+                                <button type="button" className={'pill' + (row.nacin === 'vkljuceno' ? ' on' : '')}
+                                  onClick={() => setPraviceNacin(o => ({ ...o, [row.sid]: 'vkljuceno' }))}>{L('Vključene v ceno oblikovanja', 'Included in the design fee')}</button>
+                                <button type="button" className={'pill' + (row.nacin === 'posebej' ? ' on' : '')}
+                                  onClick={() => setPraviceNacin(o => ({ ...o, [row.sid]: 'posebej' }))}>{L('Obračunaj posebej', 'Charge separately')}</button>
+                              </span>
+                            )}
                           </div>
                         );
                       })}
