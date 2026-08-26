@@ -73,8 +73,8 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
     box-shadow:0 10px 30px rgba(40,30,60,.08)}
   .kartica h2{font-size:.98rem;font-weight:750;margin-bottom:.3rem}
   .kartica p{font-size:.86rem;line-height:1.5;color:#5c5650;margin-bottom:.85rem}
-  .geslo-ovoj{position:relative;display:block}
-  .geslo-ovoj input{width:100%;box-sizing:border-box;padding-right:2.9rem}
+  .geslo-ovoj{position:relative;display:block;margin-bottom:.7rem}
+  .geslo-ovoj input{width:100%;box-sizing:border-box;padding-right:2.9rem;margin-bottom:0}
   .geslo-ovoj button{position:absolute;right:.35rem;top:50%;transform:translateY(-50%);
     display:grid;place-items:center;width:2.2rem;height:2.2rem;margin:0;padding:0;
     border:none;background:none;color:rgba(17,17,17,.55);cursor:pointer}
