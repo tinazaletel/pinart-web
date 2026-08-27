@@ -203,8 +203,18 @@ export default function PupaDom({ base = '' }: { base?: string }) {
      razvoju — v produkciji je izraz nizje vedno false. */
   const pocasi = () => {
     if (process.env.NODE_ENV === 'production' || typeof window === 'undefined') return 0;
-    const v = new URLSearchParams(window.location.search).get('pocasi');
-    return v ? Math.min(Number(v) === 1 ? 4000 : Number(v) || 0, 15000) : 0;
+    /* Zavora se ZAPOMNI: ?pocasi=1 jo vklopi, ?pocasi=0 izklopi, vmes pa
+       prezivi osvezitev in klike po meniju — sicer se parameter izgubi ob
+       prvem premiku in cakalne vrste ni mogoce videti (Tina, 27. 8. 2026). */
+    const p = new URLSearchParams(window.location.search).get('pocasi');
+    let v = p;
+    try {
+      if (p === '0' || p === '') localStorage.removeItem('pinart-pupa-pocasi');
+      else if (p) localStorage.setItem('pinart-pupa-pocasi', p);
+      else v = localStorage.getItem('pinart-pupa-pocasi');
+    } catch { /* zaseben nacin */ }
+    if (!v) return 0;
+    return Math.min(Number(v) === 1 ? 4000 : Number(v) || 0, 15000);
   };
 
   async function posljiPupi(besedilo: string, navedek?: string) {
@@ -754,18 +764,16 @@ export default function PupaDom({ base = '' }: { base?: string }) {
               return (
                 <div key={i} className={`pd-vr ${m.role === 'user' ? 'jaz' : 'pupa'}`}>
                   <div className="pd-vr-body">
-                    <div className="pd-mehur">
+                    <div className={'pd-mehur' + (m.role === 'assistant' ? ' pd-mehur-odg' : '')}>
                       {nav && <span className="pd-navedek">{nav}</span>}
                       {telo}
-                    </div>
-                    {m.role === 'assistant' && (
-                      <div className="pd-vr-meta">
-                        <button type="button" className="pd-vr-ikona" title={L('Odgovori', 'Reply')} aria-label={L('Odgovori', 'Reply')}
+                      {m.role === 'assistant' && (
+                        <button type="button" className="pd-vr-pen pd-pen-odg pd-namig" data-namig={L('Odgovori', 'Reply')} aria-label={L('Odgovori', 'Reply')}
                           onClick={() => { setCitat(m.content.length > 160 ? m.content.slice(0, 160).trimEnd() + '…' : m.content); textRef.current?.focus(); }}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 17l-6-5 6-5" /><path d="M3 12h11a6 6 0 0 1 6 6v2" /></svg>
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -778,21 +786,21 @@ export default function PupaDom({ base = '' }: { base?: string }) {
             {vrsta.map(v => (
               <div key={v.id} className="pd-vr jaz">
                 <div className="pd-vr-body">
-                  <div className={'pd-mehur caka' + (urejamVrsto === v.id ? ' ureja' : '')}>
+                  <div className={'pd-mehur caka pd-mehur-vrsta' + (urejamVrsto === v.id ? ' ureja' : '')}>
                     {v.citat && <span className="pd-navedek">{v.citat}</span>}
                     {v.besedilo}
+                    <span className="pd-vrsta-gumbi">
+                      <button type="button" className="pd-vr-pen pd-namig" data-namig={L('Uredi', 'Edit')} aria-label={L('Uredi', 'Edit')}
+                        onClick={() => { setVnos(v.besedilo); setUrejamVrsto(v.id); textRef.current?.focus(); }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
+                      </button>
+                      <button type="button" className="pd-vr-pen pd-namig" data-namig={L('Izbriši', 'Delete')} aria-label={L('Izbriši', 'Delete')}
+                        onClick={() => { setVrsta(prev => prev.filter(x => x.id !== v.id)); if (urejamVrsto === v.id) { setUrejamVrsto(null); setVnos(''); } }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                      </button>
+                    </span>
                   </div>
-                  <div className="pd-vr-meta">
-                    <span className="pd-caka-znak">{L('v čakanju', 'queued')}</span>
-                    <button type="button" className="pd-vr-ikona" title={L('Uredi', 'Edit')} aria-label={L('Uredi', 'Edit')}
-                      onClick={() => { setVnos(v.besedilo); setUrejamVrsto(v.id); textRef.current?.focus(); }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>
-                    </button>
-                    <button type="button" className="pd-vr-ikona" title={L('Izbriši', 'Delete')} aria-label={L('Izbriši', 'Delete')}
-                      onClick={() => { setVrsta(prev => prev.filter(x => x.id !== v.id)); if (urejamVrsto === v.id) { setUrejamVrsto(null); setVnos(''); } }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
-                    </button>
-                  </div>
+                  <div className="pd-vr-meta"><span className="pd-caka-znak">{L('v čakanju', 'queued')}</span></div>
                 </div>
               </div>
             ))}
@@ -1177,6 +1185,69 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr-pen { position: absolute; top: .38rem; right: .4rem; display: grid; place-items: center; width: 1.4rem; height: 1.4rem; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 40%, transparent); cursor: pointer; opacity: .5; transition: opacity .15s ease, background .15s ease, color .15s ease; }
         .pd-vr.jaz:hover .pd-vr-pen, .pd-mehur.ureja .pd-vr-pen { opacity: 1; }
         .pd-vr-pen:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); color: var(--ink, #1a1a1a); }
+        /* Gumb ZNOTRAJ mehurcka, na koncu besedila — isti vzorec kot svincnik
+           na zelenem mehurcku (Tina, 27. 8. 2026: »puscica mora bit v oblacku,
+           konec teksta«). Zunaj mehurcka se je izgubil. */
+        /* Odmik MORA imeti isto specificnost kot pravilo starsa
+           (.pd-vr.pupa .pd-mehur postavlja padding s kratko obliko), sicer
+           tiho odpade in besedilo tece pod ikono (Tina, 27. 8. 2026). */
+        .pd-vr.pupa .pd-mehur-odg { padding-right: 2.6rem; }
+        /* Sama ikona, brez podlage — krogec bi ob vsakem odgovoru vlekel
+           pogled. Podlaga se prizge sele, ko si z misko na mehurcku: takrat
+           se vidi, da je gumb, sicer pa je tiho (Tina, 27. 8. 2026). */
+        /* Krogec je viden vedno — brez njega se ne vidi, da je ikona gumb.
+           Tih je: skoraj bela podlaga in lasasti obris, barvo dobi sele ob
+           prehodu z misko (Tina, 27. 8. 2026). */
+        .pd-pen-odg {
+          opacity: 1;
+          color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent);
+          background: rgba(255,255,255,.7);
+          border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent);
+        }
+        /* Hover NI vijolicen: vijolicna je Pupina barva in je na njenem
+           mehurcku povsod. Odgovor je tvoje dejanje, zato dobi meto tvojih
+           mehurckov — barva pove, cigava poteza sledi (Tina, 27. 8. 2026). */
+        .pd-vr.pupa:hover .pd-pen-odg {
+          opacity: 1;
+          color: var(--ink, #1a1a1a);
+          background: color-mix(in oklch, oklch(84% .13 165) 45%, #fff);
+          border: 1px solid color-mix(in oklch, oklch(80% .12 165) 55%, transparent);
+        }
+        .pd-vr.pupa .pd-pen-odg:hover { background: color-mix(in oklch, oklch(84% .13 165) 70%, #fff); }
+        /* Lasten namig: sistemski ima oglate vogale in se pokaze sele po
+           sekundi. Ta je zaobljen, v jeziku Flowa in takojsen. */
+        .pd-namig::after {
+          content: attr(data-namig);
+          position: absolute; bottom: calc(100% + .35rem); right: 0;
+          padding: .3rem .55rem; border-radius: 10px;
+          background: color-mix(in oklch, var(--ink, #1a1a1a) 92%, transparent);
+          color: var(--paper, #FAF7F0);
+          font: 600 .7rem var(--font-sans), sans-serif; letter-spacing: .01em;
+          white-space: nowrap; opacity: 0; pointer-events: none;
+          transition: opacity .12s ease; box-shadow: 0 4px 14px oklch(30% .04 300 / .22);
+        }
+        .pd-namig:hover::after, .pd-namig:focus-visible::after { opacity: 1; }
+        .pd-vr.pupa:hover .pd-pen-odg { opacity: 1; color: var(--purple, oklch(58% .2 297)); }
+        /* Ista past kot pri Pupinem mehurcku: .pd-vr.jaz .pd-mehur postavlja
+           padding-right z visjo specificnostjo, zato mora tudi ta odmik viseti
+           na .pd-vr.jaz — sicer besedilo tece pod svincnik in kos. */
+        .pd-vr.jaz .pd-mehur-vrsta { padding-right: 4.1rem; }
+        .pd-vrsta-gumbi { position: absolute; top: .3rem; right: .35rem; display: inline-flex; gap: .1rem; }
+        .pd-vrsta-gumbi .pd-vr-pen {
+          position: static; opacity: 1;
+          color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent);
+          background: rgba(255,255,255,.7);
+          border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent);
+        }
+        /* Isti jezik kot pri »Odgovori«: krogec vedno, barva ob prehodu z misko.
+           Mehurcek v cakanju je zbledel (opacity .5), zato je nasicena meta na
+           njem dobro vidna. */
+        .pd-vr.jaz:hover .pd-vrsta-gumbi .pd-vr-pen {
+          color: var(--ink, #1a1a1a);
+          background: color-mix(in oklch, oklch(84% .13 165) 55%, #fff);
+          border-color: color-mix(in oklch, oklch(80% .12 165) 60%, transparent);
+        }
+        .pd-vrsta-gumbi .pd-vr-pen:hover { background: color-mix(in oklch, oklch(84% .13 165) 80%, #fff); }
         .pd-vr-ikona { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
         .pd-vr-ikona:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 9%, transparent); color: var(--ink, #1a1a1a); }
         /* Samo ikona, brez napisa: enak jezik kot svincnik na mehurcku v

@@ -9,15 +9,34 @@ import FlowLanding from '@/components/FlowLanding';
    pinartflow.com/ (glej opombo o preusmeritvi ob deployu). */
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return locale === 'en'
-    ? {
-        title: 'Pinart Flow — your whole creative business in one place',
-        description: 'Fair pricing, proposals, contracts, invoices, projects, clients and goals in one workspace for independent creatives. The calculator is free.',
-      }
-    : {
-        title: 'Pinart Flow — vse tvoje poslovanje na enem mestu',
-        description: 'Pinart Flow poveže kalkulator poštenih cen, ponudbe, pogodbe, retainerje, račune, stroške, stranke in cilje v eno delovno okolje za samostojne kreativce. Kalkulator je brezplačen.',
-      };
+  const jeEn = locale === 'en';
+  const title = jeEn
+    ? 'Pinart Flow — your whole creative business in one place'
+    : 'Pinart Flow — vse tvoje poslovanje na enem mestu';
+  const description = jeEn
+    ? 'Fair pricing, proposals, contracts, invoices, projects, clients and goals in one workspace for independent creatives. The calculator is free.'
+    : 'Pinart Flow poveže kalkulator poštenih cen, ponudbe, pogodbe, retainerje, račune, stroške, stranke in cilje v eno delovno okolje za samostojne kreativce. Kalkulator je brezplačen.';
+  /* BREZ tega je Flow ob deljenju povezave nosil sliko in naslov STUDIA:
+     openGraph je podedoval od [locale]/layout (pinart.si, og-image.jpg), ker
+     ga tu nismo povozili — v iMessage se je pokazal portret Pinart studia
+     namesto Flowa (Tina, 27. 8. 2026). Slika mora biti na javni poti brez
+     pike v imenu mape, sicer je vratar ne spusti do pajkov. */
+  const url = jeEn ? 'https://pinartflow.com/en/flow' : 'https://pinartflow.com';
+  const slika = 'https://pinartflow.com/flow-og.jpg';
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'Pinart Flow',
+      locale: jeEn ? 'en_US' : 'sl_SI',
+      type: 'website',
+      images: [{ url: slika, width: 1200, height: 630, alt: jeEn ? 'Pinart Flow — every project, from quote to payment' : 'Pinart Flow — vsak projekt, od ponudbe do plačila' }],
+    },
+    twitter: { card: 'summary_large_image', title, description, images: [slika] },
+  };
 }
 
 export default async function FlowPage({
