@@ -198,6 +198,15 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     if (id === pogovorId) { setPupaSpor([]); setPogovorId(null); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
   }
 
+  /* Razvojna zavora za preizkus cakalne vrste: ?pocasi=1 zadrzi Pupin odgovor
+     za nekaj sekund, da se sploh vidi, kako se vprasanja stakajo. Velja SAMO v
+     razvoju — v produkciji je izraz nizje vedno false. */
+  const pocasi = () => {
+    if (process.env.NODE_ENV === 'production' || typeof window === 'undefined') return 0;
+    const v = new URLSearchParams(window.location.search).get('pocasi');
+    return v ? Math.min(Number(v) === 1 ? 4000 : Number(v) || 0, 15000) : 0;
+  };
+
   async function posljiPupi(besedilo: string, navedek?: string) {
     const q = besedilo.trim();
     if (!q || pupaCaka) return;
@@ -227,6 +236,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
     if (!pid) { pid = await ustvariPogovor(q); if (pid) setPogovorId(pid); }
     if (pid) void dodajSporocilo(pid, 'user', zVnosom);
     try {
+      const zamik = pocasi();
+      if (zamik) await new Promise(r => window.setTimeout(r, zamik));
       const naMoj = aiNacin === 'moj' && agent && orgRef.current;
       const res = naMoj
         ? await fetch('/api/ai/izvedi', {
@@ -749,9 +760,9 @@ export default function PupaDom({ base = '' }: { base?: string }) {
                     </div>
                     {m.role === 'assistant' && (
                       <div className="pd-vr-meta">
-                        <button type="button" className="pd-odgovori" onClick={() => { setCitat(m.content.length > 160 ? m.content.slice(0, 160).trimEnd() + '…' : m.content); textRef.current?.focus(); }}>
+                        <button type="button" className="pd-vr-ikona" title={L('Odgovori', 'Reply')} aria-label={L('Odgovori', 'Reply')}
+                          onClick={() => { setCitat(m.content.length > 160 ? m.content.slice(0, 160).trimEnd() + '…' : m.content); textRef.current?.focus(); }}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 17l-6-5 6-5" /><path d="M3 12h11a6 6 0 0 1 6 6v2" /></svg>
-                          {L('Odgovori', 'Reply')}
                         </button>
                       </div>
                     )}
@@ -1168,14 +1179,20 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-vr-pen:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent); color: var(--ink, #1a1a1a); }
         .pd-vr-ikona { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 0; border-radius: 50%; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 42%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease; }
         .pd-vr-ikona:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 9%, transparent); color: var(--ink, #1a1a1a); }
+        /* Samo ikona, brez napisa: enak jezik kot svincnik na mehurcku v
+           kalkulatorju. Na namizju pojasni title ob prehodu z misko, na dotiku
+           pa ikoni zadostujeta — »vecina oblikovalcev ni butastih« (Tina). */
+        @media (hover: none) { .pd-vr.pupa .pd-vr-meta { opacity: .8; } }
         .pd-vr-meta { display: flex; align-items: center; gap: .15rem; padding: 0 .2rem; opacity: 0; transition: opacity .15s ease; }
         .pd-vr:hover .pd-vr-meta, .pd-vr .pd-mehur.caka ~ .pd-vr-meta { opacity: 1; }
+        /* Pupini mehurcki: ikona »Odgovori« je vidna VEDNO, le tiha — skrita za
+           prehodom z misko je na dotik ni bilo mogoce najti. Ikona in ne pilula
+           z besedilom, da je enak jezik kot svincnik in kos (Tina, 27. 8. 2026). */
+        .pd-vr.pupa .pd-vr-meta { opacity: .55; }
+        .pd-vr.pupa:hover .pd-vr-meta { opacity: 1; }
         /* »v čakanju«: kar si napisala, medtem ko je Pupa razmišljala */
         .pd-caka-znak { margin-right: .25rem; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
         .pd-vr.jaz .pd-mehur.caka.ureja { opacity: .85; outline: 2px dashed color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); outline-offset: 2px; }
-        /* odgovor na konkreten mehurček */
-        .pd-odgovori { display: inline-flex; align-items: center; gap: .3rem; padding: .18rem .5rem; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 52%, transparent); font: 600 .74rem var(--font-sans), sans-serif; cursor: pointer; transition: background .15s ease, color .15s ease; }
-        .pd-odgovori:hover { background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 12%, transparent); color: var(--purple, oklch(58% .2 297)); }
         .pd-navedek { display: block; margin-bottom: .4rem; padding-left: .6rem; border-left: 2px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); font-size: .82rem; line-height: 1.45; color: color-mix(in oklch, var(--ink, #1a1a1a) 58%, transparent); }
         .pd-citat { display: flex; align-items: center; gap: .45rem; padding: .5rem .65rem; border-left: 2px solid var(--purple, oklch(66% .2 297)); border-radius: 0 8px 8px 0; background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 7%, transparent); font-size: .82rem; color: color-mix(in oklch, var(--ink, #1a1a1a) 70%, transparent); }
         .pd-citat > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

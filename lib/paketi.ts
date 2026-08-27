@@ -66,6 +66,7 @@ export const PAKETI: Paket[] = [
     zaEn: 'For getting started and one-off projects',
     cena: '0', enota: '€ za vedno', enotaEn: '€ forever',
     vkljuceno: [
+      'Kalkulator brez prijave — račun rabiš samo za shranjevanje',
       'Kalkulator poštenih cen',
       'Tri različice ponudbe za stranko',
       'Izračun avtorskih pravic in licence',
@@ -75,6 +76,7 @@ export const PAKETI: Paket[] = [
       'Oštevilčenje ponudb',
     ],
     vkljucenoEn: [
+      'Calculator without an account — sign up only to save',
       'Fair price calculator',
       'Three quote versions for the client',
       'Copyright and licensing calculation',
