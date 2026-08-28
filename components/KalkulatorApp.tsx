@@ -4052,10 +4052,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       /* bolj realen signal: ali je uporabnik cene prilagodil (svoje osnove ali
          rocni znesek pravic/licence) ali pa so privzete */
       const prilagojeno = Object.keys(osnove).length > 0 || Boolean(rocnePravice.trim()) || Boolean(rocnaLicenca.trim());
+      /* Dogodek gre PRVI in neodvisno od vsega ostalega. Prej je stal za dvema
+         čakanjema (Turnstile, paket); če je katero od njiju vrglo napako, je
+         plavajoči async blok tiho crknil in ni bilo ne dogodka ne cenovne
+         točke. Od 28. 8. 2026 nazaj: v bazi ni bilo NITI ENE cenovne točke,
+         čeprav so ljudje kalkulator uporabljali. */
+      void zabeleziSPaketom('cena_izracunana', { storitev: r.sez[0]?.ime || '', stevilo: r.sez.length, prilagojeno });
       (async () => {
-        const turnstileToken = await pridobiTurnstileToken();
-        const paket = await ugotoviPaket();
-        void zabeleziSPaketom('cena_izracunana', { storitev: r.sez[0]?.ime || '', stevilo: r.sez.length, prilagojeno });
+        const turnstileToken = await pridobiTurnstileToken().catch(() => undefined);
+        const paket = await ugotoviPaket().catch(() => undefined);
         fetch('/api/cene', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -4082,8 +4087,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         }).catch(() => {});
       })();
     } catch { /* zasebni nacin brskalnika ipd. */ }
+    /* `r` MORA biti med odvisnostmi: ob prihodu na korak izračun pogosto še ni
+       pripravljen, učinek zadene `!r` in se — brez te odvisnosti — ne prebudi
+       nikoli več. To je bil najverjetnejši vzrok prazne baze cen. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [korak, cenaStep]);
+  }, [korak, cenaStep, r]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -6635,6 +6643,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .orb-vrsta-cena { font-size: .78rem; color: rgba(17,17,17,.72); white-space: nowrap; }
         .cw .orb-vrsta-chk { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: rgba(17,17,17,.06); font-size: .82rem; font-weight: 700; color: rgba(17,17,17,.72); }
         .cw .orb-vrsta.on .orb-vrsta-chk { background: var(--ink); color: var(--paper); }
+        /* Ko krogec odvzema, mora tako tudi izgledati — sicer je popravek
+           nevidno delo in človek še naprej klika, kot je navajen. */
+        .cw .orb-vrsta-chk-on { cursor: pointer; transition: transform .12s ease, opacity .12s ease; }
+        .cw .orb-vrsta-chk-on:hover { transform: scale(1.08); opacity: .88; }
+        .cw .orb-vrsta-chk-on:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
         @media (max-width: 640px) { .cw .orb-vrsta { padding: .65rem .8rem; gap: .7rem; grid-template-columns: 2.3rem minmax(0, 1fr) auto 1.75rem; } .cw .orb-vrsta-ime { font-size: .9rem; } .cw .orb-vrsta-cena { font-size: .72rem; } }
 
         .cw .orb0.orb0-plus { color: rgba(17,17,17,.72); }
@@ -6874,6 +6887,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .izbor-preveri-gumb { width: 100%; display: flex; align-items: center; gap: .55rem; border: 1px solid rgba(124,58,237,.2); border-radius: 12px; background: rgba(255,255,255,.75); color: var(--ink); padding: .68rem .8rem; font: inherit; font-size: .9rem; font-weight: 650; text-align: left; cursor: pointer; transition: background .16s ease, border-color .16s ease; }
         .cw .izbor-preveri-gumb:hover { background: #fff; border-color: var(--purple); }
         .cw .izbor-preveri-gumb:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+        /* Urejena postavka ostane vidna, a umirjena — pove »narejeno«, ne vabi h kliku. */
+        .cw .izbor-preveri-gumb.izbor-preveri-ok { border-color: rgba(17,17,17,.1); background: rgba(255,255,255,.5); font-weight: 550; }
+        .cw .izbor-preveri-gumb.izbor-preveri-ok svg { color: oklch(58% .13 155); }
+        .cw .izbor-preveri-gumb.izbor-preveri-ok .izbor-znacka { background: rgba(17,17,17,.06); color: color-mix(in oklch, var(--ink) 60%, transparent); }
         .cw .izbor-preveri-gumb svg { flex: none; color: var(--purple); }
         /* znacka kot pri pravicah: beseda pove, kaj naredis, ne le da nekaj manjka */
         /* Zakljucek: rdeca opomba pred posiljanjem */
@@ -9442,7 +9459,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         <span className="orb-vrsta-ikona" aria-hidden style={{ background: osvetli(barvi[0], 0.82), color: barvi[0] }}>{ikonaZa(s.id)}</span>
                         <span className="orb-vrsta-ime">{storIme(s)}</span>
                         <span className="orb-vrsta-cena">{L('od ', 'from ')}{val(osnovaZa(s))}</span>
-                        <span className="orb-vrsta-chk" aria-hidden>{on ? (q > 1 ? `✓${q}` : '✓') : '+'}</span>
+                        {/* Krogec je gumb za ODVZEM — enako kot pri mehurčkih in v mreži.
+                            Prej je bil tu samo okrasek s kljukico: kdor je hotel odvzeti,
+                            je s klikom nanj dodal še eno (Tina, 28. 8. 2026). */}
+                        {on ? (
+                          <span className="orb-vrsta-chk orb-vrsta-chk-on" role="button" tabIndex={0}
+                            title={L('Odstrani zadnjo vrstico te storitve', 'Remove the last row of this service')}
+                            aria-label={L('Odstrani ', 'Remove ') + storIme(s)}
+                            onClick={e => { e.stopPropagation(); odvzemiStoritev(s.id); }}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiStoritev(s.id); } }}>
+                            ×{q}
+                          </span>
+                        ) : (
+                          <span className="orb-vrsta-chk" aria-hidden>+</span>
+                        )}
                       </button>
                     );
                   })}
@@ -10000,15 +10030,24 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <span className={'chat-mehur' + (neurejene.length ? ' chat-mehur-opomnik' : '') + (neurejene.length && dopolniPotrjeno ? ' chat-mehur-cakam' : '')}>
                     <b>{neurejene.length ? (L('Urejenih: ', 'Filled in: ') + urejene + ' / ' + postavke.length) : L('Vse podrobnosti so urejene.', 'All details are filled in.')}</b>
                     <small>{neurejene.length ? L('Pred nadaljevanjem preveri še manjkajoče podatke, da bo izračun cene natančnejši.', 'Before continuing, check the missing details so the price calculation is more accurate.') : L('Ponudba je pripravljena za naslednji korak.', 'The quote is ready for the next step.')}</small>
-                    {neurejene.length > 0 && (
+                    {/* Vse postavke, ne le neurejene: ko je bila postavka dopolnjena,
+                        je prej z seznama IZGINILA — kar je videti kot izguba, ne kot
+                        napredek. Zdaj ostane in dobi kljukico, tako da se vidi, da se
+                        je delo shranilo (Tina, 28. 8. 2026). */}
+                    {postavke.length > 0 && (
                       <span className="izbor-preveri">
-                        {neurejene.map(({ l, storitev }) => (
-                          <button key={l.uid} type="button" className="izbor-preveri-gumb" onClick={() => odpriDetajl(l.uid)}>
-                            <PencilSimple size={17} weight="bold" aria-hidden />
-                            {L('Dopolni: ', 'Complete: ')}{prikazVrstice(l, storitev!)}
-                            <span className="izbor-znacka">{L('Izpolni', 'Fill in')}</span>
-                          </button>
-                        ))}
+                        {postavke.map(({ l, storitev }) => {
+                          const manjka = neurejene.some(n => n.l.uid === l.uid);
+                          return (
+                            <button key={l.uid} type="button" className={'izbor-preveri-gumb' + (manjka ? '' : ' izbor-preveri-ok')} onClick={() => odpriDetajl(l.uid)}>
+                              {manjka
+                                ? <PencilSimple size={17} weight="bold" aria-hidden />
+                                : <Check size={17} weight="bold" aria-hidden />}
+                              {manjka ? L('Dopolni: ', 'Complete: ') : ''}{prikazVrstice(l, storitev!)}
+                              <span className="izbor-znacka">{manjka ? L('Izpolni', 'Fill in') : L('Urejeno', 'Done')}</span>
+                            </button>
+                          );
+                        })}
                       </span>
                     )}
                   </span>

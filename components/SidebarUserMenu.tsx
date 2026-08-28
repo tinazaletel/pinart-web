@@ -73,7 +73,7 @@ export default function SidebarUserMenu({ base }: { base: string }) {
           <Link href={`${base}/kalkulator/paket`} role="menuitem" className={styles.userMenuPaket}
             onClick={() => setOdprt(false)}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><Package size={15} weight="bold" /> {L('Paket', 'Plan')}</span>
-            <b data-pro={paket === 'pro'}>{paket === 'pro' ? 'Pro' : L('Brezplačno', 'Free')}</b>
+            <b data-pro={paket === 'pro' || paket === 'premium'}>{paket === 'pro' ? 'Pro' : paket === 'premium' ? 'Premium' : L('Brezplačno', 'Free')}</b>
           </Link>
           {/* Ceniki in stroski sta ze v stranski navigaciji zgoraj — tukaj sodijo samo
               stvari o RACUNU, ne podvojena navigacija. "Paket in narocnina" ter

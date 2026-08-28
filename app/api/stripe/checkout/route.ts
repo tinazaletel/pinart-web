@@ -98,7 +98,10 @@ export async function POST(request: Request) {
         'managed_payments[enabled]': 'true',
         'line_items[0][price]': priceId,
         'line_items[0][quantity]': 1,
-        success_url: `${osnova}/kalkulator/paket?placilo=uspesno&seja={CHECKOUT_SESSION_ID}`,
+        /* Po plačilu v APLIKACIJO, ne nazaj na kartice s paketi: tiste izgledajo
+           enako kot cenik na landingu, zato je človek po nakupu obstal na
+           strani, ki ga vabi k nakupu (Tina, 28. 8. 2026). */
+        success_url: `${osnova}/kalkulator/dom?placilo=uspesno&seja={CHECKOUT_SESSION_ID}`,
         cancel_url: `${osnova}/kalkulator/paket?placilo=preklicano`,
         customer_email: user.email || undefined,
         /* client_reference_id preživi celotno pot skozi Stripe in se vrne v

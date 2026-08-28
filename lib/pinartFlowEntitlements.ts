@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/client';
 import { jeTester } from '@/lib/testerji';
 import { aktivnaDodelitev, dodelitevOdklene } from '@/lib/dostop';
 
-export type AccessTier = 'anonymous' | 'free' | 'pro';
+export type AccessTier = 'anonymous' | 'free' | 'premium' | 'pro';
 
 export type FlowRole = 'owner' | 'admin' | 'accounting' | 'member' | 'viewer';
 export type FlowRoleAction =
@@ -91,6 +91,13 @@ export const FREE_LIMITS = {
 const FEATURES: Record<AccessTier, ReadonlySet<FlowFeature>> = {
   anonymous: new Set(['calculator', 'localPdf']),
   free: new Set(['calculator', 'localPdf', 'cloudBackup', 'basicHistory']),
+  /* Premium ima vse iz Pro RAZEN vključene Pupe na našem računu — AI si priklopi
+     sam prek 'aiConnector' in ga plača svojemu ponudniku, natanko kot piše v
+     ceniku. Razliko med paketoma dela kvota, ne zaklenjena vrata. */
+  premium: new Set([
+    'calculator', 'localPdf', 'cloudBackup', 'basicHistory', 'clients',
+    'contracts', 'expenses', 'businessInsights', 'accountingExport', 'aiConnector',
+  ]),
   pro: new Set([
     'calculator', 'localPdf', 'cloudBackup', 'basicHistory', 'clients',
     'contracts', 'expenses', 'businessInsights', 'accountingExport', 'aiConnector',
@@ -127,5 +134,12 @@ export async function getAccessTier(): Promise<AccessTier> {
     ? new Date(entitlement.valid_until).getTime() < Date.now()
     : false;
 
-  return entitlement.tier === 'pro' && usableStatus && !expired ? 'pro' : 'free';
+  /* Premium je obstajal v ceniku in v bazi, tu pa ne — zato je plačnik videl
+     ključavnico na Pupi, čeprav mu jo cenik obljublja (Tina, 28. 8. 2026).
+     Razlika med paketoma ostaja v kvoti: Pro ima sporočila vključena, Premium
+     priklopi svoj AI ključ in ga plača svojemu ponudniku. */
+  if (!usableStatus || expired) return 'free';
+  if (entitlement.tier === 'pro') return 'pro';
+  if (entitlement.tier === 'premium') return 'premium';
+  return 'free';
 }

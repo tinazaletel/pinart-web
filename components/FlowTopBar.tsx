@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { getAccessTier } from '@/lib/pinartFlowEntitlements';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import DashboardHeaderTools from './DashboardHeaderTools';
@@ -46,6 +47,15 @@ export default function FlowTopBar() {
   const base = pathname.startsWith('/en/') ? '/en' : '';
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
+
+  /* Kateri paket imaš — bere se enkrat ob prikazu. Brezplačni ostane brez
+     značke, da se BETA ne razvleče čez pol glave. */
+  const [paketZnak, setPaketZnak] = useState('');
+  useEffect(() => {
+    void getAccessTier()
+      .then(t => setPaketZnak(t === 'pro' ? 'PRO' : t === 'premium' ? 'PREMIUM' : ''))
+      .catch(() => undefined);
+  }, []);
   const [pomocOdprta, setPomocOdprta] = useState(false);
 
   /* Drsenje: navzdol se vrstica umakne, navzgor se takoj vrne — pri branju
@@ -119,7 +129,9 @@ export default function FlowTopBar() {
 
       {/* BETA, ne FREE: Flow ni brezplacen, brezplacen je samo kalkulator.
           Zato tudi ni "Nadgradi" ob prehodu miske — nadgrajevati ni cesa. */}
-      <span className={styles.paketZnacka} data-beta>BETA</span>
+      {/* Ob BETA še paket, kadar je plačljiv — prej se ni videlo nikjer,
+          kaj imaš (Tina, 28. 8. 2026). Brezplačni vidi samo BETA. */}
+      <span className={styles.paketZnacka} data-beta>{paketZnak ? `${paketZnak} · BETA` : 'BETA'}</span>
       {/* tik ob BETA, kot prej v meniju — pot nazaj na Flow landing */}
       <Link className={styles.zapriGumb} href={`${base}/flow`}>{L('× zapri', '× close')}</Link>
 

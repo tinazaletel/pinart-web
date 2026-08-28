@@ -1,5 +1,6 @@
 import { PAKETI, type PaketId } from '@/lib/paketi';
 import GumbNarocnina from '@/components/GumbNarocnina';
+import GumbPortal from '@/components/GumbPortal';
 import { ZNAK_VALUTE, type Valuta } from '@/lib/cenaNarocnine';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
@@ -59,7 +60,7 @@ export default function PaketiSeznam({ trenutni, locale = 'sl', valuta = 'EUR' }
                   <GumbNarocnina paket="premium" razred={styles.paketGlavni} jeEn={jeEn} napis={L('Nadgradi na Premium', 'Upgrade to Premium')} />
                 )}
                 {moj && p.id !== 'free' && (
-                  <a className={styles.paketDrugi} href={POSTA('odpoved ali znižanje paketa')}>{L('Odpovej ali znižaj', 'Cancel or downgrade')}</a>
+                  <GumbPortal razred={styles.paketDrugi} jeEn={jeEn} napis={L('Uredi naročnino', 'Manage subscription')} />
                 )}
                 {!moj && p.kmalu && <span className={styles.paketKmalu}>{L('Kmalu', 'Coming soon')}</span>}
                 {!moj && !p.kmalu && p.id !== 'free' && (
@@ -72,8 +73,8 @@ export default function PaketiSeznam({ trenutni, locale = 'sl', valuta = 'EUR' }
       </div>
 
       <p className={styles.paketOpomba}>
-        {L('Plačilo teče prek Stripa, ki je tudi prodajalec na računu — davek se doda na blagajni glede na tvojo državo. Odpoved zaenkrat uredim osebno; napiši mi.',
-           'Payments run through Stripe, which is also the merchant of record — tax is added at checkout based on your country. Cancellations are still handled personally for now; write to me.')}
+        {L('Plačilo teče prek Stripa, ki je tudi prodajalec na računu — davek se doda na blagajni glede na tvojo državo. Naročnino odpoveš, spremeniš ali prekličeš sama prek gumba »Uredi naročnino«; tam so tudi vsi računi.',
+           'Payments run through Stripe, which is also the merchant of record — tax is added at checkout based on your country. You can change or cancel the subscription yourself via »Manage subscription«, where your invoices live too.')}
       </p>
     </>
   );

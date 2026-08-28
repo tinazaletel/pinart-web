@@ -13,7 +13,7 @@ import MeniProfil from './MeniProfil';
 import KomZnacka from './KomZnacka';
 import PaketZnak from './PaketZnak';
 import PogledPreklop from './PogledPreklop';
-import { paketUporabnika } from '@/lib/pravice';
+import { naroceniPaket, paketUporabnika } from '@/lib/pravice';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 type Section = 'dom' | 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'evidenca' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija' | 'sef';
@@ -25,7 +25,8 @@ type Section = 'dom' | 'overview' | 'offer' | 'retainer' | 'projects' | 'contrac
 export default async function DashboardSidebar({ base, active }: { base: string; active: Section }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
-  const imaPupo = (await paketUporabnika()) === 'pro';
+  const paketZaPupo = await naroceniPaket();
+  const imaPupo = paketZaPupo === 'pro' || paketZaPupo === 'premium';
   const aktivenPreklop: 'dom' | 'plosca' | 'none' = active === 'dom' ? 'dom' : active === 'overview' ? 'plosca' : 'none';
   const item = (section: Section, href: string, number: string, label: string, ikona: NavIkonaVrsta, zaklenjeno?: string) =>
     <Link className={`${styles.navItem} ${active === section ? styles.active : ''}`} href={href} title={label}
