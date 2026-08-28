@@ -44,9 +44,13 @@ export default function PogledPreklop({
 
       {opozorilo && (
         <div className="pp-alert" role="alertdialog" aria-label={L('Nadgradnja', 'Upgrade')}>
-          <p>{L('Pupa dom je pogovorni vmesnik s Pupo — na voljo v paketu s Pupo.', 'Pupa home is the conversational interface — available in a plan with Pupa.')}</p>
+          {/* Dve poti, ne ena: v Premiumu priklopiš svoj AI ključ in ga plačaš
+              svojemu ponudniku, v Pro so sporočila vključena. Prej je pisalo
+              samo »na voljo v paketu s Pupo«, kar ne pove, kaj naj človek naredi. */}
+          <p>{L('Pupa je na voljo v Premiumu — s svojim AI ključem, ki ga plačaš svojemu ponudniku — in v paketu Pro, kjer so sporočila vključena.',
+                'Pupa is available on Premium — with your own AI key, billed by your provider — and on Pro, where messages are included.')}</p>
           <div className="pp-alert-akc">
-            <a href={`${base}/kalkulator/paket`} className="pp-nadg">{L('Nadgradi paket', 'Upgrade plan')}</a>
+            <a href={`${base}/kalkulator/paket`} className="pp-nadg">{L('Poglej pakete', 'See plans')}</a>
             <button type="button" className="pp-zapri" onClick={() => setOpozorilo(false)}>{L('Zapri', 'Close')}</button>
           </div>
         </div>
@@ -54,13 +58,19 @@ export default function PogledPreklop({
 
       <style jsx>{`
         /* brez zunanje sence: scroll vsebnik menija (.nav overflow-y:auto) bi jo rezal — steklo + obroba + vijola aktivni zadošča */
-        .pp { position: relative; display: inline-flex; align-items: center; gap: .2rem; padding: .22rem; border-radius: 999px; background: rgba(255,255,255,.6); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 8%, transparent); }
+        /* Lasten sloj: brez tega se postavke menija, ki v kodi pridejo ZA
+           preklopom, izrišejo čez odprto opozorilo — z-index na otroku sam
+           ne pomaga, ker ovoj nima svojega sklada (Tina, 28. 8. 2026). */
+        .pp { position: relative; z-index: 70; display: inline-flex; align-items: center; gap: .2rem; padding: .22rem; border-radius: 999px; background: rgba(255,255,255,.6); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 8%, transparent); }
         .pp-g { display: inline-flex; align-items: center; gap: .38rem; padding: .42rem .8rem; border-radius: 999px; font: 600 .8rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 62%, transparent); text-decoration: none; white-space: nowrap; border: 0; background: transparent; cursor: pointer; transition: background .16s ease, color .16s ease; }
         .pp-g:hover { color: var(--ink, #1a1a1a); }
         .pp-g.on { background: var(--purple, oklch(58% .2 297)); color: #fff; }
         .pp-lock { color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
         .pp-g svg { flex: none; }
-        .pp-alert { position: absolute; top: calc(100% + .5rem); right: 0; z-index: 60; width: min(20rem, 80vw); padding: .85rem .9rem; border-radius: .9rem; background: #fff; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent); box-shadow: 0 18px 44px oklch(40% .08 300 / .2); animation: ppIn .18s ease both; }
+        .pp-alert { position: absolute; top: calc(100% + .5rem); left: 0; right: auto; z-index: 60; /* Širina se ravna po meniju, ne po zaslonu: stolpec ima overflow-y:auto in
+           karkoli širšega odreže — opozorilo je viselo čez postavke menija
+           in bilo odsekano na levi (Tina, 28. 8. 2026). */
+        width: min(100%, 15rem); padding: .85rem .9rem; border-radius: .9rem; background: #fff; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent); box-shadow: 0 18px 44px oklch(40% .08 300 / .2); animation: ppIn .18s ease both; }
         .pp-alert p { margin: 0 0 .6rem; font: 500 .82rem/1.45 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pp-alert-akc { display: flex; align-items: center; gap: .5rem; }
         .pp-nadg { display: inline-flex; padding: .45rem .8rem; border-radius: 999px; background: var(--purple, oklch(58% .2 297)); color: #fff; font: 700 .78rem var(--font-sans), sans-serif; text-decoration: none; }

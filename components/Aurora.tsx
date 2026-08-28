@@ -130,8 +130,18 @@ export default function Aurora(props: AuroraProps) {
     const ctn = ctnDom.current;
     if (!ctn) return;
 
-    const renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: true });
+    /* Brskalnik brez WebGL (izklopljen pospesevalnik, star iPad, politika v
+       podjetju) tu vrze napako. Brez lovljenja je to izjema med izrisom in
+       cela stran se sesuje z »Application error«. Aurora je okras: ce je ni,
+       ostane navadno ozadje in stran deluje naprej. */
+    let renderer: Renderer;
+    try {
+      renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: true });
+    } catch {
+      return;
+    }
     const gl = renderer.gl;
+    if (!gl) return;
     gl.clearColor(0, 0, 0, 0);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -152,25 +162,33 @@ export default function Aurora(props: AuroraProps) {
     }
     window.addEventListener('resize', resize);
 
-    const geometry = new Triangle(gl);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((geometry as any).attributes.uv) delete (geometry as any).attributes.uv;
+    /* Tudi prevod shaderja lahko odpove (star gonilnik). Isto pravilo:
+       raje brez okrasa kot brez strani. */
+    let mesh: Mesh;
+    try {
+      const geometry = new Triangle(gl);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((geometry as any).attributes.uv) delete (geometry as any).attributes.uv;
 
-    const colorStopsArray = colorStops.map(hex => { const c = new Color(hex); return [c.r, c.g, c.b]; });
+      const colorStopsArray = colorStops.map(hex => { const c = new Color(hex); return [c.r, c.g, c.b]; });
 
-    program = new Program(gl, {
-      vertex: VERT,
-      fragment: FRAG,
-      uniforms: {
-        uTime: { value: 0 },
-        uAmplitude: { value: amplitude },
-        uColorStops: { value: colorStopsArray },
-        uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
-        uBlend: { value: blend },
-      },
-    });
+      program = new Program(gl, {
+        vertex: VERT,
+        fragment: FRAG,
+        uniforms: {
+          uTime: { value: 0 },
+          uAmplitude: { value: amplitude },
+          uColorStops: { value: colorStopsArray },
+          uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
+          uBlend: { value: blend },
+        },
+      });
 
-    const mesh = new Mesh(gl, { geometry, program });
+      mesh = new Mesh(gl, { geometry, program });
+    } catch {
+      window.removeEventListener('resize', resize);
+      return;
+    }
     ctn.appendChild(gl.canvas);
 
     let animateId = 0;

@@ -4,6 +4,10 @@
  * Prej so bili zapisani samo v FlowLanding. Ko sta cenik in aplikacija dva
  * seznama, se prej ali slej razideta in uporabnik na eni strani vidi drugo
  * obljubo kot na drugi.
+ *
+ * Stevilke se od 26. 8. 2026 NE vpisujejo tu, ampak berejo iz
+ * lib/cenaNarocnine.ts (CENIK / CENIK_USD) — tam je cena, po kateri se tudi
+ * zaracuna. Tri mesta s tremi cenami so nas ze enkrat ujela.
  */
 
 export type PaketId = 'free' | 'premium' | 'pro';
@@ -20,6 +24,13 @@ export function pupaMesecnaKvota(paket: string): number {
   return PUPA_MESECNE_KVOTE[paket as PaketId] ?? 0;
 }
 
+/* eslint-disable-next-line @typescript-eslint/consistent-type-imports */
+import { CENIK, CENIK_USD, UVODNA_DO } from '@/lib/cenaNarocnine';
+
+/* Datum uvodne cene, zapisan po slovensko (»31. 10. 2026«) za prikaz. */
+const uvodnaDoSl = (() => { const [l, m, d] = UVODNA_DO.split('-'); return `${Number(d)}. ${Number(m)}. ${l}`; })();
+const uvodnaDoEn = (() => { const d = new Date(UVODNA_DO + 'T00:00:00Z'); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }); })();
+
 export type Paket = {
   id: PaketId;
   ime: string;
@@ -29,10 +40,16 @@ export type Paket = {
   cena: string;
   enota: string;
   enotaEn?: string;
-  /* prečrtana redna cena, kadar velja ustanovna */
+  /* prečrtana redna cena, kadar velja uvodna oz. ustanovna */
   redna?: string;
+  /* ista cena v dolarjih — ameriski trg ima svoje stopnice, ne preracuna */
+  cenaUsd?: string;
+  rednaUsd?: string;
   ustanovna?: string;
   ustanovnaEn?: string;
+  /* drobni tisk pod ceno (kdaj se uvodna izteče in kaj velja potem) */
+  opomba?: string;
+  opombaEn?: string;
   znacka?: string;
   znackaEn?: string;
   kmalu?: boolean;
@@ -49,6 +66,7 @@ export const PAKETI: Paket[] = [
     zaEn: 'For getting started and one-off projects',
     cena: '0', enota: '€ za vedno', enotaEn: '€ forever',
     vkljuceno: [
+      'Kalkulator brez prijave — račun rabiš samo za shranjevanje',
       'Kalkulator poštenih cen',
       'Tri različice ponudbe za stranko',
       'Izračun avtorskih pravic in licence',
@@ -58,6 +76,7 @@ export const PAKETI: Paket[] = [
       'Oštevilčenje ponudb',
     ],
     vkljucenoEn: [
+      'Calculator without an account — sign up only to save',
       'Fair price calculator',
       'Three quote versions for the client',
       'Copyright and licensing calculation',
@@ -73,13 +92,17 @@ export const PAKETI: Paket[] = [
     imeEn: 'Premium',
     za: 'Za redno delo s strankami',
     zaEn: 'For regular client work',
-    cena: '5', enota: '€ / mesec', enotaEn: '€ / month', redna: '9',
-    ustanovna: 'Ustanovna cena za prvih 50 — za vedno',
-    ustanovnaEn: 'Founding price for the first 50 — forever',
+    cena: String(CENIK.uvodna.premium.mesec), enota: '€ / mesec', enotaEn: '€ / month', redna: String(CENIK.redna.premium.mesec),
+    cenaUsd: String(CENIK_USD.uvodna.premium.mesec), rednaUsd: String(CENIK_USD.redna.premium.mesec),
+    ustanovna: `Ustanovna cena ${CENIK.ustanovna.premium.mesec} €/mesec za prvih 50`,
+    ustanovnaEn: `Founding price $${CENIK_USD.ustanovna.premium.mesec}/month for the first 50`,
+    opomba: `Uvodna cena velja do ${uvodnaDoSl}, nato ${CENIK.redna.premium.mesec} €/mesec.`,
+    opombaEn: `Introductory price until ${uvodnaDoEn}, then $${CENIK_USD.redna.premium.mesec}/month.`,
     znacka: 'Najbolj priljubljeno',
     znackaEn: 'Most popular',
     vkljuceno: [
       'Vse iz Brezplačno',
+      'Preverjanje stranke — prihodki, dobiček in blokade, da veš, koliko lahko računaš; 20 pregledov na mesec',
       'Shranjene ponudbe, pogodbe, računi',
       'Dolgoročni retainerji',
       'Kartoteka strank',
@@ -89,6 +112,7 @@ export const PAKETI: Paket[] = [
     ],
     vkljucenoEn: [
       'Everything in Free',
+      'Client lookup — revenue, profit and blocked accounts, so you know what to charge; 20 checks a month',
       'Saved quotes, contracts, invoices',
       'Long-term retainers',
       'Client records',
@@ -103,10 +127,16 @@ export const PAKETI: Paket[] = [
     imeEn: 'Pro',
     za: 'Za polno poslovanje',
     zaEn: 'For full-scale business',
-    cena: '19', enota: '€ / mesec', enotaEn: '€ / month',
+    cena: String(CENIK.uvodna.pro.mesec), enota: '€ / mesec', enotaEn: '€ / month', redna: String(CENIK.redna.pro.mesec),
+    cenaUsd: String(CENIK_USD.uvodna.pro.mesec), rednaUsd: String(CENIK_USD.redna.pro.mesec),
+    ustanovna: 'Uvodna cena',
+    ustanovnaEn: 'Introductory price',
+    opomba: `Velja do ${uvodnaDoSl}, nato ${CENIK.redna.pro.mesec} €/mesec (${CENIK.redna.pro.leto} € ob letnem plačilu).`,
+    opombaEn: `Until ${uvodnaDoEn}, then $${CENIK_USD.redna.pro.mesec}/month ($${CENIK_USD.redna.pro.leto} billed yearly).`,
     znacka: 'Kmalu', znackaEn: 'Coming soon', kmalu: true,
     vkljuceno: [
       'Vse iz Premium',
+      'Preverjanje stranke — 60 pregledov na mesec',
       'Primerjava s trgom — koliko za to zaračunajo drugi',
       'Celoten analitični pregled — prihodki in dobiček po strankah',
       'Sinhronizacija med vsemi orodji',
@@ -119,6 +149,7 @@ export const PAKETI: Paket[] = [
     ],
     vkljucenoEn: [
       'Everything in Premium',
+      'Client lookup — 60 checks a month',
       'Market comparison — what others charge for this',
       'Full analytics overview — revenue and profit per client',
       'Sync across all tools',

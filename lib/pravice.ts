@@ -32,3 +32,25 @@ export async function paketUporabnika(): Promise<AccessTier> {
 export async function smePorabiti(funkcija: FlowFeature): Promise<boolean> {
   return canUseFeature(await paketUporabnika(), funkcija);
 }
+
+/* Paket za PRIKAZ na strani »Paket in naročnina«.
+ *
+ * Namenoma ločeno od paketUporabnika(): tista odloča o pravicah dostopa in
+ * njen tip AccessTier pozna le anonymous/free/pro. Premium bi bilo treba
+ * vpeljati skozi vso logiko zaklepanja, kar je svoje delo. Dokler to ni
+ * narejeno, mora stran vsaj POVEDATI resnico — kdor plača Premium, mora na
+ * kartici videti »Tvoj paket«, sicer misli, da plačilo ni šlo skozi. */
+export async function naroceniPaket(): Promise<'free' | 'premium' | 'pro'> {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return 'free';
+    const { data, error } = await supabase.rpc('current_organization_entitlements');
+    if (error || !Array.isArray(data) || !data[0]) return 'free';
+    const e = data[0] as { tier?: string; status?: string; valid_until?: string | null };
+    const veljaven = e.status === 'active' || e.status === 'trialing' || e.status === 'past_due';
+    const potekel = e.valid_until ? new Date(e.valid_until).getTime() < Date.now() : false;
+    if (!veljaven || potekel) return 'free';
+    return e.tier === 'pro' ? 'pro' : e.tier === 'premium' ? 'premium' : 'free';
+  } catch { return 'free'; }
+}

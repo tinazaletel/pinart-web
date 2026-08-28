@@ -2345,7 +2345,7 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
   color: color-mix(in oklch, var(--ink) 68%, transparent);
   font-size: .55rem; font-weight: 800; letter-spacing: .08em; text-decoration: none;
 }
-.paketZnacka[data-pro='true'] { border-color: oklch(64% .18 350); color: oklch(48% .18 350); background: oklch(96% .04 350); }
+.paketZnacka[data-pro='true'] { border-color: oklch(64% .18 297); color: oklch(46% .19 297); background: oklch(96% .04 297); }
 .topLocilo { color: color-mix(in oklch, var(--ink) 30%, transparent); }
 .topStran { font-size: .82rem; font-weight: 700; }
 @media (max-width: 680px) {
@@ -2742,13 +2742,13 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
 /* Paket v profilnem meniju: kateri imas in kje ga urejas. */
 .userMenuPaket { display: flex !important; align-items: center; justify-content: space-between; gap: .8rem; }
 .userMenuPaket b { font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: color-mix(in oklch, var(--ink) 68%, transparent); }
-.userMenuPaket b[data-pro='true'] { color: oklch(48% .18 350); }
+.userMenuPaket b[data-pro='true'] { color: oklch(46% .19 297); }
 
 /* Kompaktna kartica "Tvoj paket" na strani Račun in ekipa: samo trenutni paket
    + bližnjica na cenik, ne cel PaketiSeznam. */
 .paketMini { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.6rem; padding: 1.1rem 1.4rem; border: 1px solid color-mix(in oklch, var(--ink) 10%, transparent); border-radius: 1.2rem; background: oklch(98% .01 87); }
 .paketMiniIme { display: block; margin-top: .2rem; font-family: var(--font-serif), Georgia, serif; font-size: 1.5rem; font-weight: 500; line-height: 1; }
-.paketMiniIme[data-pro='true'] { color: oklch(48% .18 350); }
+.paketMiniIme[data-pro='true'] { color: oklch(46% .19 297); }
 .paketMiniLink { font-size: .8rem; font-weight: 700; white-space: nowrap; }
 
 /* ── Paket in naročnina ───────────────────────────────────────────────── */
@@ -2775,7 +2775,12 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
 .paketCena strong { font: 500 2.4rem/1 var(--font-sans), Georgia, serif; }
 .paketCena span { color: var(--muted); font-size: .8rem; }
 .paketCena s { color: color-mix(in oklch, var(--ink) 68%, transparent); font-size: .9rem; }
-.paketUstanovna { margin: 0; font-size: .68rem; font-weight: 700; color: oklch(48% .16 350); }
+.paketUstanovna { margin: 0; font-size: .84rem; font-weight: 700; color: oklch(46% .19 297); }
+/* drobni tisk pod ceno — mirnejši od ponudbe, a še vedno berljiv */
+/* datum in ura: desno v glavi; videz nosi komponenta DatumUra */
+.topbarDatum { flex: none; align-self: flex-start; margin: .15rem 0 0; }
+@media (max-width: 640px) { .topbarDatum { align-self: flex-end; } }
+.paketOpomba { margin: .3rem 0 0; font-size: .78rem; line-height: 1.5; color: rgba(17,17,17,.62); }
 .paketSeznam { display: grid; gap: .45rem; margin: .9rem 0 0; padding: 0; list-style: none; }
 .paketSeznam li { position: relative; padding-left: 1.3rem; font-size: .84rem; line-height: 1.45; }
 .paketSeznam li::before {

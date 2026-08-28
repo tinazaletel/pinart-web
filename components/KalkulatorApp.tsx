@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
+import TrzniOkvirZnacka from '@/components/TrzniOkvirZnacka';
 import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
-import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, migrirajStariFont } from '@/lib/dokVidez';
+import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, podlogaJeTemna, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { osnovnaVprasanja, dodatnaVprasanja, PRAV_STALNE, povzetekUporabe, rabaIzOdgovorov, nedogovorjena, type PravVprasanje } from '@/lib/praviceVprasanja';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
@@ -20,7 +21,7 @@ import IskalnikPodjetij from '@/components/IskalnikPodjetij';
 import IzbirnikDrzave from '@/components/IzbirnikDrzave';
 import AmbientBubbles from '@/components/AmbientBubbles';
 import { ugotoviPaket, zabeleziSPaketom } from '@/lib/analitika';
-import { VPRASANJA_PO_STORITVI, budgetIzbire, type ProjektnoVprasanje } from '@/lib/vprasanjaPoStoritvi';
+import { VPRASANJA_PO_STORITVI, budgetIzbire, SVOJE_SPLOSNO, type ProjektnoVprasanje } from '@/lib/vprasanjaPoStoritvi';
 import { izracunajLicencoDo } from '@/lib/licencePotek';
 
 import {
@@ -662,7 +663,8 @@ const lokalizirajVpr = (v: ProjektnoVprasanje, sid: string, locale: string): Pro
     label: en.label ?? v.label,
     placeholder: en.placeholder ?? v.placeholder,
     izbire: en.izbire ?? v.izbire,
-    svoje: en.svoje ?? v.svoje,
+    /* splosni »ali dopiši« ima prevod tu, ne 63-krat v katalogu */
+    svoje: en.svoje ?? (v.svoje === SVOJE_SPLOSNO ? 'or add your own …' : v.svoje),
   };
 };
 
@@ -1542,6 +1544,11 @@ const OFFER_CSS = `
          (podeduje osnovne .oc-* barve) — berljivo na svetlih podlogah. */
       .offer-cover-slika{background-size:cover;background-position:center;position:relative}
       .offer-cover-slika>*{position:relative;z-index:1}
+      /* Temna podloga (fotografija): besedilo naslovnice postane belo, sicer se
+         crn tisk izgubi v sliki. Rahla senca drzi berljivost tudi na svetlem delu. */
+      .offer-cover-temna .oc-kicker,.offer-cover-temna .oc-naslov,.offer-cover-temna .oc-firma,
+      .offer-cover-temna .oc-za,.offer-cover-temna .oc-datum{color:#fff;text-shadow:0 1px 12px rgba(0,0,0,.35)}
+      .offer-cover-temna .oc-crta{background:#fff}
       /* Pinart predloga — lahka CSS tekstura notranjega telesa (brez tezkih JPG) */
       .predloga{background-color:#fdfbf7;background-image:radial-gradient(120% 60% at 50% -10%,rgba(178,84,118,.05),transparent 60%),linear-gradient(180deg,#fdfbf7,#f8f2ea)}
       /* Pinart predloga — ploscato telo brez kvadratkov (kartic) */
@@ -2168,6 +2175,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [urejamKorak, setUrejamKorak] = useState<number | null>(null);   /* urejanje odgovora v mestu (klik na moder oblacek) */
   /* po mehurckih: vprasanja tecejo kot chat NAVZDOL (0 = samo mehurcki, 1 = o stranki, ...) */
   const [poMeh, setPoMeh] = useState(0);
+  /* Prvi »Naprej« po izbiri storitev se USTAVI pri »Dopolni«, sicer se korak
+     preskoci in podatki, ki dolocajo ceno, ostanejo prazni (Tina, 26. 8. 2026). */
+  const [dopolniPotrjeno, setDopolniPotrjeno] = useState(false);
   const pomakniNaZadnjeVprasanje = () => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.setTimeout(() => {
@@ -3188,6 +3198,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     setUrejamKorak(null);
     setChatVnos('');
     setPoMeh(0);
+    setDopolniPotrjeno(false);
     try { sessionStorage.removeItem('pinart-cene-poslano'); } catch { /* prazno */ }
     setKorak(0);
     /* na vrh, da sta pozdrav in izbira storitev takoj v vidnem polju */
@@ -3597,6 +3608,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* Vprasanja o storitvah niso vec svoji koraki — zivijo v podrobnostih
      vrstice na koraku 0 (klik na vrstico v "Tvoja ponudba"). Hitra ponudba
      jih lahko preskoci, podrobna jih odpre po zelji. */
+  /* Katere postavke se nimajo dopolnjenih podrobnosti. Prej je bil ta izracun
+     zaprt v bloku povzetka; potrebujeta ga tudi noga (gumb Naprej/Preskoci) in
+     opozorilo na Zakljucku, zato zivi tu. */
+  const postavkeStanje = useMemo(() => vrstice.map(l => {
+    const storitev = vseStoritve.find(s => s.id === l.sid);
+    const skupina = skupineVprasanj.find(g => g.id === l.uid);
+    const imaOdgovor = skupina?.vprasanja.some(vp =>
+      (odgovori[vp.key] || '').trim() || (odgovori[vp.key + ':drugo'] || '').trim()
+    );
+    const urejena = !skupina || skupina.vprasanja.length === 0
+      || urejenePodrobnosti.has(l.uid) || !!imaOdgovor;
+    return { l, storitev, urejena };
+  }).filter(p => p.storitev), [vrstice, vseStoritve, skupineVprasanj, odgovori, urejenePodrobnosti]);
+  const neurejenePostavke = useMemo(() => postavkeStanje.filter(p => !p.urejena), [postavkeStanje]);
+
   const prviPoVprasanjih = 1;
   /* osebni koraki (kdo si / kje delas / izkusnje) so odpadli tudi iz klasicne oblike:
      zbere jih onboarding, urejajo se v Moji podatki — vprasanja se NE ponavljajo (dogovor).
@@ -4026,10 +4052,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       /* bolj realen signal: ali je uporabnik cene prilagodil (svoje osnove ali
          rocni znesek pravic/licence) ali pa so privzete */
       const prilagojeno = Object.keys(osnove).length > 0 || Boolean(rocnePravice.trim()) || Boolean(rocnaLicenca.trim());
+      /* Dogodek gre PRVI in neodvisno od vsega ostalega. Prej je stal za dvema
+         čakanjema (Turnstile, paket); če je katero od njiju vrglo napako, je
+         plavajoči async blok tiho crknil in ni bilo ne dogodka ne cenovne
+         točke. Od 28. 8. 2026 nazaj: v bazi ni bilo NITI ENE cenovne točke,
+         čeprav so ljudje kalkulator uporabljali. */
+      void zabeleziSPaketom('cena_izracunana', { storitev: r.sez[0]?.ime || '', stevilo: r.sez.length, prilagojeno });
       (async () => {
-        const turnstileToken = await pridobiTurnstileToken();
-        const paket = await ugotoviPaket();
-        void zabeleziSPaketom('cena_izracunana', { storitev: r.sez[0]?.ime || '', stevilo: r.sez.length, prilagojeno });
+        const turnstileToken = await pridobiTurnstileToken().catch(() => undefined);
+        const paket = await ugotoviPaket().catch(() => undefined);
         fetch('/api/cene', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -4056,8 +4087,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         }).catch(() => {});
       })();
     } catch { /* zasebni nacin brskalnika ipd. */ }
+    /* `r` MORA biti med odvisnostmi: ob prihodu na korak izračun pogosto še ni
+       pripravljen, učinek zadene `!r` in se — brez te odvisnosti — ne prebudi
+       nikoli več. To je bil najverjetnejši vzrok prazne baze cen. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [korak, cenaStep]);
+  }, [korak, cenaStep, r]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -4472,7 +4506,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
        poti (/flow/…) pretvorimo v absolutne, da se naložijo tudi v PDF/mailu. */
     const podlogaNaslov = podlogaCover || aktivnaPredloga().platnica || '';
     const slikaUrl = !podlogaNaslov ? '' : podlogaNaslov.startsWith('data:') ? podlogaNaslov : (typeof window !== 'undefined' ? window.location.origin + podlogaNaslov : podlogaNaslov);
-    const slika = slikaUrl ? ` offer-cover-slika" style="background-image:url('${slikaUrl}')` : '';
+    /* na temnih podlogah gre cez sliko belo besedilo (lib/dokVidez: DOK_PODLOGE_TEMNE) */
+    const temna = podlogaJeTemna(podlogaNaslov) ? ' offer-cover-temna' : '';
+    const slika = slikaUrl ? ` offer-cover-slika${temna}" style="background-image:url('${slikaUrl}')` : '';
     const logoHtml = logo ? `<img class="oc-logo" src="${logo}" alt="" />` : '';
     return `<div class="offer-cover${slika}">${logoHtml}<div class="oc-kicker">${escapeHtml(oznaka)}</div><h1 class="oc-naslov">${escapeHtml(naziv)}</h1><div class="oc-crta"></div><div class="oc-firma">${escapeHtml(ponudnik.ime.trim() || '')}</div>${za ? `<div class="oc-za">za ${escapeHtml(za)}</div>` : ''}<div class="oc-datum">${escapeHtml(datum)} · velja do ${escapeHtml(veljaDatum)}</div></div>`;
   };
@@ -6393,6 +6429,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .sg-blok { padding: 1.05rem 0; border-top: 1px solid oklch(93% .006 82 / .55); }
         .cw .sg-blok:first-child { border-top: none; padding-top: .3rem; }
         .cw .sg-blok:last-child { padding-bottom: .5rem; }
+        /* daljša razlaga pod povezavo — na zaslonu je kratka verzija, dokaz pa
+           mora ostati en klik stran */
+        .cw .sg-vec { border-top: 1px solid oklch(93% .006 82 / .55); padding: .85rem 0 .2rem; }
+        .cw .sg-vec > summary { cursor: pointer; list-style: none; font-size: .86rem; font-weight: 700; color: var(--purple, #7C3AED); }
+        .cw .sg-vec > summary::-webkit-details-marker { display: none; }
+        .cw .sg-vec > summary::after { content: ' ↓'; }
+        .cw .sg-vec[open] > summary::after { content: ' ↑'; }
+        .cw .sg-vec p { margin: .7rem 0 0; font-size: .86rem; line-height: 1.6; color: rgba(17,17,17,.72); }
         .cw .sg-h { margin: 0 0 .4rem; font-size: .76rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
         .cw .sg-t { margin: 0; font-size: 1rem; font-weight: 400; line-height: 1.62; color: rgba(17,17,17,.84); }
         .cw .sg-t b { font-weight: 700; color: var(--ink); }
@@ -6599,6 +6643,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .orb-vrsta-cena { font-size: .78rem; color: rgba(17,17,17,.72); white-space: nowrap; }
         .cw .orb-vrsta-chk { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: rgba(17,17,17,.06); font-size: .82rem; font-weight: 700; color: rgba(17,17,17,.72); }
         .cw .orb-vrsta.on .orb-vrsta-chk { background: var(--ink); color: var(--paper); }
+        /* Ko krogec odvzema, mora tako tudi izgledati — sicer je popravek
+           nevidno delo in človek še naprej klika, kot je navajen. */
+        .cw .orb-vrsta-chk-on { cursor: pointer; transition: transform .12s ease, opacity .12s ease; }
+        .cw .orb-vrsta-chk-on:hover { transform: scale(1.08); opacity: .88; }
+        .cw .orb-vrsta-chk-on:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
         @media (max-width: 640px) { .cw .orb-vrsta { padding: .65rem .8rem; gap: .7rem; grid-template-columns: 2.3rem minmax(0, 1fr) auto 1.75rem; } .cw .orb-vrsta-ime { font-size: .9rem; } .cw .orb-vrsta-cena { font-size: .72rem; } }
 
         .cw .orb0.orb0-plus { color: rgba(17,17,17,.72); }
@@ -6838,7 +6887,22 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .izbor-preveri-gumb { width: 100%; display: flex; align-items: center; gap: .55rem; border: 1px solid rgba(124,58,237,.2); border-radius: 12px; background: rgba(255,255,255,.75); color: var(--ink); padding: .68rem .8rem; font: inherit; font-size: .9rem; font-weight: 650; text-align: left; cursor: pointer; transition: background .16s ease, border-color .16s ease; }
         .cw .izbor-preveri-gumb:hover { background: #fff; border-color: var(--purple); }
         .cw .izbor-preveri-gumb:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+        /* Urejena postavka ostane vidna, a umirjena — pove »narejeno«, ne vabi h kliku. */
+        .cw .izbor-preveri-gumb.izbor-preveri-ok { border-color: rgba(17,17,17,.1); background: rgba(255,255,255,.5); font-weight: 550; }
+        .cw .izbor-preveri-gumb.izbor-preveri-ok svg { color: oklch(58% .13 155); }
+        .cw .izbor-preveri-gumb.izbor-preveri-ok .izbor-znacka { background: rgba(17,17,17,.06); color: color-mix(in oklch, var(--ink) 60%, transparent); }
         .cw .izbor-preveri-gumb svg { flex: none; color: var(--purple); }
+        /* znacka kot pri pravicah: beseda pove, kaj naredis, ne le da nekaj manjka */
+        /* Zakljucek: rdeca opomba pred posiljanjem */
+        .cw .zak-manjka { display: flex; gap: .7rem; align-items: flex-start; max-width: 34rem; margin: 0 auto 1.4rem; padding: .9rem 1.05rem; border: 1px solid rgba(190,40,40,.32); border-radius: 14px; background: rgba(214,64,64,.07); color: #7d1f1f; text-align: left; }
+        .cw .zak-manjka svg { flex: none; margin-top: .1rem; color: #c0392b; }
+        .cw .zak-manjka b { display: block; margin-bottom: .3rem; font-size: .95rem; }
+        .cw .zak-manjka ul { margin: 0; padding-left: 1.1rem; font-size: .86rem; line-height: 1.55; }
+        .cw .zak-manjka li + li { margin-top: .25rem; }
+        .cw .zak-manjka .povezava { color: #7d1f1f; text-decoration: underline; }
+        .cw .izbor-znacka { margin-left: auto; flex: none; padding: .2rem .55rem; border-radius: 999px; background: rgba(124,58,237,.14); color: var(--purple, #7C3AED); font: 700 .72rem var(--font-sans), sans-serif; }
+        /* ko se je »Naprej« ustavil tu, je mehurcek crtkan — vidno je, da cakamo */
+        .cw .chat-mehur-cakam { border-style: dashed !important; border-width: 1.5px !important; box-shadow: 0 0 0 4px rgba(124,58,237,.08); }
         @media (max-width: 560px) { .cw .izbor-povzetek { width: calc(100% - 2rem); margin-top: 1rem; } }
         .cw .namig-zapri { position: absolute; top: .5rem; right: .55rem; width: 1.45rem; height: 1.45rem; border-radius: 50%; border: none; background: rgba(17,17,17,.07); color: rgba(17,17,17,.72); font-size: .72rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; line-height: 1; padding: 0; }
         .cw .namig-zapri:hover { background: rgba(17,17,17,.15); color: var(--ink); }
@@ -8427,18 +8491,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <p className="sg-uvod">{L('Preberi pogoje do konca, potem spodaj potrdi in gremo.', 'Read the terms to the end, then confirm below and off we go.')}</p>
               )
               ) : (<>
+              {/* Ena vrstica na naslov. Daljša razlaga je pod povezavo »Kako
+                  uporabljamo podatke?« — skrajšali smo zaslon, ne pa tega, kar
+                  moraš povedati (Tina, 26. 8. 2026: naslovi ostanejo). */}
               <div className="sg-blok">
-                <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
-                <p className="sg-t">{L('So pametno izhodišče, ne uradni cenik — nastale so na podlagi AI raziskave trga, pravo podatkovno bazo pa šele gradimo. Svobodno jih prilagodi; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.', 'They are a smart starting point, not an official price list — they are based on AI market research, and we are still building the real data-backed database. Adjust them freely; the final price in your quotes is always your decision and your responsibility.')}</p>
+                <h3 className="sg-h">{L('Tržni okvir', 'Market range')}</h3>
+                <p className="sg-t">{L('Opis stanja na trgu, ne priporočena cena. Številko prilagodiš kadarkoli; končna cena je tvoja odločitev in tvoja odgovornost.', 'A description of the market, not a recommended price. Adjust the figure any time; the final price is your decision and your responsibility.')}</p>
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Shranjeno pri tebi', 'Stored on your device')}</h3>
-                <p className="sg-t">{L('Ker nisi prijavljen/-a, cene, postavke in podatki ostanejo samo v tvojem brskalniku — pri nas se nič ne shrani. Ko se prijaviš, se varno shranijo v tvoj oblak (Flow) in so na voljo na vseh napravah.', 'Since you are not signed in, your prices, items and data stay only in your browser — nothing is stored on our side. When you sign in, they are securely saved to your cloud (Flow) and available on all your devices.')}</p>
+                <p className="sg-t">{L('Brez prijave podatki ostanejo v tvojem brskalniku — pri nas se ne shrani nič.', 'Without an account your data stays in your browser — nothing is stored on our side.')}</p>
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Vedno anonimno', 'Always anonymous')}</h3>
-                <p className="sg-t">{L('Ob prikazu izračuna anonimno zabeležimo le izbrane kategorije in zneske —', 'When the calculation is shown we anonymously record only the selected categories and amounts —')} <b>{L('brez imena, e-naslova ali IP-naslova', 'without name, email or IP address')}</b>{L(', nikoli povezano s teboj.', ', never linked to you.')}</p>
+                <p className="sg-t">{L('Zabeležimo le kategorijo in znesek —', 'We record only the category and the amount —')} <b>{L('brez imena, e-naslova in IP', 'without name, email or IP')}</b>.</p>
               </div>
+              <details className="sg-vec">
+                <summary>{L('Kako uporabljamo podatke?', 'How do we use the data?')}</summary>
+                <p>{L('Tržni okvir je sestavljen iz javno objavljenih cenikov drugih ponudnikov; lastno podatkovno bazo šele gradimo. Zato je opis trga in ne priporočilo, koliko naj zaračunaš.', 'The market range is built from publicly published price lists of other providers; our own database is still being built. It describes the market rather than recommending what you should charge.')}</p>
+                <p>{L('Ker nisi prijavljen/-a, cene, postavke in podatki ostanejo samo v tvojem brskalniku. Ko se prijaviš, se varno shranijo v tvoj oblak (Flow) in so na voljo na vseh napravah; izvoziš ali izbrišeš jih lahko kadarkoli.', 'Since you are not signed in, your prices, items and data stay only in your browser. When you sign in they are securely saved to your cloud (Flow) and available on all your devices; you can export or delete them at any time.')}</p>
+                <p>{L('Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske — nikoli imena, e-naslova ali IP-naslova in nikoli povezano s teboj. Iz tega nastaja statistika cen, ki jo boš videl/-a, ko bo baza dovolj velika.', 'When the calculation is shown we anonymously record the selected categories and amounts — never a name, email or IP address, and never linked to you. This is what the pricing statistics are built from, which you will see once the database is large enough.')}</p>
+              </details>
               </>)}
             </div>
             {!vLupini && (
@@ -9386,7 +9459,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         <span className="orb-vrsta-ikona" aria-hidden style={{ background: osvetli(barvi[0], 0.82), color: barvi[0] }}>{ikonaZa(s.id)}</span>
                         <span className="orb-vrsta-ime">{storIme(s)}</span>
                         <span className="orb-vrsta-cena">{L('od ', 'from ')}{val(osnovaZa(s))}</span>
-                        <span className="orb-vrsta-chk" aria-hidden>{on ? (q > 1 ? `✓${q}` : '✓') : '+'}</span>
+                        {/* Krogec je gumb za ODVZEM — enako kot pri mehurčkih in v mreži.
+                            Prej je bil tu samo okrasek s kljukico: kdor je hotel odvzeti,
+                            je s klikom nanj dodal še eno (Tina, 28. 8. 2026). */}
+                        {on ? (
+                          <span className="orb-vrsta-chk orb-vrsta-chk-on" role="button" tabIndex={0}
+                            title={L('Odstrani zadnjo vrstico te storitve', 'Remove the last row of this service')}
+                            aria-label={L('Odstrani ', 'Remove ') + storIme(s)}
+                            onClick={e => { e.stopPropagation(); odvzemiStoritev(s.id); }}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); odvzemiStoritev(s.id); } }}>
+                            ×{q}
+                          </span>
+                        ) : (
+                          <span className="orb-vrsta-chk" aria-hidden>+</span>
+                        )}
                       </button>
                     );
                   })}
@@ -9624,6 +9710,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             );
                           })()}
                         </div>
+                        {/* Pri več postavkah okvir pripada VSAKI posebej — pod
+                            seštevkom bi bil napačen. Zgoščen, da ne razbije seznama. */}
+                        {vrstice.length > 1 && (
+                          <div style={{ padding: '.1rem 0 .5rem 1.6rem' }}>
+                            <TrzniOkvirZnacka storitev={l.sid} jeEn={locale === 'en'} zgoscen />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -9917,17 +10010,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           )}
 
           {korak === 0 && !uvodChat && !klasicnaOblika && vrstice.length > 0 && (() => {
-            const postavke = vrstice.map(l => {
-              const storitev = vseStoritve.find(s => s.id === l.sid);
-              const skupina = skupineVprasanj.find(g => g.id === l.uid);
-              const imaOdgovor = skupina?.vprasanja.some(vp =>
-                (odgovori[vp.key] || '').trim() || (odgovori[vp.key + ':drugo'] || '').trim()
-              );
-              const urejena = !skupina || skupina.vprasanja.length === 0
-                || urejenePodrobnosti.has(l.uid) || !!imaOdgovor;
-              return { l, storitev, urejena };
-            }).filter(p => p.storitev);
-            const neurejene = postavke.filter(p => !p.urejena);
+            const postavke = postavkeStanje;
+            const neurejene = neurejenePostavke;
             const urejene = postavke.length - neurejene.length;
 
             return (
@@ -9943,17 +10027,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </span>
                 </div>
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
-                  <span className={'chat-mehur' + (neurejene.length ? ' chat-mehur-opomnik' : '')}>
+                  <span className={'chat-mehur' + (neurejene.length ? ' chat-mehur-opomnik' : '') + (neurejene.length && dopolniPotrjeno ? ' chat-mehur-cakam' : '')}>
                     <b>{neurejene.length ? (L('Urejenih: ', 'Filled in: ') + urejene + ' / ' + postavke.length) : L('Vse podrobnosti so urejene.', 'All details are filled in.')}</b>
                     <small>{neurejene.length ? L('Pred nadaljevanjem preveri še manjkajoče podatke, da bo izračun cene natančnejši.', 'Before continuing, check the missing details so the price calculation is more accurate.') : L('Ponudba je pripravljena za naslednji korak.', 'The quote is ready for the next step.')}</small>
-                    {neurejene.length > 0 && (
+                    {/* Vse postavke, ne le neurejene: ko je bila postavka dopolnjena,
+                        je prej z seznama IZGINILA — kar je videti kot izguba, ne kot
+                        napredek. Zdaj ostane in dobi kljukico, tako da se vidi, da se
+                        je delo shranilo (Tina, 28. 8. 2026). */}
+                    {postavke.length > 0 && (
                       <span className="izbor-preveri">
-                        {neurejene.map(({ l, storitev }) => (
-                          <button key={l.uid} type="button" className="izbor-preveri-gumb" onClick={() => odpriDetajl(l.uid)}>
-                            <PencilSimple size={17} weight="bold" aria-hidden />
-                            {L('Dopolni: ', 'Complete: ')}{prikazVrstice(l, storitev!)}
-                          </button>
-                        ))}
+                        {postavke.map(({ l, storitev }) => {
+                          const manjka = neurejene.some(n => n.l.uid === l.uid);
+                          return (
+                            <button key={l.uid} type="button" className={'izbor-preveri-gumb' + (manjka ? '' : ' izbor-preveri-ok')} onClick={() => odpriDetajl(l.uid)}>
+                              {manjka
+                                ? <PencilSimple size={17} weight="bold" aria-hidden />
+                                : <Check size={17} weight="bold" aria-hidden />}
+                              {manjka ? L('Dopolni: ', 'Complete: ') : ''}{prikazVrstice(l, storitev!)}
+                              <span className="izbor-znacka">{manjka ? L('Izpolni', 'Fill in') : L('Urejeno', 'Done')}</span>
+                            </button>
+                          );
+                        })}
                       </span>
                     )}
                   </span>
@@ -10540,6 +10634,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </div>
                 ))}
               </div>
+              {/* Tržni okvir stoji ob ceni samo, kadar je storitev ENA: razpon velja
+                  za posamezno storitev, pod seštevkom treh bi bil napačen. Pri več
+                  storitvah se pokaže ob vsaki postavki v povzetku ponudbe. */}
+              {r.sez.length === 1 && (
+                <div style={{ marginTop: '.9rem', display: 'flex' }}>
+                  <TrzniOkvirZnacka storitev={r.sez[0].id} jeEn={locale === 'en'} />
+                </div>
+              )}
               <div className="kartica" style={{ marginTop: '1.4rem' }}>
                 <div className="numgrid" style={{ marginTop: 0 }}>
                   <div className="polje">
@@ -10840,6 +10942,44 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
           {korak === zakljucekStep && (
             <>
+            {/* Rdece opozorilo pred posiljanjem: kaj v ponudbi se manjka. Ne
+                blokira nicesar — pelje tja, kjer se to uredi (Tina, 26. 8. 2026). */}
+            {(() => {
+              const { brezVkljucitve, brezSpecifikacije, brezOdgovorov } = praviceNedokoncano;
+              const manjkaPravic = brezVkljucitve.length + brezSpecifikacije.length + brezOdgovorov.length;
+              const brezNarocnika = !narocnikPonudbe.trim();
+              if (!neurejenePostavke.length && !manjkaPravic && !brezNarocnika) return null;
+              const nazajNaKorak0 = (poMehCilj: number) => { setKorak(0); setPoMeh(poMehCilj); };
+              return (
+                <div className="zak-manjka" role="alert">
+                  <Warning size={19} weight="fill" aria-hidden />
+                  <div>
+                    <b>{L('Ponudba še ni popolna', 'The quote is not complete yet')}</b>
+                    <ul>
+                      {neurejenePostavke.length > 0 && (
+                        <li>{L('Podrobnosti storitve niso dopolnjene pri:', 'Service details are missing for:')}{' '}
+                          {neurejenePostavke.map(({ l, storitev }, i) => (
+                            <span key={l.uid}>{i > 0 ? ', ' : ''}
+                              <button type="button" className="povezava" onClick={() => { setKorak(0); odpriDetajl(l.uid); }}>{storIme(storitev!)}</button>
+                            </span>
+                          ))}
+                        </li>
+                      )}
+                      {manjkaPravic > 0 && (
+                        <li>{L('Pravice uporabe še niso v celoti dogovorjene.', 'The usage rights are not fully agreed yet.')}{' '}
+                          <button type="button" className="povezava" onClick={() => nazajNaKorak0(3)}>{L('Uredi pravice', 'Edit the rights')}</button>
+                        </li>
+                      )}
+                      {brezNarocnika && (
+                        <li>{L('Naročnik ni vpisan — ponudba ne bo imela naslovnika.', 'The client is missing — the quote will have no recipient.')}{' '}
+                          <button type="button" className="povezava" onClick={() => nazajNaKorak0(1)}>{L('Vpiši naročnika', 'Enter the client')}</button>
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })()}
             {/* PRIMARNI blok: komu + en sam gumb Pošlji (s potrditvijo). */}
             <div className="posl-blok">
               {/* Ime ponudbe mora biti VIDNO in popravljivo, ne samo vprasano
@@ -11085,7 +11225,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                      vrstica v ponudbi — spet sprozi Naprej in te vrze naprej. */
                   e.currentTarget.blur();
                   /* v chatu: vsak Naprej razkrije naslednje NAVZDOL (o stranki -> trg -> raba -> pravice -> posebnosti -> CENA), nato priprava ponudbe */
-                  if (vChatu && poMeh < 5) {
+                  /* Postanek pri »Dopolni«: dokler kaksna postavka nima podrobnosti
+                     in postanka se ni bilo, ostanemo tu in se pomaknemo NANJ.
+                     Sicer je bil korak preskocen in cena je racunala na prazno. */
+                  if (vChatu && poMeh === 0 && neurejenePostavke.length > 0 && !dopolniPotrjeno) {
+                    setDopolniPotrjeno(true);
+                    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    window.setTimeout(() => {
+                      document.querySelector('.izbor-preveri')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+                    }, 60);
+                  } else if (vChatu && poMeh < 5) {
                     setPoMeh(poMeh + 1);
                     /* Lenis vodi glavni scroll, zato navaden window.scrollTo tu ni zanesljiv. */
                     pomakniNaZadnjeVprasanje();
@@ -11093,7 +11242,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     setKorak(ponudbaStep);   /* priprava ponudbe = overlay/urejanje */
                   } else { naprej(); }
                 }}>
-                {vChatu && poMeh === 4 ? L('Pokaži ceno', 'Show price') : vChatu && poMeh === 5 ? L('Pripravi ponudbo', 'Prepare quote') : korak === posebnostiStep ? L('Pokaži ceno', 'Show price') : korak === cenaStep ? L('Pripravi ponudbo', 'Prepare quote') : korak === ponudbaStep ? L('Zaključi', 'Finish') : L('Naprej', 'Next')}
+                {vChatu && poMeh === 0 && neurejenePostavke.length > 0 && dopolniPotrjeno ? L('Preskoči', 'Skip') : vChatu && poMeh === 4 ? L('Pokaži ceno', 'Show price') : vChatu && poMeh === 5 ? L('Pripravi ponudbo', 'Prepare quote') : korak === posebnostiStep ? L('Pokaži ceno', 'Show price') : korak === cenaStep ? L('Pripravi ponudbo', 'Prepare quote') : korak === ponudbaStep ? L('Zaključi', 'Finish') : L('Naprej', 'Next')}
                 <ArrowDown size={16} weight="bold" aria-hidden />
               </button>
             ) : (

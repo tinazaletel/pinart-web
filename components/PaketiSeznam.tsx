@@ -1,4 +1,7 @@
 import { PAKETI, type PaketId } from '@/lib/paketi';
+import GumbNarocnina from '@/components/GumbNarocnina';
+import GumbPortal from '@/components/GumbPortal';
+import { ZNAK_VALUTE, type Valuta } from '@/lib/cenaNarocnine';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 /**
@@ -15,7 +18,10 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 const POSTA = (zadeva: string) =>
   `mailto:tina@pinart.si?subject=${encodeURIComponent(`Pinart Flow — ${zadeva}`)}`;
 
-export default function PaketiSeznam({ trenutni, locale = 'sl' }: { trenutni: 'free' | 'pro'; locale?: string }) {
+export default function PaketiSeznam({ trenutni, locale = 'sl', valuta = 'EUR' }: { trenutni: 'free' | 'premium' | 'pro'; locale?: string; valuta?: Valuta }) {
+  /* Ameriski obiskovalec vidi dolarski cenik (lokacijo prebere stran). */
+  const zn = ZNAK_VALUTE[valuta];
+  const jeUsd = valuta === 'USD';
   const jeEn = locale === 'en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   /* Natancno ujemanje. Prej je 'pro' oznacil Premium IN Pro kot "tvoj paket",
@@ -38,10 +44,12 @@ export default function PaketiSeznam({ trenutni, locale = 'sl' }: { trenutni: 'f
               <p className={styles.paketZa}>{jeEn && p.zaEn ? p.zaEn : p.za}</p>
 
               <p className={styles.paketCena}>
-                <strong>{p.cena}</strong><span>{jeEn && p.enotaEn ? p.enotaEn : p.enota}</span>
-                {p.redna && <s>{p.redna} €</s>}
+                <strong>{jeUsd && p.cenaUsd ? p.cenaUsd : p.cena}</strong>
+                <span>{(jeEn && p.enotaEn ? p.enotaEn : p.enota).replace('€', zn)}</span>
+                {(jeUsd ? p.rednaUsd : p.redna) && <s>{(jeUsd ? p.rednaUsd : p.redna)} {zn}</s>}
               </p>
               {p.ustanovna && <p className={styles.paketUstanovna}>{jeEn && p.ustanovnaEn ? p.ustanovnaEn : p.ustanovna}</p>}
+              {p.opomba && <p className={styles.paketOpomba}>{jeEn && p.opombaEn ? p.opombaEn : p.opomba}</p>}
 
               <ul className={styles.paketSeznam}>
                 {(jeEn && p.vkljucenoEn ? p.vkljucenoEn : p.vkljuceno).map(v => <li key={v}>{v}</li>)}
@@ -49,14 +57,14 @@ export default function PaketiSeznam({ trenutni, locale = 'sl' }: { trenutni: 'f
 
               <div className={styles.paketDejanje}>
                 {moj && p.id === 'free' && (
-                  <a className={styles.paketGlavni} href={POSTA('nadgradnja na Premium')}>{L('Nadgradi na Premium', 'Upgrade to Premium')}</a>
+                  <GumbNarocnina paket="premium" razred={styles.paketGlavni} jeEn={jeEn} napis={L('Nadgradi na Premium', 'Upgrade to Premium')} />
                 )}
                 {moj && p.id !== 'free' && (
-                  <a className={styles.paketDrugi} href={POSTA('odpoved ali znižanje paketa')}>{L('Odpovej ali znižaj', 'Cancel or downgrade')}</a>
+                  <GumbPortal razred={styles.paketDrugi} jeEn={jeEn} napis={L('Uredi naročnino', 'Manage subscription')} />
                 )}
                 {!moj && p.kmalu && <span className={styles.paketKmalu}>{L('Kmalu', 'Coming soon')}</span>}
                 {!moj && !p.kmalu && p.id !== 'free' && (
-                  <a className={styles.paketGlavni} href={POSTA(`nadgradnja na ${p.ime}`)}>{L('Izberi ', 'Choose ') + ime}</a>
+                  <GumbNarocnina paket={p.id === 'pro' ? 'pro' : 'premium'} razred={styles.paketGlavni} jeEn={jeEn} napis={L('Izberi ', 'Choose ') + ime} />
                 )}
               </div>
             </article>
@@ -65,8 +73,8 @@ export default function PaketiSeznam({ trenutni, locale = 'sl' }: { trenutni: 'f
       </div>
 
       <p className={styles.paketOpomba}>
-        {L('Plačilni sistem še ni postavljen, zato nadgradnjo in odpoved zaenkrat uredim osebno — napiši mi in ti paket odklenem isti dan. Cene ne vključujejo DDV.',
-           'The payment system is not set up yet, so upgrades and cancellations are handled personally for now — write to me and I will unlock your plan the same day. Prices exclude VAT.')}
+        {L('Plačilo teče prek Stripa, ki je tudi prodajalec na računu — davek se doda na blagajni glede na tvojo državo. Naročnino odpoveš, spremeniš ali prekličeš sama prek gumba »Uredi naročnino«; tam so tudi vsi računi.',
+           'Payments run through Stripe, which is also the merchant of record — tax is added at checkout based on your country. You can change or cancel the subscription yourself via »Manage subscription«, where your invoices live too.')}
       </p>
     </>
   );

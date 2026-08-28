@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "next dev",
@@ -31,7 +31,9 @@
     "@sparticuz/chromium-min": "^149.0.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.7",
+    "@vercel/analytics": "^2.0.1",
     "@xyflow/react": "^12.11.2",
+    "fast-xml-parser": "^5.11.1",
     "fflate": "^0.8.3",
     "framer-motion": "^11.5.4",
     "gsap": "^3.12.5",

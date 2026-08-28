@@ -13,7 +13,7 @@ import MeniProfil from './MeniProfil';
 import KomZnacka from './KomZnacka';
 import PaketZnak from './PaketZnak';
 import PogledPreklop from './PogledPreklop';
-import { paketUporabnika } from '@/lib/pravice';
+import { naroceniPaket, paketUporabnika } from '@/lib/pravice';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
 type Section = 'dom' | 'overview' | 'offer' | 'retainer' | 'projects' | 'contracts' | 'invoices' | 'expenses' | 'clients' | 'goals' | 'plan' | 'time' | 'evidenca' | 'naloge' | 'koledar' | 'prices' | 'accounting' | 'profile' | 'settings' | 'ekipa' | 'novprojekt' | 'ideje' | 'marketing' | 'komunikacija' | 'sef';
@@ -25,7 +25,8 @@ type Section = 'dom' | 'overview' | 'offer' | 'retainer' | 'projects' | 'contrac
 export default async function DashboardSidebar({ base, active }: { base: string; active: Section }) {
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
-  const imaPupo = (await paketUporabnika()) === 'pro';
+  const paketZaPupo = await naroceniPaket();
+  const imaPupo = paketZaPupo === 'pro' || paketZaPupo === 'premium';
   const aktivenPreklop: 'dom' | 'plosca' | 'none' = active === 'dom' ? 'dom' : active === 'overview' ? 'plosca' : 'none';
   const item = (section: Section, href: string, number: string, label: string, ikona: NavIkonaVrsta, zaklenjeno?: string) =>
     <Link className={`${styles.navItem} ${active === section ? styles.active : ''}`} href={href} title={label}
@@ -83,8 +84,13 @@ export default async function DashboardSidebar({ base, active }: { base: string;
       {item('sef', `${base}/kalkulator/sef`, '07', L('Sef avtorstva', 'Authorship vault'), 'sef')}
     </MeniSkupina>
     <MeniSkupina naslov={L('Načrt', 'Plan')} aktivna={active === 'goals' || active === 'time' || active === 'evidenca' || active === 'plan' || active === 'naloge' || active === 'ideje' || active === 'koledar' || active === 'marketing'}>
-      {item('goals', `${base}/kalkulator/cilji`, '01', L('Cilji', 'Goals'), 'cilji', 'businessInsights')}
-      {item('time', `${base}/kalkulator/cas`, '02', L('Štoparica', 'Stopwatch'), 'cas', 'businessInsights')}
+      {/* Vrstni red po tem, kako pogosto se odpre, ne po pomenu pojma (Tina,
+          26. 8. 2026: »naloge se mi zdijo nizko … pa koledar tudi«). Dnevno:
+          naloge, koledar, stoparica, prisotnost. Obcasno: cilji, okvir,
+          marketing — ta je po dogovoru vedno zadnji. */}
+      {item('naloge', `${base}/kalkulator/naloge`, '01', L('Naloge', 'Tasks'), 'naloge')}
+      {item('koledar', `${base}/kalkulator/koledar`, '02', L('Koledar', 'Calendar'), 'koledar')}
+      {item('time', `${base}/kalkulator/cas`, '03', L('Štoparica', 'Stopwatch'), 'cas', 'businessInsights')}
       {/* Prisotnost je SVOJA postavka, ne del Stoparice (Tina, 25. 8.: "imela sem
           v meniju posebej stoparico in posebej prisotnost"). Stoparica meri ure
           NA PROJEKTU, prisotnost belezi prihod in odhod OSEBE po ZEPDSV — dve
@@ -92,10 +98,9 @@ export default async function DashboardSidebar({ base, active }: { base: string;
           profila. */}
       {/* BREZ kljucavnice: evidenca delovnega casa je zakonska obveznost po
           ZEPDSV, ne premijska analitika. Ne sme biti za placilnim zidom. */}
-      {item('evidenca', `${base}/kalkulator/evidenca-casa`, '03', L('Prisotnost', 'Attendance'), 'evidenca')}
-      {item('plan', `${base}/kalkulator/poslovni-nacrt`, '04', L('Poslovni okvir', 'Business framework'), 'okvir', 'businessInsights')}
-      {item('naloge', `${base}/kalkulator/naloge`, '05', L('Naloge', 'Tasks'), 'naloge')}
-      {item('koledar', `${base}/kalkulator/koledar`, '06', L('Koledar', 'Calendar'), 'koledar')}
+      {item('evidenca', `${base}/kalkulator/evidenca-casa`, '04', L('Prisotnost', 'Attendance'), 'evidenca')}
+      {item('goals', `${base}/kalkulator/cilji`, '05', L('Cilji', 'Goals'), 'cilji', 'businessInsights')}
+      {item('plan', `${base}/kalkulator/poslovni-nacrt`, '06', L('Poslovni okvir', 'Business framework'), 'okvir', 'businessInsights')}
       {item('marketing', `${base}/kalkulator/marketing`, '07', 'Marketing', 'marketing')}
     </MeniSkupina>
     {/* Pomoč odstranjena iz menija — podvaja se z »?« v headerju in AI asistentko (Pupa).

@@ -14,6 +14,7 @@ import CookieBanner from '@/components/CookieBanner';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import ContentProtect from '@/components/ContentProtect';
 import '../globals.css';
+import { Analytics } from '@vercel/analytics/next';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -160,6 +161,11 @@ export default async function LocaleLayout({
           <CookieBanner />
           <GoogleAnalytics />
           <ContentProtect />
+          {/* Vercelovo štetje obiskov: brez piškotkov, zato ne potrebuje privolitve
+              in prešteje tudi tiste, ki banner zavrnejo — Google Analytics jih ne.
+              Vključeno v paket Pro; dodatka Speed Insights Plus in Observability
+              Plus NISO vklopljena (28. 8. 2026). */}
+          <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>
