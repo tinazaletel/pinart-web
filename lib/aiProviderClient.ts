@@ -76,7 +76,11 @@ function providerConfig(connection: StoredAiConnection, secret: string): Provide
         testUrl: 'https://api.anthropic.com/v1/models',
         runUrl: 'https://api.anthropic.com/v1/messages',
         headers: { 'x-api-key': secret, 'anthropic-version': '2023-06-01' },
-        model: connection.model || 'claude-sonnet-4-20250514',
+        /* Imena modelov se upokojijo. 'claude-sonnet-4-20250514' je 28. 8. 2026
+           vrnil not_found_error in Pupa je zato tiho padala na »Napaka pri klicu
+           AI zaledja« — ključ je bil ves čas v redu. Privzeto ime brez datuma se
+           ne upokoji tako hitro. */
+        model: connection.model || 'claude-sonnet-5',
         format: 'anthropic' as const,
       };
     case 'google':
