@@ -126,7 +126,7 @@ export default async function KalkulatorPogojiPage({
         </section>
 
         <section style={S}>
-          <h2 style={H}>{en ? '1a. Where the recommended prices come from' : '1a. Od kod priporočene cene'}</h2>
+          <h2 style={H}>{en ? '1a. Where the market range comes from' : '1a. Od kod tržni okvir'}</h2>
           <p style={P}>
             {en ? (
               <>

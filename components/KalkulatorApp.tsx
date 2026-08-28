@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
+import TrzniOkvirZnacka from '@/components/TrzniOkvirZnacka';
 import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, podlogaJeTemna, migrirajStariFont } from '@/lib/dokVidez';
@@ -8477,8 +8478,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   uporabljamo podatke?« — skrajšali smo zaslon, ne pa tega, kar
                   moraš povedati (Tina, 26. 8. 2026: naslovi ostanejo). */}
               <div className="sg-blok">
-                <h3 className="sg-h">{L('Priporočene cene', 'Recommended prices')}</h3>
-                <p className="sg-t">{L('Priporočeno izhodišče, ne uradni cenik. Prilagodiš jih kadarkoli; končna cena je tvoja odločitev in tvoja odgovornost.', 'A recommended starting point, not an official price list. Adjust them any time; the final price is your decision and your responsibility.')}</p>
+                <h3 className="sg-h">{L('Tržni okvir', 'Market range')}</h3>
+                <p className="sg-t">{L('Opis stanja na trgu, ne priporočena cena. Številko prilagodiš kadarkoli; končna cena je tvoja odločitev in tvoja odgovornost.', 'A description of the market, not a recommended price. Adjust the figure any time; the final price is your decision and your responsibility.')}</p>
               </div>
               <div className="sg-blok">
                 <h3 className="sg-h">{L('Shranjeno pri tebi', 'Stored on your device')}</h3>
@@ -8490,7 +8491,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               </div>
               <details className="sg-vec">
                 <summary>{L('Kako uporabljamo podatke?', 'How do we use the data?')}</summary>
-                <p>{L('Priporočene cene so nastale na podlagi raziskave trga, pravo podatkovno bazo pa šele gradimo — zato so izhodišče in ne uradni cenik.', 'The recommended prices come from market research; the real data-backed database is still being built — which is why they are a starting point, not an official price list.')}</p>
+                <p>{L('Tržni okvir je sestavljen iz javno objavljenih cenikov drugih ponudnikov; lastno podatkovno bazo šele gradimo. Zato je opis trga in ne priporočilo, koliko naj zaračunaš.', 'The market range is built from publicly published price lists of other providers; our own database is still being built. It describes the market rather than recommending what you should charge.')}</p>
                 <p>{L('Ker nisi prijavljen/-a, cene, postavke in podatki ostanejo samo v tvojem brskalniku. Ko se prijaviš, se varno shranijo v tvoj oblak (Flow) in so na voljo na vseh napravah; izvoziš ali izbrišeš jih lahko kadarkoli.', 'Since you are not signed in, your prices, items and data stay only in your browser. When you sign in they are securely saved to your cloud (Flow) and available on all your devices; you can export or delete them at any time.')}</p>
                 <p>{L('Ob prikazu izračuna anonimno zabeležimo izbrane kategorije in zneske — nikoli imena, e-naslova ali IP-naslova in nikoli povezano s teboj. Iz tega nastaja statistika cen, ki jo boš videl/-a, ko bo baza dovolj velika.', 'When the calculation is shown we anonymously record the selected categories and amounts — never a name, email or IP address, and never linked to you. This is what the pricing statistics are built from, which you will see once the database is large enough.')}</p>
               </details>
@@ -9679,6 +9680,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             );
                           })()}
                         </div>
+                        {/* Pri več postavkah okvir pripada VSAKI posebej — pod
+                            seštevkom bi bil napačen. Zgoščen, da ne razbije seznama. */}
+                        {vrstice.length > 1 && (
+                          <div style={{ padding: '.1rem 0 .5rem 1.6rem' }}>
+                            <TrzniOkvirZnacka storitev={l.sid} jeEn={locale === 'en'} zgoscen />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -10587,6 +10595,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </div>
                 ))}
               </div>
+              {/* Tržni okvir stoji ob ceni samo, kadar je storitev ENA: razpon velja
+                  za posamezno storitev, pod seštevkom treh bi bil napačen. Pri več
+                  storitvah se pokaže ob vsaki postavki v povzetku ponudbe. */}
+              {r.sez.length === 1 && (
+                <div style={{ marginTop: '.9rem', display: 'flex' }}>
+                  <TrzniOkvirZnacka storitev={r.sez[0].id} jeEn={locale === 'en'} />
+                </div>
+              )}
               <div className="kartica" style={{ marginTop: '1.4rem' }}>
                 <div className="numgrid" style={{ marginTop: 0 }}>
                   <div className="polje">
