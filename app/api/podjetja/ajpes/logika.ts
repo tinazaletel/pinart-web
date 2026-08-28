@@ -7,6 +7,7 @@ export type AjpesTelo = {
   leto?: unknown;
   vrstaLp?: unknown;
   potrjenoPorabiTocko?: unknown;
+  davcna?: unknown;
 };
 
 const NABORI = new Set(['OS', 'SS']);

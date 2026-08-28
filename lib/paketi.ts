@@ -102,6 +102,7 @@ export const PAKETI: Paket[] = [
     znackaEn: 'Most popular',
     vkljuceno: [
       'Vse iz Brezplačno',
+      'Preverjanje stranke — prihodki, dobiček in blokade, da veš, koliko lahko računaš; 20 pregledov na mesec',
       'Shranjene ponudbe, pogodbe, računi',
       'Dolgoročni retainerji',
       'Kartoteka strank',
@@ -111,6 +112,7 @@ export const PAKETI: Paket[] = [
     ],
     vkljucenoEn: [
       'Everything in Free',
+      'Client lookup — revenue, profit and blocked accounts, so you know what to charge; 20 checks a month',
       'Saved quotes, contracts, invoices',
       'Long-term retainers',
       'Client records',
@@ -134,6 +136,7 @@ export const PAKETI: Paket[] = [
     znacka: 'Kmalu', znackaEn: 'Coming soon', kmalu: true,
     vkljuceno: [
       'Vse iz Premium',
+      'Preverjanje stranke — 60 pregledov na mesec',
       'Primerjava s trgom — koliko za to zaračunajo drugi',
       'Celoten analitični pregled — prihodki in dobiček po strankah',
       'Sinhronizacija med vsemi orodji',
@@ -146,6 +149,7 @@ export const PAKETI: Paket[] = [
     ],
     vkljucenoEn: [
       'Everything in Premium',
+      'Client lookup — 60 checks a month',
       'Market comparison — what others charge for this',
       'Full analytics overview — revenue and profit per client',
       'Sync across all tools',

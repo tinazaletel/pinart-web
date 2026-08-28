@@ -30,7 +30,9 @@ export { datotekeIzOdlozisca };
    datoteke, ki jih oblikovalka najveckrat prilaga (Tina, 25. 8., na produkciji). */
 /* Oblikovalka posilja tudi IZVORNIKE: .ai stranki po mailu, .indd v arhiv
    (Tina, 25. 8.). Streznik koncnic ne omejuje, omejeval je le ta seznam. */
-const SPREJME = '.pdf,.png,.jpg,.jpeg,.webp,.svg,.svgz,.ai,.indd,.idml,.psd,.eps,.docx,.xlsx,.csv,.zip';
+/* Figma (.fig) dodana 28. 8. na Tinino zahtevo. V praksi se Figma deli s
+   povezavo, a kadar gre datoteka stranki ali v arhiv, ne sme biti sivo. */
+const SPREJME = '.pdf,.png,.jpg,.jpeg,.webp,.svg,.svgz,.ai,.indd,.idml,.psd,.eps,.fig,.docx,.xlsx,.csv,.zip';
 
 function Slog() {
   return (
