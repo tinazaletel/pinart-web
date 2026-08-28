@@ -1,4 +1,5 @@
 import { PAKETI, type PaketId } from '@/lib/paketi';
+import GumbNarocnina from '@/components/GumbNarocnina';
 import { ZNAK_VALUTE, type Valuta } from '@/lib/cenaNarocnine';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
@@ -16,7 +17,7 @@ import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 const POSTA = (zadeva: string) =>
   `mailto:tina@pinart.si?subject=${encodeURIComponent(`Pinart Flow — ${zadeva}`)}`;
 
-export default function PaketiSeznam({ trenutni, locale = 'sl', valuta = 'EUR' }: { trenutni: 'free' | 'pro'; locale?: string; valuta?: Valuta }) {
+export default function PaketiSeznam({ trenutni, locale = 'sl', valuta = 'EUR' }: { trenutni: 'free' | 'premium' | 'pro'; locale?: string; valuta?: Valuta }) {
   /* Ameriski obiskovalec vidi dolarski cenik (lokacijo prebere stran). */
   const zn = ZNAK_VALUTE[valuta];
   const jeUsd = valuta === 'USD';
@@ -55,14 +56,14 @@ export default function PaketiSeznam({ trenutni, locale = 'sl', valuta = 'EUR' }
 
               <div className={styles.paketDejanje}>
                 {moj && p.id === 'free' && (
-                  <a className={styles.paketGlavni} href={POSTA('nadgradnja na Premium')}>{L('Nadgradi na Premium', 'Upgrade to Premium')}</a>
+                  <GumbNarocnina paket="premium" razred={styles.paketGlavni} jeEn={jeEn} napis={L('Nadgradi na Premium', 'Upgrade to Premium')} />
                 )}
                 {moj && p.id !== 'free' && (
                   <a className={styles.paketDrugi} href={POSTA('odpoved ali znižanje paketa')}>{L('Odpovej ali znižaj', 'Cancel or downgrade')}</a>
                 )}
                 {!moj && p.kmalu && <span className={styles.paketKmalu}>{L('Kmalu', 'Coming soon')}</span>}
                 {!moj && !p.kmalu && p.id !== 'free' && (
-                  <a className={styles.paketGlavni} href={POSTA(`nadgradnja na ${p.ime}`)}>{L('Izberi ', 'Choose ') + ime}</a>
+                  <GumbNarocnina paket={p.id === 'pro' ? 'pro' : 'premium'} razred={styles.paketGlavni} jeEn={jeEn} napis={L('Izberi ', 'Choose ') + ime} />
                 )}
               </div>
             </article>
@@ -71,8 +72,8 @@ export default function PaketiSeznam({ trenutni, locale = 'sl', valuta = 'EUR' }
       </div>
 
       <p className={styles.paketOpomba}>
-        {L('Plačilni sistem še ni postavljen, zato nadgradnjo in odpoved zaenkrat uredim osebno — napiši mi in ti paket odklenem isti dan. Cene ne vključujejo DDV.',
-           'The payment system is not set up yet, so upgrades and cancellations are handled personally for now — write to me and I will unlock your plan the same day. Prices exclude VAT.')}
+        {L('Plačilo teče prek Stripa, ki je tudi prodajalec na računu — davek se doda na blagajni glede na tvojo državo. Odpoved zaenkrat uredim osebno; napiši mi.',
+           'Payments run through Stripe, which is also the merchant of record — tax is added at checkout based on your country. Cancellations are still handled personally for now; write to me.')}
       </p>
     </>
   );
