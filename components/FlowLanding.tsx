@@ -1,5 +1,6 @@
 'use client';
 
+import PodpriBanner from '@/components/PodpriBanner';
 import {
   FileText, Handshake, Scroll, Receipt, Wallet, Tag, Clock,
   Users, Target, Suitcase, SquaresFour, ArrowRight, CheckCircle, CaretLeft, CaretRight,
@@ -1903,6 +1904,11 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR' }: { locale?
             {/* PROSOJEN video (alfa) — src nastavi useEffect glede na brskalnik (Safari=mov, Chrome=webm) */}
             <video ref={pupaRef} className={`fl-pupa${pupaHodi ? ' hodi' : ''}`} muted loop playsInline preload="auto" />
           </div>
+        </section>
+
+        {/* Podpora tik nad nogo — kdor pride do sem, je stran prebral do konca. */}
+        <section className="fl-podpri">
+          <PodpriBanner jeEn={isEn} razlicica="landing" />
         </section>
 
         <footer className="fl-footer" data-nav-dark>

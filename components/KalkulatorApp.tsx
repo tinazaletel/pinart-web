@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import TrzniOkvirZnacka from '@/components/TrzniOkvirZnacka';
+import PodpriBanner from '@/components/PodpriBanner';
 import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, podlogaJeTemna, migrirajStariFont } from '@/lib/dokVidez';
@@ -7805,6 +7806,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid oklch(93% .006 82 / .55); border-radius: 10px; padding: .9rem 1rem; }
         .cw .svoje-vrsta { display: inline-flex; align-items: center; gap: .5rem; }
+        /* Polje za lasten vnos je bilo fiksnih 210 px, gumbi nad njim pa čez vso
+           širino — izpadlo je kot pozabljen ostanek. Kjer so odgovori v seznamu,
+           se polje razteza z njimi (Tina, 28. 8. 2026). */
+        .cw .choicegrid .svoje-vrsta { grid-column: 1 / -1; display: flex; width: 100%; }
+        .cw .choicegrid .svoje-vrsta .vp-svoje { width: 100%; flex: 1; min-width: 0; }
         .cw .vp .vp-svoje { width: 210px; align-self: center; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
         .cw .vp .vp-svoje:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
         .cw .vp .vp-svoje::placeholder { color: rgba(17,17,17,.72); font-weight: 400; }
@@ -11177,6 +11183,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </div>
               )}
             </div>
+            {/* Podpora šele TU: korak s ceno je sredina dela, Zaključek pa
+                trenutek, ko ima človek ponudbo v rokah in je nekaj dobil
+                (Tina, 29. 8. 2026). Med procesom ne prekinjamo. */}
+            <PodpriBanner jeEn={locale === 'en'} />
             </>
           )}
         </div>
