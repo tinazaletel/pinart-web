@@ -22,20 +22,22 @@ import StevilcenjeNastavitve from '@/components/StevilcenjeNastavitve';
 const K_NAST = 'pinart-kalkulator-v2';
 const K_LOGO = 'pinart-kalkulator-logo';
 
-export default function SettingsWorkspace({ base }: { base: string }) {
+export default function SettingsWorkspace({ base, zavihek: zacetniZavihek }: { base: string; zavihek?: 'dokumenti' | 'ai' }) {
   const jeEn = useLocale() === 'en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   /* ZAVIHKI: pet razdelkov je malo, a dva sta dolga (Videz dokumentov, Moj AI).
      Na telefonu si moral cez cel dolg razdelek do kratkega za njim. Loceno
      strani bi bila slabsa resitev — nastavitve, razprsene po vec poteh, so
      tezje najdljive od enega seznama. Zato skupine na ISTI strani. */
-  const [zavihek, setZavihek] = useState<'dokumenti' | 'ai'>('dokumenti');
-  /* ?zavihek=ai pride iz podmenija v racunu — beremo v ucinku, da stran ne
-     rabi Suspense (isti vzorec kot AuthForm). */
+  const [zavihek, setZavihek] = useState<'dokumenti' | 'ai'>(zacetniZavihek || 'dokumenti');
+  /* Zavihek pride s STREZNIKA iz ?zavihek=... Prej se je bral iz naslova v
+     ucinku z [] — in ce si bila ze na Nastavitvah, klik na drugo postavko v
+     meniju ni naredil nicesar: naslov se je spremenil, komponenta pa se ni
+     postavila na novo (Tina, 30. 8. 2026). Prop se ob navigaciji spremeni,
+     zato se zavihek preklopi. */
   useEffect(() => {
-    const v = new URLSearchParams(window.location.search).get('zavihek');
-    if (v === 'ai' || v === 'dokumenti') setZavihek(v);
-  }, []);
+    if (zacetniZavihek) setZavihek(zacetniZavihek);
+  }, [zacetniZavihek]);
 
   /* Izbrana vstopna stran; beremo v ucinku, ker localStorage na strezniku ni. */
   const [vstopna, setVstopna] = useState<VstopnaStran>('domov');

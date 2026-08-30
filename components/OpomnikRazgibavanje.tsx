@@ -17,6 +17,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import TimerValovi from './TimerValovi';
 import { pokMehurcka } from '@/lib/zvokMehurcek';
+
+/* PRIHOD OPOMNIKA VEDNO ZACVRKNE (Tina, 30. 8. 2026: »tole je gor prislo, pa sem
+   komaj opazila«). Okno se odpre ob strani zaslona, kjer ravno ne gledas — brez
+   zvoka je opomnik, ki ga zgresis, isto kot opomnik, ki ga ni. Pok traja tretjino
+   sekunde in je tih; stikalo »zvok« ostane za glasbo med vajo, ki je tista, ki
+   lahko moti soseda v pisarni. */
+const PRIHOD = 0.34;
 import { poveziEkipo, type Povezava } from '@/lib/razgibavanjeSkupaj';
 import { nadaljuj, pavziraj, ustavi as ustaviZvok, zaigraj } from '@/lib/zvokRazgibavanje';
 import {
@@ -115,7 +122,7 @@ export default function OpomnikRazgibavanje({ jeEn = false }: { jeEn?: boolean }
       setPovabil(p.kdo);
       setZbor({ zacetek: p.zacetek, pridruzen: false });
       setOdprt(true);
-      if (n.zvok) pokMehurcka();
+      pokMehurcka(PRIHOD);
     }).then(v => {
       if (!ziv) { v?.odjava(); return; }
       ekipa.current = v;
@@ -176,12 +183,12 @@ export default function OpomnikRazgibavanje({ jeEn = false }: { jeEn?: boolean }
       if (sekunde.current >= nastavitve.interval * 60) {
         /* Ne prekinjaj sredi stavka — počakaj, da neha tipkati. */
         if (tipkaVPolju()) return;
-        if (nastavitve.zvok) pokMehurcka();
+        pokMehurcka(PRIHOD);
         setOdprt(true);
       }
     }, 1000);
     return () => window.clearInterval(ura);
-  }, [nastavitve.vklopljeno, nastavitve.interval, nastavitve.zvok, odprt, preostanek, objavi]);
+  }, [nastavitve.vklopljeno, nastavitve.interval, odprt, preostanek, objavi]);
 
   /* Odštevanje razgibavanja. */
   useEffect(() => {
@@ -276,7 +283,9 @@ export default function OpomnikRazgibavanje({ jeEn = false }: { jeEn?: boolean }
     zadnjaDejavnost.current = Date.now();
   }, [nastavitve.interval, objavi]);
 
-  function koncaj() { setPavza(false); setPreostanek(null); setOdprt(false); setPovabil(null); ponastavi(); }
+  /* Zvok ustavimo tu, ne le v učinku ob `tece`: konec vaje je konec glasbe, in
+     to ne sme biti odvisno od vrstnega reda učinkov (Tina, 30. 8. 2026). */
+  function koncaj() { ustaviZvok(); setPavza(false); setPreostanek(null); setOdprt(false); setPovabil(null); ponastavi(); }
   function zacni() {
     setOdprt(false); setPovabil(null);
     setPreostanek(Math.round(nastavitve.trajanje * 60));

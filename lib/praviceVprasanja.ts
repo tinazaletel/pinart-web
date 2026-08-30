@@ -113,13 +113,22 @@ export const PRAV_VPRASANJA: Record<string, PravVprasanje[]> = {
       ],
     },
     {
-      id: 'nadaljnja-uporaba', sl: 'Kako bo naročnik podobo uporabljal naprej?', en: 'How will the client use the identity further?',
+      /* Prevprasano v obicajno slovenscino (Tina, 30. 8. 2026): »Kako bo
+         uporabljal naprej« je abstraktno — clovek ne ve, kaj se od njega hoce.
+         Vprasanje je v resnici: sme samo uporabljati, kar dobi, ali sme s tem
+         tudi delati novo in siriti na druge znamke? Od tega je odvisen obseg
+         pravic in cena. */
+      id: 'nadaljnja-uporaba', sl: 'Kaj bo naročnik smel delati z gradivom?', en: 'What will the client be allowed to do with the materials?',
+      namig: {
+        sl: 'Več kot dela sam, širše pravice — in višja cena.',
+        en: 'The more they do themselves, the broader the rights — and the higher the price.',
+      },
       stavek: { sl: 'Naročnik podobo uporablja tako', en: 'The client uses the identity as follows' },
       vec: true, osnovno: true, kam: 'ponudba',
       opcije: [
-        { id: 'pripravljena', sl: 'Uporabljal bo pripravljena gradiva', en: 'Will use the prepared materials' },
-        { id: 'nova', sl: 'Po priročniku bo ustvarjal nova gradiva', en: 'Will create new materials following the guidelines' },
-        { id: 'vec-znamk', sl: 'Uporabljal jo bo na več znamkah ali povezanih družbah', en: 'Will use it across several brands or affiliates' },
+        { id: 'pripravljena', sl: 'Uporabljal bo samo to, kar mu izročim', en: 'Will only use what I hand over' },
+        { id: 'nova', sl: 'Sam bo delal nova gradiva po priročniku', en: 'Will create new materials themselves, following the guidelines' },
+        { id: 'vec-znamk', sl: 'Uporabljal bo na več znamkah ali v povezanih podjetjih', en: 'Will use it across several brands or affiliated companies' },
       ],
     },
     {

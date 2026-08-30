@@ -4,6 +4,7 @@ import { dolociPonudbo, valutaZaDrzavo } from '@/lib/cenaNarocnine';
 import { oddanihUstanovnih } from '@/lib/ustanovnaMesta';
 import { setRequestLocale } from 'next-intl/server';
 import FlowNav from '@/components/FlowNav';
+import Dostopnost from '@/components/Dostopnost';
 import FlowLanding from '@/components/FlowLanding';
 
 /* Predstavitev celotnega paketa Pinart Flow. Namenjeno domeni
@@ -66,6 +67,8 @@ export default async function FlowPage({
     <main style={{ minHeight: '100dvh' }}>
       <FlowNav locale={locale} />
       <FlowLanding locale={locale} valuta={valuta} ponudba={ponudba} />
+      {/* Landing menija nima, zato plavajoc gumb spodaj levo (Tina, 30. 8. 2026). */}
+      <Dostopnost gumb jeEn={locale === 'en'} base={locale === 'en' ? '/en' : ''} />
     </main>
   );
 }

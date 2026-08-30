@@ -13,15 +13,20 @@ import { useRouter } from 'next/navigation';
 export default function NazajLink({
   rezerva = '/kalkulator/pregled',
   label = 'Nazaj',
+  samoMobilno = false,
 }: {
   rezerva?: string;
   label?: string;
+  /* Na namizju skrit. Za strani, ki jih iz menija odpres neposredno: tam nazaj
+     ni kam, na telefonu pa je meni zaprt in pot nazaj je potrebna
+     (Tina, 30. 8. 2026). */
+  samoMobilno?: boolean;
 }) {
   const router = useRouter();
   return (
     <button
       type="button"
-      className="nazaj-pill"
+      className={'nazaj-pill' + (samoMobilno ? ' nazaj-mobilno' : '')}
       onClick={() => { if (window.history.length > 1) router.back(); else router.push(rezerva); }}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -45,6 +50,7 @@ export default function NazajLink({
           transition: background .15s, color .15s;
         }
         .nazaj-pill:hover { background: var(--ink); color: var(--paper); }
+        @media (min-width: 901px) { .nazaj-mobilno { display: none; } }
       `}</style>
     </button>
   );

@@ -22,13 +22,17 @@ type Povzetek = { cistiPrihodki?: number | null; cistiDobicek?: number | null };
 type Kvota = { paket: string; mesecno: number; ostanek: number };
 
 export default function PreveriPoslovanje({
-  davcna, jeEn = false, samoOgled = false, base = '', onIzpolni,
+  davcna, trg = 'si', jeEn = false, samoOgled = false, base = '', vLupini = false, onIzpolni,
 }: {
   davcna: string;
+  /** Trg narocnika: AJPES pokriva samo Slovenijo, drugod pregleda ni. */
+  trg?: string;
   jeEn?: boolean;
   samoOgled?: boolean;
   /** Predpona jezika (''/'/en') za povezavo na paket. */
   base?: string;
+  /** V Flowu (ponudba) ali v brezplacnem kalkulatorju. */
+  vLupini?: boolean;
   onIzpolni: (promet: number | null, dobicek: number | null) => void;
 }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
@@ -40,22 +44,31 @@ export default function PreveriPoslovanje({
   const [potrjujem, setPotrjujem] = useState(false);
   const [napaka, setNapaka] = useState<string | null>(null);
   const [izpolnjeno, setIzpolnjeno] = useState(false);
+  /* Dokler stanje paketa ni znano, ne kazemo nicesar: sicer bi placnik za hip
+     videl ponudbo za nadgradnjo, ki je ne potrebuje. */
+  const [znano, setZnano] = useState(false);
 
   /* Ob vpisani davčni preberi stanje kvote in morebiten že opravljen pregled.
      To je branje evidence, ne klic na AJPES — nič se ne porabi. */
   useEffect(() => {
     let veljavno = true;
     setNapaka(null); setIzpolnjeno(false); setPotrjujem(false);
-    if (cista.length < 8) { setShranjen(null); setVRegistru(null); return; }
-    fetch(`/api/podjetja/ajpes?davcna=${cista}`)
+    /* Poizvedba tece tudi brez davcne: takrat ne vrne pregleda, pove pa paket —
+       in prav brez davcne je uporabnica na brezplacnem kalkulatorju, ki mora
+       izvedeti, da zna Flow ti dve stevilki prinesti sam (Tina, 30. 8. 2026). */
+    const imaDavcno = cista.length >= 8;
+    if (!imaDavcno) { setShranjen(null); setVRegistru(null); }
+    fetch(`/api/podjetja/ajpes?davcna=${imaDavcno ? cista : ''}`)
       .then(r => r.json())
       .then(j => {
         if (!veljavno) return;
         setKvota(j.kvota || null);
+        setZnano(true);
+        if (!imaDavcno) return;
         setVRegistru(j.vRegistru !== false);
         setShranjen((j.pregled?.povzetek as Povzetek) || null);
       })
-      .catch(() => {});
+      .catch(() => { if (veljavno) setZnano(true); });
     return () => { veljavno = false; };
   }, [cista]);
 
@@ -99,50 +112,75 @@ export default function PreveriPoslovanje({
     }
   }, [cista, jeEn, uporabi]);
 
-  if (samoOgled || cista.length < 8 || vRegistru === false) return null;
+  /* AJPES pokriva slovenski register. Za tuje narocnike pregleda ni — takrat
+     gumba ne kazemo, uporabnica pa pod polji dobi seznam registrov za tisti trg
+     (Tina, 30. 8. 2026). */
+  if (samoOgled || trg !== 'si' || vRegistru === false) return null;
 
-  /* Kdor pregledov nima, ne dobi praznine, ampak ponudbo (Tina, 30. 8. 2026:
-     »na brezplačnem paketu bi morali prodajati«). Skrita funkcija ne proda
-     ničesar, tu pa je uporabnica ravno na mestu, kjer bi ji koristila — išče
-     promet in dobiček, da postavi ceno.
+  if (!znano) return null;
 
-     Ločimo dvoje: neprijavljeni obiskovalec evidence ne sme brati in kvote ne
-     dobi (401), zato ga pošljemo na cenik; prijavljeni na brezplačnem paketu
-     ima kvoto 0 in gre na svoj paket. Ročni vnos ostane v obeh primerih — to
-     je ponudba, ne zapora. */
-  if (!kvota || kvota.mesecno <= 0) {
+  const zeImamo = typeof shranjen?.cistiPrihodki === 'number' || typeof shranjen?.cistiDobicek === 'number';
+  const brezEnot = !!kvota && kvota.ostanek <= 0 && !zeImamo;
+
+  /* Videz po zgledu ostalih gumbov v kalkulatorju (bela pilula, mehka obroba,
+     rahla senca), ne rocno sestavljen obris — prej je bil tanek in tuj
+     (Tina, 30. 8. 2026). */
+  const gumb: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: '.5rem', minHeight: '2.75rem',
+    padding: '.55rem 1.2rem', border: '1px solid rgba(17,17,17,.16)', borderRadius: 999,
+    background: '#fff', color: 'inherit', font: '600 .86rem inherit',
+    boxShadow: '0 1px 2px rgba(17,17,17,.05)',
+    cursor: tece || brezEnot ? 'default' : 'pointer', opacity: tece || brezEnot ? .45 : 1,
+  };
+  const drobno: React.CSSProperties = { fontSize: '.76rem', opacity: .58, margin: 0, lineHeight: 1.5 };
+  const ikonaPrenos = (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 4v10" /><path d="m8 11 4 4 4-4" /><path d="M5 19h14" />
+    </svg>
+  );
+
+  /* BREZ PAKETA: gumb je siv in pelje na nadgradnjo, ne izgine. Skrita funkcija
+     ne proda nicesar, tu pa je uporabnica ravno na mestu, kjer bi ji koristila —
+     isce promet in dobicek, da postavi ceno (Tina, 30. 8. 2026).
+     Neprijavljen obiskovalec kvote sploh ne dobi (401) in gre na cenik. */
+  const imaPaket = !!kvota && kvota.mesecno > 0;
+
+  /* BREZPLACNI KALKULATOR: gumb se vidi, a NE dela — tudi ce je uporabnica
+     prijavljena in ima paket. Kalkulator je javno, brezplacno orodje; placljiv
+     klic AJPES sodi v Flow. Kdor paket ima, ga tu ne porabi, ampak gre v Flow;
+     kdor ga nima, vidi, kaj dobi (Tina, 30. 8. 2026).
+     V Flowu pa brez davcne ni ne gumba ne ponudbe za nadgradnjo. */
+  if (!vLupini || !imaPaket) {
+    if (vLupini && cista.length < 8) return null;
     const kam = kvota ? `${base}/kalkulator/paket` : `${base}/flow#cenik`;
+    /* Ne prosojen duh: zaklenjeno je videti kot cela, mirna pilula s kljucavnico,
+       poziv pa je vijolicen, da se vidi, da je klikljiv (Tina, 30. 8. 2026). */
     return (
-      <div style={{ display: 'grid', gap: '.35rem', margin: '0 0 1rem' }}>
+      <div style={{ display: 'grid', gap: '.4rem', margin: '.9rem 0 1rem', justifyItems: 'start' }}>
         <a href={kam} style={{
-          display: 'inline-flex', alignItems: 'center', gap: '.45rem', minHeight: '2.6rem',
-          width: 'fit-content', padding: '.5rem 1.05rem', border: '1px dashed currentColor',
-          borderRadius: 999, color: 'inherit', font: '600 .84rem inherit', textDecoration: 'none', opacity: .75,
+          ...gumb, opacity: 1, width: 'fit-content', textDecoration: 'none',
+          background: 'rgba(255,255,255,.55)', color: 'rgba(17,17,17,.62)',
         }}>
-          {L('Preglej poslovanje naročnika', 'Check the client’s business')}
-          <span style={{ fontWeight: 400, opacity: .8 }}>· {L('v Premiumu', 'in Premium')}</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.2" /><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7" />
+          </svg>
+          {L('Pridobi podatke', 'Fetch the data')}
+          <span style={{ color: 'var(--purple, #7C3AED)' }}>{L('povečaj paket', 'upgrade')}</span>
         </a>
-        <p style={{ fontSize: '.76rem', opacity: .62, margin: 0 }}>
-          {L('Flow prebere promet in dobiček iz zadnjega letnega poročila in ju vpiše sam. Brez tega ju poišči spodaj navedenih virih in vpiši ročno.',
-             'Flow reads revenue and profit from the latest annual report and fills them in for you. Without it, look them up in the sources below and type them in.')}
+        <p style={drobno}>
+          {L('Promet in dobiček prinese Flow iz zadnjega letnega poročila.',
+             'Flow fetches revenue and profit from the latest annual report.')}
         </p>
       </div>
     );
   }
 
-  const zeImamo = typeof shranjen?.cistiPrihodki === 'number' || typeof shranjen?.cistiDobicek === 'number';
-  const brezEnot = !!kvota && kvota.ostanek <= 0 && !zeImamo;
-
-  const gumb: React.CSSProperties = {
-    display: 'inline-flex', alignItems: 'center', gap: '.45rem', minHeight: '2.6rem',
-    padding: '.5rem 1.05rem', border: '1px solid currentColor', borderRadius: 999,
-    background: 'transparent', color: 'inherit', font: '600 .84rem inherit',
-    cursor: tece || brezEnot ? 'default' : 'pointer', opacity: tece || brezEnot ? .5 : 1,
-  };
-  const drobno: React.CSSProperties = { fontSize: '.76rem', opacity: .62, margin: 0 };
+  /* Placnik brez davcne stevilke: gumb nima cesa poklicati, davcna pa se
+     izpolni sama iz registra ob izbiri stranke. */
+  if (cista.length < 8) return null;
 
   return (
-    <div style={{ display: 'grid', gap: '.45rem', margin: '0 0 1rem' }}>
+    <div style={{ display: 'grid', gap: '.45rem', margin: '1rem 0 1.1rem' }}>
       {izpolnjeno ? (
         <p style={{ ...drobno, opacity: .8 }}>
           {L('Izpolnjeno iz letnega poročila.', 'Filled in from the annual report.')}
@@ -157,34 +195,33 @@ export default function PreveriPoslovanje({
           </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: '.7rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'grid', gap: '.7rem', justifyItems: 'start' }}>
           <button
             type="button"
             style={gumb}
             disabled={tece || brezEnot}
             onClick={() => (zeImamo ? uporabi(shranjen) : setPotrjujem(true))}
           >
+            {ikonaPrenos}
             {tece
-              ? L('Preverjam …', 'Checking …')
-              : L('Preglej poslovanje naročnika', 'Check the client’s business')}
+              ? L('Pridobivam …', 'Fetching …')
+              : L('Pridobi podatke', 'Fetch the data')}
           </button>
-          {zeImamo
-            ? <span style={drobno}>{L('To podjetje si že pregledala — ponovni ogled je brezplačen.',
-                                      'You have checked this company before — viewing it again is free.')}</span>
-            : kvota && <span style={drobno}>
-                {brezEnot
-                  ? L('Ta mesec si porabila vse preglede.', 'You have used all your checks this month.')
-                  : `${L('ostane ti', 'you have')} ${kvota.ostanek} ${L('od', 'of')} ${kvota.mesecno} ${L('ta mesec', 'this month')}`}
-              </span>}
+          <span style={drobno}>
+            {zeImamo
+              ? L('To podjetje si že pregledala — ponovni ogled je brezplačen.',
+                  'You have checked this company before — viewing it again is free.')
+              : brezEnot
+                ? L('Ta mesec si porabila vse preglede.', 'You have used all your checks this month.')
+                : kvota
+                  ? L(`Ostane ti ${kvota.ostanek} od ${kvota.mesecno} pregledov ta mesec; iskanje in ponovni ogled se ne štejeta.`,
+                      `${kvota.ostanek} of ${kvota.mesecno} checks left this month; search and repeat views do not count.`)
+                  : ''}
+          </span>
         </div>
       )}
 
       {napaka && <p style={{ ...drobno, opacity: 1, color: '#a12323' }} role="alert">{napaka}</p>}
-
-      <p style={drobno}>
-        {L('Iskanje podjetij in ponovni ogled že pridobljenih podatkov ne porabita pregleda.',
-           'Company search and viewing data you already retrieved do not use up a check.')}
-      </p>
     </div>
   );
 }

@@ -11,8 +11,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function NastavitvePage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function NastavitvePage(
+  { params, searchParams }: {
+    params: Promise<{ locale: string }>;
+    searchParams: Promise<{ nazaj?: string; zavihek?: string }>;
+  },
+) {
   const { locale } = await params;
+  /* »Nazaj« se na namizju pokaze le, ce si prisla od nekod (povezava nosi
+     ?nazaj=1). Iz menija nazaj ni kam. Na telefonu je vedno, ker je meni
+     zaprt (Tina, 30. 8. 2026). */
+  const { nazaj, zavihek } = await searchParams;
   setRequestLocale(locale);
   const base = locale === 'sl' ? '' : `/${locale}`;
 
@@ -23,12 +32,12 @@ export default async function NastavitvePage({ params }: { params: Promise<{ loc
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <div>
-            <NazajLink label={locale === 'en' ? 'Back to dashboard' : 'Nazaj na nadzorno ploščo'} />
+            <NazajLink samoMobilno={!nazaj} label={locale === 'en' ? 'Back' : 'Nazaj'} />
             <p className={styles.eyebrow}>{locale === 'en' ? 'SETTINGS' : 'NASTAVITVE'}</p>
             <h1>{locale === 'en' ? 'App settings.' : 'Nastavitve aplikacije.'}</h1>
           </div></header>
 
-        <SettingsWorkspace base={base} />
+        <SettingsWorkspace base={base} zavihek={zavihek === 'ai' ? 'ai' : zavihek === 'dokumenti' ? 'dokumenti' : undefined} />
       </section>
     </main>
   );
