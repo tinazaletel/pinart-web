@@ -15,5 +15,5 @@ export default async function BusinessPlanPage({ params }: { params: Promise<{ l
   /* Naslov v urejevalniku pise komponenta sama, ker mora nad njim stati gumb
      "Vsi dokumenti" -- tako kot povsod drugod v Flowu je nazaj NAD naslovom.
      Zaklenjen primer naslov se vedno dobi tu, ker komponente sploh ni. */
-  return <main className={styles.shell}><DashboardSidebar base={base} active="plan" /><section className={styles.workspace}>{sme ? <BusinessCanvasWorkspace /> : <><header className={styles.topbar}><div><p className={styles.eyebrow}>BUSINESS CANVAS</p><h1>{locale === 'en' ? 'Your business on one page.' : 'Posel na eni strani.'}</h1></div></header><Zaklenjeno funkcija="businessInsights" base={base} /></>}</section></main>;
+  return <main className={styles.shell}><DashboardSidebar base={base} active="plan" /><section className={styles.workspace}>{sme ? <BusinessCanvasWorkspace /> : <><header className={styles.topbar}><div><p className={styles.eyebrow}>BUSINESS CANVAS</p><h1>{locale === 'en' ? 'Your business on one page.' : 'Posel na eni strani.'}</h1></div></header><Zaklenjeno funkcija="businessInsights" base={base} jeEn={locale === 'en'} /></>}</section></main>;
 }

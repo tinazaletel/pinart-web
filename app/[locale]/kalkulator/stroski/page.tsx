@@ -12,5 +12,5 @@ export default async function StroskiPage({ params }: { params: Promise<{ locale
   /* Kljucavnica v meniju je videz; prava zascita je tu, na strezniku. */
   const sme = await smePorabiti('expenses');
 
-  return <main className={styles.shell}><DashboardSidebar base={base} active="expenses" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>{locale === 'en' ? 'EXPENSES' : 'STROŠKI'}</p><h1>{locale === 'en' ? 'You know where the money goes.' : 'Veš, kam gre denar.'}</h1></div></header>{sme ? <ExpenseWorkspace /> : <Zaklenjeno funkcija="expenses" base={base} />}</section></main>;
+  return <main className={styles.shell}><DashboardSidebar base={base} active="expenses" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>{locale === 'en' ? 'EXPENSES' : 'STROŠKI'}</p><h1>{locale === 'en' ? 'You know where the money goes.' : 'Veš, kam gre denar.'}</h1></div></header>{sme ? <ExpenseWorkspace /> : <Zaklenjeno funkcija="expenses" base={base} jeEn={locale === 'en'} />}</section></main>;
 }

@@ -19,18 +19,21 @@ describe('preslikava cen v Stripove lestvice', () => {
     expect(lookupKeyZa('redna', 'free', 'leto')).toBeNull();
   });
 
-  it('prizna, da redne mesečne in ustanovne Pro lestvice ni', () => {
-    /* Namerno prazno, ne pozabljeno: 19 € in 39 € v Stripu še ne obstajata,
-       ustanovne ponudbe za Pro pa nismo nikoli oglaševali. */
-    expect(lookupKeyZa('redna', 'premium', 'mesec')).toBeNull();
-    expect(lookupKeyZa('redna', 'pro', 'mesec')).toBeNull();
+  it('pozna redni mesečni lestvici, ki sta nastali pred iztekom uvodne ponudbe', () => {
+    expect(lookupKeyZa('redna', 'premium', 'mesec')).toBe('premium_mesecno_redna');
+    expect(lookupKeyZa('redna', 'pro', 'mesec')).toBe('pro_mesecno_redna');
+  });
+
+  it('prizna, da ustanovne Pro lestvice ni', () => {
+    /* Namerno prazno, ne pozabljeno: ustanovne ponudbe za Pro nismo nikoli oglaševali. */
     expect(lookupKeyZa('ustanovna', 'pro', 'mesec')).toBeNull();
     expect(lookupKeyZa('ustanovna', 'pro', 'leto')).toBeNull();
   });
 
-  it('pričakuje natanko tistih šest ključev, ki so v Stripu', () => {
+  it('pričakuje natanko tistih deset ključev, ki so v Stripu', () => {
     expect(vsiKljuci()).toEqual([
-      'premium_letno', 'premium_mesecno', 'premium_ustanovna', 'premium_ustanovna_letno', 'pro_letno', 'pro_mesecno',
+      'premium_letno', 'premium_letno_redna', 'premium_mesecno', 'premium_mesecno_redna', 'premium_ustanovna',
+      'premium_ustanovna_letno', 'pro_letno', 'pro_letno_redna', 'pro_mesecno', 'pro_mesecno_redna',
     ]);
   });
 
@@ -45,11 +48,12 @@ describe('preslikava cen v Stripove lestvice', () => {
     expect(razberiLookup(undefined)).toBeNull();
   });
 
-  it('ve, da isti ključ pripada dvema ponudbama', () => {
+  it('ima za vsako ponudbo svoj letni ključ, odkar se redna in uvodna ločita', () => {
     /* premium_letno je uvodna IN redna cena — zato ponudbe ni dovoljeno brati
        iz ključa, ampak jo določi ura naročila. */
     expect(kljucUstrezaPonudbi('premium_letno', 'uvodna', 'premium', 'leto')).toBe(true);
-    expect(kljucUstrezaPonudbi('premium_letno', 'redna', 'premium', 'leto')).toBe(true);
+    expect(kljucUstrezaPonudbi('premium_letno', 'redna', 'premium', 'leto')).toBe(false);
+    expect(kljucUstrezaPonudbi('premium_letno_redna', 'redna', 'premium', 'leto')).toBe(true);
     expect(kljucUstrezaPonudbi('premium_letno', 'ustanovna', 'premium', 'leto')).toBe(false);
   });
 });

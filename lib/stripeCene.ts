@@ -7,10 +7,14 @@
  * prehodu v živo se v Stripu ustvarijo iste lestvice z istimi ključi in v
  * kodi se ne spremeni nič.
  *
- * null pomeni »ta kombinacija v Stripu še nima lestvice«. To NI ista stvar kot
- * napaka: redne cene (19 € / 39 € mesečno) namenoma še ne obstajajo, ker se do
- * 31. 10. 2026 nihče ne more nanje naročiti. Klicatelj mora null obravnavati
- * kot »te ponudbe zdaj ne prodajamo«, ne kot okvaro.
+ * null pomeni »ta kombinacija v Stripu nima lestvice«. To NI ista stvar kot
+ * napaka: klicatelj mora null obravnavati kot »te ponudbe ne prodajamo«, ne kot
+ * okvaro. Tako je pri ustanovnem Pro, ki ga nikoli nismo oglaševali.
+ *
+ * Redni mesečni lestvici (19 € / 39 €) sta v živem Stripu nastali 29. 8. 2026,
+ * torej pred iztekom uvodne ponudbe — da po 31. 10. mesečni nakup ne pade skozi.
+ * V peskovniku ju je treba ustvariti z ISTIMA ključema, sicer testni nakup redne
+ * mesečne naročnine ne bo našel cene.
  */
 
 import type { PaketId } from '@/lib/paketi';
@@ -30,11 +34,11 @@ export const LOOKUP: Record<Ponudba, Record<PlacljivPaket, Record<Obdobje, strin
     pro: { mesec: 'pro_mesecno', leto: 'pro_letno' },
   },
   redna: {
-    /* Letna redna cena je ISTA številka kot uvodna letna (15 € oz. 29 € na
-       mesec), zato si delita lestvico. Mesečna redna (19 € / 39 €) svoje
-       lestvice še nima — nastane naj šele ob izteku uvodne ponudbe. */
-    premium: { mesec: null, leto: 'premium_letno' },
-    pro: { mesec: null, leto: 'pro_letno' },
+    /* Do 30. 8. 2026 sta si uvodna in redna delili letno lestvico, ker je bila
+       številka ista. Z redno letno 18 € oz. 35 € na mesec to ne drži več —
+       redna ima svoji lestvici, torej so ključi štirje, ne dva. */
+    premium: { mesec: 'premium_mesecno_redna', leto: 'premium_letno_redna' },
+    pro: { mesec: 'pro_mesecno_redna', leto: 'pro_letno_redna' },
   },
 };
 
@@ -63,10 +67,10 @@ export function razberiLookup(kljuc: string | null | undefined): Razbrano | null
   return null;
 }
 
-/* premium_letno nosita dve ponudbi (uvodna in redna). Iskanje zgoraj vrne
-   prvo najdeno, kar bi pomenilo, da bi človek, ki se novembra naroči po redni
-   ceni, v bazi obveljal za »uvodnega«. Zato ponudbo določi ura naročila, ne
-   ključ — ta funkcija samo pove, ali je ključ za to ponudbo sploh veljaven. */
+/* Odkar ima redna ponudba svoje letne lestvice, je vsak ključ enoličen in
+   razberiLookup ne more zgrešiti. Funkcija ostaja kot varovalka: ponudbo naj
+   še naprej določa ura naročila, ne ključ, da nas morebitna prihodnja delitev
+   lestvice ne ujame tako, kot nas je skoraj premium_letno. */
 export function kljucUstrezaPonudbi(kljuc: string, ponudba: Ponudba, paket: PlacljivPaket, obdobje: Obdobje): boolean {
   return LOOKUP[ponudba]?.[paket]?.[obdobje] === kljuc;
 }

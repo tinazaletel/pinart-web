@@ -102,6 +102,34 @@ export default function AdminPregled({ podatki }: { podatki: Analitika }) {
         javnih zbirk, ki brez osvezitve zastara. */}
     <RegisterOpomnik />
 
+    {/* ── poraba pregledov AJPES ────────────────────────────────────────
+        Ta razdelek odloča o velikosti kvote. Enota = NOVO podjetje in stane
+        okoli 1 € (manj pri večjem paketu točk), zato je vsak pregled tu
+        neposredno evro. Povprečje samo ne zadošča: če je povprečje 2, desetina
+        uporabnikov pa porabi vseh 10, zalogo določa prav ta desetina. */}
+    <h2 style={NASLOV}>Pregledi AJPES ta mesec</h2>
+    <div style={{ ...K, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(9rem,1fr))', gap: '1rem', padding: '1.2rem 1.3rem' }}>
+      <div><p style={{ margin: 0, fontSize: '.78rem', opacity: .6 }}>Porabljenih enot</p><strong style={{ fontSize: '1.5rem' }}>{podatki.ajpesPovzetek.pregledovSkupaj}</strong></div>
+      <div><p style={{ margin: 0, fontSize: '.78rem', opacity: .6 }}>Organizacij</p><strong style={{ fontSize: '1.5rem' }}>{podatki.ajpesPovzetek.organizacij}</strong></div>
+      <div><p style={{ margin: 0, fontSize: '.78rem', opacity: .6 }}>Povprečje</p><strong style={{ fontSize: '1.5rem' }}>{podatki.ajpesPovzetek.povprecje}</strong></div>
+      <div><p style={{ margin: 0, fontSize: '.78rem', opacity: .6 }}>90. percentil</p><strong style={{ fontSize: '1.5rem' }}>{podatki.ajpesPovzetek.percentil90}</strong></div>
+      <div><p style={{ margin: 0, fontSize: '.78rem', opacity: .6 }}>Največ ena</p><strong style={{ fontSize: '1.5rem' }}>{podatki.ajpesPovzetek.najvec}</strong></div>
+    </div>
+    <div style={{ ...K, overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.88rem', minWidth: 420 }}>
+        <thead><tr style={{ borderBottom: '1px solid rgba(17,17,17,.15)' }}>
+          <th style={TH}>Organizacija</th><th style={TH}>Paket</th><th style={TH}>Pregledov</th>
+        </tr></thead>
+        <tbody>
+          {podatki.ajpesPoraba.map(p => <tr key={p.organizationId} style={{ borderBottom: '1px solid rgba(17,17,17,.06)' }}>
+            <td style={TD}>{p.organizacija}</td><td style={TD}>{p.paket}</td>
+            <td style={{ ...TD, fontWeight: 700 }}>{p.pregledov}</td>
+          </tr>)}
+          {!podatki.ajpesPoraba.length && <tr><td colSpan={3} style={{ padding: '1.4rem .5rem', opacity: .6 }}>Ta mesec še ni pregledov.</td></tr>}
+        </tbody>
+      </table>
+    </div>
+
     <h2 style={NASLOV}>Pupina poraba ta mesec</h2>
     <div style={{ ...K, overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.88rem', minWidth: 420 }}>

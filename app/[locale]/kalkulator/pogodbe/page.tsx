@@ -19,6 +19,6 @@ export default async function PogodbePage({ params }: { params: Promise<{ locale
     <DashboardSidebar base={base} active="contracts" />
     {/* Naslov strani izrise ContractWorkspace (samo na vstopnem koraku) — v pogledu
         dokumenta naslova ni, "Nazaj" je cisto na vrhu (kot retainer view-swap). */}
-    <section className={styles.workspace}>{sme ? <ContractWorkspace base={base} /> : <><header className={styles.topbar}><div><p className={styles.eyebrow}>{locale === 'en' ? 'CONTRACTS' : 'POGODBE'}</p><h1>{locale === 'en' ? 'An agreement, no guesswork.' : 'Dogovor, brez ugibanja.'}</h1></div></header><Zaklenjeno funkcija="contracts" base={base} /></>}</section>
+    <section className={styles.workspace}>{sme ? <ContractWorkspace base={base} /> : <><header className={styles.topbar}><div><p className={styles.eyebrow}>{locale === 'en' ? 'CONTRACTS' : 'POGODBE'}</p><h1>{locale === 'en' ? 'An agreement, no guesswork.' : 'Dogovor, brez ugibanja.'}</h1></div></header><Zaklenjeno funkcija="contracts" base={base} jeEn={locale === 'en'} /></>}</section>
   </main>;
 }

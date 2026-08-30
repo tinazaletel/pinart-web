@@ -12,10 +12,14 @@
  * javnem interesu, zato prispevek za dajalca ni davčno odbiten.
  */
 
-const POVEZAVA = 'https://buy.stripe.com/8x2cN79fXcJs6ezgnfefC00';
+import { podporaPovezava } from '@/lib/podpora';
 
-export default function PodpriBanner({ jeEn = false, razlicica = 'kalkulator' }: { jeEn?: boolean; razlicica?: 'kalkulator' | 'landing' }) {
+export default function PodpriBanner({ locale = 'sl', razlicica = 'kalkulator' }: { locale?: string; razlicica?: 'kalkulator' | 'landing' }) {
+  const jeEn = locale === 'en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
+  /* Povezava se izbere po jeziku strani; dokler je za jezik ni, pade na
+     slovensko (lib/podpora.ts). */
+  const povezava = podporaPovezava(locale);
   const naLandingu = razlicica === 'landing';
 
   return (
@@ -38,7 +42,7 @@ export default function PodpriBanner({ jeEn = false, razlicica = 'kalkulator' }:
           rastlina stojita na robu noge. Ni ikona v okencu, je rekvizit. */}
       <div className="pb-desno">
         <img className="pb-prasicek" src="/flow/prasicek3d.png" alt="" aria-hidden />
-        <a className="pb-gumb" href={POVEZAVA} target="_blank" rel="noopener noreferrer">
+        <a className="pb-gumb" href={povezava} target="_blank" rel="noopener noreferrer">
           {L('Podpri Flow', 'Support Flow')}
         </a>
       </div>

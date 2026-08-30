@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
-import { mejiObdobij, preveriKvoto } from '@/lib/ajpesKvota';
+import { kvotaZa, mejiObdobij, preveriKvoto } from '@/lib/ajpesKvota';
 import { omejiApi } from '@/lib/rate-limit';
 import {
   razcleniGetData,
@@ -162,6 +162,11 @@ export async function POST(request: Request) {
              enoto za podatke, ki smo jih že imeli v rokah. */
           postavke: rezultat.podjetje.postavke || [],
           kazalniki: rezultat.podjetje.kazalniki || [],
+          /* Izluščene tri, ki jih rabi kalkulator za ceno — da jih ni treba
+             vsakič iskati po šifrantu na strani odjemalca. */
+          cistiPrihodki: rezultat.podjetje.cistiPrihodki ?? null,
+          cistiDobicek: rezultat.podjetje.cistiDobicek ?? null,
+          zaposlenih: rezultat.podjetje.zaposlenih ?? null,
         } : null,
       });
     }
@@ -176,16 +181,34 @@ export async function POST(request: Request) {
  * Brez tega bi morala uporabnica ob vsakem odprtju stranke klikniti znova, da
  * bi sploh videla, ali je bilo kdaj preverjeno. Izid zato beremo iz evidence —
  * AJPES-a se ne dotaknemo in nobena enota se ne porabi. */
+/* Koliko pregledov organizaciji ostane ta mesec. Bere isto evidenco kot
+   omejevalnik, zato se števki ne moreta razhajati. */
+async function stanjeKvote(supabase: ReturnType<typeof createClient>) {
+  const { data: pravice } = await supabase.rpc('current_organization_entitlements');
+  const vrstica = Array.isArray(pravice) ? pravice[0] as { organization_id?: string; tier?: string } | undefined : undefined;
+  const organizationId = String(vrstica?.organization_id || '');
+  const paket = String(vrstica?.tier || 'free');
+  const kvota = kvotaZa(paket);
+  if (!organizationId) return { paket, mesecno: kvota.mesec, ostanek: 0 };
+  const { odMeseca } = mejiObdobij(new Date());
+  const { count } = await supabase
+    .from('ajpes_pregledi')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', organizationId).eq('porabljena_enota', true).gte('created_at', odMeseca);
+  return { paket, mesecno: kvota.mesec, ostanek: Math.max(0, kvota.mesec - (count ?? 0)) };
+}
+
 export async function GET(request: Request) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Prijava je obvezna.' }, { status: 401 });
 
+  const kvota = await stanjeKvote(supabase);
   const davcna = String(new URL(request.url).searchParams.get('davcna') || '').replace(/[^0-9]/g, '');
-  if (davcna.length < 8) return NextResponse.json({ pregled: null });
+  if (davcna.length < 8) return NextResponse.json({ pregled: null, kvota });
 
   const { data: vpis } = await supabase.from('podjetja').select('maticna').eq('davcna', davcna).maybeSingle();
-  if (!vpis?.maticna) return NextResponse.json({ pregled: null, vRegistru: false });
+  if (!vpis?.maticna) return NextResponse.json({ pregled: null, vRegistru: false, kvota });
 
   const { data } = await supabase
     .from('ajpes_pregledi')
@@ -195,5 +218,5 @@ export async function GET(request: Request) {
     .limit(1)
     .maybeSingle();
 
-  return NextResponse.json({ pregled: data || null, vRegistru: true });
+  return NextResponse.json({ pregled: data || null, vRegistru: true, kvota });
 }

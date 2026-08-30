@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import { valutaZaDrzavo } from '@/lib/cenaNarocnine';
+import { dolociPonudbo, valutaZaDrzavo } from '@/lib/cenaNarocnine';
+import { oddanihUstanovnih } from '@/lib/ustanovnaMesta';
 import { setRequestLocale } from 'next-intl/server';
 import FlowNav from '@/components/FlowNav';
 import FlowLanding from '@/components/FlowLanding';
@@ -56,10 +57,15 @@ export default async function FlowPage({
   const drzava = (await headers()).get('x-vercel-ip-country');
   const valuta = rocna === 'usd' ? 'USD' : rocna === 'eur' ? 'EUR' : valutaZaDrzavo(drzava);
 
+  /* Katera ponudba velja ZDAJ — določi jo strežnik, iz oddanih ustanovnih mest
+     in datuma, isto kot blagajna. V brskalniku tega ne računamo: new Date() med
+     izrisom razhaja strežniški in odjemalčev HTML (hidracija). */
+  const ponudba = dolociPonudbo(new Date(), await oddanihUstanovnih());
+
   return (
     <main style={{ minHeight: '100dvh' }}>
       <FlowNav locale={locale} />
-      <FlowLanding locale={locale} valuta={valuta} />
+      <FlowLanding locale={locale} valuta={valuta} ponudba={ponudba} />
     </main>
   );
 }

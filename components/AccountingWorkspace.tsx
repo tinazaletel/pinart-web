@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { strToU8, zipSync } from 'fflate';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData } from '@/lib/pinartFlowStore';
@@ -71,6 +72,8 @@ function demoAccountingArchive(item: AccountingExportRecord) {
 }
 
 export default function AccountingWorkspace() {
+  const jeEn = useLocale() === 'en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [frequency, setFrequency] = useState<'monthly' | 'quarterly'>('quarterly');
   const [periodMode, setPeriodMode] = useState<'monthly' | 'quarterly' | 'custom'>('quarterly');
   const [period, setPeriod] = useState(() => defaultPeriod('quarterly'));
@@ -126,7 +129,7 @@ export default function AccountingWorkspace() {
     void Promise.all([loadCloudSettings(), listAccountingExports()]).then(([settings, records]) => {
       if (settings) { setFrequency(settings.accountingFrequency); setPeriodMode(settings.accountingFrequency); setPeriod(defaultPeriod(settings.accountingFrequency)); setEmail(settings.accountingEmail || ''); }
       setHistory(records);
-    }).catch(() => setNotice('Evidenca paketov trenutno ni dosegljiva.'));
+    }).catch(() => setNotice(L('Evidenca paketov trenutno ni dosegljiva.', 'The package log is currently unavailable.')));
   }, []);
 
   useEffect(() => {
@@ -161,9 +164,9 @@ export default function AccountingWorkspace() {
 
   /* nacin: 'prenos' = prenesi ZIP; 'poslji' = pošlji računovodkinji (rabi e-pošto) */
   async function pripravi(nacin: 'prenos' | 'poslji') {
-    if (samoOgled) { setNotice('V predogledu (demo) priprava paketa ni na voljo — vklopi »Moji podatki«.'); return; }
-    if (!obdobjeVeljavno) { setNotice('Datum »Od« mora biti pred datumom »Do«.'); return; }
-    if (nicIzbrano) { setNotice('Izberi vsaj en račun, strošek ali bančni izpisek.'); return; }
+    if (samoOgled) { setNotice(L('V predogledu (demo) priprava paketa ni na voljo — vklopi »Moji podatki«.', 'Preparing a package is not available in preview (demo) — switch to “My data”.')); return; }
+    if (!obdobjeVeljavno) { setNotice(L('Datum »Od« mora biti pred datumom »Do«.', 'The “From” date must come before the “To” date.')); return; }
+    if (nicIzbrano) { setNotice(L('Izberi vsaj en račun, strošek ali bančni izpisek.', 'Select at least one invoice, expense or bank statement.')); return; }
     setWorking(true); setNotice('');
     try {
       await saveCloudSettings({ accountingEmail: email, accountingFrequency: frequency });
@@ -204,16 +207,16 @@ export default function AccountingWorkspace() {
       }
       await recordAccountingExport({ periodStart: period.start, periodEnd: period.end, recipientEmail: sent ? email : undefined, archivePath, invoiceCount: racSel.length, expenseCount: strSel.length, bankStatementCount: statements.length, sent });
       setHistory(await listAccountingExports());
-      setNotice(sent ? 'Paket je bil poslan računovodkinji in zabeležen.' : nacin === 'poslji' ? 'ZIP prenesen (za samodejno pošiljanje dodaj e-pošto računovodstva).' : 'ZIP paket je prenesen in zabeležen.');
+      setNotice(sent ? L('Paket je bil poslan računovodkinji in zabeležen.', 'The package was sent to your accountant and logged.') : nacin === 'poslji' ? L('ZIP prenesen (za samodejno pošiljanje dodaj e-pošto računovodstva).', 'ZIP downloaded (add the accountant’s e-mail to send it automatically).') : L('ZIP paket je prenesen in zabeležen.', 'The ZIP package was downloaded and logged.'));
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') setNotice('Priprava je bila preklicana.');
-      else setNotice('Paketa ni bilo mogoče pripraviti. Poskusi znova.');
+      if (error instanceof DOMException && error.name === 'AbortError') setNotice(L('Priprava je bila preklicana.', 'Preparation was cancelled.'));
+      else setNotice(L('Paketa ni bilo mogoče pripraviti. Poskusi znova.', 'The package could not be prepared. Try again.'));
     } finally { setWorking(false); }
   }
 
   async function odpriArhiv(item: AccountingExportRecord) {
     if (!item.archivePath) {
-      setSporociloPaketa({ id: item.id, text: 'Za ta starejši zapis ZIP paket ni bil shranjen.', error: true });
+      setSporociloPaketa({ id: item.id, text: L('Za ta starejši zapis ZIP paket ni bil shranjen.', 'No ZIP package was stored for this older record.'), error: true });
       return;
     }
 
@@ -231,126 +234,126 @@ export default function AccountingWorkspace() {
         link.click();
         link.remove();
       }
-      setSporociloPaketa({ id: item.id, text: novoOkno ? 'ZIP se je odprl v novem zavihku.' : 'Prenos ZIP paketa se je začel.' });
+      setSporociloPaketa({ id: item.id, text: novoOkno ? L('ZIP se je odprl v novem zavihku.', 'The ZIP opened in a new tab.') : L('Prenos ZIP paketa se je začel.', 'The ZIP download has started.') });
     } catch {
       novoOkno?.close();
-      setSporociloPaketa({ id: item.id, text: 'Shranjene priponke trenutno ni mogoče odpreti. Poskusi znova.', error: true });
+      setSporociloPaketa({ id: item.id, text: L('Shranjene priponke trenutno ni mogoče odpreti. Poskusi znova.', 'The stored attachment cannot be opened right now. Try again.'), error: true });
     } finally { setOdpiranjePaketa(null); }
   }
 
   return <div className={styles.accountingPage}>
     {notice && <div className={styles.goalSaved} role="status">{notice}</div>}
     <section className={styles.accountingSetup}>
-      <div><p className={styles.eyebrow}>OBDOBJE</p><h2>Za računovodkinjo.</h2><p>Izberi obdobje — Flow sam pobere račune, stroške in priloge. Vidiš, kaj pošiljaš, in odkljukaš, kar nočeš. Vsak paket ostane v evidenci spodaj.</p></div>
+      <div><p className={styles.eyebrow}>{L('OBDOBJE', 'PERIOD')}</p><h2>{L('Za računovodkinjo.', 'For your accountant.')}</h2><p>{L('Izberi obdobje — Flow sam pobere račune, stroške in priloge. Vidiš, kaj pošiljaš, in odkljukaš, kar nočeš. Vsak paket ostane v evidenci spodaj.', 'Pick a period — Flow gathers the invoices, expenses and attachments itself. You see what you are sending and untick anything you don’t want. Every package stays in the log below.')}</p></div>
       <div className={styles.accountingForm}>
-        <div className={styles.periodSwitch} aria-label="Način izbire obdobja"><button className={periodMode === 'monthly' ? styles.periodActive : ''} onClick={() => changeFrequency('monthly')}>Vsak mesec</button><button className={periodMode === 'quarterly' ? styles.periodActive : ''} onClick={() => changeFrequency('quarterly')}>Na 3 mesece</button><button className={periodMode === 'custom' ? styles.periodActive : ''} onClick={() => setPeriodMode('custom')}>Po meri</button></div>
-        <div className={styles.accountingDates}><label>Od<input type="date" max={period.end || undefined} value={period.start} onChange={event => { setPeriodMode('custom'); setPeriod(value => ({ ...value, start: event.target.value })); }} /></label><label>Do<input type="date" min={period.start || undefined} value={period.end} onChange={event => { setPeriodMode('custom'); setPeriod(value => ({ ...value, end: event.target.value })); }} /></label></div>
-        {!obdobjeVeljavno && <small role="alert" style={{ color: '#a12323' }}>Datum »Od« mora biti pred datumom »Do«.</small>}
-        <label>E-pošta računovodstva<input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="racunovodstvo@…" /></label>
-        <label>Bančni izpiski (neobvezno)<input type="file" multiple accept=".pdf,.csv,.xml,.xlsx" onChange={event => setStatements(Array.from(event.target.files || []))} /></label>
+        <div className={styles.periodSwitch} aria-label={L('Način izbire obdobja', 'Period selection mode')}><button className={periodMode === 'monthly' ? styles.periodActive : ''} onClick={() => changeFrequency('monthly')}>{L('Vsak mesec', 'Every month')}</button><button className={periodMode === 'quarterly' ? styles.periodActive : ''} onClick={() => changeFrequency('quarterly')}>{L('Na 3 mesece', 'Every 3 months')}</button><button className={periodMode === 'custom' ? styles.periodActive : ''} onClick={() => setPeriodMode('custom')}>{L('Po meri', 'Custom')}</button></div>
+        <div className={styles.accountingDates}><label>{L('Od', 'From')}<input type="date" max={period.end || undefined} value={period.start} onChange={event => { setPeriodMode('custom'); setPeriod(value => ({ ...value, start: event.target.value })); }} /></label><label>{L('Do', 'To')}<input type="date" min={period.start || undefined} value={period.end} onChange={event => { setPeriodMode('custom'); setPeriod(value => ({ ...value, end: event.target.value })); }} /></label></div>
+        {!obdobjeVeljavno && <small role="alert" style={{ color: '#a12323' }}>{L('Datum »Od« mora biti pred datumom »Do«.', 'The “From” date must come before the “To” date.')}</small>}
+        <label>{L('E-pošta računovodstva', 'Accountant’s e-mail')}<input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="racunovodstvo@…" /></label>
+        <label>{L('Bančni izpiski (neobvezno)', 'Bank statements (optional)')}<input type="file" multiple accept=".pdf,.csv,.xml,.xlsx" onChange={event => setStatements(Array.from(event.target.files || []))} /></label>
         <div className={styles.accountingPdfNotice} role="note">
-          <strong>Računovodkinja potrebuje PDF-je.</strong>
-          <span>Vsi izdani računi, stroškovni računi in bančni izpiski naj bodo priloženi v obliki PDF. ZIP je samo paket, ki te datoteke združi.</span>
+          <strong>{L('Računovodkinja potrebuje PDF-je.', 'Your accountant needs PDFs.')}</strong>
+          <span>{L('Vsi izdani računi, stroškovni računi in bančni izpiski naj bodo priloženi v obliki PDF. ZIP je samo paket, ki te datoteke združi.', 'All issued invoices, expense invoices and bank statements should be attached as PDFs. The ZIP is only the wrapper that puts those files together.')}</span>
         </div>
       </div>
     </section>
 
-    <section className="dokumenti" aria-label="Dokumenti v računovodskem paketu">
+    <section className="dokumenti" aria-label={L('Dokumenti v računovodskem paketu', 'Documents in the accounting package')}>
       <details className="skupina" open>
         <summary className="skupina-gumb">
-          <span><b>Izdani računi</b><small>{racSel.length} od {invoices.length} izbranih</small></span><span className="indikator" aria-hidden="true" />
+          <span><b>{L('Izdani računi', 'Issued invoices')}</b><small>{racSel.length} {L('od', 'of')} {invoices.length} {L('izbranih', 'selected')}</small></span><span className="indikator" aria-hidden="true" />
         </summary>
         <div className="skupina-vsebina">
-          {invoices.length > 0 && <button type="button" className="izberi-vse" onClick={() => preklopiVse(invoices, izbraniRac, setIzbraniRac)}>{vsiOznaceni(invoices, izbraniRac) ? 'Odznači vse' : 'Izberi vse'}</button>}
+          {invoices.length > 0 && <button type="button" className="izberi-vse" onClick={() => preklopiVse(invoices, izbraniRac, setIzbraniRac)}>{vsiOznaceni(invoices, izbraniRac) ? L('Odznači vse', 'Deselect all') : L('Izberi vse', 'Select all')}</button>}
           {invoices.length ? <><ul>{prikazaniRacuni.map(r => <li key={r.id}>
-            <input type="checkbox" checked={izbraniRac.has(r.id)} onChange={() => preklopi(izbraniRac, setIzbraniRac, r.id)} aria-label={`Vključi račun ${r.number || ''}`} />
-            <span><b>{r.number || 'Račun'}</b><small>{r.client} · {datSlo(r.date)}</small></span><strong>{evr(r.amount)}</strong>
-          </li>)}</ul><Paginacija stran={stranRacunov} strani={straniRacunov} naStran={setStranRacunov} /></> : <p className="prazno">V tem obdobju ni izdanih računov.</p>}
+            <input type="checkbox" checked={izbraniRac.has(r.id)} onChange={() => preklopi(izbraniRac, setIzbraniRac, r.id)} aria-label={`${L('Vključi račun', 'Include invoice')} ${r.number || ''}`} />
+            <span><b>{r.number || L('Račun', 'Invoice')}</b><small>{r.client} · {datSlo(r.date)}</small></span><strong>{evr(r.amount)}</strong>
+          </li>)}</ul><Paginacija stran={stranRacunov} strani={straniRacunov} naStran={setStranRacunov} /></> : <p className="prazno">{L('V tem obdobju ni izdanih računov.', 'No invoices were issued in this period.')}</p>}
         </div>
       </details>
 
       <details className="skupina">
         <summary className="skupina-gumb">
-          <span><b>Stroški</b><small>{strSel.length} od {expenses.length} izbranih</small></span><span className="indikator" aria-hidden="true" />
+          <span><b>{L('Stroški', 'Expenses')}</b><small>{strSel.length} {L('od', 'of')} {expenses.length} {L('izbranih', 'selected')}</small></span><span className="indikator" aria-hidden="true" />
         </summary>
         <div className="skupina-vsebina">
-          {expenses.length > 0 && <button type="button" className="izberi-vse" onClick={() => preklopiVse(expenses, izbraniStr, setIzbraniStr)}>{vsiOznaceni(expenses, izbraniStr) ? 'Odznači vse' : 'Izberi vse'}</button>}
+          {expenses.length > 0 && <button type="button" className="izberi-vse" onClick={() => preklopiVse(expenses, izbraniStr, setIzbraniStr)}>{vsiOznaceni(expenses, izbraniStr) ? L('Odznači vse', 'Deselect all') : L('Izberi vse', 'Select all')}</button>}
           {expenses.length ? <><ul>{prikazaniStroski.map(e => <li key={e.id}>
-            <input type="checkbox" checked={izbraniStr.has(e.id)} onChange={() => preklopi(izbraniStr, setIzbraniStr, e.id)} aria-label={`Vključi strošek ${e.title || ''}`} />
-            <span><b>{e.title || 'Strošek'}</b><small>{e.company || e.client || 'Brez dobavitelja'} · {datSlo(e.date)}{!e.filePath ? ' · manjka priloga' : ''}</small></span><strong>{evr(e.amount)}</strong>
-          </li>)}</ul><Paginacija stran={stranStroskov} strani={straniStroskov} naStran={setStranStroskov} /></> : <p className="prazno">V tem obdobju ni stroškov.</p>}
+            <input type="checkbox" checked={izbraniStr.has(e.id)} onChange={() => preklopi(izbraniStr, setIzbraniStr, e.id)} aria-label={`${L('Vključi strošek', 'Include expense')} ${e.title || ''}`} />
+            <span><b>{e.title || 'Strošek'}</b><small>{e.company || e.client || 'Brez dobavitelja'} · {datSlo(e.date)}{!e.filePath ? L(' · manjka priloga', ' · attachment missing') : ''}</small></span><strong>{evr(e.amount)}</strong>
+          </li>)}</ul><Paginacija stran={stranStroskov} strani={straniStroskov} naStran={setStranStroskov} /></> : <p className="prazno">{L('V tem obdobju ni stroškov.', 'No expenses in this period.')}</p>}
         </div>
       </details>
 
       <details className="skupina">
         <summary className="skupina-gumb">
-          <span><b>Bančni izpiski</b><small>{statements.length ? `${statements.length} priloženih` : 'Ni priloženih datotek'}</small></span><span className="indikator" aria-hidden="true" />
+          <span><b>{L('Bančni izpiski', 'Bank statements')}</b><small>{statements.length ? `${statements.length} ${L('priloženih', 'attached')}` : L('Ni priloženih datotek', 'No files attached')}</small></span><span className="indikator" aria-hidden="true" />
         </summary>
-        <div className="skupina-vsebina"><ul>{statements.map(file => <li key={`${file.name}-${file.lastModified}`}><span className="brez-checkbox"><b>{file.name}</b><small>{Math.ceil(file.size / 1024)} KB</small></span></li>)}</ul>{!statements.length && <p className="prazno">Izpiske dodaš v nastavitvah obdobja zgoraj.</p>}</div>
+        <div className="skupina-vsebina"><ul>{statements.map(file => <li key={`${file.name}-${file.lastModified}`}><span className="brez-checkbox"><b>{file.name}</b><small>{Math.ceil(file.size / 1024)} KB</small></span></li>)}</ul>{!statements.length && <p className="prazno">{L('Izpiske dodaš v nastavitvah obdobja zgoraj.', 'Add statements in the period settings above.')}</p>}</div>
       </details>
 
       <details className={`skupina ${manjkajoPriloge.length ? 'skupina-opozorilo' : ''}`}>
         <summary className="skupina-gumb">
-          <span><b>Manjkajoči dokumenti</b><small>{manjkajoPriloge.length ? `${manjkajoPriloge.length} stroškov potrebuje prilogo` : 'Vsi stroški imajo prilogo'}</small></span><span className="indikator" aria-hidden="true" />
+          <span><b>{L('Manjkajoči dokumenti', 'Missing documents')}</b><small>{manjkajoPriloge.length ? `${manjkajoPriloge.length} ${L('stroškov potrebuje prilogo', 'expenses need an attachment')}` : L('Vsi stroški imajo prilogo', 'Every expense has an attachment')}</small></span><span className="indikator" aria-hidden="true" />
         </summary>
-        <div className="skupina-vsebina">{manjkajoPriloge.length ? <ul>{manjkajoPriloge.map(e => <li key={e.id}><span className="brez-checkbox"><b>{e.title || 'Strošek'}</b><small>{e.company || e.client || 'Brez dobavitelja'} · {datSlo(e.date)}</small></span><strong>{evr(e.amount)}</strong></li>)}</ul> : <p className="prazno">Paket je glede prilog pripravljen.</p>}</div>
+        <div className="skupina-vsebina">{manjkajoPriloge.length ? <ul>{manjkajoPriloge.map(e => <li key={e.id}><span className="brez-checkbox"><b>{e.title || 'Strošek'}</b><small>{e.company || e.client || 'Brez dobavitelja'} · {datSlo(e.date)}</small></span><strong>{evr(e.amount)}</strong></li>)}</ul> : <p className="prazno">{L('Paket je glede prilog pripravljen.', 'Attachment-wise, the package is ready.')}</p>}</div>
       </details>
     </section>
 
     <section className={`zakljucek ${pregledOdprt ? 'zakljucek-odprt' : ''}`}>
       <button type="button" className="preglej-gumb" onClick={() => setPregledOdprt(value => !value)} aria-expanded={pregledOdprt}>
-        <span><b>{pregledOdprt ? 'Priprava za računovodstvo' : 'Zaključi paket'}</b><small>{steviloDokumentov} dokumentov{izbraniBrezPriloge.length ? ` · ${izbraniBrezPriloge.length} brez priloge` : ' · pripravljeno za pošiljanje'}</small></span>
-        <span>{pregledOdprt ? 'Skrij pripravo' : 'Nadaljuj na pošiljanje'}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>{pregledOdprt ? <path d="M18 15l-6-6-6 6" /> : <path d="M5 12h14M13 6l6 6-6 6" />}</svg></span>
+        <span><b>{pregledOdprt ? L('Priprava za računovodstvo', 'Preparing for accounting') : L('Zaključi paket', 'Finish the package')}</b><small>{steviloDokumentov} {L('dokumentov', 'documents')}{izbraniBrezPriloge.length ? ` · ${izbraniBrezPriloge.length} ${L('brez priloge', 'without attachment')}` : L(' · pripravljeno za pošiljanje', ' · ready to send')}</small></span>
+        <span>{pregledOdprt ? L('Skrij pripravo', 'Hide preparation') : L('Nadaljuj na pošiljanje', 'Continue to sending')}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>{pregledOdprt ? <path d="M18 15l-6-6-6 6" /> : <path d="M5 12h14M13 6l6 6-6 6" />}</svg></span>
       </button>
       {pregledOdprt && <div className="pregled-paketa">
-        <div><span>Obdobje</span><b>{datSlo(period.start)}–{datSlo(period.end)}</b></div>
-        <div><span>Prejemnik</span><b>{email || 'Ni vpisan'}</b></div>
-        <div><span>Vsebina</span><b>{racSel.length} računov · {strSel.length} stroškov · {statements.length} izpiskov</b></div>
-        {izbraniBrezPriloge.length > 0 && <p role="alert">{izbraniBrezPriloge.length} izbranih stroškov nima priponke. Paket lahko preneseš, pred pošiljanjem pa jih je smiselno dopolniti.</p>}
+        <div><span>{L('Obdobje', 'Period')}</span><b>{datSlo(period.start)}–{datSlo(period.end)}</b></div>
+        <div><span>{L('Prejemnik', 'Recipient')}</span><b>{email || L('Ni vpisan', 'Not entered')}</b></div>
+        <div><span>{L('Vsebina', 'Contents')}</span><b>{racSel.length} {L('računov', 'invoices')} · {strSel.length} {L('stroškov', 'expenses')} · {statements.length} {L('izpiskov', 'statements')}</b></div>
+        {izbraniBrezPriloge.length > 0 && <p role="alert">{izbraniBrezPriloge.length} {L('izbranih stroškov nima priponke. Paket lahko preneseš, pred pošiljanjem pa jih je smiselno dopolniti.', 'selected expenses have no attachment. You can still download the package, but it is worth completing them before sending.')}</p>}
         <div className="akcije">
-          <button className={styles.primaryAction} type="button" disabled={working || nicIzbrano || !email || !obdobjeVeljavno} onClick={() => pripravi('poslji')}>{working ? 'Pripravljam …' : 'Pošlji računovodkinji'}</button>
-          <button className="sekundarni-gumb" type="button" disabled={working || nicIzbrano || !obdobjeVeljavno} onClick={() => pripravi('prenos')}>Prenesi ZIP</button>
+          <button className={styles.primaryAction} type="button" disabled={working || nicIzbrano || !email || !obdobjeVeljavno} onClick={() => pripravi('poslji')}>{working ? L('Pripravljam …', 'Preparing …') : L('Pošlji računovodkinji', 'Send to accountant')}</button>
+          <button className="sekundarni-gumb" type="button" disabled={working || nicIzbrano || !obdobjeVeljavno} onClick={() => pripravi('prenos')}>{L('Prenesi ZIP', 'Download ZIP')}</button>
         </div>
-        {!email && <small className="pomoc">Za pošiljanje dodaj e-pošto računovodstva zgoraj.</small>}
+        {!email && <small className="pomoc">{L('Za pošiljanje dodaj e-pošto računovodstva zgoraj.', 'Add the accountant’s e-mail above to send it.')}</small>}
       </div>}
     </section>
 
     <section className={styles.accountingHistory}>
-      <header><div><p className={styles.eyebrow}>EVIDENCA</p><h2>Kaj je bilo poslano in kdaj.</h2><p>Klikni zapis za pregled vsebine in shranjenega paketa.</p></div></header>
+      <header><div><p className={styles.eyebrow}>{L('EVIDENCA', 'LOG')}</p><h2>{L('Kaj je bilo poslano in kdaj.', 'What was sent, and when.')}</h2><p>{L('Klikni zapis za pregled vsebine in shranjenega paketa.', 'Click a record to see its contents and the stored package.')}</p></div></header>
       {prikazanaEvidenca.length ? prikazanaEvidenca.map(item => <details className={styles.accountingHistoryItem} key={item.id}>
         <summary>
-          <div className={styles.accountingHistoryIdentity}><strong>{new Date(item.periodStart).toLocaleDateString('sl-SI')}–{new Date(item.periodEnd).toLocaleDateString('sl-SI')}</strong><small>{item.recipientEmail || 'Prenos (brez pošiljanja)'}</small></div>
-          <div className={styles.accountingHistoryCounts} aria-label="Vsebina paketa">
-            <span><strong>{item.invoiceCount}</strong><small>računov</small></span>
-            <span><strong>{item.expenseCount}</strong><small>stroškov</small></span>
-            <span><strong>{item.bankStatementCount}</strong><small>izpiskov</small></span>
+          <div className={styles.accountingHistoryIdentity}><strong>{new Date(item.periodStart).toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI')}–{new Date(item.periodEnd).toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI')}</strong><small>{item.recipientEmail || L('Prenos (brez pošiljanja)', 'Download (not sent)')}</small></div>
+          <div className={styles.accountingHistoryCounts} aria-label={L('Vsebina paketa', 'Package contents')}>
+            <span><strong>{item.invoiceCount}</strong><small>{L('računov', 'invoices')}</small></span>
+            <span><strong>{item.expenseCount}</strong><small>{L('stroškov', 'expenses')}</small></span>
+            <span><strong>{item.bankStatementCount}</strong><small>{L('izpiskov', 'statements')}</small></span>
           </div>
           <div className={styles.accountingHistoryState}>
-            <b>{item.sentAt ? `Poslano ${new Date(item.sentAt).toLocaleDateString('sl-SI')}` : `Pripravljeno ${new Date(item.createdAt).toLocaleDateString('sl-SI')}`}</b>
+            <b>{item.sentAt ? `${L('Poslano', 'Sent')} ${new Date(item.sentAt).toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI')}` : `${L('Pripravljeno', 'Prepared')} ${new Date(item.createdAt).toLocaleDateString(jeEn ? 'en-GB' : 'sl-SI')}`}</b>
             <i aria-hidden="true" />
           </div>
         </summary>
         <div className={styles.accountingHistoryDetail}>
-          <div><strong>Vsebina paketa</strong><p>{item.invoiceCount} izdanih računov, {item.expenseCount} stroškovnih dokumentov in {item.bankStatementCount} bančnih izpiskov.</p></div>
-          <div><strong>Priponka</strong><p>{item.archivePath ? `ZIP paket · ${item.periodStart}–${item.periodEnd}` : 'Pri tem zapisu ZIP paket ni bil shranjen.'}</p></div>
+          <div><strong>{L('Vsebina paketa', 'Package contents')}</strong><p>{item.invoiceCount} {L('izdanih računov', 'issued invoices')}, {item.expenseCount} {L('stroškovnih dokumentov in', 'expense documents and')} {item.bankStatementCount} {L('bančnih izpiskov.', 'bank statements.')}</p></div>
+          <div><strong>{L('Priponka', 'Attachment')}</strong><p>{item.archivePath ? `${L('ZIP paket', 'ZIP package')} · ${item.periodStart}–${item.periodEnd}` : L('Pri tem zapisu ZIP paket ni bil shranjen.', 'No ZIP package was stored for this record.')}</p></div>
           {item.archivePath && <div className={styles.accountingArchiveAction}>
             {predogledNacin === 'demo' ? demoArhivi[item.id] ? <a
               className="sekundarni-gumb"
               href={demoArhivi[item.id]}
               download={`pinart-demo-racunovodstvo-${item.periodStart}-${item.periodEnd}.zip`}
-              onClick={() => setSporociloPaketa({ id: item.id, text: 'Predstavitveni ZIP je prenesen. Odpri ga v mapi Prenosi.' })}
-            >Prenesi predstavitveni ZIP</a> : <button type="button" className="sekundarni-gumb" disabled>Nalaganje paketa …</button> : <button type="button" className="sekundarni-gumb" disabled={odpiranjePaketa === item.id} onClick={() => void odpriArhiv(item)}>{odpiranjePaketa === item.id ? 'Odpiram …' : 'Odpri / prenesi ZIP'}</button>}
+              onClick={() => setSporociloPaketa({ id: item.id, text: L('Predstavitveni ZIP je prenesen. Odpri ga v mapi Prenosi.', 'The demo ZIP was downloaded. Open it in your Downloads folder.') })}
+            >{L('Prenesi predstavitveni ZIP', 'Download demo ZIP')}</a> : <button type="button" className="sekundarni-gumb" disabled>{L('Nalaganje paketa …', 'Loading package …')}</button> : <button type="button" className="sekundarni-gumb" disabled={odpiranjePaketa === item.id} onClick={() => void odpriArhiv(item)}>{odpiranjePaketa === item.id ? L('Odpiram …', 'Opening …') : L('Odpri / prenesi ZIP', 'Open / download ZIP')}</button>}
             {sporociloPaketa?.id === item.id && <small role={sporociloPaketa.error ? 'alert' : 'status'} data-error={sporociloPaketa.error || undefined}>{sporociloPaketa.text}</small>}
           </div>}
         </div>
-      </details>) : <p>Prvi paket se bo prikazal tukaj.</p>}
+      </details>) : <p>{L('Prvi paket se bo prikazal tukaj.', 'Your first package will appear here.')}</p>}
       {evidenca.length > 0 && <div className={styles.accountingHistoryFooter}>
         {vsaEvidencaOdprta && straniEvidence > 1 && <Paginacija stran={stranEvidence} strani={straniEvidence} naStran={setStranEvidence} />}
         <button
           className="sekundarni-gumb"
           type="button"
           onClick={() => setVsaEvidencaOdprta(odprta => !odprta)}
-        >{vsaEvidencaOdprta ? 'Prikaži zadnjih 5' : 'Odpri vso evidenco'}</button>
+        >{vsaEvidencaOdprta ? L('Prikaži zadnjih 5', 'Show last 5') : L('Odpri vso evidenco', 'Open the full log')}</button>
       </div>}
     </section>
     <style jsx>{`

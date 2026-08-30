@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import PreveriPoslovanje from '@/components/PreveriPoslovanje';
 import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import TrzniOkvirZnacka from '@/components/TrzniOkvirZnacka';
@@ -10257,6 +10258,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </>
                 ) : (
                   <>
+                    <PreveriPoslovanje
+                      davcna={narocnikDavcna}
+                      jeEn={locale === 'en'}
+                      base={locale === 'en' ? '/en' : ''}
+                      onIzpolni={(p, d) => {
+                        if (p !== null) setPromet(String(Math.round(p)));
+                        if (d !== null) setDobicek(String(Math.round(d)));
+                      }}
+                    />
                     <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>{L('Enako kot trg: podjetje z višjim prometom in dobičkom nosi večjo vrednost dela. Upošteva se le, kadar delo velja za celotno znamko. Če ne veš, pusti prazno.', 'Like the market: a company with higher revenue and profit carries a higher work value. It counts only when the work applies to the whole brand. If you don\'t know, leave it blank.')}</p>
                     <div className="numgrid">
                       <div className="polje">
@@ -11205,7 +11215,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             {/* Podpora šele TU: korak s ceno je sredina dela, Zaključek pa
                 trenutek, ko ima človek ponudbo v rokah in je nekaj dobil
                 (Tina, 29. 8. 2026). Med procesom ne prekinjamo. */}
-            <PodpriBanner jeEn={locale === 'en'} />
+            <PodpriBanner locale={locale} />
             </>
           )}
         </div>

@@ -92,7 +92,11 @@ export type ProfipoRacun = {
 /** Protest menice iz Registra protestiranih menic (RPM). */
 export type ProfipoProtest = { protest?: string; vpisan?: string; izbrisan?: string };
 
-export type ProfipoPostavka = { aop?: string; opis?: string; vrednost?: string };
+/* `id` je oznaka iz šifranta (L00097, K0008 …), `aop` pa mesto v bilančni
+   shemi (T001 …). Iskati je treba po `id`: AOP se med vrstami poročil in leti
+   spreminja, oznaka iz šifranta pa ne. Prej smo brali samo AOP in zato čistih
+   prihodkov nikoli nismo našli, čeprav jih AJPES vrača. */
+export type ProfipoPostavka = { id?: string; aop?: string; opis?: string; vrednost?: string };
 
 /** Objava iz insolvenčnih postopkov (eInsolv) — element ObjavaIns v shemi. */
 export type ProfipoInsolvencnaObjava = { objavljeno?: string; dejanje?: string; postopek?: string; procesnoDejanje?: string };
@@ -121,6 +125,12 @@ export type ProfipoPodjetje = {
   kazalniki: ProfipoPostavka[];
   /** Kazalnik tveganja iz letnega poročila, kadar ga AJPES vrne. */
   kazalnikTveganja?: string;
+  /** Čisti prihodki od prodaje (L00097) — vhod za ceno v kalkulatorju. */
+  cistiPrihodki?: number;
+  /** Čisti dobiček ali čista izguba (K0008); negativna vrednost = izguba. */
+  cistiDobicek?: number;
+  /** Povprečno število zaposlenih (L00175). AJPES ga pošlje pomnoženega s 100. */
+  zaposlenih?: number;
   /** Objave iz insolvenčnih postopkov. Prazno = v odgovoru jih ni bilo. */
   insolvencni: ProfipoInsolvencnaObjava[];
   /** Objave po ZGD (statusne spremembe). */
@@ -169,6 +179,17 @@ function telesoOdgovora(xml: string, koren: string): Record<string, unknown> | u
 }
 
 /** Podatki o podjetju iz GetData. */
+/* Vrednost postavke po oznaki iz šifranta. */
+const najdi = (vrstice: ProfipoPostavka[], id: string): string | undefined =>
+  vrstice.find(v => v.id === id)?.vrednost;
+
+/* AJPES pošilja števila kot niz; decimalna vejica je mogoča, tisočice ne. */
+const stevilka = (v: string | undefined): number | undefined => {
+  if (v === undefined) return undefined;
+  const n = Number(String(v).replace(',', '.'));
+  return Number.isFinite(n) ? n : undefined;
+};
+
 export function razcleniGetData(xml: string): { napaka?: ProfipoNapaka; podjetje?: ProfipoPodjetje } {
   const rez = telesoOdgovora(xml, 'GetData');
   if (!rez) return { napaka: { id: 'razclenitev', opis: 'Odgovora ni bilo mogoče razčleniti.' } };
@@ -222,12 +243,14 @@ export function razcleniGetData(xml: string): { napaka?: ProfipoNapaka; podjetje
   }));
 
   const postavke: ProfipoPostavka[] = vSeznam<Record<string, any>>(lp?.LpPod).map(v => ({
+    id: v['@lid'] ? String(v['@lid']) : undefined,
     aop: v['@lAop'] ? String(v['@lAop']) : undefined,
     opis: besedilo(v.LOpis),
     vrednost: v['@lPod'] !== undefined ? String(v['@lPod']) : undefined,
   }));
 
   const kazalniki: ProfipoPostavka[] = vSeznam<Record<string, any>>(lp?.Kaz).map(v => ({
+    id: v['@kid'] ? String(v['@kid']) : undefined,
     aop: v['@kAop'] ? String(v['@kAop']) : undefined,
     opis: besedilo(v.KOpis),
     vrednost: v['@kPod'] !== undefined ? String(v['@kPod']) : undefined,
@@ -264,6 +287,14 @@ export function razcleniGetData(xml: string): { napaka?: ProfipoNapaka; podjetje
       postavke,
       kazalniki,
       kazalnikTveganja: besedilo(lp?.KazalnikTveganja),
+      cistiPrihodki: stevilka(najdi(postavke, 'L00097')),
+      cistiDobicek: stevilka(najdi(kazalniki, 'K0008')),
+      /* Šifrant: »identifikator L00175 (število zaposlenih): vrednost je
+         potrebno deliti s 100«. */
+      zaposlenih: (() => {
+        const v = stevilka(najdi(postavke, 'L00175'));
+        return v === undefined ? undefined : Math.round((v / 100) * 100) / 100;
+      })(),
       insolvencni,
       zgdObjave,
       protesti,
