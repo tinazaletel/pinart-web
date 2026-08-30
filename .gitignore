@@ -48,3 +48,4 @@ skills-lock.json
 # Varnostne kopije baze (osebni podatki — nikoli v git)
 varnostne-kopije/
 *.dump
+.next-build/

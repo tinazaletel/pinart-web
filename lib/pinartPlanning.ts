@@ -142,19 +142,21 @@ const presenceFromRow = (row: Record<string, unknown>): PresenceEntry => ({
   opomba: row.note ? String(row.note) : undefined,
 });
 
-export async function loadCloudPresence(): Promise<PresenceEntry[]> {
+/* zaId: čigavo evidenco beremo. Prazno = svojo. Skrbnik sme brati evidenco
+   sodelavcev v svoji organizaciji (glej migracijo evidenca_sodelavci). */
+export async function loadCloudPresence(zaId?: string): Promise<PresenceEntry[]> {
   const context = await getOrganizationContext();
   if (!context) return [];
-  const { data, error } = await createClient().from('presence_entries').select('*').eq('user_id', context.userId).order('entry_date', { ascending: false });
+  const { data, error } = await createClient().from('presence_entries').select('*').eq('user_id', zaId || context.userId).order('entry_date', { ascending: false });
   if (error) throw error;
   return (data || []).map(row => presenceFromRow(row));
 }
 
-export async function saveCloudPresence(entry: PresenceEntry): Promise<void> {
+export async function saveCloudPresence(entry: PresenceEntry, zaId?: string): Promise<void> {
   const context = await getOrganizationContext();
   if (!context) return;
   const { error } = await createClient().from('presence_entries').upsert({
-    id: entry.id, organization_id: context.organizationId, user_id: context.userId,
+    id: entry.id, organization_id: context.organizationId, user_id: zaId || context.userId,
     entry_date: entry.datum, arrival: entry.prihod || null, departure: entry.odhod || null,
     break_minutes: entry.odmorMin ?? null, kind: entry.vrsta || 'redno', location: entry.kraj || null,
     note: entry.opomba || null, updated_at: new Date().toISOString(),
@@ -162,9 +164,9 @@ export async function saveCloudPresence(entry: PresenceEntry): Promise<void> {
   if (error) throw error;
 }
 
-export async function deleteCloudPresence(id: string): Promise<void> {
+export async function deleteCloudPresence(id: string, zaId?: string): Promise<void> {
   const context = await getOrganizationContext();
   if (!context) return;
-  const { error } = await createClient().from('presence_entries').delete().eq('id', id).eq('user_id', context.userId);
+  const { error } = await createClient().from('presence_entries').delete().eq('id', id).eq('user_id', zaId || context.userId);
   if (error) throw error;
 }

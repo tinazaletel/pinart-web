@@ -65,7 +65,7 @@ export default function ProfileWorkspace({ base }: { base: string }) {
         dokumentov zgoraj: kartica pojasni, urejanje pa je na svoji strani. */}
     <section className={styles.card}>
       <header><p>{L('04 · DELOVNA PRISOTNOST', '04 · WORK ATTENDANCE')}</p><h2>{L('Kdaj je delo potekalo.', 'When the work took place.')}</h2><span>{L('Prihod, odmor in odhod po ZEPDSV. Zapis je vezan nate, ne na projekt — koliko je delo na projektu stalo, meri Štoparica.', 'Record arrival, breaks and departure. The record is tied to you, not a project — use the Timer to measure the cost of project work.')}</span></header>
-      <div className={styles.actions}><Link href={`${base}/kalkulator/evidenca-casa`}>{L('Odpri delovno prisotnost', 'Open work attendance')}</Link></div>
+      <div className={styles.actions}><Link href={`${base}/kalkulator/evidenca-casa?nazaj=1`}>{L('Odpri delovno prisotnost', 'Open work attendance')}</Link></div>
     </section>
     {/* Nevarno obmocje — preneseno iz Nastavitev (Dizajn). Na dnu profila. */}
     <section className={`${styles.card} ${styles.nevarno}`}>

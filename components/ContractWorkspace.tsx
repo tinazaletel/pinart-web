@@ -1201,58 +1201,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
           </div>,
           document.body,
         )}
-        {/* opcijski cleni trenutne vrste: klik vklopi/izklopi člen (številčenje se prilagodi samo) */}
-        {!odStranke && (() => {
-          const opcijski = cleniZaVrsto(vrstaPog).filter(c => c.opcijski);
-          if (!opcijski.length) return null;
-          return (
-            <div className="pg-klavzule">
-              <span className="pg-klavzule-label">{L('Dodatni pogoji', 'Additional terms')}</span>
-              <div className="pg-klavzule-seznam" role="group" aria-label={L('Opcijski členi', 'Optional clauses')}>
-                {opcijski.map(c => {
-                  const vkljucen = !izklKlavzule.has(c.id);
-                  const posledica = POSLEDICE[c.id];
-                  return <button key={c.id} type="button" aria-pressed={vkljucen} className={'pg-klavzula' + (vkljucen ? ' on' : '')} onClick={() => prekloviKlavzulo(c.id)}>
-                    <span className="pg-klavzula-kv" aria-hidden>{vkljucen ? '✓' : '+'}</span>
-                    <span className="pg-klavzula-txt">
-                      <strong>{c.naslov}</strong>
-                      {posledica && <span>{jeEn ? posledica.en : posledica.sl}</span>}
-                    </span>
-                  </button>;
-                })}
-              </div>
-            </div>
-          );
-        })()}
-        {/* Vprasanja, ki sodijo v pogodbo — samo za storitve iz te ponudbe.
-            Odgovor postane clen; brez odgovora clena ni. */}
-        {!odStranke && pogVpr.length > 0 && (
-          <div className="pg-klavzule pg-nad">
-            <span className="pg-klavzule-label">{L('Nadaljnje delo', 'Further work')}</span>
-            <p className="pg-nad-uvod">{L('Odgovor se zapiše kot člen pogodbe. Če odgovora ni, člena ni.', 'The answer becomes a clause in the contract. No answer, no clause.')}</p>
-            {pogVpr.map(({ sid, ime, v }) => {
-              const kljuc = `${sid}:${v.id}`;
-              const izbrano = pogOdg[kljuc] || '';
-              return (
-                <div key={sid + v.id} className="pg-nad-vpr">
-                  <span className="pg-nad-vpr-naslov"><b>{ime}</b> · {jeEn ? v.en : v.sl}</span>
-                  <div className="pg-klavzule-seznam" role="group" aria-label={jeEn ? v.en : v.sl}>
-                    {v.opcije.map(o => {
-                      const on = izbrano === o.id;
-                      return (
-                        <button key={o.id} type="button" aria-pressed={on} className={'pg-klavzula' + (on ? ' on' : '')}
-                          onClick={() => nastaviPogOdg(kljuc, on ? '' : o.id)}>
-                          <span className="pg-klavzula-kv" aria-hidden>{on ? '✓' : '+'}</span>
-                          <span className="pg-klavzula-txt"><strong>{jeEn ? o.en : o.sl}</strong></span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
         {/* TRI POTI ENAKOVREDNO (ChatGPT/Codex tocka 4): tretja je bila skrita
             kot povezava na dnu in je nihce ni nasel. */}
         <div className="pg-poti" role="group" aria-label={L('Iz česa nastane pogodba', 'What the contract is built from')}>
@@ -1343,6 +1291,71 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 <p className="pg-namig">{L('Priporočamo: najprej ustvari ', 'We recommend: first create an ')}<b>{L('ponudbo', 'offer')}</b>{L(' — obseg, cena in številka se v pogodbo prenesejo sami. ', ' — the scope, price and number carry over into the contract automatically. ')}<a href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator →', 'Open calculator →')}</a></p>
               </>
             )}
+        {/* opcijski cleni trenutne vrste: klik vklopi/izklopi člen (številčenje se prilagodi samo) */}
+        {!odStranke && (() => {
+          const opcijski = cleniZaVrsto(vrstaPog).filter(c => c.opcijski);
+          if (!opcijski.length) return null;
+          const vkljucenihSt = opcijski.filter(c => !izklKlavzule.has(c.id)).length;
+          return (
+            /* ZLOŽENO in NA KONCU (Tina, 30. 8. 2026): enajst odprtih kartic je
+               stalo pred obrazcem in je bilo videti kot glavno delo, čeprav so
+               dodatni pogoji nekaj, kar večina pusti, kot je. Povzetek v glavi
+               pove, koliko jih je vključenih, zato jih ni treba odpirati, da to
+               izveš. */
+            <details className="pg-klavzule pg-zlozka">
+              <summary>
+                <span className="pg-klavzule-label">{L('Dodatni pogoji', 'Additional terms')}</span>
+                <span className="pg-zlozka-stanje">
+                  {vkljucenihSt === opcijski.length
+                    ? L(`vseh ${opcijski.length} vključenih`, `all ${opcijski.length} included`)
+                    : L(`${vkljucenihSt} od ${opcijski.length} vključenih`, `${vkljucenihSt} of ${opcijski.length} included`)}
+                </span>
+              </summary>
+              <div className="pg-klavzule-seznam" role="group" aria-label={L('Opcijski členi', 'Optional clauses')}>
+                {opcijski.map(c => {
+                  const vkljucen = !izklKlavzule.has(c.id);
+                  const posledica = POSLEDICE[c.id];
+                  return <button key={c.id} type="button" aria-pressed={vkljucen} className={'pg-klavzula' + (vkljucen ? ' on' : '')} onClick={() => prekloviKlavzulo(c.id)}>
+                    <span className="pg-klavzula-kv" aria-hidden>{vkljucen ? '✓' : '+'}</span>
+                    <span className="pg-klavzula-txt">
+                      <strong>{c.naslov}</strong>
+                      {posledica && <span>{jeEn ? posledica.en : posledica.sl}</span>}
+                    </span>
+                  </button>;
+                })}
+              </div>
+            </details>
+          );
+        })()}
+        {/* Vprasanja, ki sodijo v pogodbo — samo za storitve iz te ponudbe.
+            Odgovor postane clen; brez odgovora clena ni. */}
+        {!odStranke && pogVpr.length > 0 && (
+          <div className="pg-klavzule pg-nad">
+            <span className="pg-klavzule-label">{L('Nadaljnje delo', 'Further work')}</span>
+            <p className="pg-nad-uvod">{L('Odgovor se zapiše kot člen pogodbe. Če odgovora ni, člena ni.', 'The answer becomes a clause in the contract. No answer, no clause.')}</p>
+            {pogVpr.map(({ sid, ime, v }) => {
+              const kljuc = `${sid}:${v.id}`;
+              const izbrano = pogOdg[kljuc] || '';
+              return (
+                <div key={sid + v.id} className="pg-nad-vpr">
+                  <span className="pg-nad-vpr-naslov"><b>{ime}</b> · {jeEn ? v.en : v.sl}</span>
+                  <div className="pg-klavzule-seznam" role="group" aria-label={jeEn ? v.en : v.sl}>
+                    {v.opcije.map(o => {
+                      const on = izbrano === o.id;
+                      return (
+                        <button key={o.id} type="button" aria-pressed={on} className={'pg-klavzula' + (on ? ' on' : '')}
+                          onClick={() => nastaviPogOdg(kljuc, on ? '' : o.id)}>
+                          <span className="pg-klavzula-kv" aria-hidden>{on ? '✓' : '+'}</span>
+                          <span className="pg-klavzula-txt"><strong>{jeEn ? o.en : o.sl}</strong></span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
                       </>
         ) : (
           /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
@@ -1838,6 +1851,13 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-odstranke-link{margin-top:1rem}
       .pg-odstranke-nazaj{margin:0 0 1.1rem}
 
+      .pg-zlozka{padding:0}
+      .pg-zlozka>summary{display:flex;align-items:baseline;gap:.6rem;cursor:pointer;list-style:none;padding:.9rem .2rem;border-radius:12px}
+      .pg-zlozka>summary::-webkit-details-marker{display:none}
+      .pg-zlozka>summary::after{content:'';width:.5rem;height:.5rem;border-right:2px solid rgba(17,17,17,.45);border-bottom:2px solid rgba(17,17,17,.45);transform:rotate(45deg) translateY(-2px);transition:transform .18s cubic-bezier(.23,1,.32,1)}
+      .pg-zlozka[open]>summary::after{transform:rotate(-135deg) translateY(1px)}
+      .pg-zlozka>summary:hover{background:rgba(17,17,17,.035)}
+      .pg-zlozka-stanje{margin-right:auto;font-size:.8rem;color:rgba(17,17,17,.55)}
       .pg-namig{margin:0 0 1.2rem;padding:.8rem 1rem;border:1px dashed rgba(178,84,118,.45);border-radius:12px;background:rgba(178,84,118,.06);font-size:.85rem;line-height:1.5;color:rgba(17,17,17,.75)}
       .pg-namig a{color:var(--accent,#B25476);font-weight:600;text-decoration:underline;text-underline-offset:.22em;white-space:nowrap}
 
