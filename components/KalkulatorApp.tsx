@@ -321,12 +321,12 @@ const IZKUSNJE = [
 /* Raven cen po trgih: vpliva na privzete osnove (tvoj trg)
    in na razmerje, ko delas za trg z drugacno ravnjo (trg narocnika). */
 const TRGI = [
-  { id: 'si',   ime: 'Slovenija / srednja EU',        lvl: 1    },
-  { id: 'west', ime: 'Zahodna Evropa',                lvl: 1.45 },
-  { id: 'us',   ime: 'ZDA / UK / Skandinavija',       lvl: 1.9  },
-  { id: 'east', ime: 'Vzhodna EU / Balkan',           lvl: 0.75 },
-  { id: 'mena', ime: 'Zaliv / bogatejši MENA trgi',   lvl: 1.3  },
-  { id: 'asia', ime: 'Global South / nižji trgi',     lvl: 0.65 },
+  { id: 'si',   ime: 'Slovenija / srednja EU',        imeEn: 'Slovenia / Central EU',        lvl: 1    },
+  { id: 'west', ime: 'Zahodna Evropa',                imeEn: 'Western Europe',               lvl: 1.45 },
+  { id: 'us',   ime: 'ZDA / UK / Skandinavija',       imeEn: 'US / UK / Scandinavia',        lvl: 1.9  },
+  { id: 'east', ime: 'Vzhodna EU / Balkan',           imeEn: 'Eastern EU / Balkans',         lvl: 0.75 },
+  { id: 'mena', ime: 'Zaliv / bogatejši MENA trgi',   imeEn: 'Gulf / wealthier MENA markets', lvl: 1.3  },
+  { id: 'asia', ime: 'Global South / nižji trgi',     imeEn: 'Global South / lower markets', lvl: 0.65 },
 ];
 
 /* Država naročnika -> privzet trg (razred cene). Uporabnik ga lahko ročno spremeni.
@@ -1645,22 +1645,22 @@ const IKONA_CENA_SVG = '<svg class="cena-ikona" viewBox="0 0 42.51 40.53" fill="
 /* Valuta ponudbe: cene so interno v EUR, prikaz in ponudba pa v izbrani
    valuti (priblizen preracun, zaokrozen na 50). */
 const VALUTE = [
-  { id: 'eur', ime: 'EUR — Evro',            znak: '€',   fx: 1     },
-  { id: 'usd', ime: 'USD — Ameriški dolar',  znak: '$',   fx: 1.1   },
-  { id: 'gbp', ime: 'GBP — Britanski funt',  znak: '£',   fx: 0.85  },
-  { id: 'chf', ime: 'CHF — Švicarski frank', znak: 'CHF', fx: 0.95  },
-  { id: 'jpy', ime: 'JPY — Japonski jen',    znak: '¥',   fx: 160   },
-  { id: 'sek', ime: 'SEK — Švedska krona',   znak: 'SEK', fx: 11.2  },
-  { id: 'nok', ime: 'NOK — Norveška krona',  znak: 'NOK', fx: 11.6  },
-  { id: 'dkk', ime: 'DKK — Danska krona',    znak: 'DKK', fx: 7.46  },
-  { id: 'pln', ime: 'PLN — Poljski zlot',    znak: 'PLN', fx: 4.3   },
-  { id: 'czk', ime: 'CZK — Češka krona',     znak: 'CZK', fx: 25    },
-  { id: 'huf', ime: 'HUF — Madžarski forint',znak: 'HUF', fx: 395   },
-  { id: 'aud', ime: 'AUD — Avstralski dolar',znak: 'AUD', fx: 1.65  },
-  { id: 'cad', ime: 'CAD — Kanadski dolar',  znak: 'CAD', fx: 1.48  },
-  { id: 'cny', ime: 'CNY — Kitajski juan',   znak: 'CNY', fx: 7.85  },
-  { id: 'inr', ime: 'INR — Indijska rupija', znak: 'INR', fx: 91    },
-  { id: 'aed', ime: 'AED — Dirham (ZAE)',    znak: 'AED', fx: 4.0   },
+  { id: 'eur', ime: 'EUR — Evro', imeEn: 'EUR — Euro',            znak: '€',   fx: 1     },
+  { id: 'usd', ime: 'USD — Ameriški dolar', imeEn: 'USD — US dollar',  znak: '$',   fx: 1.1   },
+  { id: 'gbp', ime: 'GBP — Britanski funt', imeEn: 'GBP — British pound',  znak: '£',   fx: 0.85  },
+  { id: 'chf', ime: 'CHF — Švicarski frank', imeEn: 'CHF — Swiss franc', znak: 'CHF', fx: 0.95  },
+  { id: 'jpy', ime: 'JPY — Japonski jen', imeEn: 'JPY — Japanese yen',    znak: '¥',   fx: 160   },
+  { id: 'sek', ime: 'SEK — Švedska krona', imeEn: 'SEK — Swedish krona',   znak: 'SEK', fx: 11.2  },
+  { id: 'nok', ime: 'NOK — Norveška krona', imeEn: 'NOK — Norwegian krone',  znak: 'NOK', fx: 11.6  },
+  { id: 'dkk', ime: 'DKK — Danska krona', imeEn: 'DKK — Danish krone',    znak: 'DKK', fx: 7.46  },
+  { id: 'pln', ime: 'PLN — Poljski zlot', imeEn: 'PLN — Polish zloty',    znak: 'PLN', fx: 4.3   },
+  { id: 'czk', ime: 'CZK — Češka krona', imeEn: 'CZK — Czech koruna',     znak: 'CZK', fx: 25    },
+  { id: 'huf', ime: 'HUF — Madžarski forint', imeEn: 'HUF — Hungarian forint',znak: 'HUF', fx: 395   },
+  { id: 'aud', ime: 'AUD — Avstralski dolar', imeEn: 'AUD — Australian dollar',znak: 'AUD', fx: 1.65  },
+  { id: 'cad', ime: 'CAD — Kanadski dolar', imeEn: 'CAD — Canadian dollar',  znak: 'CAD', fx: 1.48  },
+  { id: 'cny', ime: 'CNY — Kitajski juan', imeEn: 'CNY — Chinese yuan',   znak: 'CNY', fx: 7.85  },
+  { id: 'inr', ime: 'INR — Indijska rupija', imeEn: 'INR — Indian rupee', znak: 'INR', fx: 91    },
+  { id: 'aed', ime: 'AED — Dirham (ZAE)', imeEn: 'AED — Dirham (UAE)',    znak: 'AED', fx: 4.0   },
 ];
 
 /* Privzeti trg iz casovnega pasu obiskovalca — brez streznika in piskotkov. */
@@ -6058,8 +6058,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* prikazno ime vrstice: lastno ime, sicer ime storitve (+ zaporedje pri vec instancah) */
   const prikazVrstice = (l: VrsticaP, s: Storitev) => {
     if (l.ime.trim()) return l.ime.trim();
+    /* storIme, ne s.ime: v angleskem vmesniku so postavke v panelu pisale
+       slovensko (Tina, 31. 8. 2026). Jezik DOKUMENTA je locen od jezika
+       vmesnika in se tu ne uporablja — to je zaslon, ne ponudba. */
+    const ime = storIme(s);
     const iste = vrstice.filter(x => x.sid === l.sid);
-    return iste.length > 1 ? `${s.ime} ${iste.indexOf(l) + 1}` : s.ime;
+    return iste.length > 1 ? `${ime} ${iste.indexOf(l) + 1}` : ime;
   };
 
   /* Deljen header (Pinart KALKULATOR BETA | ✕ zapri  ·  nastavitve + avatar) —
@@ -6623,7 +6627,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .drz-puscica { position: absolute; top: 50%; right: .55rem; transform: translateY(-50%); display: grid; place-items: center; width: 1.6rem; height: 1.6rem; padding: 0; border: 0; background: none; color: rgba(17,17,17,.72); cursor: pointer; }
         .cw .drz-puscica svg { width: 1.05rem; height: 1.05rem; }
         .cw .drz-puscica:hover { color: var(--ink); }
-        .cw .drz-seznam { position: absolute; z-index: 60; top: calc(100% + .3rem); left: 0; right: 0; max-height: 15rem; overflow-y: auto; margin: 0; padding: .3rem; list-style: none; border: 1px solid rgba(17,17,17,.18); border-radius: .7rem; background: var(--paper); box-shadow: 0 14px 40px rgba(17,17,17,.14); }
+        /* Kartica z ODPRTIM seznamom stopi nad naslednje kartice; brez tega je
+           seznam izginil pod mehurcek in kartico spodaj, ker sta v DOM pozneje
+           (Tina, 31. 8. 2026). */
+        .cw .kartica:has(.drz-seznam) { position: relative; z-index: 40; }
+        .cw .drz-seznam { position: absolute; z-index: 90; top: calc(100% + .3rem); left: 0; right: 0; max-height: 15rem; overflow-y: auto; margin: 0; padding: .3rem; list-style: none; border: 1px solid rgba(17,17,17,.18); border-radius: .7rem; background: var(--paper); box-shadow: 0 14px 40px rgba(17,17,17,.14); }
         .cw .drz-seznam li { margin: 0; }
         .cw .drz-seznam button { display: block; width: 100%; padding: .5rem .6rem; border: 0; border-radius: .45rem; background: none; color: var(--ink); font: inherit; font-size: .9rem; text-align: left; cursor: pointer; }
         .cw .drz-seznam button.on, .cw .drz-seznam button:hover { background: rgba(17,17,17,.07); }
@@ -6925,13 +6933,20 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         }
         .cw .izbor-seznam { display: grid; gap: .18rem; margin-top: .35rem; font-weight: 500; }
         .cw .izbor-preveri { display: grid; gap: .55rem; margin-top: .75rem; }
-        .cw .izbor-preveri-gumb { width: 100%; display: flex; align-items: center; gap: .55rem; border: 1px solid rgba(124,58,237,.2); border-radius: 12px; background: rgba(255,255,255,.75); color: var(--ink); padding: .68rem .8rem; font: inherit; font-size: .9rem; font-weight: 650; text-align: left; cursor: pointer; transition: background .16s ease, border-color .16s ease; }
+        /* Isti jezik kot kartice pravic: enak radij, enaka obroba, kljukica v
+           krogcu in znacka desno. Prej sta bila dva videza za isto stvar
+           (Tina, 31. 8. 2026). */
+        .cw .izbor-preveri-gumb { width: 100%; display: flex; align-items: center; gap: .6rem; border: 1px solid rgba(124,58,237,.2); border-radius: .75rem; background: #fff; color: var(--ink); padding: .7rem .85rem; font: inherit; font-size: .95rem; font-weight: 650; text-align: left; cursor: pointer; transition: background .16s ease, border-color .16s ease; }
+        /* kljukica/svincnik v krogcu, kakor v karticah pravic */
+        .cw .izbor-preveri-gumb > :global(svg) { box-sizing: content-box; width: .85rem; height: .85rem; padding: .3rem; border-radius: 50%; border: 1.5px solid rgba(124,58,237,.45); }
+        /* ZELENA je barva opravljenega — enaka kot znacka »dopolnjeno« pri
+           pravicah. Vijolicna pomeni »klikni me«, zelena »narejeno je«. */
+        .cw .izbor-preveri-gumb.izbor-preveri-ok > :global(svg) { border-color: oklch(70% .13 155); background: oklch(70% .13 155); color: #fff; }
         .cw .izbor-preveri-gumb:hover { background: #fff; border-color: var(--purple); }
         .cw .izbor-preveri-gumb:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
         /* Urejena postavka ostane vidna, a umirjena — pove »narejeno«, ne vabi h kliku. */
-        .cw .izbor-preveri-gumb.izbor-preveri-ok { border-color: rgba(17,17,17,.1); background: rgba(255,255,255,.5); font-weight: 550; }
-        .cw .izbor-preveri-gumb.izbor-preveri-ok svg { color: oklch(58% .13 155); }
-        .cw .izbor-preveri-gumb.izbor-preveri-ok .izbor-znacka { background: rgba(17,17,17,.06); color: color-mix(in oklch, var(--ink) 60%, transparent); }
+        .cw .izbor-preveri-gumb.izbor-preveri-ok { border-color: rgba(17,17,17,.12); background: #fff; font-weight: 650; }
+        .cw .izbor-preveri-gumb.izbor-preveri-ok .izbor-znacka { background: oklch(92% .09 155); color: oklch(40% .11 155); }
         .cw .izbor-preveri-gumb svg { flex: none; color: var(--purple); }
         /* znacka kot pri pravicah: beseda pove, kaj naredis, ne le da nekaj manjka */
         /* Zakljucek: rdeca opomba pred posiljanjem */
@@ -9932,7 +9947,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         </div>
                       )}
                       <div className="ponudba0-vsota-vrsta">
-                        <span>Predlagana cena projekta{ddvZavezanec ? ' (brez DDV)' : ''}</span>
+                        <span>{L('Predlagana cena projekta', 'Suggested project price')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
                         <b>{val(r.paketi[1].skupaj)}</b>
                       </div>
                       <div className="ponudba0-opomba">{L('Izračun po paketu Priporočeni.', 'Calculated with the Recommended package.')}</div>
@@ -10268,18 +10283,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <label htmlFor="cw-trg">{L('Trg naročnika', 'Client market')} <span className="vec">{L('razred cene', 'price tier')}</span></label>
                     <select id="cw-trg" value={trgNarocnika}
                       onChange={e => setTrgNarocnika(e.target.value)}>
-                      {TRGI.map(t => <option key={t.id} value={t.id}>{t.ime}</option>)}
+                      {TRGI.map(t => <option key={t.id} value={t.id}>{storIme(t)}</option>)}
                     </select>
                   </div>
                   <div className="polje">
-                    <label htmlFor="cw-valuta">Valuta ponudbe</label>
+                    <label htmlFor="cw-valuta">{L('Valuta ponudbe', 'Quote currency')}</label>
                     <select id="cw-valuta" className="valuta-select" value={valuta}
                       onChange={e => { setValuta(e.target.value); setValutaRocna(true); }}>
-                      {VALUTE.map(v => <option key={v.id} value={v.id}>{v.ime}</option>)}
+                      {VALUTE.map(v => <option key={v.id} value={v.id}>{storIme(v)}</option>)}
                     </select>
                     <button type="button" className="izbirnik-gumb valuta-gumb-mobile" aria-label={L('Valuta ponudbe', 'Quote currency')}
                       onClick={() => setKazemValutaIzbira(true)}>
-                      {vfx.ime}
+                      {storIme(vfx)}
                       <CaretDown size={15} weight="bold" aria-hidden />
                     </button>
                   </div>
@@ -10350,7 +10365,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <div className="izbirnik-plosca" role="dialog" aria-modal="true" aria-label={L('Izberi valuto', 'Pick a currency')}
                       onClick={e => e.stopPropagation()}>
                       <div className="izbirnik-glava">
-                        <span>Valuta ponudbe</span>
+                        <span>{L('Valuta ponudbe', 'Quote currency')}</span>
                         <button type="button" onClick={() => setKazemValutaIzbira(false)} aria-label={L('Zapri', 'Close')}>✕</button>
                       </div>
                       <div className="izbirnik-seznam">
@@ -10358,7 +10373,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <button key={v.id} type="button"
                             className={'izbirnik-vrsta' + (v.id === valuta ? ' on' : '')}
                             onClick={() => { setValuta(v.id); setValutaRocna(true); setKazemValutaIzbira(false); }}>
-                            {v.ime}
+                            {storIme(v)}
                             {v.id === valuta && <Check size={16} weight="bold" aria-hidden />}
                           </button>
                         ))}
