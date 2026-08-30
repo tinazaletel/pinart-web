@@ -9,5 +9,6 @@ export const metadata: Metadata = { title: 'Koledar | Pinart Flow', robots: { in
 
 export default async function KoledarPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params; setRequestLocale(locale); const base = locale === 'sl' ? '' : `/${locale}`;
-  return <main className={styles.shell}><DashboardSidebar base={base} active="koledar" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>KOLEDAR</p><h1 style={{ textShadow: '0 0 7px var(--paper, #f6f3ec), 0 0 7px var(--paper, #f6f3ec), 0 1px 2px var(--paper, #f6f3ec)' }}>Sestanki, klici in roki.</h1></div><PredogledZnak base={base} /></header><KoledarWorkspace /></section></main>;
+  const L = (sl: string, en: string) => (locale === 'en' ? en : sl);
+  return <main className={styles.shell}><DashboardSidebar base={base} active="koledar" /><section className={styles.workspace}><header className={styles.topbar}><div><p className={styles.eyebrow}>{L('KOLEDAR', 'CALENDAR')}</p><h1 style={{ textShadow: '0 0 7px var(--paper, #f6f3ec), 0 0 7px var(--paper, #f6f3ec), 0 1px 2px var(--paper, #f6f3ec)' }}>{L('Sestanki, klici in roki.', 'Meetings, calls and deadlines.')}</h1></div><PredogledZnak base={base} /></header><KoledarWorkspace /></section></main>;
 }
