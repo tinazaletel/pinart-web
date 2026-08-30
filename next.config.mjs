@@ -19,6 +19,20 @@ const nextConfig = {
        serverless bundle), sicer se brotli-stisnjeni Chrome binarni pokvari na Vercelu
        in ponudba-pdf (predogled = A4 strani) pade v fallback. Zato live != local. */
     serverComponentsExternalPackages: ['@sparticuz/chromium', '@sparticuz/chromium-min', 'puppeteer-core']
+  },
+  /* Modni portfelj: povezavo daje Tina sama (prijava na razpis), zato datoteka
+     ne sodi v Google — noindex velja tudi za PDF, ki ga iskalnik sicer prebere
+     in indeksira kot vsako stran (Tina, 31. 8. 2026). */
+  async headers() {
+    return [
+      {
+        source: '/portfolio/:pot*',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'Cache-Control', value: 'public, max-age=3600' },
+        ],
+      },
+    ];
   }
 };
 
