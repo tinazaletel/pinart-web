@@ -7,6 +7,7 @@ import FlowTopBar from './FlowTopBar';
 import SidebarToggle from './SidebarToggle';
 import NavIkona, { type NavIkonaVrsta } from './NavIkona';
 import MeniOrodja from './MeniOrodja';
+import Dostopnost from './Dostopnost';
 import MeniSkupina from './MeniSkupina';
 import DeliAplikacijo from './DeliAplikacijo';
 import MeniProfil from './MeniProfil';
@@ -139,6 +140,8 @@ export default async function DashboardSidebar({ base, active }: { base: string;
     </details>
     <nav className={styles.nav}>{menuVsebina()}</nav>
     <SidebarUserMenu base={base} />
+    {/* Eno okno za vse strani aplikacije; gumba tu ni, ker je postavka v meniju. */}
+    <Dostopnost jeEn={base === '/en'} base={base} />
   </aside>
 </>;
 }

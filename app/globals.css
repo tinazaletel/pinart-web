@@ -46,6 +46,35 @@
   }
 }
 
+/* NASTAVITVE DOSTOPNOSTI (components/Dostopnost.tsx, Tina 30. 8. 2026).
+   Zapisane so kot atributi na <html>, zato veljajo na VSEH straneh — v aplikaciji
+   in na landingu — in preživijo osvezitev. Pisava se meri v odstotkih korenskega
+   font-size, ker je postavitev v rem: s tem raste vse skupaj, ne le crke. */
+html[data-a11y-pisava="velika"] { font-size: 112.5%; }
+html[data-a11y-pisava="vecja"] { font-size: 125%; }
+
+/* Vec kontrasta: tanke crte in zbledela drobna besedila so prvo, kar odpove pri
+   slabsem vidu ali na soncu. Barv znamke ne spreminjamo. */
+html[data-a11y-kontrast="1"] {
+  --line: rgba(17,17,17,.34);
+}
+html[data-a11y-kontrast="1"] small,
+html[data-a11y-kontrast="1"] .hint,
+html[data-a11y-kontrast="1"] figcaption { color: rgba(17,17,17,.86) !important; }
+html[data-a11y-kontrast="1"] a:not([class]) { text-decoration: underline; }
+html[data-a11y-kontrast="1"] *:focus-visible { outline: 3px solid #7C3AED !important; outline-offset: 2px !important; }
+
+/* Manj animacij: ista pravila kot sistemska nastavitev, le da jih uporabnik
+   vklopi sam — sistemske ne zna vsak najti. */
+html[data-a11y-gibanje="1"] *,
+html[data-a11y-gibanje="1"] *::before,
+html[data-a11y-gibanje="1"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+}
+
 /* Mobilno: skrij scrollbar-trakove POVSOD (skrol ostane). Overlay scrollbari se na
    pravih telefonih itak samodejno skrijejo — to poskrbi za dosleden »clean« videz
    tudi v Safari Responsive Mode in pri portalanih sheetih (izven .shell). */

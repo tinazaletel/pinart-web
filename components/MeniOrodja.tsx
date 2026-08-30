@@ -1,8 +1,9 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { PersonSimple } from '@phosphor-icons/react';
 import FlowUkazi from './FlowUkazi';
+import { DOGODEK_DOSTOPNOST } from './Dostopnost';
 import DashboardHeaderTools from './DashboardHeaderTools';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 
@@ -17,12 +18,12 @@ export default function MeniOrodja() {
   const base = pathname.startsWith('/en/') ? '/en' : '';
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
-  const router = useRouter();
-  /* Na delovnih straneh (DashboardSidebar) kalkulatorjevega a11y-panela ni, zato
-     je dispatch dogodka mrtev — peljimo na informativno stran /dostopnost. */
+  /* Okno dostopnosti zdaj visi v ogrodju (DashboardSidebar → <Dostopnost />) in
+     ga odpre dogodek — z vsake strani, ne le iz kalkulatorja. Do izjave se pride
+     iz okna (Tina, 30. 8. 2026). */
   const odpriDostopnost = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.currentTarget.closest('details')?.removeAttribute('open');
-    router.push(`${base}/dostopnost`);
+    window.dispatchEvent(new Event(DOGODEK_DOSTOPNOST));
   };
 
   return (

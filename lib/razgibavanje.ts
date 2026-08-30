@@ -19,8 +19,9 @@ export type RazgibavanjeNastavitve = {
   interval: number;
   /** Minute razgibavanja. */
   trajanje: number;
-  /** Zvok mehurčka ob opomniku. Privzeto ugasnjen — opomnik je funkcija, zvok
-      je tisto, kar lahko moti soseda v pisarni. */
+  /** Glasba med vajo (jingle + podlaga). Privzeto ugasnjena — to je tisto, kar
+      lahko moti soseda v pisarni. Kratek pok ob PRIHODU opomnika ni pod tem
+      stikalom: brez njega opomnika ne opaziš (Tina, 30. 8. 2026). */
   zvok: boolean;
 };
 

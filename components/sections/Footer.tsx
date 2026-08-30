@@ -2,6 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { localePath } from '@/i18n/routing';
+import Dostopnost from '@/components/Dostopnost';
 
 const BG = 'oklch(0.07 0.01 58)';
 const TEXT = 'rgba(245,242,234,0.76)';
@@ -12,6 +13,10 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
+    <>
+      {/* Dostopnost na landingu: plavajoc gumb spodaj levo — menija tu ni.
+          Noga je edina komponenta, ki je na vseh predstavitvenih straneh. */}
+      <Dostopnost gumb jeEn={locale === 'en'} base={locale === 'en' ? '/en' : ''} />
     <footer
       id="footer"
       className="site-footer"
@@ -46,5 +51,6 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }

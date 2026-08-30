@@ -796,7 +796,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                 <input id="rw-nar-email" type="email" placeholder={L('npr. pisarna@volk-babica.si', 'e.g. office@wolf-granny.com')} value={nar.email} onChange={e => setNar({ ...nar, email: e.target.value })} />
               </div>
             </div>
-            {dodatniNar && (
+            {/* Naslov, davcna in kontaktna oseba so VEDNO vidni: to so podatki,
+                ki gredo na dokument, in skriti za gumbom jih ni videti niti
+                takrat, ko so vpisani (Tina, 30. 8. 2026). */}
+            {(
               <>
                 <div className="rw-numgrid">
                   <div className="rw-polje">
@@ -817,13 +820,10 @@ export default function RetainerWorkspace({ base, vLupini = false }: { base: str
                 </div>
               </>
             )}
-            {!dodatniNar
-              ? <button type="button" className="rw-dodaj-gumb" style={{ marginTop: '1.1rem' }} onClick={() => setDodatniNar(true)}>{L('+ Dodaj davčno št. in kontaktno osebo', '+ Add tax no. and contact person')}</button>
-              : <button type="button" className="rw-povezava" style={{ marginTop: '1.1rem' }} onClick={() => { setDodatniNar(false); setNar({ ...nar, naslov: '', davcna: '', oseba: '' }); }}>{L('Skrij (počisti naslov, davčno in kontaktno osebo)', 'Hide (clear address, tax no. and contact person)')}</button>}
             {nedavni.length > 0 && (
               <div className="rw-nar-nedavni">
                 <span className="rw-vec">{L('nedavni:', 'recent:')}</span>
-                {nedavni.slice(0, 8).map(n => <button key={n.ime} type="button" className="rw-nar-chip" onClick={() => uporabiNar(n)}>{n.ime}</button>)}
+                {nedavni.slice(0, 4).map(n => <button key={n.ime} type="button" className="rw-nar-chip" onClick={() => uporabiNar(n)}>{n.ime}</button>)}
               </div>
             )}
           </div>

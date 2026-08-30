@@ -99,8 +99,8 @@ export default function RazgibavanjeNastavitve({ jeEn = false }: { jeEn?: boolea
           aria-pressed={n.zvok}
           disabled={!n.vklopljeno}
           onClick={() => { const vklop = !n.zvok; spremeni({ zvok: vklop }); if (vklop) pokMehurcka(); }}
-          title={n.zvok ? L('Zvok je vklopljen', 'Sound is on') : L('Zvok je izklopljen', 'Sound is off')}
-          aria-label={n.zvok ? L('Izklopi zvok', 'Turn sound off') : L('Vklopi zvok', 'Turn sound on')}
+          title={n.zvok ? L('Glasba med vajo je vklopljena', 'Music during the exercise is on') : L('Glasba med vajo je izklopljena', 'Music during the exercise is off')}
+          aria-label={n.zvok ? L('Izklopi glasbo med vajo', 'Turn exercise music off') : L('Vklopi glasbo med vajo', 'Turn exercise music on')}
         >
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M11 5 6.5 8.8H3v6.4h3.5L11 19z" />

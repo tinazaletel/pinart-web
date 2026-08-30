@@ -1,11 +1,18 @@
-/* ZVOK RAZGIBAVANJA — jingle in podlaga, oba v MODULU, ne v komponenti.
+/* ZVOK RAZGIBAVANJA — jingle in podlaga, oba na OKNU, ne v komponenti in ne v
+ * modulu.
  *
- * Zakaj v modulu (Tina, 30. 8. 2026: »ustavila sem, a zvok gre dalje«):
- * predvajalnik, ki ga ustvari izris komponente, preživi njen odhod. Ob vsakem
- * ponovnem izrisu — med razvojem se to zgodi ob vsaki spremembi kode — je tako
- * ostal igrati star `Audio`, na katerega ni kazal noben gumb. Tu sta oba
- * predvajalnika ena sama, deljena med vsemi izrisi, zato jih `ustavi()` vedno
- * doseže.
+ * Prva različica ju je držala v komponenti: predvajalnik, ki ga ustvari izris,
+ * preživi njen odhod, zato je ob ponovnem izrisu ostal igrati star `Audio`, na
+ * katerega ni kazal noben gumb (Tina, 30. 8. 2026: »ustavila sem, a zvok gre
+ * dalje«).
+ *
+ * Druga različica ju je držala v modulu — a modul ni večen: ob osvežitvi kode
+ * med razvojem se izvede znova in dobi PRAZNA predvajalnika, medtem ko stara,
+ * igrajoča, ostaneta v pomnilniku. Takrat `ustavi()` ustavi napačna dva in
+ * glasba teče naprej, čeprav je vaje konec (Tina, 30. 8. 2026: »banner se je
+ * iztekel in izginil, muska pa ne«).
+ *
+ * Okno je edino, kar preživi oboje: vsaka kopija modula gleda v isto shrambo.
  *
  * Nikoli oba hkrati: `naVrsti` pove, kdo igra. Ugibanje iz `currentTime` je
  * prej pomenilo, da je podlaga stekla čez jingle, ker je bil ta v prvih
@@ -14,56 +21,74 @@
 
 import { GLASBA, JINGLE } from '@/lib/razgibavanje';
 
-let uvod: HTMLAudioElement | null = null;
-let podlaga: HTMLAudioElement | null = null;
-let naVrsti: 'uvod' | 'podlaga' | null = null;
+type Shramba = {
+  uvod: HTMLAudioElement | null;
+  podlaga: HTMLAudioElement | null;
+  naVrsti: 'uvod' | 'podlaga' | null;
+};
 
-function pripravi(): void {
-  if (typeof window === 'undefined' || podlaga) return;
+const KLJUC = '__pinartRazgibavanjeZvok';
 
-  podlaga = new Audio(GLASBA);
-  podlaga.loop = true;
-  podlaga.volume = 0.3;
+function shramba(): Shramba | null {
+  if (typeof window === 'undefined') return null;
+  const w = window as unknown as Record<string, Shramba | undefined>;
+  if (!w[KLJUC]) w[KLJUC] = { uvod: null, podlaga: null, naVrsti: null };
+  return w[KLJUC]!;
+}
 
-  uvod = new Audio(JINGLE);
-  uvod.volume = 0.5;
-  uvod.onended = () => {
-    if (naVrsti !== 'uvod') return;         // vmes smo že ustavili
-    naVrsti = 'podlaga';
-    void podlaga?.play().catch(() => {});
+function pripravi(s: Shramba): void {
+  if (s.podlaga) return;
+
+  s.podlaga = new Audio(GLASBA);
+  s.podlaga.loop = true;
+  s.podlaga.volume = 0.3;
+
+  s.uvod = new Audio(JINGLE);
+  s.uvod.volume = 0.5;
+  s.uvod.onended = () => {
+    if (s.naVrsti !== 'uvod') return;         // vmes smo že ustavili
+    s.naVrsti = 'podlaga';
+    void s.podlaga?.play().catch(() => {});
   };
 }
 
 /** Začne od začetka: jingle, za njim podlaga v zanki. */
 export function zaigraj(): void {
+  const s = shramba();
+  if (!s) return;
   ustavi();
-  pripravi();
-  if (!uvod || !podlaga) return;
-  naVrsti = 'uvod';
-  void uvod.play().catch(() => {
+  pripravi(s);
+  if (!s.uvod || !s.podlaga) return;
+  s.naVrsti = 'uvod';
+  void s.uvod.play().catch(() => {
     /* Brskalnik zna prvo predvajanje zavrniti; takrat vsaj podlaga. */
-    naVrsti = 'podlaga';
-    void podlaga?.play().catch(() => {});
+    s.naVrsti = 'podlaga';
+    void s.podlaga?.play().catch(() => {});
   });
 }
 
 export function pavziraj(): void {
-  uvod?.pause();
-  podlaga?.pause();
+  const s = shramba();
+  s?.uvod?.pause();
+  s?.podlaga?.pause();
 }
 
 /** Nadaljuje natanko tistega, ki je bil na vrsti. */
 export function nadaljuj(): void {
-  if (naVrsti === 'uvod') void uvod?.play().catch(() => {});
-  else if (naVrsti === 'podlaga') void podlaga?.play().catch(() => {});
+  const s = shramba();
+  if (!s) return;
+  if (s.naVrsti === 'uvod') void s.uvod?.play().catch(() => {});
+  else if (s.naVrsti === 'podlaga') void s.podlaga?.play().catch(() => {});
 }
 
 export function ustavi(): void {
-  [uvod, podlaga].forEach(a => { if (a) { a.pause(); a.currentTime = 0; } });
-  naVrsti = null;
+  const s = shramba();
+  if (!s) return;
+  [s.uvod, s.podlaga].forEach(a => { if (a) { a.pause(); a.currentTime = 0; } });
+  s.naVrsti = null;
 }
 
 /** Ali kaj igra — za varovalko ob odhodu s strani. */
 export function igra(): boolean {
-  return naVrsti !== null;
+  return shramba()?.naVrsti != null;
 }

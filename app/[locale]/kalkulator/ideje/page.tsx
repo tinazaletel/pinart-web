@@ -11,8 +11,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function IdejePage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function IdejePage(
+  { params, searchParams }: {
+    params: Promise<{ locale: string }>;
+    searchParams: Promise<{ nazaj?: string }>;
+  },
+) {
   const { locale } = await params;
+  /* »Nazaj« se na namizju pokaze le, ce si prisla od nekod (povezava nosi
+     ?nazaj=1). Iz menija nazaj ni kam. Na telefonu je vedno, ker je meni
+     zaprt (Tina, 30. 8. 2026). */
+  const { nazaj } = await searchParams;
   setRequestLocale(locale);
   const base = locale === 'sl' ? '' : `/${locale}`;
 
@@ -22,7 +31,7 @@ export default async function IdejePage({ params }: { params: Promise<{ locale: 
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <div>
-            <NazajLink label={locale === 'en' ? 'Back to dashboard' : 'Nazaj na nadzorno ploščo'} />
+            <NazajLink samoMobilno={!nazaj} label={locale === 'en' ? 'Back' : 'Nazaj'} />
             <p className={styles.eyebrow}>{locale === 'en' ? 'MY IDEAS' : 'MOJE IDEJE'}</p>
             <h1>{locale === 'en' ? 'All ideas & status.' : 'Vse ideje & status.'}</h1>
           </div>
