@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
 
 /* »Moje ideje« — živ pregled naročil in statusa gradnje, kot checklist.
    Status: d=Narejeno, p=V teku, w=Čaka tebe, t=Za narediti. Odkljukano
@@ -86,10 +87,12 @@ const SKUPINE: Skupina[] = [
   ] },
 ];
 
-const STATUS_LABEL: Record<Status, string> = { d: 'Narejeno', p: 'V teku', w: 'Čaka tebe', t: 'Za narediti' };
 const KEY = 'pinart-flow-ideje-pregledano';
 
 export default function IdejeWorkspace() {
+  const jeEn = useLocale() === 'en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
+  const STATUS_LABEL: Record<Status, string> = { d: L('Narejeno', 'Done'), p: L('V teku', 'In progress'), w: L('Čaka tebe', 'Waiting for you'), t: L('Za narediti', 'To do') };
   const [pregledano, setPregledano] = useState<Record<string, boolean>>({});
   useEffect(() => { try { setPregledano(JSON.parse(localStorage.getItem(KEY) || '{}') || {}); } catch { /* prazno */ } }, []);
   const toggle = (id: string) => setPregledano(prej => {
@@ -104,15 +107,15 @@ export default function IdejeWorkspace() {
   return (
     <div className="fl-ideje">
       <div className="fli-bar">
-        <div className="fli-bar-vrh"><b>{stevilo} / {vsi.length} pregledano</b><small>{pct} %</small></div>
+        <div className="fli-bar-vrh"><b>{stevilo} / {vsi.length} {L('pregledano', 'reviewed')}</b><small>{pct} %</small></div>
         <div className="fli-track"><div className="fli-fill" style={{ width: `${pct}%` }} /></div>
       </div>
-      <p className="fli-hint">Klik na vrstico = pregledano ✓ · barvni pas = status gradnje. Shrani se v tem brskalniku.</p>
+      <p className="fli-hint">{L('Klik na vrstico = pregledano ✓ · barvni pas = status gradnje. Shrani se v tem brskalniku.', 'Click a row to mark it as reviewed ✓ · the coloured strip shows build status. Saved in this browser.')}</p>
       <div className="fli-legend">
-        <span><i className="fli-dot d" /> Narejeno</span>
-        <span><i className="fli-dot p" /> V teku</span>
-        <span><i className="fli-dot w" /> Čaka tebe</span>
-        <span><i className="fli-dot t" /> Za narediti</span>
+        <span><i className="fli-dot d" /> {L('Narejeno', 'Done')}</span>
+        <span><i className="fli-dot p" /> {L('V teku', 'In progress')}</span>
+        <span><i className="fli-dot w" /> {L('Čaka tebe', 'Waiting for you')}</span>
+        <span><i className="fli-dot t" /> {L('Za narediti', 'To do')}</span>
       </div>
       {SKUPINE.map(sk => (
         <section className="fli-grp" key={sk.naslov}>

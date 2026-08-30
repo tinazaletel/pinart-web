@@ -15,11 +15,11 @@ describe('kvota AJPES pregledov', () => {
 
   it('Premium dovoli pregled in vrne ostanek', () => {
     const izid = preveriKvoto('premium', 0, 0);
-    expect(izid).toEqual({ dovoljeno: true, ostanekDanes: 4, ostanekMesec: 19 });
+    expect(izid).toEqual({ dovoljeno: true, ostanekDanes: 2, ostanekMesec: 9 });
   });
 
   it('ustavi ob dnevni meji, čeprav je mesečna še odprta', () => {
-    const izid = preveriKvoto('premium', 5, 5);
+    const izid = preveriKvoto('premium', 3, 5);
     expect(izid.dovoljeno).toBe(false);
     if (!izid.dovoljeno) expect(izid.razlog).toBe('dan');
   });
@@ -27,7 +27,7 @@ describe('kvota AJPES pregledov', () => {
   it('mesečna meja ima prednost pred dnevno', () => {
     /* Ob prvem v mesecu je dnevna poraba 0, mesečna pa polna — sporočilo mora
        povedati pravi razlog, sicer človek jutri spet poskuša zaman. */
-    const izid = preveriKvoto('premium', 0, 20);
+    const izid = preveriKvoto('premium', 0, 10);
     expect(izid.dovoljeno).toBe(false);
     if (!izid.dovoljeno) expect(izid.razlog).toBe('mesec');
   });

@@ -5,6 +5,7 @@
    Bodoni, ink, akcent). Lasten prefiksiran <style> blok (tm-), da ne trči s .shell. */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocale } from 'next-intl';
 import DokPanel from '@/components/DokPanel';
 import { Pause, Play, ChartBar, ChatCircleDots, Sparkle, UploadSimple, DownloadSimple, CaretLeft, CaretRight, CaretDown, Buildings, Circle, CheckCircle, UserPlus, Calendar, Plus, X, FunnelSimple } from '@phosphor-icons/react';
 import { createPortal } from 'react-dom';
@@ -44,34 +45,35 @@ import type { NalogaPriponka } from '@/lib/naloge';
 
 /* oznaka vloge avtorja opisa/komentarja — za barvno znacko (kdo je nekaj napisal) */
 const VLOGA_LABEL: Record<NalogaAvtorVloga, string> = { sef: 'Šef', sodelavec: 'Sodelavec', stranka: 'Stranka', jaz: 'Ti' };
+const VLOGA_LABEL_EN: Record<NalogaAvtorVloga, string> = { sef: 'Lead', sodelavec: 'Collaborator', stranka: 'Client', jaz: 'You' };
 
-const STOLPCI: { id: NalogaStolpec; naziv: string }[] = [
-  { id: 'todo', naziv: 'Za narediti' },
-  { id: 'in_progress', naziv: 'V teku' },
-  { id: 'waiting', naziv: 'Čaka' },
-  { id: 'done', naziv: 'Končano' },
+const STOLPCI: { id: NalogaStolpec; naziv: string; nazivEn: string }[] = [
+  { id: 'todo', naziv: 'Za narediti', nazivEn: 'To do' },
+  { id: 'in_progress', naziv: 'V teku', nazivEn: 'In progress' },
+  { id: 'waiting', naziv: 'Čaka', nazivEn: 'Waiting' },
+  { id: 'done', naziv: 'Končano', nazivEn: 'Done' },
 ];
 
-const PRIORITETE: { id: NonNullable<Naloga['prioriteta']>; naziv: string }[] = [
-  { id: 'visoka', naziv: 'Visoka' },
-  { id: 'srednja', naziv: 'Srednja' },
-  { id: 'nizka', naziv: 'Nizka' },
+const PRIORITETE: { id: NonNullable<Naloga['prioriteta']>; naziv: string; nazivEn: string }[] = [
+  { id: 'visoka', naziv: 'Visoka', nazivEn: 'High' },
+  { id: 'srednja', naziv: 'Srednja', nazivEn: 'Medium' },
+  { id: 'nizka', naziv: 'Nizka', nazivEn: 'Low' },
 ];
 
 /* vrstni red za razvrscanje kartic v stolpcu: visoka prioriteta na vrh */
 const PRIO_RED: Record<string, number> = { visoka: 0, srednja: 1, nizka: 2 };
 
-const STATUSI_DODELITVE: { id: NonNullable<TedenskaDodelitev['status']>; naziv: string }[] = [
-  { id: 'nacrtovano', naziv: 'Načrtovano' },
-  { id: 'opravljeno', naziv: 'Opravljeno' },
-  { id: 'delno', naziv: 'Delno' },
-  { id: 'preneseno', naziv: 'Preneseno' },
+const STATUSI_DODELITVE: { id: NonNullable<TedenskaDodelitev['status']>; naziv: string; nazivEn: string }[] = [
+  { id: 'nacrtovano', naziv: 'Načrtovano', nazivEn: 'Planned' },
+  { id: 'opravljeno', naziv: 'Opravljeno', nazivEn: 'Completed' },
+  { id: 'delno', naziv: 'Delno', nazivEn: 'Partial' },
+  { id: 'preneseno', naziv: 'Preneseno', nazivEn: 'Carried over' },
 ];
 
-const OBDOBJA: { id: 'teden' | 'mesec' | 'kvartal'; naziv: string }[] = [
-  { id: 'teden', naziv: 'Teden' },
-  { id: 'mesec', naziv: 'Mesec' },
-  { id: 'kvartal', naziv: 'Kvartal' },
+const OBDOBJA: { id: 'teden' | 'mesec' | 'kvartal'; naziv: string; nazivEn: string }[] = [
+  { id: 'teden', naziv: 'Teden', nazivEn: 'Week' },
+  { id: 'mesec', naziv: 'Mesec', nazivEn: 'Month' },
+  { id: 'kvartal', naziv: 'Kvartal', nazivEn: 'Quarter' },
 ];
 
 /* predlagane oznake (tagi) na nalogi — poleg njih prosto besedilo v panelu Podrobnosti */
@@ -356,8 +358,8 @@ const formatCasSek = (sekunde: number) => {
 };
 /* lokalni YYYY-MM-DD (brez UTC zamika) — ujema se z zapisom <input type="date"> in Naloga.rok */
 const toDateStr = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const sklonNalog = (n: number) => (n === 1 ? 'naloga' : n >= 2 && n <= 4 ? 'naloge' : 'nalog');
-const sklonKoncanih = (n: number) => (n === 1 ? 'končana' : n >= 2 && n <= 4 ? 'končani' : 'končanih');
+const sklonNalog = (n: number, jeEn = false) => (jeEn ? (n === 1 ? 'task' : 'tasks') : n === 1 ? 'naloga' : n >= 2 && n <= 4 ? 'naloge' : 'nalog');
+const sklonKoncanih = (n: number, jeEn = false) => (jeEn ? 'done' : n === 1 ? 'končana' : n >= 2 && n <= 4 ? 'končani' : 'končanih');
 /* ponedeljek tedna, v katerem lezi dani datum, opolnoci lokalno */
 const ponedeljekOd = (d: Date): Date => {
   const dan = d.getDay();
@@ -378,6 +380,9 @@ const isoTedenStevilka = (d: Date): number => {
 const initialke = (ime: string) => ime.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
 export default function TaskManagerWorkspace({ initialId }: { initialId?: string }) {
+  const jeEn = useLocale() === 'en';
+  const L = (sl: string, en: string) => (jeEn ? en : sl);
+  const nz = (x: { naziv: string; nazivEn: string }) => (jeEn ? x.nazivEn : x.naziv);
   const [naloge, setNaloge] = useState<Naloga[]>([]);
   const [novNaslov, setNovNaslov] = useState('');
   const [novOpis, setNovOpis] = useState('');
@@ -559,7 +564,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
       setSeedSporocilo(`Izvoženih ${naloge.length} nalog v datoteko.`);
-    } catch { setSeedSporocilo('Izvoz ni uspel.'); }
+    } catch { setSeedSporocilo(L('Izvoz ni uspel.', 'Export failed.')); }
   };
   const uvoziNaloge = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIeOdprt(false);
@@ -572,12 +577,12 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
         const p = JSON.parse(String(bralnik.result || '{}'));
         const seznam: Naloga[] = Array.isArray(p) ? p : Array.isArray(p.naloge) ? p.naloge : [];
         const veljavne = seznam.filter((n) => n && typeof n.naslov === 'string' && typeof n.stolpec === 'string');
-        if (!veljavne.length) { setSeedSporocilo('V datoteki ni najdenih veljavnih nalog.'); return; }
+        if (!veljavne.length) { setSeedSporocilo(L('V datoteki ni najdenih veljavnih nalog.', 'No valid tasks found in the file.')); return; }
         const obstojeci = new Set(naloge.map((n) => n.id));
         const dodane = veljavne.map((n) => ({ ...n, id: n.id && !obstojeci.has(n.id) ? n.id : crypto.randomUUID(), created: n.created || new Date().toISOString() }));
         posodobiInShrani([...naloge, ...dodane]);
         setSeedSporocilo(`Uvoženih ${dodane.length} nalog iz datoteke.`);
-      } catch { setSeedSporocilo('Datoteke ni bilo mogoče prebrati (neveljaven JSON).'); }
+      } catch { setSeedSporocilo(L('Datoteke ni bilo mogoče prebrati (neveljaven JSON).', 'The file could not be read (invalid JSON).')); }
     };
     bralnik.readAsText(f);
   };
@@ -797,7 +802,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
     const deli: string[] = [];
     if (steviloNovih > 0) deli.push(`Dodanih ${steviloNovih} novih`);
     if (steviloDopolnjenih > 0) deli.push(`dopolnjenih ${steviloDopolnjenih} obstoječih`);
-    setSeedSporocilo(deli.length > 0 ? `${deli.join(', ')}.` : 'Vse naloge so že naložene.');
+    setSeedSporocilo(deli.length > 0 ? `${deli.join(', ')}.` : L('Vse naloge so že naložene.', 'All tasks are already loaded.'));
   };
 
   /* --- Plan / šefov razpored dodelitev — obdobje + matrika projekt × oddelek --- */
@@ -856,7 +861,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
   const oznakaNalogDodelitve = (d: TedenskaDodelitev) => {
     const povezane = nalogeZaDodelitev(d);
     const koncane = povezane.filter((n) => n.stolpec === 'done').length;
-    return `${povezane.length} ${sklonNalog(povezane.length)} / ${koncane} ${sklonKoncanih(koncane)}`;
+    return `${povezane.length} ${sklonNalog(povezane.length, jeEn)} / ${koncane} ${sklonKoncanih(koncane, jeEn)}`;
   };
   /* kompaktna razlicica znacke za majhen cip v celici matrike, npr. "1/3" */
   const oznakaKompaktna = (d: TedenskaDodelitev) => {
@@ -1062,7 +1067,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
     const naloga = naloge.find((n) => n.id === id);
     posodobiInShrani(naloge.map((n) => (n.id === id ? { ...n, stolpec: ciljniStolpec } : n)));
     if (naloga && naloga.stolpec !== ciljniStolpec) {
-      const cilj = STOLPCI.find((s) => s.id === ciljniStolpec)?.naziv || ciljniStolpec;
+      const cilj = (() => { const st = STOLPCI.find((s) => s.id === ciljniStolpec); return st ? nz(st) : ciljniStolpec; })();
       zabeleziAktivnost(id, trenutni.ime, `Premaknil nalogo »${naloga.naslov}« v »${cilj}«`);
       setZgodovina(preberiZgodovino());
     }
@@ -1089,7 +1094,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
   const vsiProjekti = Array.from(new Set(vidneNaloge.map((n) => n.projectId?.trim()).filter((v): v is string => !!v)))
     .map((id) => ({ id, ime: strankaImeMap.get(id) || id }))
     .sort((a, b) => a.ime.localeCompare(b.ime, 'sl'));
-  const filterNalogeNaziv = filter === 'moje' ? 'Moje naloge' : filter === 'zamujene' ? 'Zamujene' : 'Vse naloge';
+  const filterNalogeNaziv = filter === 'moje' ? L('Moje naloge', 'My tasks') : filter === 'zamujene' ? 'Zamujene' : 'Vse naloge';
 
   /* Podatki za panel "Analitika ekipe" — izbrani sodelavec: st. nalog, koncanih, ur, zgodovina. */
   const analitikaSodelavec = sodelavci.find((s) => s.id === analitikaSodelavecId);
@@ -1114,13 +1119,13 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
       <header className="tm-glava">
         <div className="tm-glava-uvod">
           <div>
-            <p className="tm-eyebrow">TASK MANAGER</p>
-            <h1 className="tm-naslov">Naloge.</h1>
-            <p className="tm-podnaslov">Organiziraj projekte in opravila na enem mestu — povleci kartico med stolpci.</p>
+            <p className="tm-eyebrow">{L('TASK MANAGER', 'TASK MANAGER')}</p>
+            <h1 className="tm-naslov">{L('Naloge.', 'Tasks.')}</h1>
+            <p className="tm-podnaslov">{L('Organiziraj projekte in opravila na enem mestu — povleci kartico med stolpci.', 'Organise projects and to-dos in one place — drag a card between columns.')}</p>
           </div>
         </div>
         <label className="tm-uporabnik">
-          <span>Prijavljen</span>
+          <span>{L('Prijavljen', 'Signed in')}</span>
           <select value={trenutniId} onChange={(e) => setTrenutniId(e.target.value)}>
             {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime} ({s.vloga.toUpperCase()})</option>)}
           </select>
@@ -1128,14 +1133,14 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
       </header>
 
       <div className="tm-pogled-filtri-vrsta">
-        <div className="tm-pogled-preklop" role="tablist" aria-label="Pogled">
-          <button type="button" role="tab" aria-selected={pogled === 'kanban'} className={pogled === 'kanban' ? 'tm-pogled-on' : ''} onClick={() => setPogled('kanban')}>Kanban</button>
-          <button type="button" role="tab" aria-selected={pogled === 'teden'} className={pogled === 'teden' ? 'tm-pogled-on' : ''} onClick={() => setPogled('teden')}>Plan</button>
+        <div className="tm-pogled-preklop" role="tablist" aria-label={L('Pogled', 'View')}>
+          <button type="button" role="tab" aria-selected={pogled === 'kanban'} className={pogled === 'kanban' ? 'tm-pogled-on' : ''} onClick={() => setPogled('kanban')}>{L('Kanban', 'Kanban')}</button>
+          <button type="button" role="tab" aria-selected={pogled === 'teden'} className={pogled === 'teden' ? 'tm-pogled-on' : ''} onClick={() => setPogled('teden')}>{L('Plan', 'Plan')}</button>
         </div>
         {pogled === 'kanban' && (
           <div className="tm-filtri-vrsta">
-            <div className="tm-filtri" role="tablist" aria-label="Filter nalog">
-              {([['vse', 'Vse naloge'], ['moje', 'Moje naloge'], ['zamujene', 'Zamujene']] as const).map(([k, oznaka]) => (
+            <div className="tm-filtri" role="tablist" aria-label={L('Filter nalog', 'Task filter')}>
+              {([['vse', L('Vse naloge', 'All tasks')], ['moje', L('Moje naloge', 'My tasks')], ['zamujene', L('Zamujene', 'Overdue')]] as const).map(([k, oznaka]) => (
                 <button key={k} type="button" role="tab" aria-selected={filter === k} className={filter === k ? 'tm-filter-on' : ''} onClick={() => setFilter(k)}>{oznaka}{k === 'zamujene' && vidneNaloge.some((n) => !!n.rok && n.rok < danesStr && n.stolpec !== 'done') ? ' •' : ''}</button>
               ))}
             </div>
@@ -1151,46 +1156,46 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
             {/* Namizje: dva navadna spustna seznama, oznake in projekti LOCENO.
                 Telefon: en gumb, ki odpre spodnjo plosco (spodaj). Preklop je v CSS,
                 da ob nalaganju nic ne utripne. */}
-            <select className="tm-filter-oznaka" value={filterOznaka} onChange={(e) => setFilterOznaka(e.target.value)} aria-label="Filtriraj po oznaki">
-              <option value="">Vse oznake</option>
+            <select className="tm-filter-oznaka" value={filterOznaka} onChange={(e) => setFilterOznaka(e.target.value)} aria-label={L('Filtriraj po oznaki', 'Filter by tag')}>
+              <option value="">{L('Vse oznake', 'All tags')}</option>
               {vseOznake.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
-            <select className="tm-filter-oznaka tm-filter-projekt" value={filterProjekt} onChange={(e) => setFilterProjekt(e.target.value)} aria-label="Filtriraj po projektu">
-              <option value="">Vsi projekti</option>
+            <select className="tm-filter-oznaka tm-filter-projekt" value={filterProjekt} onChange={(e) => setFilterProjekt(e.target.value)} aria-label={L('Filtriraj po projektu', 'Filter by project')}>
+              <option value="">{L('Vsi projekti', 'All projects')}</option>
               {vsiProjekti.map((projekt) => <option key={projekt.id} value={projekt.id}>{projekt.ime}</option>)}
-              {vidneNaloge.some((n) => !n.projectId) && <option value="__brez__">Brez projekta</option>}
+              {vidneNaloge.some((n) => !n.projectId) && <option value="__brez__">{L('Brez projekta', 'No project')}</option>}
             </select>
             <button type="button" className={'tm-filter-vec' + ((filterOznaka || filterProjekt) ? ' aktiv' : '')} onClick={() => setFilterVecOdprt(true)} aria-haspopup="dialog" aria-expanded={filterVecOdprt}>
-              <FunnelSimple size={15} weight="bold" /><span>Filter</span>{(filterOznaka || filterProjekt) && <span className="tm-filter-vec-pika" aria-hidden />}
+              <FunnelSimple size={15} weight="bold" /><span>{L('Filter', 'Filter')}</span>{(filterOznaka || filterProjekt) && <span className="tm-filter-vec-pika" aria-hidden />}
             </button>
           </div>
         )}
         <div className="tm-glava-akcije">
           {jeVodjaAliAdmin && (
-            <button type="button" className="tm-analitika-gumb" aria-label="Analitika" title="Analitika" onClick={() => { setAnalitikaSodelavecId(sodelavci[0]?.id || ''); setPrikaziAnalitiko(true); }}>
-              <ChartBar size={18} weight="bold" /><span className="tm-akcija-tekst">Analitika</span>
+            <button type="button" className="tm-analitika-gumb" aria-label="Analitika" title={L('Analitika', 'Analytics')} onClick={() => { setAnalitikaSodelavecId(sodelavci[0]?.id || ''); setPrikaziAnalitiko(true); }}>
+              <ChartBar size={18} weight="bold" /><span className="tm-akcija-tekst">{L('Analitika', 'Analytics')}</span>
             </button>
           )}
           <span className="tm-ie-w">
-            <button type="button" className="tm-seed-gumb tm-orodje-ikona" onClick={() => setIeOdprt((o) => !o)} aria-label="Uvoz in izvoz nalog" title="Uvozi ali izvozi naloge (prenos med orodji)">
+            <button type="button" className="tm-seed-gumb tm-orodje-ikona" onClick={() => setIeOdprt((o) => !o)} aria-label={L('Uvoz in izvoz nalog', 'Task import and export')} title={L('Uvozi ali izvozi naloge (prenos med orodji)', 'Import or export tasks (transfer between tools)')}>
               <UploadSimple size={18} weight="bold" />
             </button>
             {ieOdprt && (
               <div className="tm-ie-meni">
-                <p className="tm-ie-h">Prenos nalog</p>
-                <button type="button" onClick={izvoziNaloge}><DownloadSimple size={15} weight="bold" /> Izvozi ({naloge.length}) → .json</button>
-                <button type="button" onClick={() => datotekaRef.current?.click()}><UploadSimple size={15} weight="bold" /> Uvozi iz .json</button>
-                {!samoOgled && <button type="button" className="tm-ie-demo" onClick={() => { nalozirazvojneNaloge(); setIeOdprt(false); }}>Naloži primer nalog (demo)</button>}
+                <p className="tm-ie-h">{L('Prenos nalog', 'Task transfer')}</p>
+                <button type="button" onClick={izvoziNaloge}><DownloadSimple size={15} weight="bold" /> {L('Izvozi', 'Export')} ({naloge.length}) → .json</button>
+                <button type="button" onClick={() => datotekaRef.current?.click()}><UploadSimple size={15} weight="bold" /> {L('Uvozi iz .json', 'Import from .json')}</button>
+                {!samoOgled && <button type="button" className="tm-ie-demo" onClick={() => { nalozirazvojneNaloge(); setIeOdprt(false); }}>{L('Naloži primer nalog (demo)', 'Load sample tasks (demo)')}</button>}
               </div>
             )}
             <input ref={datotekaRef} type="file" accept="application/json,.json" hidden onChange={uvoziNaloge} />
           </span>
           {!samoOgled ? (
-            <button type="button" className="tm-nova" aria-label="Nova naloga" title="Nova naloga" onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}><Plus size={18} weight="bold" /><span className="tm-akcija-tekst">Nova naloga</span></button>
+            <button type="button" className="tm-nova" aria-label={L('Nova naloga', 'New task')} title={L('Nova naloga', 'New task')} onClick={() => { setPogled('kanban'); setAktivniStolpec('todo'); setPrikaziFormo(true); }}><Plus size={18} weight="bold" /><span className="tm-akcija-tekst">{L('Nova naloga', 'New task')}</span></button>
           ) : (
-            <p className="tm-demo-namig">Urejanje ni na voljo v predogledu (demo).</p>
+            <p className="tm-demo-namig">{L('Urejanje ni na voljo v predogledu (demo).', 'Editing is not available in preview (demo).')}</p>
           )}
-          <button type="button" className="tm-seed-gumb tm-seed-gumb-ai" aria-label="Prosi Pupo za naloge" onClick={() => { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('pupa:odpri', { detail: { nacin: 'chat' } })); }} title="Prosi Pupo, naj ti naredi naloge"><Sparkle size={18} weight="fill" /><span className="tm-akcija-tekst">Prosi Pupo</span></button>
+          <button type="button" className="tm-seed-gumb tm-seed-gumb-ai" aria-label={L('Prosi Pupo za naloge', 'Ask Pupa for tasks')} onClick={() => { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('pupa:odpri', { detail: { nacin: 'chat' } })); }} title={L('Prosi Pupo, naj ti naredi naloge', 'Ask Pupa to create tasks for you')}><Sparkle size={18} weight="fill" /><span className="tm-akcija-tekst">{L('Prosi Pupo', 'Ask Pupa')}</span></button>
         </div>
       </div>
 
@@ -1199,11 +1204,11 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
           <section className="tm-mobilni-sheet" role="dialog" aria-modal="true" aria-labelledby="tm-mobilni-filter-naslov" onClick={(e) => e.stopPropagation()}>
             <div className="tm-mobilni-sheet-rocaj" aria-hidden="true" />
             <div className="tm-mobilni-sheet-glava">
-              <div><p>FILTER NALOG</p><h2 id="tm-mobilni-filter-naslov">Katere naloge želiš videti?</h2></div>
-              <button type="button" onClick={() => setMobilniFilterOdprt(false)} aria-label="Zapri filter"><X size={20} /></button>
+              <div><p>{L('FILTER NALOG', 'TASK FILTER')}</p><h2 id="tm-mobilni-filter-naslov">{L('Katere naloge želiš videti?', 'Which tasks do you want to see?')}</h2></div>
+              <button type="button" onClick={() => setMobilniFilterOdprt(false)} aria-label={L('Zapri filter', 'Close filter')}><X size={20} /></button>
             </div>
             <div className="tm-mobilni-sheet-izbire">
-              {([['vse', 'Vse naloge'], ['moje', 'Moje naloge'], ['zamujene', 'Zamujene']] as const).map(([k, oznaka]) => (
+              {([['vse', L('Vse naloge', 'All tasks')], ['moje', L('Moje naloge', 'My tasks')], ['zamujene', L('Zamujene', 'Overdue')]] as const).map(([k, oznaka]) => (
                 <button key={k} type="button" aria-pressed={filter === k} className={filter === k ? 'tm-mobilni-sheet-on' : ''} onClick={() => { setFilter(k); setMobilniFilterOdprt(false); }}>
                   <span>{oznaka}</span>{filter === k && <CheckCircle size={22} weight="fill" />}
                 </button>
@@ -1216,26 +1221,26 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
 
       {filterVecOdprt && typeof document !== 'undefined' && createPortal(
         <div className="tm-mobilni-sheet-zastor" onClick={() => setFilterVecOdprt(false)}>
-          <section className="tm-mobilni-sheet" role="dialog" aria-modal="true" aria-label="Filter — oznake in projekti" onClick={(e) => e.stopPropagation()}>
+          <section className="tm-mobilni-sheet" role="dialog" aria-modal="true" aria-label={L('Filter — oznake in projekti', 'Filter — tags and projects')} onClick={(e) => e.stopPropagation()}>
             <div className="tm-mobilni-sheet-rocaj" aria-hidden="true" />
             <div className="tm-mobilni-sheet-glava">
-              <div><p>FILTER</p><h2>Oznake in projekti</h2></div>
-              <button type="button" onClick={() => setFilterVecOdprt(false)} aria-label="Zapri filter"><X size={20} /></button>
+              <div><p>{L('FILTER', 'FILTER')}</p><h2>{L('Oznake in projekti', 'Tags and projects')}</h2></div>
+              <button type="button" onClick={() => setFilterVecOdprt(false)} aria-label={L('Zapri filter', 'Close filter')}><X size={20} /></button>
             </div>
             {vseOznake.length > 0 && (
               <>
-                <p className="tm-sheet-pod">Oznaka</p>
+                <p className="tm-sheet-pod">{L('Oznaka', 'Tag')}</p>
                 <div className="tm-mobilni-sheet-izbire">
-                  <button type="button" className={filterOznaka === '' ? 'tm-mobilni-sheet-on' : ''} onClick={() => setFilterOznaka('')}><span>Vse oznake</span>{filterOznaka === '' && <CheckCircle size={22} weight="fill" />}</button>
+                  <button type="button" className={filterOznaka === '' ? 'tm-mobilni-sheet-on' : ''} onClick={() => setFilterOznaka('')}><span>{L('Vse oznake', 'All tags')}</span>{filterOznaka === '' && <CheckCircle size={22} weight="fill" />}</button>
                   {vseOznake.map((o) => <button key={o} type="button" className={filterOznaka === o ? 'tm-mobilni-sheet-on' : ''} onClick={() => setFilterOznaka(o)}><span>{o}</span>{filterOznaka === o && <CheckCircle size={22} weight="fill" />}</button>)}
                 </div>
               </>
             )}
-            <p className="tm-sheet-pod">Projekt</p>
+            <p className="tm-sheet-pod">{L('Projekt', 'Project')}</p>
             <div className="tm-mobilni-sheet-izbire">
-              <button type="button" className={filterProjekt === '' ? 'tm-mobilni-sheet-on' : ''} onClick={() => setFilterProjekt('')}><span>Vsi projekti</span>{filterProjekt === '' && <CheckCircle size={22} weight="fill" />}</button>
+              <button type="button" className={filterProjekt === '' ? 'tm-mobilni-sheet-on' : ''} onClick={() => setFilterProjekt('')}><span>{L('Vsi projekti', 'All projects')}</span>{filterProjekt === '' && <CheckCircle size={22} weight="fill" />}</button>
               {vsiProjekti.map((projekt) => <button key={projekt.id} type="button" className={filterProjekt === projekt.id ? 'tm-mobilni-sheet-on' : ''} onClick={() => setFilterProjekt(projekt.id)}><span>{projekt.ime}</span>{filterProjekt === projekt.id && <CheckCircle size={22} weight="fill" />}</button>)}
-              {vidneNaloge.some((n) => !n.projectId) && <button type="button" className={filterProjekt === '__brez__' ? 'tm-mobilni-sheet-on' : ''} onClick={() => setFilterProjekt('__brez__')}><span>Brez projekta</span>{filterProjekt === '__brez__' && <CheckCircle size={22} weight="fill" />}</button>}
+              {vidneNaloge.some((n) => !n.projectId) && <button type="button" className={filterProjekt === '__brez__' ? 'tm-mobilni-sheet-on' : ''} onClick={() => setFilterProjekt('__brez__')}><span>{L('Brez projekta', 'No project')}</span>{filterProjekt === '__brez__' && <CheckCircle size={22} weight="fill" />}</button>}
             </div>
           </section>
         </div>,
@@ -1244,20 +1249,20 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
 
       {pogled === 'kanban' && prikaziFormo && (
         <form className="tm-forma" onSubmit={(e) => { if (novaHitro) { e.preventDefault(); hitroDodaj(); } else { dodajNalogo(e); } }}>
-          <div className="tm-forma-glava"><h2>Nova naloga</h2><button type="button" className="tm-x" onClick={() => setPrikaziFormo(false)} aria-label="Zapri">×</button></div>
-          <div className="tm-pogled-preklop tm-nacin-preklop" role="tablist" aria-label="Način dodajanja">
-            <button type="button" role="tab" aria-selected={!novaHitro} className={!novaHitro ? 'tm-pogled-on' : ''} onClick={() => setNovaHitro(false)}>Podrobno</button>
-            <button type="button" role="tab" aria-selected={novaHitro} className={novaHitro ? 'tm-pogled-on' : ''} onClick={() => setNovaHitro(true)}>Hitro</button>
+          <div className="tm-forma-glava"><h2>{L('Nova naloga', 'New task')}</h2><button type="button" className="tm-x" onClick={() => setPrikaziFormo(false)} aria-label={L('Zapri', 'Close')}>×</button></div>
+          <div className="tm-pogled-preklop tm-nacin-preklop" role="tablist" aria-label={L('Način dodajanja', 'How to add')}>
+            <button type="button" role="tab" aria-selected={!novaHitro} className={!novaHitro ? 'tm-pogled-on' : ''} onClick={() => setNovaHitro(false)}>{L('Podrobno', 'Detailed')}</button>
+            <button type="button" role="tab" aria-selected={novaHitro} className={novaHitro ? 'tm-pogled-on' : ''} onClick={() => setNovaHitro(true)}>{L('Hitro', 'Quick')}</button>
           </div>
           {novaHitro ? (<>
-            <label className="tm-polje"><span>Ena naloga na vrstico — vsaka postane kartica v »Za narediti«</span>
+            <label className="tm-polje"><span>{L('Ena naloga na vrstico — vsaka postane kartica v »Za narediti«', 'One task per line — each becomes a card in “To do”')}</span>
               <textarea value={hitroBesedilo} onChange={(e) => setHitroBesedilo(e.target.value)} rows={6} autoFocus placeholder={'Prenova logotipa\nPokliči stranko\nPripravi ponudbo za …'} style={{ resize: 'vertical', minHeight: '7rem', lineHeight: 1.6, width: '100%', boxSizing: 'border-box' }} />
             </label>
-            <div className="tm-forma-akcije"><button type="button" className="tm-preklici" onClick={() => setPrikaziFormo(false)}>Prekliči</button><button type="submit" className="tm-shrani" disabled={!hitroBesedilo.trim()}>Dodaj vse</button></div>
+            <div className="tm-forma-akcije"><button type="button" className="tm-preklici" onClick={() => setPrikaziFormo(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="tm-shrani" disabled={!hitroBesedilo.trim()}>{L('Dodaj vse', 'Add all')}</button></div>
           </>) : (<>
-          <label className="tm-polje"><span>Naslov</span><input value={novNaslov} onChange={(e) => setNovNaslov(e.target.value)} placeholder="Npr. Pripravi poročilo za Rokus …" autoFocus /></label>
-          <label className="tm-polje"><span>Opis</span><textarea value={novOpis} onChange={(e) => setNovOpis(e.target.value)} placeholder="Podrobnosti naloge …" rows={3} /></label>
-          <div className="tm-polje"><span>Oznake</span>
+          <label className="tm-polje"><span>{L('Naslov', 'Title')}</span><input value={novNaslov} onChange={(e) => setNovNaslov(e.target.value)} placeholder={L('Npr. Pripravi poročilo za Rokus …', 'E.g. Prepare the report for Rokus …')} autoFocus /></label>
+          <label className="tm-polje"><span>{L('Opis', 'Description')}</span><textarea value={novOpis} onChange={(e) => setNovOpis(e.target.value)} placeholder={L('Podrobnosti naloge …', 'Task details …')} rows={3} /></label>
+          <div className="tm-polje"><span>{L('Oznake', 'Tags')}</span>
             <div className="tm-nova-oznake">
               {PREDLAGANE_OZNAKE.map((o) => (
                 <button type="button" key={o} className={`tm-oznaka-cip${noveOznake.includes(o) ? ' tm-oznaka-cip-on' : ''}`} onClick={() => preklopiNovoOznako(o)}>{noveOznake.includes(o) ? o : `+ ${o}`}</button>
@@ -1267,28 +1272,28 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
               ))}
             </div>
             <div className="tm-nova-oznake-vnos">
-              <input value={novaOznakaVnos} onChange={(e) => setNovaOznakaVnos(e.target.value)} placeholder="Nova oznaka (prosto besedilo) …" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajNovoOznakoProsto(); } }} />
-              <button type="button" className="tm-zase" onClick={dodajNovoOznakoProsto} disabled={!novaOznakaVnos.trim()}>+ Dodaj</button>
+              <input value={novaOznakaVnos} onChange={(e) => setNovaOznakaVnos(e.target.value)} placeholder={L('Nova oznaka (prosto besedilo) …', 'New tag (free text) …')} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajNovoOznakoProsto(); } }} />
+              <button type="button" className="tm-zase" onClick={dodajNovoOznakoProsto} disabled={!novaOznakaVnos.trim()}>{L('+ Dodaj', '+ Add')}</button>
             </div>
           </div>
-          <label className="tm-polje"><span>Dodeljeno</span>
+          <label className="tm-polje"><span>{L('Dodeljeno', 'Assigned')}</span>
             <div className="tm-dodeljeno-vrsta">
-              <input value={novDodeljeno} onChange={(e) => setNovDodeljeno(e.target.value)} placeholder="Kdo dela nalogo …" />
-              <button type="button" className="tm-zase" onClick={() => { setNovDodeljeno('Jaz'); setNovDodeljenoId(trenutni.id); }}>+ Zase</button>
+              <input value={novDodeljeno} onChange={(e) => setNovDodeljeno(e.target.value)} placeholder={L('Kdo dela nalogo …', 'Who is doing the task …')} />
+              <button type="button" className="tm-zase" onClick={() => { setNovDodeljeno('Jaz'); setNovDodeljenoId(trenutni.id); }}>{L('+ Zase', '+ For me')}</button>
             </div>
           </label>
-          <label className="tm-polje"><span>Sodelavec (dodelitev + e-pošta)</span>
+          <label className="tm-polje"><span>{L('Sodelavec (dodelitev + e-pošta)', 'Collaborator (assignment + e-mail)')}</span>
             <select value={novDodeljenoId} onChange={(e) => setNovDodeljenoId(e.target.value)}>
-              <option value="">— brez —</option>
+              <option value="">{L('— brez —', '— none —')}</option>
               {sodelavci.filter((s) => s.aktiven).map((s) => <option key={s.id} value={s.id}>{s.ime} — {s.email}</option>)}
             </select>
           </label>
           <div className="tm-forma-vrsta">
-            <label className="tm-polje"><span>Stolpec</span><select value={aktivniStolpec} onChange={(e) => setAktivniStolpec(e.target.value as NalogaStolpec)}>{STOLPCI.map((s) => <option key={s.id} value={s.id}>{s.naziv}</option>)}</select></label>
-            <label className="tm-polje"><span>Rok izvedbe</span><input type="date" value={novRok} onChange={(e) => setNovRok(e.target.value)} /></label>
-            <label className="tm-polje"><span>Ocenjeni čas (ure)</span><input type="number" step={0.5} min={0} value={novaOcena} onChange={(e) => setNovaOcena(e.target.value)} placeholder="npr. 2.5" /></label>
+            <label className="tm-polje"><span>{L('Stolpec', 'Column')}</span><select value={aktivniStolpec} onChange={(e) => setAktivniStolpec(e.target.value as NalogaStolpec)}>{STOLPCI.map((s) => <option key={s.id} value={s.id}>{s.naziv}</option>)}</select></label>
+            <label className="tm-polje"><span>{L('Rok izvedbe', 'Due date')}</span><input type="date" value={novRok} onChange={(e) => setNovRok(e.target.value)} /></label>
+            <label className="tm-polje"><span>{L('Ocenjeni čas (ure)', 'Estimated time (hours)')}</span><input type="number" step={0.5} min={0} value={novaOcena} onChange={(e) => setNovaOcena(e.target.value)} placeholder={L('npr. 2.5', 'e.g. 2.5')} /></label>
           </div>
-          <div className="tm-forma-akcije"><button type="button" className="tm-preklici" onClick={() => setPrikaziFormo(false)}>Prekliči</button><button type="submit" className="tm-shrani" disabled={!novNaslov.trim()}>Shrani nalogo</button></div>
+          <div className="tm-forma-akcije"><button type="button" className="tm-preklici" onClick={() => setPrikaziFormo(false)}>{L('Prekliči', 'Cancel')}</button><button type="submit" className="tm-shrani" disabled={!novNaslov.trim()}>{L('Shrani nalogo', 'Save task')}</button></div>
           </>)}
         </form>
       )}
@@ -1299,9 +1304,9 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
           const nalogeVStolpcu = prikazaneNaloge.filter((n) => n.stolpec === s.id).sort((a, b) => (PRIO_RED[a.prioriteta ?? ''] ?? 3) - (PRIO_RED[b.prioriteta ?? ''] ?? 3));
           return (
             <section key={s.id} className="tm-stolpec" data-stolpec={s.id} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, s.id)}>
-              <header className="tm-stolpec-glava"><span className="tm-pika" aria-hidden /><h3>{s.naziv}</h3><span className="tm-st">{podatkiPripravljeni ? nalogeVStolpcu.length : ''}</span></header>
+              <header className="tm-stolpec-glava"><span className="tm-pika" aria-hidden /><h3>{nz(s)}</h3><span className="tm-st">{podatkiPripravljeni ? nalogeVStolpcu.length : ''}</span></header>
               <div className="tm-kartice">
-                {!podatkiPripravljeni ? <Skeleton vrsta="kartice" stevilo={2} /> : nalogeVStolpcu.length === 0 && <p className="tm-prazno">Povleci nalogo sem.</p>}
+                {!podatkiPripravljeni ? <Skeleton vrsta="kartice" stevilo={2} /> : nalogeVStolpcu.length === 0 && <p className="tm-prazno">{L('Povleci nalogo sem.', 'Drag a task here.')}</p>}
                 {podatkiPripravljeni && nalogeVStolpcu.map((naloga) => {
                   const porabljene = porabljeneMinute(naloga);
                   const ocena = naloga.ocenjeniCasUre;
@@ -1325,16 +1330,16 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                               {naloga.oznake[0]}{naloga.oznake.length > 1 ? ` +${naloga.oznake.length - 1}` : ''}
                             </span>
                           )}
-                          {naloga.isTimerRunning && <span className="tm-tece-znacka" aria-hidden>● teče</span>}
+                          {naloga.isTimerRunning && <span className="tm-tece-znacka" aria-hidden>{L('● teče', '● running')}</span>}
                           {!!naloga.komentarji?.length && (() => {
                             const zadnjiVloga = naloga.komentarji[naloga.komentarji.length - 1].vloga || 'jaz';
                             return (
-                              <span className={`tm-kartica-oblacek tm-oblacek-${zadnjiVloga}`} title={`${naloga.komentarji.length} komentar(jev) — zadnji: ${VLOGA_LABEL[zadnjiVloga]}`}>
+                              <span className={`tm-kartica-oblacek tm-oblacek-${zadnjiVloga}`} title={`${naloga.komentarji.length} komentar(jev) — zadnji: ${(jeEn ? VLOGA_LABEL_EN : VLOGA_LABEL)[zadnjiVloga]}`}>
                                 <ChatCircleDots size={12} weight="fill" />{naloga.komentarji.length}
                               </span>
                             );
                           })()}
-                          {jeVodjaAliAdmin && !samoOgled && <button type="button" className="tm-kartica-x" onClick={(e) => { e.stopPropagation(); izbrisiNalogo(naloga.id); }} title="Izbriši nalogo" aria-label="Izbriši nalogo">×</button>}
+                          {jeVodjaAliAdmin && !samoOgled && <button type="button" className="tm-kartica-x" onClick={(e) => { e.stopPropagation(); izbrisiNalogo(naloga.id); }} title={L('Izbriši nalogo', 'Delete task')} aria-label={L('Izbriši nalogo', 'Delete task')}>×</button>}
                         </div>
                       )}
                       <strong className="tm-kartica-naslov">{naloga.naslov}</strong>
@@ -1345,7 +1350,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                           <span className="tm-stranka-znacka" title={`Stranka: ${strankaImeMap.get(naloga.clientId)}`}>{strankaImeMap.get(naloga.clientId)}</span>
                         )}
                         {!!naloga.podopravila?.length && (
-                          <span className="tm-kartica-podopravila" title="Podopravila">
+                          <span className="tm-kartica-podopravila" title={L('Podopravila', 'Subtasks')}>
                             <CheckCircle size={11} weight="bold" />
                             {naloga.podopravila.filter((p) => p.done).length}/{naloga.podopravila.length}
                           </span>
@@ -1355,8 +1360,8 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                           className={`tm-kartica-stop${naloga.isTimerRunning ? ' tm-kartica-stop-tece' : ''}`}
                           onClick={(e) => { e.stopPropagation(); preklopiStoparico(naloga.id); }}
                           disabled={samoOgled}
-                          aria-label={naloga.isTimerRunning ? 'Ustavi štoparico' : 'Zaženi štoparico'}
-                          title={samoOgled ? 'Ni na voljo v predogledu (demo)' : (naloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje')}
+                          aria-label={naloga.isTimerRunning ? L('Ustavi štoparico', 'Stop the stopwatch') : L('Zaženi štoparico', 'Start the stopwatch')}
+                          title={samoOgled ? L('Ni na voljo v predogledu (demo)', 'Not available in preview (demo)') : (naloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje')}
                         >
                           {naloga.isTimerRunning ? <Pause size={11} weight="fill" /> : <Play size={11} weight="fill" />}
                           <span className="tm-kartica-stop-cas">
@@ -1368,7 +1373,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                         <span className="tm-noga-desno">
                           {naloga.prioriteta && (
                             <span className={`tm-prioriteta-znacka tm-prioriteta-znacka-${naloga.prioriteta}`}>
-                              {PRIORITETE.find((p) => p.id === naloga.prioriteta)?.naziv || naloga.prioriteta}
+                              {(() => { const pr = PRIORITETE.find((p) => p.id === naloga.prioriteta); return pr ? nz(pr) : naloga.prioriteta; })()}
                             </span>
                           )}
                           {dodeljenoIme && <span className="tm-oseba-krog" title={`Dodeljeno: ${dodeljenoIme}`} aria-label={`Dodeljeno: ${dodeljenoIme}`}>{dodeljenoIme.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</span>}
@@ -1387,57 +1392,57 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
       {pogled === 'teden' && (
         <div className="tm-plan">
           <div className="tm-teden-nav">
-            <div className="tm-obdobje-preklop" role="tablist" aria-label="Obdobje">
+            <div className="tm-obdobje-preklop" role="tablist" aria-label={L('Obdobje', 'Period')}>
               {OBDOBJA.map((o) => (
                 <button key={o.id} type="button" role="tab" aria-selected={obdobjeVrsta === o.id} className={obdobjeVrsta === o.id ? 'tm-pogled-on' : ''} onClick={() => { setObdobjeVrsta(o.id); setObdobjeOffset(0); }}>{o.naziv}</button>
               ))}
             </div>
-            <button type="button" className="tm-teden-strelica" onClick={() => setObdobjeOffset((o) => o - 1)} aria-label="Prejšnje obdobje"><CaretLeft size={14} weight="bold" /></button>
+            <button type="button" className="tm-teden-strelica" onClick={() => setObdobjeOffset((o) => o - 1)} aria-label={L('Prejšnje obdobje', 'Previous period')}><CaretLeft size={14} weight="bold" /></button>
             <div className="tm-teden-naslov">
               <strong>{obdobjeNaslov}</strong>
-              {obdobjeOffset !== 0 && <button type="button" className="tm-teden-danes" onClick={() => setObdobjeOffset(0)}>Danes</button>}
+              {obdobjeOffset !== 0 && <button type="button" className="tm-teden-danes" onClick={() => setObdobjeOffset(0)}>{L('Danes', 'Today')}</button>}
             </div>
-            <button type="button" className="tm-teden-strelica" onClick={() => setObdobjeOffset((o) => o + 1)} aria-label="Naslednje obdobje"><CaretRight size={14} weight="bold" /></button>
+            <button type="button" className="tm-teden-strelica" onClick={() => setObdobjeOffset((o) => o + 1)} aria-label={L('Naslednje obdobje', 'Next period')}><CaretRight size={14} weight="bold" /></button>
             {jeVodjaAliAdmin && !samoOgled && (
               <div className="tm-plan-akcije">
-                <button type="button" className="tm-teden-dodaj" onClick={() => setNoviProjektOdprt((v) => !v)}>+ projekt</button>
+                <button type="button" className="tm-teden-dodaj" onClick={() => setNoviProjektOdprt((v) => !v)}>{L('+ projekt', '+ project')}</button>
                 <button type="button" className="tm-analitika-gumb" onClick={() => setUrediOddelkeOdprto(true)}>
                   <Buildings size={15} weight="bold" /> Uredi oddelke
                 </button>
               </div>
             )}
             {jeVodjaAliAdmin && samoOgled && (
-              <p className="tm-demo-namig" style={{ marginLeft: 'auto' }}>Urejanje ni na voljo v predogledu (demo).</p>
+              <p className="tm-demo-namig" style={{ marginLeft: 'auto' }}>{L('Urejanje ni na voljo v predogledu (demo).', 'Editing is not available in preview (demo).')}</p>
             )}
           </div>
 
           {noviProjektOdprt && jeVodjaAliAdmin && !samoOgled && (
             <div className="tm-forma tm-plan-nov-projekt">
-              <div className="tm-forma-glava"><h2>Nov projekt</h2><button type="button" className="tm-x" onClick={() => setNoviProjektOdprt(false)} aria-label="Zapri">×</button></div>
-              <label className="tm-polje"><span>Ime projekta</span>
-                <input value={noviProjektIme} onChange={(e) => setNoviProjektIme(e.target.value)} placeholder="Npr. Battle for Earth …" autoFocus />
+              <div className="tm-forma-glava"><h2>{L('Nov projekt', 'New project')}</h2><button type="button" className="tm-x" onClick={() => setNoviProjektOdprt(false)} aria-label={L('Zapri', 'Close')}>×</button></div>
+              <label className="tm-polje"><span>{L('Ime projekta', 'Project name')}</span>
+                <input value={noviProjektIme} onChange={(e) => setNoviProjektIme(e.target.value)} placeholder={L('Npr. Battle for Earth …', 'E.g. Battle for Earth …')} autoFocus />
               </label>
-              <label className="tm-polje"><span>Poveži s stranko (neobvezno)</span>
+              <label className="tm-polje"><span>{L('Poveži s stranko (neobvezno)', 'Link to a client (optional)')}</span>
                 <select value={noviProjektStrankaId} onChange={(e) => { setNoviProjektStrankaId(e.target.value); const s = stranke.find((x) => x.id === e.target.value); if (s && !noviProjektIme.trim()) setNoviProjektIme(s.name); }}>
-                  <option value="">— brez —</option>
+                  <option value="">{L('— brez —', '— none —')}</option>
                   {stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </label>
               <div className="tm-forma-akcije">
-                <button type="button" className="tm-preklici" onClick={() => setNoviProjektOdprt(false)}>Prekliči</button>
-                <button type="button" className="tm-shrani" disabled={!noviProjektIme.trim()} onClick={dodajProjektVrstico}>Dodaj projekt</button>
+                <button type="button" className="tm-preklici" onClick={() => setNoviProjektOdprt(false)}>{L('Prekliči', 'Cancel')}</button>
+                <button type="button" className="tm-shrani" disabled={!noviProjektIme.trim()} onClick={dodajProjektVrstico}>{L('Dodaj projekt', 'Add project')}</button>
               </div>
             </div>
           )}
 
-          {!podatkiPripravljeni ? <Skeleton vrsta="vrstice" stevilo={4} /> : vrsticeProjektov.length === 0 && <p className="tm-prazno">Ni še projektov v tem obdobju{jeVodjaAliAdmin ? ' — dodaj s »+ projekt«.' : '.'}</p>}
+          {!podatkiPripravljeni ? <Skeleton vrsta="vrstice" stevilo={4} /> : vrsticeProjektov.length === 0 && <p className="tm-prazno">{L('Ni še projektov v tem obdobju', 'No projects in this period yet')}{jeVodjaAliAdmin ? L(' — dodaj s »+ projekt«.', ' — add one with “+ project”.') : '.'}</p>}
 
           {podatkiPripravljeni && vrsticeProjektov.length > 0 && (
             <div className="tm-matrika-drs">
               <table className="tm-matrika">
                 <thead>
                   <tr>
-                    <th className="tm-matrika-projekt-glava">Projekt</th>
+                    <th className="tm-matrika-projekt-glava">{L('Projekt', 'Project')}</th>
                     {stolpciPrikaz.map((o) => (
                       <th key={o.id || 'vse'}>
                         {o.ime}
@@ -1469,7 +1474,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                                 </button>
                               ))}
                               {jeVodjaAliAdmin && !samoOgled && (
-                                <button type="button" className="tm-celica-dodaj" onClick={() => odpriNovoDodelitev(vrstica, o.id)}>+ dodeli</button>
+                                <button type="button" className="tm-celica-dodaj" onClick={() => odpriNovoDodelitev(vrstica, o.id)}>{L('+ dodeli', '+ assign')}</button>
                               )}
                               {celica.length === 0 && !(jeVodjaAliAdmin && !samoOgled) && <span className="tm-celica-prazno">—</span>}
                             </div>
@@ -1495,66 +1500,66 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
             <aside className="tm-dodelitev-panel" onClick={(e) => e.stopPropagation()}>
               <div className="tm-forma-glava">
                 <h2>{dodelitevPanel.mode === 'new' ? `Nova dodelitev — ${dodelitevPanel.projektIme}` : `Dodelitev — ${dodelitevPanel.projektIme}`}</h2>
-                <button type="button" className="tm-x" onClick={zapriDodelitevPanel} aria-label="Zapri">×</button>
+                <button type="button" className="tm-x" onClick={zapriDodelitevPanel} aria-label={L('Zapri', 'Close')}>×</button>
               </div>
 
-              <label className="tm-polje"><span>Oseba</span>
+              <label className="tm-polje"><span>{L('Oseba', 'Person')}</span>
                 <select value={ndOsebaId} onChange={(e) => setNdOsebaId(e.target.value)} disabled={!smeVse} autoFocus={dodelitevPanel.mode === 'new'}>
-                  <option value="">— izberi —</option>
+                  <option value="">{L('— izberi —', '— choose —')}</option>
                   {aktivniSodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime}</option>)}
                 </select>
               </label>
-              <label className="tm-polje"><span>Oddelek</span>
+              <label className="tm-polje"><span>{L('Oddelek', 'Department')}</span>
                 <select value={ndOddelekId} onChange={(e) => setNdOddelekId(e.target.value)} disabled={!smeVse}>
-                  {oddelki.length === 0 && <option value="">Vse</option>}
-                  {oddelki.length > 0 && <option value="">— brez —</option>}
+                  {oddelki.length === 0 && <option value="">{L('Vse', 'All')}</option>}
+                  {oddelki.length > 0 && <option value="">{L('— brez —', '— none —')}</option>}
                   {oddelki.map((o) => <option key={o.id} value={o.id}>{o.ime}</option>)}
                 </select>
               </label>
 
-              <label className="tm-polje"><span>Področje</span></label>
+              <label className="tm-polje"><span>{L('Področje', 'Area')}</span></label>
               <div className="tm-podrocja">
-                {podrocja.length === 0 && !dodajOdprt && <p className="tm-podrocja-prazno">Ni še področij — pritisni + za iskanje ali dodajanje.</p>}
+                {podrocja.length === 0 && !dodajOdprt && <p className="tm-podrocja-prazno">{L('Ni še področij — pritisni + za iskanje ali dodajanje.', 'No areas yet — press + to search or add one.')}</p>}
                 {podrocja.map((p) => (
                   <span key={p.id} className={`tm-podrocje-cip${ndPodrocje === p.ime ? ' tm-izbran' : ''}`}>
                     <button type="button" disabled={!smeVse} onClick={() => setNdPodrocje(ndPodrocje === p.ime ? '' : p.ime)}>{p.ime}</button>
                     <button type="button" className="tm-podrocje-brisi" disabled={!smeVse} aria-label={`Izbriši področje ${p.ime}`} onClick={() => { setPodrocja(izbrisiPodrocje(p.id)); if (ndPodrocje === p.ime) setNdPodrocje(''); }}>×</button>
                   </span>
                 ))}
-                {smeVse && <button type="button" className="tm-podrocje-plus" aria-label="Poišči ali dodaj področje" onClick={() => setDodajOdprt((v) => !v)}>+</button>}
+                {smeVse && <button type="button" className="tm-podrocje-plus" aria-label={L('Poišči ali dodaj področje', 'Find or add an area')} onClick={() => setDodajOdprt((v) => !v)}>+</button>}
               </div>
               {dodajOdprt && smeVse && (
                 <div className="tm-podrocje-iskalnik">
-                  <input autoFocus value={novoPodrocje} onChange={(e) => setNovoPodrocje(e.target.value)} placeholder="Poišči ali dodaj področje …"
+                  <input autoFocus value={novoPodrocje} onChange={(e) => setNovoPodrocje(e.target.value)} placeholder={L('Poišči ali dodaj področje …', 'Find or add an area …')}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); potrdiPodrocje(); } if (e.key === 'Escape') { setDodajOdprt(false); setNovoPodrocje(''); } }} />
                   <div className="tm-podrocje-zadetki">
                     {podrocja.filter((p) => p.ime.toLowerCase().includes(novoPodrocje.trim().toLowerCase())).map((p) => (
                       <button key={p.id} type="button" onClick={() => { setNdPodrocje(p.ime); setDodajOdprt(false); setNovoPodrocje(''); }}>{p.ime}</button>
                     ))}
                     {novoPodrocje.trim() && !podrocja.some((p) => p.ime.toLowerCase() === novoPodrocje.trim().toLowerCase()) && (
-                      <button type="button" className="tm-podrocje-nov" onClick={potrdiPodrocje}>+ Dodaj »{novoPodrocje.trim()}«</button>
+                      <button type="button" className="tm-podrocje-nov" onClick={potrdiPodrocje}>{L('+ Dodaj', '+ Add')} »{novoPodrocje.trim()}«</button>
                     )}
                   </div>
                 </div>
               )}
 
               {dodelitevPanel.mode === 'new' && (
-                <label className="tm-polje"><span>Poveži s stranko (neobvezno)</span>
+                <label className="tm-polje"><span>{L('Poveži s stranko (neobvezno)', 'Link to a client (optional)')}</span>
                   <select value={ndStrankaId} onChange={(e) => setNdStrankaId(e.target.value)}>
-                    <option value="">— brez —</option>
+                    <option value="">{L('— brez —', '— none —')}</option>
                     {stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </label>
               )}
 
-              <label className="tm-polje"><span>Kaj bo delal/a</span>
-                <textarea value={ndNacrt} onChange={(e) => setNdNacrt(e.target.value)} placeholder="Načrt za to obdobje …" rows={3} disabled={!smeLastno} />
+              <label className="tm-polje"><span>{L('Kaj bo delal/a', 'What they’ll work on')}</span>
+                <textarea value={ndNacrt} onChange={(e) => setNdNacrt(e.target.value)} placeholder={L('Načrt za to obdobje …', 'Plan for this period …')} rows={3} disabled={!smeLastno} />
               </label>
 
               {dodelitevPanel.mode === 'edit' && (
-                <label className="tm-polje"><span>Status</span>
+                <label className="tm-polje"><span>{L('Status', 'Status')}</span>
                   <select className="tm-status-select" value={ndStatus} onChange={(e) => setNdStatus(e.target.value as NonNullable<TedenskaDodelitev['status']>)} disabled={!smeLastno}>
-                    {STATUSI_DODELITVE.map((s) => <option key={s.id} value={s.id}>{s.naziv}</option>)}
+                    {STATUSI_DODELITVE.map((s) => <option key={s.id} value={s.id}>{nz(s)}</option>)}
                   </select>
                 </label>
               )}
@@ -1567,11 +1572,11 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
 
               <div className="tm-forma-akcije">
                 {dodelitevPanel.mode === 'edit' && jeVodjaAliAdmin && !samoOgled && (
-                  <button type="button" className="tm-preklici" onClick={izbrisiIzPanela}>Izbriši</button>
+                  <button type="button" className="tm-preklici" onClick={izbrisiIzPanela}>{L('Izbriši', 'Delete')}</button>
                 )}
-                <button type="button" className="tm-preklici" onClick={zapriDodelitevPanel}>Prekliči</button>
+                <button type="button" className="tm-preklici" onClick={zapriDodelitevPanel}>{L('Prekliči', 'Cancel')}</button>
                 {(dodelitevPanel.mode === 'new' ? smeVse : smeLastno) && (
-                  <button type="button" className="tm-shrani" disabled={dodelitevPanel.mode === 'new' && !ndOsebaId} onClick={shraniDodelitevIzPanela}>{dodelitevPanel.mode === 'new' ? 'Dodaj dodelitev' : 'Shrani'}</button>
+                  <button type="button" className="tm-shrani" disabled={dodelitevPanel.mode === 'new' && !ndOsebaId} onClick={shraniDodelitevIzPanela}>{dodelitevPanel.mode === 'new' ? L('Dodaj dodelitev', 'Add assignment') : 'Shrani'}</button>
                 )}
               </div>
             </aside>
@@ -1587,15 +1592,15 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
         naslov="Uredi oddelke"
         onZapri={() => setUrediOddelkeOdprto(false)}
       >
-        <label className="tm-polje"><span>Nov oddelek</span>
+        <label className="tm-polje"><span>{L('Nov oddelek', 'New department')}</span>
           <div className="tm-dodeljeno-vrsta">
-            <input value={novOddelekIme} onChange={(e) => setNovOddelekIme(e.target.value)} placeholder="Npr. Dizajn, Video, Produkcija …"
+            <input value={novOddelekIme} onChange={(e) => setNovOddelekIme(e.target.value)} placeholder={L('Npr. Dizajn, Video, Produkcija …', 'E.g. Design, Video, Production …')}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajOddelekRocno(); } }} />
-            <button type="button" className="tm-zase" onClick={dodajOddelekRocno}>Shrani</button>
+            <button type="button" className="tm-zase" onClick={dodajOddelekRocno}>{L('Shrani', 'Save')}</button>
           </div>
         </label>
 
-        {oddelki.length === 0 && <p className="tm-prazno">Ni še oddelkov — vsi projekti se prikazujejo v enem stolpcu »Vse«.</p>}
+        {oddelki.length === 0 && <p className="tm-prazno">{L('Ni še oddelkov — vsi projekti se prikazujejo v enem stolpcu »Vse«.', 'No departments yet — all projects show in a single “All” column.')}</p>}
 
         {oddelki.length > 0 && (
           <ul className="tm-oddelki-seznam">
@@ -1603,23 +1608,23 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
               <li key={o.id} className="tm-oddelki-vrstica">
                 <strong>{o.ime}</strong>
                 <select value={o.sefId || ''} onChange={(e) => posodobiSefaOddelka(o.id, e.target.value)} aria-label={`Šef oddelka ${o.ime}`}>
-                  <option value="">— brez šefa —</option>
+                  <option value="">{L('— brez šefa —', '— no lead —')}</option>
                   {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime}</option>)}
                 </select>
-                <button type="button" className="tm-kartica-x" onClick={() => izbrisiOddelekRocno(o.id)} title="Izbriši oddelek" aria-label={`Izbriši oddelek ${o.ime}`}>×</button>
+                <button type="button" className="tm-kartica-x" onClick={() => izbrisiOddelekRocno(o.id)} title={L('Izbriši oddelek', 'Delete department')} aria-label={`Izbriši oddelek ${o.ime}`}>×</button>
               </li>
             ))}
           </ul>
         )}
 
-        <h3 className="tm-analitika-podnaslov">Dodeli sodelavce oddelkom</h3>
+        <h3 className="tm-analitika-podnaslov">{L('Dodeli sodelavce oddelkom', 'Assign collaborators to departments')}</h3>
         <ul className="tm-oddelki-seznam">
           {sodelavci.map((s) => (
             <li key={s.id} className="tm-oddelki-vrstica">
               <span className="tm-oseba-krog" aria-hidden>{initialke(s.ime)}</span>
               <strong>{s.ime}</strong>
               <select value={s.oddelekId || ''} onChange={(e) => posodobiSodelavcaOddelek(s.id, e.target.value)} aria-label={`Oddelek za ${s.ime}`}>
-                <option value="">— brez oddelka —</option>
+                <option value="">{L('— brez oddelka —', '— no department —')}</option>
                 {oddelki.map((o) => <option key={o.id} value={o.id}>{o.ime}</option>)}
               </select>
             </li>
@@ -1633,18 +1638,18 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
         naslov="Analitika ekipe"
         onZapri={() => setPrikaziAnalitiko(false)}
       >
-        <label className="tm-polje"><span>Sodelavec</span>
+        <label className="tm-polje"><span>{L('Sodelavec', 'Collaborator')}</span>
           <select value={analitikaSodelavecId} onChange={(e) => setAnalitikaSodelavecId(e.target.value)}>
             {sodelavci.map((s) => <option key={s.id} value={s.id}>{s.ime} ({s.vloga.toUpperCase()})</option>)}
           </select>
         </label>
         <div className="tm-analitika-stevci">
-          <div className="tm-analitika-stevec"><strong>{analitikaNaloge.length}</strong><span>nalog skupaj</span></div>
-          <div className="tm-analitika-stevec"><strong>{analitikaKoncane}</strong><span>končanih</span></div>
-          <div className="tm-analitika-stevec"><strong>{analitikaUre.toFixed(1)}h</strong><span>porabljenega časa</span></div>
+          <div className="tm-analitika-stevec"><strong>{analitikaNaloge.length}</strong><span>{L('nalog skupaj', 'tasks in total')}</span></div>
+          <div className="tm-analitika-stevec"><strong>{analitikaKoncane}</strong><span>{L('končanih', 'done')}</span></div>
+          <div className="tm-analitika-stevec"><strong>{analitikaUre.toFixed(1)}h</strong><span>{L('porabljenega časa', 'time spent')}</span></div>
         </div>
-        <h3 className="tm-analitika-podnaslov">Zadnjih 10 vnosov zgodovine</h3>
-        {analitikaZgodovina.length === 0 && <p className="tm-prazno">Za tega sodelavca še ni zabeleženih aktivnosti.</p>}
+        <h3 className="tm-analitika-podnaslov">{L('Zadnjih 10 vnosov zgodovine', 'Last 10 history entries')}</h3>
+        {analitikaZgodovina.length === 0 && <p className="tm-prazno">{L('Za tega sodelavca še ni zabeleženih aktivnosti.', 'No activity recorded for this collaborator yet.')}</p>}
         <ul className="tm-analitika-zgodovina">
           {analitikaZgodovina.map((z) => (
             <li key={z.id}>
@@ -1680,7 +1685,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
               {oznakePanel.length > 0 ? (
                 <span className="tm-detajli-tag">{oznakePanel[0]}{oznakePanel.length > 1 ? ` +${oznakePanel.length - 1}` : ''}</span>
               ) : <span />}
-              <button type="button" className="tm-x" onClick={() => setOdprtaNalogaId(null)} aria-label="Zapri">×</button>
+              <button type="button" className="tm-x" onClick={() => setOdprtaNalogaId(null)} aria-label={L('Zapri', 'Close')}>×</button>
             </div>
 
             <h2 className="tm-detajli-naslov">{odprtaNaloga.naslov}</h2>
@@ -1689,15 +1694,15 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
               {odprtaNaloga.opisAvtorIme && (
                 <div className="tm-opis-avtor">
                   <span className="tm-oseba-krog tm-oseba-krog-sm" aria-hidden>{initialke(odprtaNaloga.opisAvtorIme)}</span>
-                  <span className="tm-opis-avtor-ime"><strong>{odprtaNaloga.opisAvtorIme}</strong> je opisal(a), kaj naj se naredi</span>
-                  {odprtaNaloga.opisAvtorVloga && <span className={`tm-vloga-znacka tm-vloga-${odprtaNaloga.opisAvtorVloga}`}>{VLOGA_LABEL[odprtaNaloga.opisAvtorVloga]}</span>}
+                  <span className="tm-opis-avtor-ime"><strong>{odprtaNaloga.opisAvtorIme}</strong> {L('je opisal(a), kaj naj se naredi', 'described what needs to be done')}</span>
+                  {odprtaNaloga.opisAvtorVloga && <span className={`tm-vloga-znacka tm-vloga-${odprtaNaloga.opisAvtorVloga}`}>{(jeEn ? VLOGA_LABEL_EN : VLOGA_LABEL)[odprtaNaloga.opisAvtorVloga]}</span>}
                 </div>
               )}
               <textarea
                 className="tm-detajli-opis-polje"
                 value={odprtaNaloga.opis || ''}
                 onChange={(e) => urediOpis(odprtaNaloga.id, e.target.value)}
-                placeholder="Opiši kar želiš da se naredi…"
+                placeholder={L('Opiši kar želiš da se naredi…', 'Describe what you want done …')}
                 rows={3}
                 disabled={samoOgled}
               />
@@ -1712,7 +1717,7 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                           className={`tm-podopravilo-krog${p.done ? ' tm-podopravilo-krog-done' : ''}`}
                           onClick={() => preklopiPodopravilo(odprtaNaloga.id, p.id)}
                           disabled={samoOgled}
-                          aria-label={p.done ? 'Označi kot nedokončano' : 'Označi kot dokončano'}
+                          aria-label={p.done ? L('Označi kot nedokončano', 'Mark as not done') : L('Označi kot dokončano', 'Mark as done')}
                         >
                           {p.done ? <CheckCircle size={17} weight="fill" /> : <Circle size={17} />}
                         </button>
@@ -1738,8 +1743,8 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                             <button
                               type="button"
                               className="tm-podopravilo-dodeli-gumb"
-                              title="Dodeli osebo"
-                              aria-label="Dodeli osebo podopravilu"
+                              title={L('Dodeli osebo', 'Assign a person')}
+                              aria-label={L('Dodeli osebo podopravilu', 'Assign a person to the subtask')}
                               disabled={samoOgled}
                               onClick={() => setOdpriDodelitevPodId(odpriDodelitevPodId === p.id ? null : p.id)}
                             >
@@ -1754,13 +1759,13 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                               onChange={(e) => { dodeliPodopravilo(odprtaNaloga.id, p.id, e.target.value); setOdpriDodelitevPodId(null); }}
                               onBlur={() => setOdpriDodelitevPodId(null)}
                             >
-                              <option value="">— nedodeljeno —</option>
+                              <option value="">{L('— nedodeljeno —', '— unassigned —')}</option>
                               {aktivniSodelavci.map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
                             </select>
                           )}
                         </div>
                         {!samoOgled && (
-                          <button type="button" className="tm-podopravilo-brisi" aria-label="Izbriši podopravilo" onClick={() => izbrisiPodopravilo(odprtaNaloga.id, p.id)}>×</button>
+                          <button type="button" className="tm-podopravilo-brisi" aria-label={L('Izbriši podopravilo', 'Delete subtask')} onClick={() => izbrisiPodopravilo(odprtaNaloga.id, p.id)}>×</button>
                         )}
                       </li>
                     ))}
@@ -1771,10 +1776,10 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                     <input
                       value={novoPodopraviloBesedilo}
                       onChange={(e) => setNovoPodopraviloBesedilo(e.target.value)}
-                      placeholder="+ dodaj opravilo"
+                      placeholder={L('+ dodaj opravilo', '+ add subtask')}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajPodopravilo(odprtaNaloga.id, novoPodopraviloBesedilo); setNovoPodopraviloBesedilo(''); } }}
                     />
-                    <button type="button" className="tm-zase" disabled={!novoPodopraviloBesedilo.trim()} onClick={() => { dodajPodopravilo(odprtaNaloga.id, novoPodopraviloBesedilo); setNovoPodopraviloBesedilo(''); }}>Shrani</button>
+                    <button type="button" className="tm-zase" disabled={!novoPodopraviloBesedilo.trim()} onClick={() => { dodajPodopravilo(odprtaNaloga.id, novoPodopraviloBesedilo); setNovoPodopraviloBesedilo(''); }}>{L('Shrani', 'Save')}</button>
                   </div>
                 )}
               </div>
@@ -1787,62 +1792,62 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
                 value={odprtaNaloga.prioriteta || ''}
                 onChange={(e) => nastaviPrioriteto(odprtaNaloga.id, e.target.value)}
                 disabled={samoOgled}
-                aria-label="Prioriteta"
+                aria-label={L('Prioriteta', 'Priority')}
               >
-                <option value="">Prioriteta —</option>
-                {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{p.naziv}</option>)}
+                <option value="">{L('Prioriteta —', 'Priority —')}</option>
+                {PRIORITETE.map((p) => <option key={p.id} value={p.id}>{nz(p)}</option>)}
               </select>
               <div className="tm-detajli-cas">
                 <span className="tm-cas-tekst">{formatUre(porabljenePanel)}h{ocenaPanel ? ` / ${ocenaPanel}h` : ''}</span>
                 {odprtaNaloga.isTimerRunning && odprtaNaloga.timerStartTime && (
-                  <span className="tm-cas-ziv" aria-label="Tekoči čas">▶ {formatCasSek((zdaj - new Date(odprtaNaloga.timerStartTime).getTime()) / 1000)}</span>
+                  <span className="tm-cas-ziv" aria-label={L('Tekoči čas', 'Elapsed time')}>▶ {formatCasSek((zdaj - new Date(odprtaNaloga.timerStartTime).getTime()) / 1000)}</span>
                 )}
                 <button
                   type="button"
                   className={`tm-cas-gumb${odprtaNaloga.isTimerRunning ? ' tm-cas-gumb-tece' : ''}`}
                   onClick={() => preklopiStoparico(odprtaNaloga.id)}
                   disabled={samoOgled}
-                  aria-label={odprtaNaloga.isTimerRunning ? 'Ustavi štoparico' : 'Zaženi štoparico'}
-                  title={odprtaNaloga.isTimerRunning ? 'Ustavi merjenje' : 'Zaženi merjenje'}
+                  aria-label={odprtaNaloga.isTimerRunning ? L('Ustavi štoparico', 'Stop the stopwatch') : L('Zaženi štoparico', 'Start the stopwatch')}
+                  title={odprtaNaloga.isTimerRunning ? 'Ustavi merjenje' : L('Zaženi merjenje', 'Start timing')}
                 >
                   {odprtaNaloga.isTimerRunning ? <Pause size={12} weight="fill" /> : <Play size={12} weight="fill" />}
                 </button>
               </div>
               {podopravila.length > 0 && (
-                <span className="tm-detajli-podopravila-znacka" title="Podopravila">
+                <span className="tm-detajli-podopravila-znacka" title={L('Podopravila', 'Subtasks')}>
                   <CheckCircle size={11} weight="bold" /> {podKoncana}/{podopravila.length}
                 </span>
               )}
               {!!odprtaNaloga.komentarji?.length && (
-                <span className="tm-detajli-komentarji-znacka" title="Komentarji">
+                <span className="tm-detajli-komentarji-znacka" title={L('Komentarji', 'Comments')}>
                   <ChatCircleDots size={12} weight="fill" /> {odprtaNaloga.komentarji.length}
                 </span>
               )}
             </div>
 
-            <h3 className="tm-analitika-podnaslov">Komentarji</h3>
-            {(!odprtaNaloga.komentarji || odprtaNaloga.komentarji.length === 0) && <p className="tm-prazno">Še ni komentarjev.</p>}
+            <h3 className="tm-analitika-podnaslov">{L('Komentarji', 'Comments')}</h3>
+            {(!odprtaNaloga.komentarji || odprtaNaloga.komentarji.length === 0) && <p className="tm-prazno">{L('Še ni komentarjev.', 'No comments yet.')}</p>}
             <ul className="tm-komentarji-seznam">
               {(odprtaNaloga.komentarji || []).map((k) => (
                 <li key={k.id}>
-                  <div className="tm-komentar-glava"><strong>{k.avtorIme}</strong>{k.vloga && <span className={`tm-vloga-znacka tm-vloga-${k.vloga}`}>{VLOGA_LABEL[k.vloga]}</span>}<span className="tm-komentar-cas">{datStr(k.cas)}</span></div>
+                  <div className="tm-komentar-glava"><strong>{k.avtorIme}</strong>{k.vloga && <span className={`tm-vloga-znacka tm-vloga-${k.vloga}`}>{(jeEn ? VLOGA_LABEL_EN : VLOGA_LABEL)[k.vloga]}</span>}<span className="tm-komentar-cas">{datStr(k.cas)}</span></div>
                   <p>{k.besedilo}</p>
                 </li>
               ))}
             </ul>
             {!samoOgled ? (
               <form className="tm-komentar-forma" onSubmit={(e) => { e.preventDefault(); dodajKomentar(odprtaNaloga.id, novKomentar); setNovKomentar(''); }}>
-                <textarea value={novKomentar} onChange={(e) => setNovKomentar(e.target.value)} onPaste={prilepiVPriponke} placeholder="Dodaj komentar …" rows={2} />
-                {priponkeMozne !== false && <p className="tm-demo-namig">Sliko lahko prilepiš kar sem (Cmd+V) — pripne se med priponke.</p>}
-                <button type="submit" className="tm-shrani" disabled={!novKomentar.trim()}>Dodaj komentar</button>
+                <textarea value={novKomentar} onChange={(e) => setNovKomentar(e.target.value)} onPaste={prilepiVPriponke} placeholder={L('Dodaj komentar …', 'Add a comment …')} rows={2} />
+                {priponkeMozne !== false && <p className="tm-demo-namig">{L('Sliko lahko prilepiš kar sem (Cmd+V) — pripne se med priponke.', 'You can paste an image right here (Cmd+V) — it is added to the attachments.')}</p>}
+                <button type="submit" className="tm-shrani" disabled={!novKomentar.trim()}>{L('Dodaj komentar', 'Add comment')}</button>
               </form>
             ) : (
-              <p className="tm-demo-namig">Dodajanje komentarjev ni na voljo v predogledu (demo).</p>
+              <p className="tm-demo-namig">{L('Dodajanje komentarjev ni na voljo v predogledu (demo).', 'Adding comments is not available in preview (demo).')}</p>
             )}
 
-            <h3 className="tm-analitika-podnaslov">Priponke</h3>
+            <h3 className="tm-analitika-podnaslov">{L('Priponke', 'Attachments')}</h3>
             {priponkeMozne === null ? (
-              <p className="tm-demo-namig">Preverjam prijavo …</p>
+              <p className="tm-demo-namig">{L('Preverjam prijavo …', 'Checking sign-in …')}</p>
             ) : (
               <PriponkeVnos
                 sekcija="naloge"
@@ -1857,26 +1862,26 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
 
             <details className="tm-umestitev">
               <summary>
-                <span className="tm-umestitev-naslov">Umestitev</span>
+                <span className="tm-umestitev-naslov">{L('Umestitev', 'Placement')}</span>
                 <span className="tm-umestitev-povzetek">{umestitevPovzetek}</span>
               </summary>
-            <label className="tm-polje tm-detajli-spodaj"><span>Dodeli</span>
+            <label className="tm-polje tm-detajli-spodaj"><span>{L('Dodeli', 'Assign')}</span>
               <select value={odprtaNaloga.dodeljenoOsebaId || ''} onChange={(e) => dodeliNalogi(odprtaNaloga.id, e.target.value)} disabled={samoOgled}>
-                <option value="">— nedodeljeno —</option>
+                <option value="">{L('— nedodeljeno —', '— unassigned —')}</option>
                 {sodelavci.filter((so) => so.aktiven).map((so) => <option key={so.id} value={so.id}>{so.ime}</option>)}
               </select>
             </label>
-            <label className="tm-polje"><span>Stranka</span>
+            <label className="tm-polje"><span>{L('Stranka', 'Client')}</span>
               <select value={odprtaNaloga.clientId || ''} onChange={(e) => dodeliStranko(odprtaNaloga.id, e.target.value)} disabled={samoOgled}>
-                <option value="">— brez —</option>
+                <option value="">{L('— brez —', '— none —')}</option>
                 {stranke.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </label>
-            <label className="tm-polje"><span>Projekt (neobvezno)</span>
-              <input value={odprtaNaloga.projectId || ''} onChange={(e) => nastaviProjekt(odprtaNaloga.id, e.target.value)} placeholder="Naziv projekta, npr. Battle for Earth …" disabled={samoOgled} />
+            <label className="tm-polje"><span>{L('Projekt (neobvezno)', 'Project (optional)')}</span>
+              <input value={odprtaNaloga.projectId || ''} onChange={(e) => nastaviProjekt(odprtaNaloga.id, e.target.value)} placeholder={L('Naziv projekta, npr. Battle for Earth …', 'Project name, e.g. Battle for Earth …')} disabled={samoOgled} />
             </label>
 
-            <label className="tm-polje"><span>Oznake</span></label>
+            <label className="tm-polje"><span>{L('Oznake', 'Tags')}</span></label>
             <div className="tm-oznake-panel">
               {(odprtaNaloga.oznake || []).map((o) => (
                 <span key={o} className="tm-oznaka-panel-cip">
@@ -1892,11 +1897,11 @@ export default function TaskManagerWorkspace({ initialId }: { initialId?: string
               <input
                 value={novaOznaka}
                 onChange={(e) => setNovaOznaka(e.target.value)}
-                placeholder="Nova oznaka (prosto besedilo) …"
+                placeholder={L('Nova oznaka (prosto besedilo) …', 'New tag (free text) …')}
                 disabled={samoOgled}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dodajOznako(odprtaNaloga.id, novaOznaka); setNovaOznaka(''); } }}
               />
-              <button type="button" className="tm-zase" disabled={samoOgled || !novaOznaka.trim()} onClick={() => { dodajOznako(odprtaNaloga.id, novaOznaka); setNovaOznaka(''); }}>+ Dodaj</button>
+              <button type="button" className="tm-zase" disabled={samoOgled || !novaOznaka.trim()} onClick={() => { dodajOznako(odprtaNaloga.id, novaOznaka); setNovaOznaka(''); }}>{L('+ Dodaj', '+ Add')}</button>
             </div>
             </details>
 

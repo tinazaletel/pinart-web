@@ -76,7 +76,7 @@ describe('zaklep cene ob prijavi', () => {
   });
 
   it('po roku zaklene redno', () => {
-    expect(zakleniCeno('pro', 'mesec', '2026-12-01', 50)?.znesek).toBe(39);
+    expect(zakleniCeno('pro', 'mesec', '2026-12-01', 50)?.znesek).toBe(48);
   });
 
   it('veljaDo je null — obljuba je trajna ob neprekinjeni narocnini', () => {
@@ -115,8 +115,10 @@ describe('valuta obiskovalca', () => {
   it('dolarski cenik je svoj, ne preracun evrskega', () => {
     expect(cenaZa('redna', 'premium', 'mesec', 'USD')).toBe(24);
     expect(cenaZa('redna', 'pro', 'leto', 'USD')).toBe(39);
+    /* Evrska redna letna je 35, dolarska 39 — lestvici sta ločeni, ne preračun. */
+    expect(cenaZa('redna', 'pro', 'leto')).toBe(35);
     expect(cenaZa('ustanovna', 'premium', 'mesec', 'USD')).toBe(15);
     /* brez valute ostane evrski — obstojeci klici se ne smejo spremeniti */
-    expect(cenaZa('redna', 'premium', 'mesec')).toBe(19);
+    expect(cenaZa('redna', 'premium', 'mesec')).toBe(23);
   });
 });

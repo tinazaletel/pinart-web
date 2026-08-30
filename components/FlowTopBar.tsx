@@ -42,20 +42,24 @@ const IMENA: Record<string, [string, string]> = {
   admin: ['Pregled poslovanja', 'Business overview'],
 };
 
-export default function FlowTopBar() {
+export default function FlowTopBar({ paket = '' }: { paket?: string }) {
   const pathname = usePathname() || '';
   const base = pathname.startsWith('/en/') ? '/en' : '';
   const jeEn = base === '/en';
   const L = (sl: string, en: string) => (jeEn ? en : sl);
 
-  /* Kateri paket imaš — bere se enkrat ob prikazu. Brezplačni ostane brez
-     značke, da se BETA ne razvleče čez pol glave. */
-  const [paketZnak, setPaketZnak] = useState('');
+  /* Kateri paket imaš. Vrednost pride s STREŽNIKA (meni jo že prebere), zato
+     je značka pravilna že ob prvem izrisu. Prej se je brala v brskalniku in je
+     najprej pisalo »BETA«, čez hip pa »PRO · BETA« — značka se je razširila in
+     logo je poskočil (Tina, 30. 8. 2026). Odjemalsko branje ostane samo kot
+     rezerva, če prop ni podan. */
+  const [paketZnak, setPaketZnak] = useState(paket);
   useEffect(() => {
+    if (paket) return;
     void getAccessTier()
       .then(t => setPaketZnak(t === 'pro' ? 'PRO' : t === 'premium' ? 'PREMIUM' : ''))
       .catch(() => undefined);
-  }, []);
+  }, [paket]);
   const [pomocOdprta, setPomocOdprta] = useState(false);
 
   /* Drsenje: navzdol se vrstica umakne, navzgor se takoj vrne — pri branju

@@ -106,7 +106,7 @@ export default async function DashboardSidebar({ base, active }: { base: string;
     {/* Pomoč odstranjena iz menija — podvaja se z »?« v headerju in AI asistentko (Pupa).
         Dizajn (videz dokumentov) je pod Moj profil. */}
   </>;
-  return <><AmbientBubbles /><PaketZnak /><FlowTopBar /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label={L('Glavna navigacija', 'Main navigation')}><SidebarToggle vrsta="zapri" />
+  return <><AmbientBubbles /><PaketZnak /><FlowTopBar paket={paketZaPupo === 'pro' ? 'PRO' : paketZaPupo === 'premium' ? 'PREMIUM' : ''} /><SidebarToggle vrsta="odpri" /><aside className={styles.sidebar} aria-label={L('Glavna navigacija', 'Main navigation')}><SidebarToggle vrsta="zapri" />
     <FlowCloudBridge />
     <ZabeleziObisk />
     {/* logo in "zapri" sta zdaj v zgornji vrstici (FlowTopBar) — tu sta bila dvakrat */}
@@ -139,5 +139,6 @@ export default async function DashboardSidebar({ base, active }: { base: string;
     </details>
     <nav className={styles.nav}>{menuVsebina()}</nav>
     <SidebarUserMenu base={base} />
-  </aside></>;
+  </aside>
+</>;
 }

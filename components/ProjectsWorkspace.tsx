@@ -992,8 +992,16 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
      izriše se samo .projectStory čez celo, z gumbom ← Nazaj na vrhu. onDetajl
      obvesti ArhivWorkspace, naj skrije svojo glavo (zavihki+filter). */
   const storyRef = useRef<HTMLElement>(null);
-  const selectProject = (id: string) => { setSelectedId(id); onDetajl?.(true); requestAnimationFrame(() => storyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
-  const goBack = () => { setSelectedId(''); onDetajl?.(false); };
+  /* Ko detajl odpre povezava od drugod (Pupin dom, kartica stranke …), mora
+     »← Nazaj« peljati TJA, od koder je prišla — ne na seznam vseh projektov
+     (Tina, 29. 8. 2026: "ni se spomnil, kje sem bila"). Klik na vrstico v
+     tabeli zastavico počisti, zato tam Nazaj še naprej pomeni seznam. */
+  const [odprtIzPovezave, setOdprtIzPovezave] = useState(false);
+  const selectProject = (id: string, izPovezave = false) => { setOdprtIzPovezave(izPovezave); setSelectedId(id); onDetajl?.(true); requestAnimationFrame(() => storyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
+  const goBack = () => {
+    if (odprtIzPovezave && typeof window !== 'undefined' && window.history.length > 1) { setOdprtIzPovezave(false); router.back(); return; }
+    setSelectedId(''); onDetajl?.(false);
+  };
   /* varnostna mreza: ce se komponenta odstrani (npr. menjava zavihka v Arhivu)
      medtem ko je bil detajl odprt, sporoci starsu, naj svojo glavo spet pokaze */
   useEffect(() => () => { onDetajl?.(false); }, [onDetajl]);
@@ -1011,10 +1019,25 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     if (projektIzUrljaOdprt.current) return;
     const id = searchParams.get('projekt');
     if (!id) return;
-    if (!projects.some(project => project.offer.id === id)) return;
+    /* Pupin dom (kartica »Aktivni projekti«) povezuje z ID-jem iz lib/projekti,
+       ta seznam pa iste zapise vodi pod "real-<id>" — ali pa jih je filter proti
+       podvajanju zlil s ponudbo istega naslova+stranke. Zato poskusi po vrsti:
+       točen id, "real-<id>", nato ujemanje po naslovu in stranki. */
+    const kljuc = (naslov: string, stranka: string) =>
+      `${naslov.trim().toLocaleLowerCase('sl-SI')}::${stranka.trim().toLocaleLowerCase('sl-SI')}`;
+    const najdiCilj = (): string | undefined => {
+      if (projects.some(project => project.offer.id === id)) return id;
+      if (projects.some(project => project.offer.id === `real-${id}`)) return `real-${id}`;
+      const pravi = realProjekti.find(project => project.id === id);
+      if (!pravi) return undefined;
+      const iskan = kljuc(pravi.naslov, pravi.strankaIme || '');
+      return projects.find(project => kljuc(project.offer.title, project.offer.client || '') === iskan)?.offer.id;
+    };
+    const cilj = najdiCilj();
+    if (!cilj) return;
     projektIzUrljaOdprt.current = true;
-    selectProject(id);
-  }, [searchParams, projects]);
+    selectProject(cilj, true);
+  }, [searchParams, projects, realProjekti]);
 
   /* PIPELINE POSLOV — pogled Seznam|Pipeline: ce ga krmili starš (ArhivWorkspace,
      pilula ob zavihkih), uporabi to; sicer lastno stanje. */

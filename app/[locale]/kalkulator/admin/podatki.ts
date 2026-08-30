@@ -27,6 +27,22 @@ export type Racuni = { paket: string; status: string; stevilo: number };
 export type Mesec = { mesec: string; sej: number; nevpisanih: number; dogodkov: number; cenovnihTock: number };
 export type PupaPoraba = { organizationId: string; organizacija: string; paket: string; sporocil: number };
 
+/* Poraba pregledov AJPES na organizacijo v tekočem mesecu. Enota = NOVO
+   podjetje: ponovni ogled istega (matična + leto + shema) se ne zaračuna in
+   se tu ne šteje, ker ima porabljena_enota = false. */
+export type AjpesPoraba = { organizationId: string; organizacija: string; paket: string; pregledov: number };
+
+/* Povzetek, ki odloča o velikosti kvote. Povprečje samo ne zadošča: če je
+   povprečje 2, desetina uporabnikov pa porabi vseh 10, potrebno zalogo točk
+   določa prav ta desetina — zato tudi 90. percentil. */
+export type AjpesPovzetek = {
+  organizacij: number;      /* koliko organizacij je ta mesec sploh pregledovalo */
+  pregledovSkupaj: number;  /* porabljene enote = evri */
+  povprecje: number;
+  percentil90: number;
+  najvec: number;
+};
+
 export type Analitika = {
   napaka?: string;
   vir: 'supabase' | 'brez';
@@ -42,11 +58,14 @@ export type Analitika = {
   proRacunov: number;
   ocenjenPrihodekMesecno: number;
   pupaPoraba: PupaPoraba[];
+  ajpesPoraba: AjpesPoraba[];
+  ajpesPovzetek: AjpesPovzetek;
 };
 
 const prazno: Analitika = {
   vir: 'brez', obdobje: 0, skupno: 0, skupine: [], storitve: [], trgi: [],
   racuni: [], meseci: [], racunovSkupaj: 0, proRacunov: 0, ocenjenPrihodekMesecno: 0, pupaPoraba: [],
+  ajpesPoraba: [], ajpesPovzetek: { organizacij: 0, pregledovSkupaj: 0, povprecje: 0, percentil90: 0, najvec: 0 },
 };
 
 function mediana(v: number[]): number {
@@ -82,11 +101,12 @@ export async function pridobiAnalitiko(obdobje: Obdobje = 90): Promise<Analitika
   if (od) { tocke = tocke.gte('created_at', od); dogodki = dogodki.gte('created_at', od); }
 
   const zacetekMeseca = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
-  const [t, d, racuni, aiPoraba, organizacije, narocnine] = await Promise.all([
+  const [t, d, racuni, aiPoraba, organizacije, narocnine, ajpes] = await Promise.all([
     tocke, dogodki, baza.from('analitika_racuni').select('*'),
     baza.from('ai_usage').select('organization_id').gte('created_at', zacetekMeseca).limit(50000),
     baza.from('organizations').select('id,name'),
     baza.from('organization_subscriptions').select('organization_id,tier,status'),
+    baza.from('ajpes_pregledi').select('organization_id').eq('porabljena_enota', true).gte('created_at', zacetekMeseca).limit(50000),
   ]);
 
   if (t.error) {
@@ -176,12 +196,40 @@ export async function pridobiAnalitiko(obdobje: Obdobje = 90): Promise<Analitika
     sporocil,
   })).sort((a, b) => b.sporocil - a.sporocil);
 
+  /* ── poraba pregledov AJPES ──────────────────────────────────────────── */
+  const ajpesPoId = new Map<string, number>();
+  for (const vrstica of ajpes.data || []) {
+    const id = String(vrstica.organization_id);
+    ajpesPoId.set(id, (ajpesPoId.get(id) || 0) + 1);
+  }
+  const ajpesPoraba: AjpesPoraba[] = [...ajpesPoId.entries()].map(([organizationId, pregledov]) => ({
+    organizationId,
+    organizacija: imePoId.get(organizationId) || 'Neznana organizacija',
+    paket: paketPoId.get(organizationId) || 'free',
+    pregledov,
+  })).sort((a, b) => b.pregledov - a.pregledov);
+
+  const stevila = ajpesPoraba.map(v => v.pregledov).sort((a, b) => a - b);
+  const pregledovSkupaj = stevila.reduce((vsota, n) => vsota + n, 0);
+  /* Nearest-rank percentil: pri majhnih vzorcih je pošteneje od interpolacije,
+     ker vrne resnično opaženo vrednost in ne izmišljene vmesne. */
+  const percentil90 = stevila.length
+    ? stevila[Math.min(stevila.length - 1, Math.ceil(stevila.length * 0.9) - 1)]
+    : 0;
+  const ajpesPovzetek: AjpesPovzetek = {
+    organizacij: stevila.length,
+    pregledovSkupaj,
+    povprecje: stevila.length ? Math.round((pregledovSkupaj / stevila.length) * 10) / 10 : 0,
+    percentil90,
+    najvec: stevila.length ? stevila[stevila.length - 1] : 0,
+  };
+
   return {
     vir: 'supabase', obdobje,
     skupno: vrstice.length,
     zadnji: vrstice[0]?.created_at,
     skupine, storitve, trgi, meseci,
     racuni: racuniV, racunovSkupaj, proRacunov,
-    ocenjenPrihodekMesecno: proRacunov * CENA_PRO_MESECNO, pupaPoraba,
+    ocenjenPrihodekMesecno: proRacunov * CENA_PRO_MESECNO, pupaPoraba, ajpesPoraba, ajpesPovzetek,
   };
 }

@@ -2,9 +2,15 @@
 
 /* Preklop pogleda: Pupa dom ⇄ Nadzorna plošča. Isti gumb na obeh straneh.
    »Pupa dom« je odklenjen LE, če imaš Pupo v paketu (imaPupo); sicer klik
-   pokaže alert za nadgradnjo paketa. Navadni <a> (styled-jsx scopa native
-   elemente; Link se ne bi scopal). */
+   pokaže alert za nadgradnjo paketa.
+ *
+ * <Link> in ne <a>: navadni <a> naredi POLN ponovni nalog aplikacije, zato je
+ * ob kliku na Pupo ali Domov za hip izginil tudi levi meni — drugod se to ni
+ * dogajalo, ker so vse ostale povezave <Link> (Tina, 30. 8. 2026).
+ * styled-jsx razredov na <Link> ne scopa, zato so ti trije zapisani v
+ * :global() — isti vzorec kot drugod v projektu. */
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 export default function PogledPreklop({
@@ -33,14 +39,14 @@ export default function PogledPreklop({
           <svg className="pp-lockico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
         </button>
       ) : (
-        <a href={`${base}/kalkulator/dom`} className={'pp-g' + (aktiven === 'dom' ? ' on' : '')} aria-current={aktiven === 'dom' ? 'page' : undefined}>
+        <Link href={`${base}/kalkulator/dom`} className={'pp-g' + (aktiven === 'dom' ? ' on' : '')} aria-current={aktiven === 'dom' ? 'page' : undefined}>
           {iskraSvg}<span className="pp-txt">Pupa</span>
-        </a>
+        </Link>
       )}
-      <a href={`${base}/kalkulator/pregled`} className={'pp-g' + (aktiven === 'plosca' ? ' on' : '')} aria-current={aktiven === 'plosca' ? 'page' : undefined}>
+      <Link href={`${base}/kalkulator/pregled`} className={'pp-g' + (aktiven === 'plosca' ? ' on' : '')} aria-current={aktiven === 'plosca' ? 'page' : undefined}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
         <span className="pp-txt">{L('Domov', 'Home')}</span>
-      </a>
+      </Link>
 
       {opozorilo && (
         <div className="pp-alert" role="alertdialog" aria-label={L('Nadgradnja', 'Upgrade')}>
@@ -50,7 +56,7 @@ export default function PogledPreklop({
           <p>{L('Pupa je na voljo v Premiumu — s svojim AI ključem, ki ga plačaš svojemu ponudniku — in v paketu Pro, kjer so sporočila vključena.',
                 'Pupa is available on Premium — with your own AI key, billed by your provider — and on Pro, where messages are included.')}</p>
           <div className="pp-alert-akc">
-            <a href={`${base}/kalkulator/paket`} className="pp-nadg">{L('Poglej pakete', 'See plans')}</a>
+            <Link href={`${base}/kalkulator/paket`} className="pp-nadg">{L('Poglej pakete', 'See plans')}</Link>
             <button type="button" className="pp-zapri" onClick={() => setOpozorilo(false)}>{L('Zapri', 'Close')}</button>
           </div>
         </div>
@@ -62,24 +68,24 @@ export default function PogledPreklop({
            preklopom, izrišejo čez odprto opozorilo — z-index na otroku sam
            ne pomaga, ker ovoj nima svojega sklada (Tina, 28. 8. 2026). */
         .pp { position: relative; z-index: 70; display: inline-flex; align-items: center; gap: .2rem; padding: .22rem; border-radius: 999px; background: rgba(255,255,255,.6); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 8%, transparent); }
-        .pp-g { display: inline-flex; align-items: center; gap: .38rem; padding: .42rem .8rem; border-radius: 999px; font: 600 .8rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 62%, transparent); text-decoration: none; white-space: nowrap; border: 0; background: transparent; cursor: pointer; transition: background .16s ease, color .16s ease; }
-        .pp-g:hover { color: var(--ink, #1a1a1a); }
-        .pp-g.on { background: var(--purple, oklch(58% .2 297)); color: #fff; }
+        :global(.pp-g) { display: inline-flex; align-items: center; gap: .38rem; padding: .42rem .8rem; border-radius: 999px; font: 600 .8rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 62%, transparent); text-decoration: none; white-space: nowrap; border: 0; background: transparent; cursor: pointer; transition: background .16s ease, color .16s ease; }
+        :global(.pp-g:hover) { color: var(--ink, #1a1a1a); }
+        :global(.pp-g.on) { background: var(--purple, oklch(58% .2 297)); color: #fff; }
         .pp-lock { color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
-        .pp-g svg { flex: none; }
+        :global(.pp-g) svg { flex: none; }
         .pp-alert { position: absolute; top: calc(100% + .5rem); left: 0; right: auto; z-index: 60; /* Širina se ravna po meniju, ne po zaslonu: stolpec ima overflow-y:auto in
            karkoli širšega odreže — opozorilo je viselo čez postavke menija
            in bilo odsekano na levi (Tina, 28. 8. 2026). */
         width: min(100%, 15rem); padding: .85rem .9rem; border-radius: .9rem; background: #fff; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 10%, transparent); box-shadow: 0 18px 44px oklch(40% .08 300 / .2); animation: ppIn .18s ease both; }
         .pp-alert p { margin: 0 0 .6rem; font: 500 .82rem/1.45 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pp-alert-akc { display: flex; align-items: center; gap: .5rem; }
-        .pp-nadg { display: inline-flex; padding: .45rem .8rem; border-radius: 999px; background: var(--purple, oklch(58% .2 297)); color: #fff; font: 700 .78rem var(--font-sans), sans-serif; text-decoration: none; }
+        :global(.pp-nadg) { display: inline-flex; padding: .45rem .8rem; border-radius: 999px; background: var(--purple, oklch(58% .2 297)); color: #fff; font: 700 .78rem var(--font-sans), sans-serif; text-decoration: none; }
         .pp-zapri { border: 0; background: transparent; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); font: 600 .78rem var(--font-sans), sans-serif; cursor: pointer; }
         @keyframes ppIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
         /* Zaprt meni (ozek pas 4.4rem): preklop = dve ikoni druga pod drugo, brez besedila */
         :global(body[data-meni='zaprt']) .pp { flex-direction: column; gap: .1rem; padding: 0; margin: 0; background: transparent; border: 0; box-shadow: none; }
         :global(body[data-meni='zaprt']) .pp-txt, :global(body[data-meni='zaprt']) .pp-lockico { display: none; }
-        :global(body[data-meni='zaprt']) .pp-g { width: 2.2rem; height: 2.2rem; padding: 0; gap: 0; justify-content: center; border-radius: .7rem; }
+        :global(body[data-meni='zaprt'] .pp-g) { width: 2.2rem; height: 2.2rem; padding: 0; gap: 0; justify-content: center; border-radius: .7rem; }
         :global(body[data-meni='zaprt']) .pp-alert { left: calc(100% + .5rem); right: auto; top: 0; }
         @media (max-width: 560px) { .pp-g { padding: .42rem .6rem; font-size: .74rem; } }
       `}</style>

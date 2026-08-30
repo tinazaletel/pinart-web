@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { VALUTE_RACUN, valutaZnak } from '@/lib/valute';
 import { CaretDown, CaretUp, PencilSimple } from '@phosphor-icons/react';
@@ -15,6 +15,10 @@ import { loadCloudSettings, saveBusinessGoal, saveCloudSettings } from '@/lib/pi
 import { usePredogled } from '@/lib/predogled';
 import { preklopiPavzo, useTekoceMerjenje, zapisiMerjenje } from '@/lib/tekoceMerjenje';
 import TimerValovi from './TimerValovi';
+import RazgibavanjeNastavitve from './RazgibavanjeNastavitve';
+import PizzaMalica from './PizzaMalica';
+import { smemUrejatiEvidenco, sodelavciEkipe, type Sodelavec } from '@/lib/vlogaClanstva';
+import { odlociZahtevek, vloziZahtevek, zahtevki as preberiZahtevke, type Zahtevek } from '@/lib/zahtevkiEvidenca';
 import styles from './BusinessPlanWorkspace.module.css';
 
 const money = (value: number) => `${value.toLocaleString('sl-SI', { maximumFractionDigits: 0 })} €`;
@@ -580,6 +584,142 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     return `${String(zdaj.getHours()).padStart(2, '0')}:${String(zdaj.getMinutes()).padStart(2, '0')}`;
   };
 
+  /* ŽIVA URA DELOVNIKA (Tina, 30. 8. 2026: »uro, ki odšteva, koliko ur si v
+     službi — a si že 8«). Teče samo, kadar je smiselno: današnji dan, prihod
+     vpisan, odhoda še ni. Sicer je to navadna razlika med dvema uroma. */
+  const [tikTak, setTikTak] = useState(0);
+
+  /* Minute tekoče pavze. minuteMed je narejen za razpon PRES POLNOČ, zato pri
+     enakih urah vrne 1440 — in pavza, ki se je pravkar začela, je kazala 24 ur
+     (Tina, 30. 8. 2026: ura je pokazala 24:00:12). Tu nas zanima le, koliko je
+     minilo, zato je enako = nič. */
+  const minutePavze = (od: string | null) => {
+    if (!od) return 0;
+    const r = minuteMed(od, zdajHHMM());
+    return r === 24 * 60 ? 0 : r;
+  };
+  /* PAVZA = MALICA (Tina, 30. 8. 2026): ko pritisneš pavzo, se čas do
+     nadaljevanja sam prišteje k malici. Ročni vnos ostane in ima prednost —
+     kdor si malico odmeri sam, je ne šteje s štoparico. */
+  const [malicaOd, setMalicaOd] = useState<string | null>(null);
+  /* Odhod med dnevom ni nujno malica: lahko je poslovna pot (šteje se v delo)
+     ali zasebni izhod (se odšteje). Zato pavza vpraša, kaj je bila — in vsaka
+     ima svojo animacijo (Tina, 30. 8. 2026). */
+  const [pavzaVrsta, setPavzaVrsta] = useState<'malica' | 'poslovno'>('malica');
+  /* Kratka potrditev: ob prihodu gumb za hip pokaže samo kljukico, šele nato
+     postane »Odhod«. Brez tega ni jasno, ali je klik obveljal (Tina, 30. 8.). */
+  const [pravkarPrisel, setPravkarPrisel] = useState(false);
+  /* Brisanje vnosa v evidenci je pravica lastnika ali skrbnika, ne vsakega
+     sodelavca: zapis o delovnem času je dokument (Tina, 30. 8. 2026).
+     Dokler vloga ni znana, gumba ne kažemo — raje pozno kot preveč. */
+  const [smemBrisati, setSmemBrisati] = useState(false);
+  /* Skrbnik lahko evidenco vodi ZA sodelavca: izbirnik na vrhu preklopi vse —
+     uro, obrazec in mesečno tabelo (Tina, 30. 8. 2026). Prazno = zase. */
+  const [sodelavci, setSodelavci] = useState<Sodelavec[]>([]);
+  const [zaSodelavca, setZaSodelavca] = useState<string | null>(null);
+
+  /* Zahtevki za popravek za nazaj: sodelavec jih vlaga, skrbnik odloča. */
+  const [zahtevki, setZahtevki] = useState<Zahtevek[]>([]);
+  const [zahtevekOdprt, setZahtevekOdprt] = useState(false);
+  /* Brisanje vnosa v evidenci se potrdi V APLIKACIJI, ne s sistemskim
+     confirm(): sivo okence brskalnika se preklikne, ne prebere, tu pa gre za
+     dokument o delovnem času (Tina, 30. 8. 2026). */
+  const [brisemId, setBrisemId] = useState<string | null>(null);
+  const prazenZahtevek = { datum: new Date().toISOString().slice(0, 10), prihod: '', odhod: '', malica: '30', razlog: '', prica: '' };
+  const [zahtevek, setZahtevek] = useState(prazenZahtevek);
+
+  const osveziZahtevke = useCallback(() => {
+    void preberiZahtevke().then(setZahtevki).catch(() => {});
+  }, []);
+  useEffect(() => { if (!samoOgled) osveziZahtevke(); }, [samoOgled, osveziZahtevke]);
+
+  useEffect(() => {
+    let ziv = true;
+    void smemUrejatiEvidenco().then(v => {
+      if (!ziv) return;
+      setSmemBrisati(v);
+      if (v) void sodelavciEkipe().then(s => { if (ziv) setSodelavci(s); }).catch(() => {});
+    }).catch(() => {});
+    return () => { ziv = false; };
+  }, []);
+  const danesIso = () => new Date().toISOString().slice(0, 10);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem('pinart-flow-malica-od');
+      if (v && jeUra(v)) setMalicaOd(v);
+      const vr = localStorage.getItem('pinart-flow-malica-vrsta');
+      if (vr === 'malica' || vr === 'poslovno') setPavzaVrsta(vr);
+    } catch { /* zaseben način */ }
+  }, []);
+  const jeDanasnji = ready && prisotnostDan === danesIso();
+  const naDeluZdaj = jeDanasnji && !!prihodCas && !odhodCas && !brezUrVrsta(vrstaVnos);
+
+  useEffect(() => {
+    if (!naDeluZdaj) return;
+    const ura = window.setInterval(() => setTikTak(t => t + 1), 1000);
+    return () => window.clearInterval(ura);
+  }, [naDeluZdaj]);
+
+  /* Sekunde na delu, brez malice. Med izrisom bere uro samo, kadar merjenje
+     res teče — in takrat je stran že montirana, zato se izris ne razide. */
+  const sekundeNaDelu = (() => {
+    void tikTak;                                  // ponovni izris vsako sekundo
+    if (!jeUra(prihodCas)) return 0;
+    const minute = naDeluZdaj ? minuteMed(prihodCas, zdajHHMM()) : prisotnostMinute;
+    if (!minute) return 0;
+    const sekunde = naDeluZdaj ? new Date().getSeconds() : 0;
+    /* Ura stoji samo med MALICO. Poslovni odhod je delo — takrat teče naprej
+       (Tina, 30. 8. 2026: »poslovni odhod se šteje v delovnik in ni pavza«). */
+    const vPavzi = malicaOd && pavzaVrsta === 'malica' ? minutePavze(malicaOd) : 0;
+    return Math.max(0, minute * 60 + sekunde - (prisotnostOdmor + vPavzi) * 60);
+  })();
+
+  /* Med malico števec meri MALICO, ne ustavljene delovne ure: sicer številka
+     stoji in izgleda, kot da se je aplikacija zataknila (Tina, 30. 8. 2026). */
+  const sekundeMalice = (() => {
+    void tikTak;
+    if (!malicaOd) return 0;
+    return minutePavze(malicaOd) * 60 + new Date().getSeconds();
+  })();
+
+  const uraDelovnika = (() => {
+    const s = malicaOd && pavzaVrsta === 'malica' ? sekundeMalice : sekundeNaDelu;
+    const h = Math.floor(s / 3600), mi = Math.floor(s / 60) % 60, se = s % 60;
+    return `${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}:${String(se).padStart(2, '0')}`;
+  })();
+
+  /* Pavza teče v localStorage, ne le v stanju: če med malico osvežiš stran ali
+     greš na drugo, se mora ura vrniti tja, kjer je bila (Tina, 30. 8. 2026). */
+  const zacniPavzo = (vrsta: 'malica' | 'poslovno') => {
+    const ob = zdajHHMM();
+    setPavzaVrsta(vrsta);
+    setMalicaOd(ob);
+    try {
+      localStorage.setItem('pinart-flow-malica-od', ob);
+      localStorage.setItem('pinart-flow-malica-vrsta', vrsta);
+    } catch { /* zaseben način */ }
+  };
+
+  const zakljuciPavzo = () => {
+    if (!malicaOd) return;
+    const minute = minutePavze(malicaOd);
+    /* Poslovni odhod JE delo, zato se ne odšteje — zapiše se le v komentar,
+       da je iz evidence razvidno, kje si bila. Malica in zasebni izhod se
+       odštejeta od delovnega časa. */
+    if (pavzaVrsta === 'poslovno') {
+      const zapis = `${L('poslovni odhod', 'business trip')} ${malicaOd}–${zdajHHMM()}`;
+      setOpombaVnos(o => (o ? `${o}; ${zapis}` : zapis));
+    } else {
+      setOdmorCas(String((Number(odmorCas) || 0) + minute));
+    }
+    setMalicaOd(null);
+    try {
+      localStorage.removeItem('pinart-flow-malica-od');
+      localStorage.removeItem('pinart-flow-malica-vrsta');
+    } catch { /* zaseben način */ }
+  };
+
   const shraniDelovnik = (ure: number) => {
     const varno = ure > 0 ? ure : 8;
     setDelovnikUre(varno);
@@ -592,30 +732,47 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
 
   /* Isti dan prepise obstojeci vnos (id ostane), sicer nov zapis na vrh dnevnika.
      Bolniska/dopust/praznik so cel dan brez ur, zato prihod/odhod tam nista obvezna. */
-  const shraniPrisotnost = () => {
+  /* Preklop na sodelavca: njegovi zapisi pridejo iz oblaka in se NE mešajo z
+     mojo lokalno shrambo — ta je moj dnevnik, ne njegov. */
+  useEffect(() => {
+    if (!zaSodelavca) return;
+    let ziv = true;
+    void loadCloudPresence(zaSodelavca).then(seznam => {
+      if (!ziv) return;
+      const s = seznam as Prisotnost[];
+      setPrisotnosti(s);
+      odpriPrisotnostDan(new Date().toISOString().slice(0, 10), s);
+    }).catch(() => {});
+    return () => { ziv = false; };
+  }, [zaSodelavca]);
+
+  const shraniPrisotnost = (odhodTakoj?: string, opombaTakoj?: string) => {
     if (samoOgled) return; /* predogled je samo za ogled, glej demoPrisotnosti */
-    if (!brezUrVrsta(vrstaVnos) && (!prihodCas || !odhodCas)) {
+    const odhod = odhodTakoj || odhodCas;
+    if (!brezUrVrsta(vrstaVnos) && (!prihodCas || !odhod)) {
       setNotice(L('Vpiši prihod in odhod pred shranjevanjem.', 'Enter arrival and departure before saving.')); return;
     }
     const dan = prisotnostDan;
     const obstojeci = prisotnosti.find(x => x.datum === dan);
     const zapis: Prisotnost = {
       id: obstojeci?.id || crypto.randomUUID(), datum: dan,
-      prihod: prihodCas, odhod: odhodCas, odmorMin: prisotnostOdmor || undefined,
+      prihod: prihodCas, odhod, odmorMin: prisotnostOdmor || undefined,
       vrsta: vrstaVnos, kraj: brezUrVrsta(vrstaVnos) ? undefined : krajVnos,
-      opomba: opombaVnos.trim() || undefined,
+      opomba: (opombaTakoj ?? opombaVnos).trim() || undefined,
     };
     const next = obstojeci ? prisotnosti.map(x => (x.id === zapis.id ? zapis : x)) : [zapis, ...prisotnosti];
-    setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
-    void saveCloudPresence(zapis).catch(() => undefined);
+    setPrisotnosti(next);
+    if (!zaSodelavca) localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
+    void saveCloudPresence(zapis, zaSodelavca || undefined).catch(() => undefined);
     setNotice(L('Prisotnost je shranjena v dnevnik.', 'Attendance saved to the log.'));
   };
 
   const izbrisiPrisotnost = (id: string) => {
     if (samoOgled) return;
     const next = prisotnosti.filter(x => x.id !== id);
-    setPrisotnosti(next); localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
-    void deleteCloudPresence(id).catch(() => undefined);
+    setPrisotnosti(next);
+    if (!zaSodelavca) localStorage.setItem('pinart-flow-prisotnost', JSON.stringify(next));
+    void deleteCloudPresence(id, zaSodelavca || undefined).catch(() => undefined);
   };
 
   /* ── Mesečna evidenca: navigacija po mesecih, tabela in povzetek ──────────
@@ -986,6 +1143,10 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
         {/* Pojasnilo o zasebnosti odpade: isto ze pove podnaslov strani
             (Tina, 25. 8.). */}
       </section>
+
+      {/* Razgibavanje stoji POLEG stoparice, ne pod njo (Tina, 30. 8.): dve uri
+          na isti strani, leva meri delo, desna premor. Zgodovina ostane spodaj. */}
+      {view === 'time' && <RazgibavanjeNastavitve jeEn={locale === 'en'} />}
     </div>
 
 }
@@ -1025,7 +1186,197 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
     {view !== 'time' && <section className={`${styles.timer} ${styles.evidenca}`}>
       <header><p>{L('PRISOTNOST', 'ATTENDANCE')}</p><h2>{L('Mesečna evidenca delovnega časa', 'Monthly work-time record')}</h2><span>{L('Prihod, odhod, malica in vrsta dneva — mesečni pregled in napredek proti cilju se izračunata sama.', 'Arrival, departure, break and day type — the monthly overview and progress toward the goal are calculated for you.')}</span></header>
 
+      {/* Ura LEVO, polja DESNO (Tina, 30. 8. 2026). Glava je ista škatla kot
+          pri štoparici: preliv, velika ura, en glavni gumb. Prej je bila stran
+          sam obrazec in je bilo dolgočasno — tu pa se na prvi pogled vidi,
+          koliko si že v službi. */}
+      <div className={styles.prisotnostVrh}>
+      <div className={`${styles.startGlava} ${styles.prisotnostGlava}`}>
+        <TimerValovi className={styles.valovi} />
+        {/* Animacija na sredini, pod njo števec, pod njim gumba (Tina, 30. 8.
+            2026). Med delom teče peščena ura, ob malici jo zamenja pica, ki ji
+            izginjajo kosi — in ko se vrneš, spet ura. */}
+        {!brezUrVrsta(vrstaVnos) && (
+          <div className={styles.prisotnostPica}>
+            {malicaOd && pavzaVrsta === 'malica' ? (
+              <PizzaMalica
+                /* Samo tekoča malica: če bi prišteli še 30 minut, ki so v
+                   obrazcu privzete, bi bila pica prazna, še preden vstaneš
+                   (Tina, 30. 8. 2026: »pizze ni«). */
+                minute={minutePavze(malicaOd)}
+                jeEn={locale === 'en'}
+                samoOgled
+                /* enako velika kot peščena ura in kovček (11rem) */
+                velikost={176}
+                onSpremeni={min => setOdmorCas(String(min))}
+              />
+            ) : malicaOd && pavzaVrsta === 'poslovno' ? (
+              /* Zaenkrat mirujoča slika; Tina pripravi svojo animacijo
+                 (30. 8. 2026). Posneta ostane v flow-kovcek-3.webp. */
+              <img className={styles.kovcek} src="/flow-kovcek-mir.png" alt="" />
+            ) : (
+              <img
+                className={styles.pescenaUra}
+                /* Animacija se začne, ko ura teče — ne že, ko prideš na stran
+                   (Tina, 30. 8. 2026). Animiranega WebP ni mogoče ustaviti,
+                   zato v mirovanju kažemo prvi okvir kot navadno sliko. */
+                src={naDeluZdaj ? '/flow-pescena-ura-3.webp' : '/flow-pescena-ura-mir-3.png'}
+                alt=""
+              />
+            )}
+          </div>
+        )}
+
+        <div className={styles.prisotnostStolpec}>
+        <b className={styles.startUra}>{brezUrVrsta(vrstaVnos) ? '—' : uraDelovnika}</b>
+        <span className={styles.startDatum}>
+          {brezUrVrsta(vrstaVnos)
+            ? vrstaLabel(vrstaVnos)
+            : prihodCas && odhodCas
+              ? L('dan je shranjen · lahko se vrneš', 'day saved · you can come back')
+            : malicaOd && pavzaVrsta === 'malica'
+              ? L(`malica teče · delo stoji na ${izpisMinut(Math.round(sekundeNaDelu / 60))}`,
+                  `lunch break · work paused at ${izpisMinut(Math.round(sekundeNaDelu / 60))}`)
+            : malicaOd
+              ? L('poslovni odhod · ura teče naprej', 'business trip · the clock keeps running')
+              : !prihodCas
+              ? L(`cilj ${delovnikUre} h`, `goal ${delovnikUre} h`)
+              : prisotnostOstane > 0
+                ? L(`cilj ${delovnikUre} h · ostane ${izpisMinut(prisotnostOstane)}`,
+                    `goal ${delovnikUre} h · ${izpisMinut(prisotnostOstane)} to go`)
+                : L(`cilj ${delovnikUre} h dosežen · +${izpisMinut(-prisotnostOstane)}`,
+                    `goal ${delovnikUre} h reached · +${izpisMinut(-prisotnostOstane)}`)}
+        </span>
+        {/* Datum in ura: evidenca je dokument o TEM dnevu, zato naj bo dan
+            viden brez iskanja po poljih (Tina, 30. 8. 2026). */}
+        <span className={styles.prisotnostDatum}>
+          {new Date(`${prisotnostDan}T12:00:00`).toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long' })}
+          {jeDanasnji && ` · ${zdajHHMM()}`}
+        </span>
+        </div>
+        {!brezUrVrsta(vrstaVnos) && (
+          <div className={styles.glavnaVrsta}>
+            <button
+              type="button"
+              onClick={() => {
+                /* V predogledu gumb ne dela — a molk je bil napačen odgovor:
+                   uporabnica je upravičeno vprašala, zakaj ne dela. Zdaj pove
+                   razlog (Tina, 30. 8. 2026). */
+                if (samoOgled) {
+                  setNotice(L('To so demo podatki — preklopi zgoraj na »Moji podatki«, da se čas beleži k tebi.',
+                              'This is demo data — switch to “My data” above so your time is recorded.'));
+                  return;
+                }
+                if (!prihodCas) {
+                  /* Prihod pomeni DANES: če je bil odprt kak drug dan, se vnos
+                     sam prestavi na današnjega (Tina, 30. 8. 2026). */
+                  if (prisotnostDan !== danesIso()) odpriPrisotnostDan(danesIso());
+                  setPrihodCas(zdajHHMM());
+                  setPravkarPrisel(true);
+                  window.setTimeout(() => setPravkarPrisel(false), 1100);
+                  return;
+                }
+                if (!odhodCas) {
+                  /* Odhod tudi SHRANI: kdor pritisne prihod in odhod, ne sme
+                     ostati z nešranjenim dnevom (Tina, 30. 8. 2026). Gumb
+                     »Shrani« je od zdaj samo za ročne popravke. */
+                  zakljuciPavzo();
+                  const ob = zdajHHMM();
+                  setOdhodCas(ob);
+                  shraniPrisotnost(ob);
+                  return;
+                }
+                /* Dan je zaključen in shranjen. Edino smiselno naslednje
+                   dejanje ni »shrani še enkrat«, ampak VRNITEV — odšel si in se
+                   vrnil, ura naj teče naprej (Tina, 30. 8. 2026). */
+                setOdhodCas('');
+              }}
+            >
+              {/* Ob prihodu za hip samo kljukica, nato gumb postane »Odhod«. */}
+              {pravkarPrisel ? (
+                <svg className={styles.kljukica} viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 13 5 5L19 7" /></svg>
+              ) : !prihodCas ? <>
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 13 5 5L19 7" /></svg>
+                {L('Prišel/-a sem', 'I have arrived')}
+              </> : !odhodCas ? <>
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 4h3.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H15" /><path d="M10 8 6 12l4 4" /><path d="M6 12h9" /></svg>
+                {L('Odhod', 'Leaving')}
+              </> : <>
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H9" /><path d="m14 8 4 4-4 4" /><path d="M18 12H9" /></svg>
+                {L('Vrnil/-a sem se', 'I am back')}
+              </>}
+            </button>
+            {/* Pavza JE malica — ura stoji in se odšteje. Poslovni odhod ni
+                pavza: delo teče naprej, zato ima svoj gumb (Tina, 30. 8. 2026). */}
+            {!odhodCas && (!malicaOd || pavzaVrsta === 'malica') && (
+              <button
+                type="button"
+                className={styles.pavzaGumb}
+                disabled={samoOgled || !prihodCas}
+                onClick={() => (malicaOd ? zakljuciPavzo() : zacniPavzo('malica'))}
+                aria-label={malicaOd ? L('Nadaljuj delo', 'Back to work') : L('Malica', 'Lunch break')}
+                data-namig={samoOgled
+                  ? L('Na voljo v načinu »Moji podatki«', 'Available in “My data” mode')
+                  : malicaOd ? L('Nazaj k delu', 'Back to work') : L('Malica — ura se ustavi', 'Lunch break — the clock stops')}
+              >
+                {/* Kos pice, ne dve črtici: ikona mora povedati, ZAKAJ bi jo
+                    pritisnila. Pavza sama po sebi ne pomeni malice — vprašanje
+                    »kako bom vedel, da moram kliknili pavzo?« je bilo upravičeno
+                    (Tina, 30. 8. 2026). Ob vrnitvi je puščica nazaj v delo. */}
+                {malicaOd
+                  ? <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>
+                  : <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M12 3.4 20.2 19a1 1 0 0 1-1.2 1.4 20 20 0 0 0-14 0A1 1 0 0 1 3.8 19Z" />
+                      <circle cx="12" cy="10.4" r="1.15" fill="currentColor" stroke="none" />
+                      <circle cx="9.4" cy="15.4" r="1.15" fill="currentColor" stroke="none" />
+                      <circle cx="14.6" cy="15.8" r="1.15" fill="currentColor" stroke="none" />
+                    </svg>}
+              </button>
+            )}
+
+            {/* Poslovni odhod: ura teče naprej, zabeleži se le, kdaj te ni bilo
+                za mizo — evidenca mora pokazati, kje je delo potekalo. */}
+            {!odhodCas && (!malicaOd || pavzaVrsta === 'poslovno') && (
+              <button
+                type="button"
+                className={styles.pavzaGumb}
+                disabled={samoOgled || !prihodCas}
+                onClick={() => (malicaOd ? zakljuciPavzo() : zacniPavzo('poslovno'))}
+                aria-label={malicaOd ? L('Nazaj v pisarno', 'Back at the desk') : L('Poslovni odhod', 'Business trip')}
+                data-namig={samoOgled
+                  ? L('Na voljo v načinu »Moji podatki«', 'Available in “My data” mode')
+                  : malicaOd ? L('Nazaj v pisarno', 'Back at the desk') : L('Poslovni odhod — ura teče naprej', 'Business trip — the clock keeps running')}
+              >
+                {malicaOd
+                  ? <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>
+                  : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="7.5" width="18" height="12" rx="2.2" /><path d="M9 7.5V5.6A1.6 1.6 0 0 1 10.6 4h2.8A1.6 1.6 0 0 1 15 5.6V7.5" />
+                    </svg>}
+              </button>
+            )}
+          </div>
+        )}
+
+      </div>
+
       <div className={styles.prisotnost}>
+        {/* Skrbnik izbere, čigavo evidenco vodi — desno od ure, nad polji, ker
+            velja za vse spodaj (Tina, 30. 8. 2026). */}
+        {sodelavci.length > 1 && (
+          <label className={styles.sodelavecIzbira}>
+            <span>{L('Evidenca za', 'Record for')}</span>
+            <select value={zaSodelavca || ''} onChange={e => setZaSodelavca(e.target.value || null)}>
+              {/* Prva možnost nosi MOJE ime — v seznamu samih imen je beseda
+                  »zase« videti kot posebna izbira (Tina, 30. 8. 2026). */}
+              <option value="">{sodelavci.find(s => s.jaz)?.ime || L('moja evidenca', 'my record')}</option>
+              {sodelavci.filter(s => !s.jaz).map(s => <option key={s.id} value={s.id}>{s.ime}</option>)}
+            </select>
+          </label>
+        )}
+
+        {/* Datum, prihod in odhod v ENI vrsti — troje, kar opisuje isti dan
+            (Tina, 30. 8. 2026). Čas zapiše štoparica zgoraj, tu ga popraviš. */}
+        <div className={styles.dnevnaVrsta}>
         <label className={styles.danPolje}>
           <span>{L('Dan vnosa', 'Entry day')}</span>
           <span className={styles.danVrstica}>
@@ -1037,27 +1388,30 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
           <small>{new Date(`${prisotnostDan}T12:00:00`).toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>
         </label>
 
-        <label className={styles.prisotnostCilj}>
-          <span>{L('Cilj delovnika (ur)', 'Workday goal (hours)')}</span>
-          <input type="number" min="1" max="24" step="0.5" value={delovnikUre}
-            onChange={e => shraniDelovnik(Number(e.target.value))} />
+        <label>
+          <span>{L('Prihod', 'Arrival')}</span>
+          <input type="time" step="60" value={prihodCas} onChange={e => setPrihodCas(e.target.value)} />
         </label>
 
         <label>
-          <span>{L('Prihod', 'Arrival')}</span>
-          <div className={styles.prisotnostVrstica}>
-            <input type="time" step="60" value={prihodCas} onChange={e => setPrihodCas(e.target.value)} />
-            <button type="button" className={styles.rocniGumb} onClick={() => setPrihodCas(zdajHHMM())}>{L('Prišel/-a', 'Arrived')}</button>
-          </div>
-        </label>
-        <label><span>{L('Malica (min)', 'Break (min)')}</span><input type="number" min="0" step="5" placeholder="30" value={odmorCas} onChange={e => setOdmorCas(e.target.value)} /></label>
-        <label>
           <span>{L('Odhod', 'Departure')}</span>
-          <div className={styles.prisotnostVrstica}>
-            <input type="time" step="60" value={odhodCas} onChange={e => setOdhodCas(e.target.value)} />
-            <button type="button" className={styles.rocniGumb} onClick={() => setOdhodCas(zdajHHMM())}>{L('Odšel/-a', 'Left')}</button>
-          </div>
+          <input type="time" step="60" value={odhodCas} onChange={e => setOdhodCas(e.target.value)} />
         </label>
+
+        <label className={styles.prisotnostCilj}>
+          <span>{L('Cilj (ur)', 'Goal (h)')}</span>
+          <input type="number" min="1" max="24" step="0.5" value={delovnikUre}
+            onChange={e => shraniDelovnik(Number(e.target.value))} />
+        </label>
+        </div>
+
+
+
+
+        {/* Malica, vrsta dneva in kraj dela v eni vrsti (Tina, 30. 8. 2026). */}
+        <div className={styles.trojnaVrsta}>
+        <label><span>{L('Malica (min)', 'Break (min)')}</span><input type="number" min="0" step="5" placeholder="30" value={odmorCas} onChange={e => setOdmorCas(e.target.value)} /></label>
+
         <label>
           <span>{L('Vrsta', 'Type')}</span>
           <select value={vrstaVnos} onChange={e => setVrstaVnos(e.target.value as VrstaPrisotnosti)}>
@@ -1078,19 +1432,16 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
             </select>
           </label>
         )}
+        </div>
         <label className={styles.komentarPolje}><span>{L('Komentar', 'Comment')} <small>{L('ni obvezno', 'optional')}</small></span><input type="text" placeholder={L('npr. pri zdravniku, sestanek …', 'e.g. at the doctor, meeting …')} value={opombaVnos} onChange={e => setOpombaVnos(e.target.value)} /></label>
 
-        <p className={styles.prisotnostIzpis}>
-          {brezUrVrsta(vrstaVnos)
-            ? <span>{vrstaLabel(vrstaVnos)} — {L('cel dan se šteje kot odsotnost, brez izračuna ur.', 'the whole day counts as absence, with no hours calculated.')}</span>
-            : !prihodCas || !odhodCas
-              ? <span>{L('Vpiši prihod in odhod, pa ti povem, koliko ur ostane do cilja.', 'Enter arrival and departure and I will tell you how many hours are left to the goal.')}</span>
-              : <>{L('Opravljeno', 'Done')} <strong>{izpisMinut(prisotnostOpravljeno)}</strong> · {prisotnostOstane >= 0
-                  ? <>{L('ostane', 'remaining')} <strong>{izpisMinut(prisotnostOstane)}</strong></>
-                  : <>+{izpisMinut(-prisotnostOstane)} {L('viška', 'over')}</>}</>}
-        </p>
-        <button type="button" onClick={shraniPrisotnost} disabled={samoOgled}>{L('Shrani v dnevnik', 'Save to log')}</button>
+        {/* Izpis »opravljeno / ostane« je odpadel: isto pove ura zgoraj, tu
+            pa je bil še en pas besedila čez celo širino (Tina, 30. 8. 2026). */}
+        <button type="button" className={styles.shraniRocno} onClick={() => shraniPrisotnost()} disabled={samoOgled}>
+          {L('Shrani ročni vnos', 'Save manual entry')}
+        </button>
         {samoOgled && <small className={styles.opomba}>{L('Urejanje ni na voljo v predogledu (demo). Prijavi se v svoj račun.', 'Editing is not available in the preview (demo). Sign in to your account.')}</small>}
+      </div>
       </div>
 
       <div className={styles.mesecNav}>
@@ -1126,24 +1477,132 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               const v = vrstaZapisa(p);
               const ure = uraZapisa(p);
               return (
-                <tr key={p.id} data-odsoten={brezUrVrsta(v)}>
-                  <td>{kratekDan(p.datum)}{p.opomba && <small className={styles.mesecOpomba}>{p.opomba}</small>}</td>
+                <Fragment key={p.id}>
+                <tr data-odsoten={brezUrVrsta(v)}>
+                  <td>{kratekDan(p.datum)}</td>
                   <td>{p.prihod || '—'}</td>
                   <td>{p.odmorMin ? `${p.odmorMin} min` : '—'}</td>
                   <td>{p.odhod || '—'}</td>
                   <td><span className={styles.vrstaPilula} data-vrsta={v}>{vrstaLabel(v)}</span>{!brezUrVrsta(v) && p.kraj && <span className={styles.krajPilula} data-kraj={p.kraj} title={krajLabel(p.kraj)}>{p.kraj === 'doma' ? L('Doma', 'Home') : L('Podjetje', 'Office')}</span>}</td>
-                  <td className={styles.mesecUre}>{ure == null ? '—' : izpisMinut(ure)}</td>
+                  {/* Opozorilo ob dnevu: koliko ur manjka do cilja ali koliko
+                      je viška. Sodelavec mora to videti v svoji tabeli, ne šele
+                      ob plači (Tina, 30. 8. 2026). */}
+                  <td className={styles.mesecUre}>
+                    {ure == null ? '—' : izpisMinut(ure)}
+                    {ure != null && !brezUrVrsta(v) && Math.abs(ure - delovnikUre * 60) >= 15 && (
+                      <span className={styles.odstopanje} data-manj={ure < delovnikUre * 60 ? '' : undefined}>
+                        {ure < delovnikUre * 60
+                          ? `−${izpisMinut(delovnikUre * 60 - ure)}`
+                          : `+${izpisMinut(ure - delovnikUre * 60)}`}
+                      </span>
+                    )}
+                  </td>
                   <td>
-                    {!samoOgled && <button type="button"
-                      onClick={() => { if (confirm(L(`Izbrišem vnos za ${kratekDan(p.datum)}?`, `Delete the entry for ${kratekDan(p.datum)}?`))) izbrisiPrisotnost(p.id); }}
-                      aria-label={L(`Izbriši vnos prisotnosti za ${p.datum}`, `Delete attendance entry for ${p.datum}`)}>×</button>}
+                    {!samoOgled && smemBrisati && (brisemId === p.id ? (
+                      <span className={styles.potrdiBris}>
+                        <strong>{L('Res izbrišem?', 'Really delete?')}</strong>
+                        <button type="button" data-da onClick={() => { izbrisiPrisotnost(p.id); setBrisemId(null); }}>
+                          {L('Da, izbriši', 'Yes, delete')}
+                        </button>
+                        <button type="button" onClick={() => setBrisemId(null)}>{L('Ne', 'No')}</button>
+                      </span>
+                    ) : (
+                      <button type="button"
+                        onClick={() => setBrisemId(p.id)}
+                        aria-label={L(`Izbriši vnos prisotnosti za ${p.datum}`, `Delete attendance entry for ${p.datum}`)}>×</button>
+                    ))}
                   </td>
                 </tr>
+                {/* Opomba v SVOJI vrstici čez celo širino: v stolpcu »Dan« se je
+                    lomila v ozek stolp in vrstica je zrasla v pol tabele
+                    (Tina, 30. 8. 2026). */}
+                {p.opomba && (
+                  <tr className={styles.mesecOpombaVrsta} data-odsoten={brezUrVrsta(v)}>
+                    <td colSpan={7}>{p.opomba}</td>
+                  </tr>
+                )}
+                </Fragment>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      {/* POPRAVEK ZA NAZAJ — ne tiho, ampak z razlogom in odobritvijo. Prepoved
+          urejanja sama po sebi evidence ne naredi poštene: ljudje res pozabijo
+          pritisniti prihod. Pošteno jo naredi sled (Tina, 30. 8. 2026). */}
+      {!samoOgled && (
+        <div className={styles.zahtevki}>
+          {!zahtevekOdprt ? (
+            <button type="button" className={styles.zahtevekGumb} onClick={() => { setZahtevek(prazenZahtevek); setZahtevekOdprt(true); }}>
+              {L('Popravi za nazaj', 'Request a correction')}
+            </button>
+          ) : (
+            <form
+              className={styles.zahtevekObrazec}
+              onSubmit={async e => {
+                e.preventDefault();
+                if (!zahtevek.razlog.trim()) { setNotice(L('Napiši razlog — brez njega zahtevka ni.', 'Write a reason — there is no request without one.')); return; }
+                const ok = await vloziZahtevek({
+                  datum: zahtevek.datum, prihod: zahtevek.prihod || undefined, odhod: zahtevek.odhod || undefined,
+                  malicaMin: Number(zahtevek.malica) || undefined, razlog: zahtevek.razlog, prica: zahtevek.prica || undefined,
+                });
+                setNotice(ok
+                  ? L('Zahtevek je poslan skrbniku.', 'The request has been sent to your admin.')
+                  : L('Zahtevka ni bilo mogoče poslati.', 'The request could not be sent.'));
+                if (ok) { setZahtevekOdprt(false); osveziZahtevke(); }
+              }}
+            >
+              <label><span>{L('Dan', 'Day')}</span>
+                <input type="date" value={zahtevek.datum} onChange={e => setZahtevek(z => ({ ...z, datum: e.target.value }))} required /></label>
+              <label><span>{L('Prihod', 'Arrival')}</span>
+                <input type="time" step="60" value={zahtevek.prihod} onChange={e => setZahtevek(z => ({ ...z, prihod: e.target.value }))} /></label>
+              <label><span>{L('Odhod', 'Departure')}</span>
+                <input type="time" step="60" value={zahtevek.odhod} onChange={e => setZahtevek(z => ({ ...z, odhod: e.target.value }))} /></label>
+              <label><span>{L('Malica (min)', 'Break (min)')}</span>
+                <input type="number" min="0" step="5" value={zahtevek.malica} onChange={e => setZahtevek(z => ({ ...z, malica: e.target.value }))} /></label>
+              <label className={styles.zahtevekSirok}><span>{L('Razlog', 'Reason')}</span>
+                <input type="text" required placeholder={L('npr. pozabil sem se vpisati, bil sem prisoten', 'e.g. I forgot to clock in, I was here')}
+                  value={zahtevek.razlog} onChange={e => setZahtevek(z => ({ ...z, razlog: e.target.value }))} /></label>
+              <label className={styles.zahtevekSirok}><span>{L('Priča', 'Witness')} <small>{L('ni obvezno', 'optional')}</small></span>
+                <input type="text" placeholder={L('npr. videl me je Luka', 'e.g. Luka saw me')}
+                  value={zahtevek.prica} onChange={e => setZahtevek(z => ({ ...z, prica: e.target.value }))} /></label>
+              <div className={styles.zahtevekVrsta}>
+                <button type="submit">{L('Pošlji skrbniku', 'Send to admin')}</button>
+                <button type="button" className={styles.linkGumb} onClick={() => setZahtevekOdprt(false)}>{L('Prekliči', 'Cancel')}</button>
+              </div>
+            </form>
+          )}
+
+          {zahtevki.length > 0 && (
+            <ul className={styles.zahtevekSeznam}>
+              {zahtevki.map(z => (
+                <li key={z.id} data-status={z.status}>
+                  <div>
+                    <strong>{kratekDan(z.datum)}</strong>
+                    <span>{z.prihod || '—'}–{z.odhod || '—'}{z.malicaMin != null ? ` · ${z.malicaMin} min` : ''}</span>
+                    <em>{z.razlog}{z.prica ? ` · ${L('priča', 'witness')}: ${z.prica}` : ''}</em>
+                  </div>
+                  {z.status === 'cakanje' && smemBrisati ? (
+                    <div className={styles.zahtevekVrsta}>
+                      <button type="button" onClick={async () => { await odlociZahtevek(z, true); osveziZahtevke(); setNotice(L('Popravek je odobren in zapisan.', 'The correction was approved and recorded.')); }}>
+                        {L('Odobri', 'Approve')}
+                      </button>
+                      <button type="button" className={styles.linkGumb} onClick={async () => { await odlociZahtevek(z, false); osveziZahtevke(); }}>
+                        {L('Zavrni', 'Reject')}
+                      </button>
+                    </div>
+                  ) : (
+                    <span className={styles.zahtevekStatus} data-status={z.status}>
+                      {z.status === 'cakanje' ? L('čaka', 'pending') : z.status === 'odobreno' ? L('odobreno', 'approved') : L('zavrnjeno', 'rejected')}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className={styles.mesecPovzetek}>
         <div className={styles.mesecPovzetekStevec}>

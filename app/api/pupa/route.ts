@@ -10,6 +10,7 @@ import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { pupaMesecnaKvota } from '@/lib/paketi';
 import { runAiProvider } from '@/lib/aiProviderClient';
 import { pupaProviderConfig } from '@/lib/pupaProvider';
+import { odgovorBrezAi } from '@/lib/pupaUsmerjanje';
 
 export const runtime = 'nodejs';
 
@@ -113,10 +114,14 @@ export async function POST(req: Request) {
   try { provider = pupaProviderConfig(); }
   catch (error) { console.error('PUPA ponudnik ni pravilno nastavljen:', error instanceof Error ? error.message : error); return NextResponse.json({ napaka: 'AI zaledje ni pravilno nastavljeno.' }, { status: 503 }); }
   if (!provider) {
-    return NextResponse.json({
-      odgovor: 'Uf, trenutno ne morem do svojih možganov 🙈 Klepet z mano je začasno nedosegljiv — kmalu spet na voljo. Do takrat ti pomagam s sprotnimi namigi ob pripravi ponudbe.',
-      brezKljuca: true,
-    });
+    /* Brez modela Pupa ne razmišlja, zna pa usmeriti — za to zadošča poznavanje
+       Flowa. Prej je vrnila samo opravičilo in uporabnik je ostal praznih rok;
+       zdaj dobi pot do orodja, ki ga išče (Tina, 29. 8. 2026). */
+    /* Jezik preberemo iz naslova strani, s katere je vprašanje prišlo —
+       telo ga ne nosi in ga zaradi ene vrstice ne bomo dodajali. */
+    const jeEn = /\/en(\/|$)/.test(req.headers.get('referer') || '');
+    const { odgovor, predlogi } = odgovorBrezAi(vprasanje, jeEn ? '/en' : '', jeEn);
+    return NextResponse.json({ odgovor, predlogi, brezKljuca: true });
   }
 
   const model = provider.connection.model || provider.connection.provider;

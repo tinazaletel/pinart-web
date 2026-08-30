@@ -4,7 +4,8 @@ import DashboardSidebar from '@/components/DashboardSidebar';
 import PaketiSeznam from '@/components/PaketiSeznam';
 import { naroceniPaket } from '@/lib/pravice';
 import { headers } from 'next/headers';
-import { valutaZaDrzavo } from '@/lib/cenaNarocnine';
+import { dolociPonudbo, valutaZaDrzavo } from '@/lib/cenaNarocnine';
+import { oddanihUstanovnih } from '@/lib/ustanovnaMesta';
 import styles from '../pregled/pregled.module.css';
 
 export const metadata: Metadata = {
@@ -32,7 +33,7 @@ export default async function PaketPage({ params }: { params: Promise<{ locale: 
         <div><p className={styles.eyebrow}>{locale === 'en' ? 'PLAN' : 'PAKET'}</p><h1>{locale === 'en' ? 'Plan and subscription.' : 'Paket in naročnina.'}</h1></div>
       </header>
 
-      <PaketiSeznam trenutni={paket} locale={locale} valuta={valutaZaDrzavo((await headers()).get('x-vercel-ip-country'))} />
+      <PaketiSeznam trenutni={paket} locale={locale} valuta={valutaZaDrzavo((await headers()).get('x-vercel-ip-country'))} ponudba={dolociPonudbo(new Date(), await oddanihUstanovnih())} />
     </section>
   </main>;
 }

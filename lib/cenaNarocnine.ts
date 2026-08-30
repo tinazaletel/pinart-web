@@ -28,7 +28,13 @@ export const USTANOVNIH_MEST = 50;
 /* Zadnji dan, ko je uvodna cena še na voljo (vključno). */
 export const UVODNA_DO = '2026-10-31';
 
-/* Cene v evrih na mesec. Pri letnem plačilu je to cena na mesec, obračunana
+/* Cene so KONČNE, z DDV (Tina, 29. 8. 2026). Slovenec pri javnem ceniku pričakuje,
+   da je prikazana številka tudi znesek plačila, EU pravila za prodajo potrošnikom
+   pa zahtevajo skupno ceno z davki. Zato imajo vse Stripove lestvice
+   tax_behavior = inclusive: 15 € pomeni 15 € na kartici, tebi ostane 12,30 €.
+   Podjetje na računu še vedno vidi osnovo in DDV posebej.
+
+   Cene v evrih na mesec. Pri letnem plačilu je to cena na mesec, obračunana
    enkrat letno — številka, ki jo uporabnica vidi, ne skupni znesek. */
 export const CENIK: Record<Ponudba, Record<Exclude<PaketId, 'free'>, Record<Obdobje, number>>> = {
   ustanovna: {
@@ -40,8 +46,12 @@ export const CENIK: Record<Ponudba, Record<Exclude<PaketId, 'free'>, Record<Obdo
     pro: { mesec: 29, leto: 29 },
   },
   redna: {
-    premium: { mesec: 19, leto: 15 },
-    pro: { mesec: 39, leto: 29 },
+    /* Redna lestvica (Tina, 30. 8. 2026): 23 € z DDV ohrani prejšnjih 19 € brez
+       DDV, 48 € prejšnjih 39 €. Ni dvig, ampak povrnitev tega, kar je vzel
+       prehod na cene z DDV. Velja za NOVE naročnike; kdor se naroči prej,
+       ostane na svoji ceni — Stripe naročnino zaklene na lestvico sam. */
+    premium: { mesec: 23, leto: 18 },
+    pro: { mesec: 48, leto: 35 },
   },
 };
 

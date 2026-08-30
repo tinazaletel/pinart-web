@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import PreveriPoslovanje from '@/components/PreveriPoslovanje';
 import { localePath } from '@/i18n/routing';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import TrzniOkvirZnacka from '@/components/TrzniOkvirZnacka';
+import PodpriBanner from '@/components/PodpriBanner';
 import { loadFlowData, saveFlowCollection, saveOffers, type FlowInvoice } from '@/lib/pinartFlowStore';
 import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, saveOrganizationProfile, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, podlogaJeTemna, migrirajStariFont } from '@/lib/dokVidez';
@@ -7805,6 +7807,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .vp label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .4rem 1rem; margin-bottom: .8rem; font-weight: 600; font-size: 1.12rem; color: var(--ink); }
         .cw .vp textarea { min-height: 84px; font-family: var(--font-sans), system-ui, sans-serif; font-size: 1.05rem; line-height: 1.55; background: var(--paper); border: 1px solid oklch(93% .006 82 / .55); border-radius: 10px; padding: .9rem 1rem; }
         .cw .svoje-vrsta { display: inline-flex; align-items: center; gap: .5rem; }
+        /* Polje za lasten vnos je bilo fiksnih 210 px, gumbi nad njim pa čez vso
+           širino — izpadlo je kot pozabljen ostanek. Kjer so odgovori v seznamu,
+           se polje razteza z njimi (Tina, 28. 8. 2026). */
+        .cw .choicegrid .svoje-vrsta { grid-column: 1 / -1; display: flex; width: 100%; }
+        .cw .choicegrid .svoje-vrsta .vp-svoje { width: 100%; flex: 1; min-width: 0; }
         .cw .vp .vp-svoje { width: 210px; align-self: center; border: none; border-bottom: 1px solid rgba(17,17,17,.45); background: transparent; font-family: var(--font-sans), system-ui, sans-serif; font-weight: 600; font-size: 1.05rem; padding: .3rem 0 .4rem; color: var(--ink); border-radius: 0; }
         .cw .vp .vp-svoje:focus { outline: none; border-bottom: 2px solid var(--ink); margin-bottom: -1px; }
         .cw .vp .vp-svoje::placeholder { color: rgba(17,17,17,.72); font-weight: 400; }
@@ -8188,12 +8195,30 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
         .cw .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .cw .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
-        .cw .posl-vec-gumb, .cw .posl-sheet-glava, .cw .posl-sheet-back { display: none; }
+        .cw .posl-sheet-glava, .cw .posl-sheet-back { display: none; }
+        /* Namizje: šest enakovrednih povezav je pomenilo, da nobena ne izstopa.
+           Vidna ostaneta pošiljanje (zgoraj) in »Prenesi PDF«, ker je to daleč
+           najpogostejše naslednje dejanje; ostalo gre pod »Več« (Tina, 29. 8. 2026). */
+        .cw .posl-sekundarne .povezava:not(.posl-glavna):not(.posl-vec-gumb) { display: none; }
+        /* Enak videz kot »Prenesi PDF« in v isti vrsti — podčrtana povezava,
+           ne gumb druge vrste (Tina, 29. 8. 2026). */
+        .cw .posl-vec-gumb { margin: 0; border: 0; background: transparent; }
         /* Mobilni "Kaj s ponudbo?" sheet — PORTAL na body (nad vsem, full backdrop, prilepljen na dno). */
         .cw .pmsheet-back { position: fixed; inset: 0; z-index: 200; background: rgba(28,21,24,.42); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); animation: pmFade .2s ease both; }
         @keyframes pmFade { from { opacity: 0 } to { opacity: 1 } }
         .cw .pmsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 201; box-sizing: border-box; max-height: 85dvh; overflow-y: auto; display: flex; flex-direction: column; gap: .1rem; padding: 1rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom,0px)); background: var(--paper); border-radius: 22px 22px 0 0; box-shadow: 0 -16px 44px rgba(40,25,40,.22); animation: pmUp .3s cubic-bezier(.2,.8,.3,1) both; }
         @keyframes pmUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
+        /* Namizje: spodnji pas čez vso širino je za mobilne; tu je okno na
+           sredini in široko toliko, kolikor vsebina rabi (Tina, 29. 8. 2026). */
+        @media (min-width: 641px) {
+          .cw .pmsheet {
+            left: 50%; right: auto; bottom: auto; top: 50%;
+            transform: translate(-50%, -50%);
+            width: min(24rem, calc(100vw - 3rem));
+            border-radius: 18px; animation: none;
+            box-shadow: 0 26px 70px rgba(28,21,24,.28);
+          }
+        }
         .cw .pmsheet-glava { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
         .cw .pmsheet-glava span { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(17,17,17,.72); }
         .cw .pmsheet-glava button { width: 2.1rem; height: 2.1rem; flex: none; border-radius: 50%; border: 1px solid rgba(17,17,17,.16); background: var(--paper); color: var(--ink); cursor: pointer; font-size: 1rem; }
@@ -10233,6 +10258,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </>
                 ) : (
                   <>
+                    <PreveriPoslovanje
+                      davcna={narocnikDavcna}
+                      jeEn={locale === 'en'}
+                      base={locale === 'en' ? '/en' : ''}
+                      onIzpolni={(p, d) => {
+                        if (p !== null) setPromet(String(Math.round(p)));
+                        if (d !== null) setDobicek(String(Math.round(d)));
+                      }}
+                    />
                     <p className="hint" style={{ marginTop: 0, marginBottom: '1rem' }}>{L('Enako kot trg: podjetje z višjim prometom in dobičkom nosi večjo vrednost dela. Upošteva se le, kadar delo velja za celotno znamko. Če ne veš, pusti prazno.', 'Like the market: a company with higher revenue and profit carries a higher work value. It counts only when the work applies to the whole brand. If you don\'t know, leave it blank.')}</p>
                     <div className="numgrid">
                       <div className="polje">
@@ -11086,14 +11120,14 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {mailStatus && <p className="mail-status" role="status">{mailStatus}</p>}
             </div>
             {/* SEKUNDARNE akcije: tiho, brez ponovnega pošiljanja. Na mobilu skrite za gumbom "Več možnosti" (slide-up). */}
-            <button type="button" className="posl-vec-gumb" onClick={() => setVecMoznosti(true)} aria-haspopup="dialog" aria-expanded={vecMoznosti}>{L('Več možnosti', 'More options')}</button>
+
             {/* Mobilni sheet je PORTAL (spodaj), tu inline za desktop. */}
             <div className="posl-sekundarne">
               <div className="posl-sheet-glava"><span>{L('Kaj s ponudbo?', 'What next?')}</span><button type="button" onClick={() => setVecMoznosti(false)} aria-label={L('Zapri', 'Close')}>✕</button></div>
               <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
                 <CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}
               </button>
-              <button type="button" className="povezava" disabled={pdfNalaganje} onClick={zPogoji(zNazivom(() => { prenesiPdf(); proslaviKonfeti(); }))} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
+              <button type="button" className="povezava posl-glavna" disabled={pdfNalaganje} onClick={zPogoji(zNazivom(() => { prenesiPdf(); proslaviKonfeti(); }))} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
                 <FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}
               </button>
               <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}>
@@ -11118,6 +11152,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <Receipt size={16} /> {L('Pretvori v račun', 'Convert to invoice')}
                 </button>
               )}
+              <button type="button" className="povezava posl-vec-gumb" onClick={() => setVecMoznosti(true)} aria-haspopup="dialog" aria-expanded={vecMoznosti}>{L('Več možnosti', 'More options')}</button>
             </div>
             {vecMoznosti && typeof document !== 'undefined' && createPortal(
               <div className="cw">
@@ -11177,6 +11212,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 </div>
               )}
             </div>
+            {/* Podpora šele TU: korak s ceno je sredina dela, Zaključek pa
+                trenutek, ko ima človek ponudbo v rokah in je nekaj dobil
+                (Tina, 29. 8. 2026). Med procesom ne prekinjamo. */}
+            <PodpriBanner locale={locale} />
             </>
           )}
         </div>

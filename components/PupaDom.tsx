@@ -18,8 +18,8 @@ import { jeNamenNaloge, razcleniNalogo, type PupaNalogaOsnutek } from '@/lib/pup
    podatkovna povezava pride v naslednjem koraku. Kartice-v-pogovoru + glas = Faza 2.
    Glej memory: project_pupa_prvi_vmesnik, project_pupa_center_layout_ideja, project_flow_glass_aurora. */
 
-import { useEffect, useRef, useState } from 'react';
-import { Palette, Buildings, Browser, Megaphone, Camera, Compass, Layout, Newspaper, DotsThree, FileText, Receipt, Coins, FolderPlus, ListChecks } from '@phosphor-icons/react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { Palette, Buildings, Browser, Megaphone, Camera, Compass, Layout, Newspaper, DotsThree, FileText, Receipt, Coins, FolderPlus, ListChecks, ArrowRight } from '@phosphor-icons/react';
 import { lokalniOdgovori } from '@/lib/onboarding';
 import { PODROCJA } from '@/lib/pricingCatalog';
 import { nalozPogovore, nalozSporocila, ustvariPogovor, dodajSporocilo, izbrisiPogovor, type PupaPogovorPovzetek } from '@/lib/pupaCloud';
@@ -34,6 +34,7 @@ import { povzetekNalog, odgovorONalogah, jeVprasanjeONalogah, kontekstNalog } fr
 import { usePredogled } from '@/lib/predogled';
 import DatumUra from '@/components/DatumUra';
 import { loadFlowData } from '@/lib/pinartFlowStore';
+import { kajTeCaka, opisPrve, vrsticaOpomnika, potOpomnika, type Cakajoce } from '@/lib/teCaka';
 import { preberiObvestila, KOM_DOGODEK } from '@/lib/komObvestila';
 
 /* a/b/c izbire za izkušnje — iste kot kalkulator (KalkulatorApp IZKUSNJE); PODROCJA iz lib */
@@ -162,7 +163,8 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
   /* Pupa pogovor v domu (AI način): prosto besedilo = KLEPET, ne vsili orodja.
      Orodja odpreš prek gumbov (ali kasneje prek Pupine potrditve). Vezano na obstoječi /api/pupa. */
-  const [pupaSpor, setPupaSpor] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  /* `predlogi` nosi poti do orodij, kadar Pupa nima modela in zna le usmeriti. */
+  const [pupaSpor, setPupaSpor] = useState<{ role: 'user' | 'assistant'; content: string; predlogi?: { ime: string; opis: string; pot: string }[] }[]>([]);
   const [pupaCaka, setPupaCaka] = useState(false);
   const [predogled] = usePredogled();
   /* Medtem ko Pupa razmišlja, se vprašanja NE zavržejo — postavijo se v vrsto
@@ -268,7 +270,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       });
       const data = await res.json();
       const odg = data.odgovor || data.text || data.napaka || data.error || L('Hmm, nekaj je zaškripalo. Poskusi znova.', 'Hmm, something went wrong. Try again.');
-      setPupaSpor(s => [...s, { role: 'assistant', content: odg }]);
+      setPupaSpor(s => [...s, { role: 'assistant', content: odg, predlogi: Array.isArray(data.predlogi) ? data.predlogi : undefined }]);
       if (pid) void dodajSporocilo(pid, 'assistant', odg);
     } catch (e) {
       /* Uporabnik je pritisnil Stop — brez sporočila o napaki. */
@@ -544,19 +546,84 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const stev = (v: number | undefined) => (stanje ? String(v ?? 0) : '—');
   const evri = (v: number | undefined) => (stanje ? new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v ?? 0) : '—');
 
-  const plava: { labela: string; vrednost: string; h: number; poz: string; d: number; href: string }[] = [
+  /* Opomniki: kar ZAMUJA ali visi brez odgovora — zamujeni računi, tihe
+     ponudbe, nepodpisane pogodbe, licence pred potekom in zamujene naloge.
+     Ostale kartice povedo stanje (»za plačilo 250 €« velja tudi, če rok še ni
+     potekel); to je edina, ki pove zaostanek (Tina, 29. 8. 2026). */
+  const [cakajoce, setCakajoce] = useState<Cakajoce[]>([]);
+  useEffect(() => {
+    /* Šele v brskalniku: loadFlowData bere localStorage, ki ga med strežniškim
+       izrisom ni — v useMemo je to vrglo izjemo na celi strani. */
+    if (predogled === 'empty') { setCakajoce([]); return; }
+    try {
+      const d = loadFlowData();
+      setCakajoce(kajTeCaka({ invoices: d.invoices, offers: d.offers, contracts: d.contracts }, new Date()));
+    } catch { setCakajoce([]); }
+  }, [predogled, stanje]);
+  const opomnikov = cakajoce.length + (stanje?.zamujene || 0);
+
+  /* Vrstice za ostale mehurčke — vsak pokaže do štiri zadnje stvari in vsaka
+     vrstica pelje tja, kjer se ureja. Številka pove, da nekaj je; vrstice
+     povedo, kaj (Tina, 29. 8. 2026). */
+  const [vrsticeKartic, setVrsticeKartic] = useState<{
+    naloge: { besedilo: string; href: string }[];
+    racuni: { besedilo: string; href: string }[];
+    projekti: { besedilo: string; href: string }[];
+  }>({ naloge: [], racuni: [], projekti: [] });
+
+  useEffect(() => {
+    if (predogled === 'empty') { setVrsticeKartic({ naloge: [], racuni: [], projekti: [] }); return; }
+    try {
+      const dat = (v?: string) => (v && !Number.isNaN(new Date(v).getTime())
+        ? new Intl.DateTimeFormat(jeEn ? 'en-GB' : 'sl-SI', { day: 'numeric', month: 'short' }).format(new Date(v)).replace('.', '')
+        : '');
+      /* Vrstice morajo ustrezati ŠTEVILKI na kartici: če piše 0, ne sme razpreti
+         seznama. Kadar je kaj zamujenega, kartica kaže zamujene — takrat tudi
+         vrstice (Tina, 29. 8. 2026). */
+      const danesIso2 = new Date().toISOString().slice(0, 10);
+      const odprte = preberiNaloge().filter(n => n.stolpec !== 'done');
+      const rokNaloge = (n: { rok?: string }) => (n.rok || '').slice(0, 10);
+      const izbrane = (stanje?.zamujene || 0) > 0
+        ? odprte.filter(n => rokNaloge(n) && rokNaloge(n) < danesIso2)
+        : odprte.filter(n => rokNaloge(n) === danesIso2);
+      const naloge = izbrane
+        .sort((a, b) => rokNaloge(a).localeCompare(rokNaloge(b)))
+        .slice(0, 4)
+        .map(n => ({ besedilo: [dat(n.rok), n.naslov].filter(Boolean).join(' · '), href: `${base}/kalkulator/naloge` }));
+
+      const d = loadFlowData();
+      const racuni = d.invoices
+        .filter(r => !r.paid && r.status !== 'paid' && r.status !== 'draft' && r.status !== 'cancelled')
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+        .slice(0, 4)
+        .map(r => ({ besedilo: [dat(r.date), `${Math.round(Number(r.amount) || 0)} €`, r.client].filter(Boolean).join(' · '), href: `${base}/kalkulator/racuni` }));
+
+      const projekti = preberiProjekti()
+        .filter(pr => pr.status === 'aktiven')
+        .slice(0, 4)
+        .map(pr => ({ besedilo: [pr.naslov, pr.strankaIme].filter(Boolean).join(' · '), href: `${base}/kalkulator/projekti?projekt=${pr.id}` }));
+
+      setVrsticeKartic({ naloge, racuni, projekti });
+    } catch { setVrsticeKartic({ naloge: [], racuni: [], projekti: [] }); }
+  }, [predogled, stanje, base, jeEn]);
+
+  const plava: { labela: string; vrednost: string; h: number; poz: string; d: number; href: string; namig?: string; vrstice?: { besedilo: string; href: string }[] }[] = [
     /* Zamujene naloge prevzamejo mesto »danes«: kar je ze zamujeno, je bolj
        nujno od tega, kar sele zapade. */
     stanje && stanje.zamujene > 0
-      ? { labela: L('Zamujene naloge', 'Overdue tasks'), vrednost: stev(stanje.zamujene), h: 297, poz: 'top:9%;left:4%', d: 0, href: `${base}/kalkulator/naloge` }
-      : { labela: L('Naloge danes', 'Tasks today'), vrednost: stev(stanje?.nalogeDanes), h: 297, poz: 'top:9%;left:4%', d: 0, href: `${base}/kalkulator/naloge` },
+      ? { labela: L('Zamujene naloge', 'Overdue tasks'), vrednost: stev(stanje.zamujene), h: 297, poz: 'top:9%;left:4%', d: 0, href: `${base}/kalkulator/naloge`, vrstice: vrsticeKartic.naloge }
+      : { labela: L('Naloge danes', 'Tasks today'), vrednost: stev(stanje?.nalogeDanes), h: 297, poz: 'top:9%;left:4%', d: 0, href: `${base}/kalkulator/naloge`, vrstice: vrsticeKartic.naloge },
     { labela: L('Nova sporočila', 'New messages'), vrednost: stev(stanje?.sporocila), h: 320, poz: 'top:9%;right:5%', d: .7, href: `${base}/kalkulator/komunikacija` },
-    { labela: L('Aktivni projekti', 'Active projects'), vrednost: stev(stanje?.projekti), h: 200, poz: 'top:35%;left:6%', d: 1.4, href: `${base}/kalkulator/projekti` },
-    { labela: L('Za plačilo', 'Awaiting payment'), vrednost: evri(stanje?.zaPlacilo), h: 25, poz: 'top:35%;right:7%', d: 2, href: `${base}/kalkulator/racuni` },
+    /* Opomniki so prevzeli mesto »Aktivnih projektov«: ta je bil edina
+       številka, ob kateri se ne narediš ničesar drugače, projekti pa imajo
+       svoj zaslon v meniju (Tina, 29. 8. 2026). */
+    { labela: L('Opomniki', 'Reminders'), vrednost: stev(opomnikov), h: 12, poz: 'top:35%;left:6%', d: 1.4, href: `${base}/kalkulator/pregled`, namig: opisPrve(cakajoce[0], jeEn), vrstice: cakajoce.slice(0, 3).map(c => ({ besedilo: vrsticaOpomnika(c, jeEn), href: potOpomnika(c, base) })) },
+    { labela: L('Za plačilo', 'Awaiting payment'), vrednost: evri(stanje?.zaPlacilo), h: 25, poz: 'top:35%;right:7%', d: 2, href: `${base}/kalkulator/racuni`, vrstice: vrsticeKartic.racuni },
     /* Kadar cilja ni, kartica ne izpisuje dolge povedi (ta se je lomila cez rob),
        ampak povabi k dejanju — klik pelje na Cilje. */
-    { labela: L('Mesečni cilj', 'Monthly goal'), vrednost: stanje ? (stanje.cilj > 0 ? `${stanje.cilj} %` : L('Nastavi', 'Set')) : '—', h: 60, poz: 'bottom:18%;left:5%', d: 2.6, href: `${base}/kalkulator/cilji` },
-    { labela: L('Prihodek ta mesec', 'Revenue this month'), vrednost: evri(stanje?.prihodek), h: 150, poz: 'bottom:18%;right:5%', d: 3.2, href: `${base}/kalkulator/racuni` },
+    { labela: L('Aktivni projekti', 'Active projects'), vrednost: stev(stanje?.projekti), h: 200, poz: 'bottom:18%;left:5%', d: 2.6, href: `${base}/kalkulator/projekti`, vrstice: vrsticeKartic.projekti },
+    /* Kadar cilja ni, kartica ne izpisuje dolge povedi, ampak povabi k dejanju. */
+    { labela: L('Mesečni cilj', 'Monthly goal'), vrednost: stanje ? (stanje.cilj > 0 ? `${stanje.cilj} %` : L('Nastavi', 'Set')) : '—', h: 60, poz: 'bottom:18%;right:5%', d: 3.2, href: `${base}/kalkulator/cilji` },
   ];
 
   /* Devet gumbov naenkrat je seznam, ne ponudba. Prvih sest pokrije vsakdan,
@@ -676,11 +743,24 @@ export default function PupaDom({ base = '' }: { base?: string }) {
       <div className={`pd-plava${zbrano ? ' zbrano' : ''}`}>
         {plava.map((p, i) => (
           <div key={i} className="pd-kartica-wrap" style={zbrano ? { animationDelay: `${p.d}s`, animationDuration: `${5.5 + (i % 3) * 1.2}s` } : { animationDelay: `${p.d}s`, animationDuration: `${7 + (i % 3) * 2.2}s`, ...pozStyle(p.poz) }}>
-            <a href={p.href} className="pd-kartica" style={{ ['--h' as string]: String(p.h) }}>
-              <span className="pd-k-pika" />
-              <b>{p.vrednost}</b>
-              <small>{p.labela}</small>
-            </a>
+            {p.vrstice && p.vrstice.length > 0 ? (
+              /* Kartica z vrsticami ni ena sama povezava: vsaka vrstica pelje tja,
+                 kjer se stvar uredi (račun k računom, licenca k stranki). Povezave
+                 v povezavi ni mogoče gnezditi, zato je ovoj div (Tina, 29. 8. 2026). */
+              <div className="pd-kartica" style={{ ['--h' as string]: String(p.h) }}>
+                <span className="pd-k-pika" />
+                <a href={p.href} className="pd-k-glava"><b>{p.vrednost}</b><small>{p.labela}</small></a>
+                <span className="pd-k-vrstice">
+                  <span>{p.vrstice.map((v, n) => <a key={n} href={v.href}><em>{v.besedilo}</em></a>)}</span>
+                </span>
+              </div>
+            ) : (
+              <a href={p.href} className="pd-kartica" title={p.namig || undefined} style={{ ['--h' as string]: String(p.h) }}>
+                <span className="pd-k-pika" />
+                <b>{p.vrednost}</b>
+                <small>{p.labela}</small>
+              </a>
+            )}
           </div>
         ))}
       </div>
@@ -767,6 +847,17 @@ export default function PupaDom({ base = '' }: { base?: string }) {
                     <div className={'pd-mehur' + (m.role === 'assistant' ? ' pd-mehur-odg' : '')}>
                       {nav && <span className="pd-navedek">{nav}</span>}
                       {telo}
+                      {m.predlogi && m.predlogi.length > 0 && (
+                        /* Brez modela Pupa ne razmišlja, zna pa pokazati pot —
+                           čipi so klikljivi, da ni treba iskati po meniju. */
+                        <span className="pd-usmeri">
+                          {m.predlogi.map(pr => (
+                            <a key={pr.pot} href={pr.pot} className="pd-usmeri-cip">
+                              <b>{pr.ime}</b><small>{pr.opis}</small>
+                            </a>
+                          ))}
+                        </span>
+                      )}
                       {m.role === 'assistant' && (
                         <button type="button" className="pd-vr-pen pd-pen-odg pd-namig" data-namig={L('Odgovori', 'Reply')} aria-label={L('Odgovori', 'Reply')}
                           onClick={() => { setCitat(m.content.length > 160 ? m.content.slice(0, 160).trimEnd() + '…' : m.content); textRef.current?.focus(); }}>
@@ -913,7 +1004,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
                 <button type="button" className="pd-poslji" onClick={posljiVnos}>
                   {urejamVrsto !== null ? L('Shrani', 'Save')
                     : pupaCaka || vrsta.length ? L('V vrsto', 'Queue')
-                      : klepet ? L('Pošlji', 'Send') : L('Začni', 'Start')} <span aria-hidden>→</span>
+                      : klepet ? L('Pošlji', 'Send') : L('Začni', 'Start')} <ArrowRight size={15} weight="bold" aria-hidden />
                 </button>
               )}
             </div>
@@ -927,7 +1018,7 @@ export default function PupaDom({ base = '' }: { base?: string }) {
                 plavajočih kartic (te so le na namizju). Isti podatki, klikljivi. */}
             <div className="pd-povzetek">
               {plava.map((p, i) => (
-                <a key={i} href={p.href} className="pd-pov-cip" style={{ ['--h' as string]: String(p.h), animationDelay: `${(i % 3) * 0.5}s` }}>
+                <a key={i} href={p.href} className="pd-pov-cip" title={p.vrstice?.length ? undefined : (p.namig || undefined)} style={{ ['--h' as string]: String(p.h), animationDelay: `${(i % 3) * 0.5}s` }}>
                   <span className="pd-k-pika" />
                   <b>{p.vrednost}</b><small>{p.labela}</small>
                 </a>
@@ -997,14 +1088,42 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         }
         @media (prefers-reduced-motion: reduce) { .pd-srce { animation: none; } }
 
-        .pd-plava { position: absolute; inset: 0; z-index: 1; pointer-events: none; display: none; }
+        /* Nad sredino IN nad vnosnim poljem: kartica, ki se ob hoverju razpre, mora
+           stati čez klepet, ne pod njim. Vsebnik ne lovi klikov (pointer-events:
+           none), zato vmesnik pod njim ostane dosegljiv (Tina, 29. 8. 2026). */
+        .pd-plava { position: absolute; inset: 0; z-index: 30; pointer-events: none; display: none; }
         /* gumb za preklop razporeda (zberi v kot / razprši) */
         .pd-razpored { position: fixed; top: 4.3rem; right: 4.6rem; z-index: 63; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 14%, transparent); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: color-mix(in oklch, var(--ink, #1a1a1a) 60%, transparent); cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; }
         .pd-razpored:hover { background: #fff; color: var(--ink, #1a1a1a); }
         /* wrap nosi PLAVANJE (position + bob); kartica se POVEČA ob hoveru (brez konflikta transformov) */
         .pd-kartica-wrap { position: absolute; pointer-events: none; animation: pdBob 9s ease-in-out infinite; }
         .pd-kartica { position: relative; pointer-events: auto; display: flex; flex-direction: column; gap: .1rem; min-width: 8.5rem; padding: .75rem .95rem; border: 1px solid rgba(255,255,255,.6); border-radius: .95rem; background: color-mix(in oklch, oklch(72% .13 var(--h)) 10%, rgba(255,255,255,.55)); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); box-shadow: 0 12px 34px oklch(50% .1 var(--h) / .14); text-decoration: none; cursor: pointer; transition: transform .22s cubic-bezier(.2,.7,.2,1), box-shadow .22s ease; }
-        .pd-kartica:hover { transform: scale(1.07); box-shadow: 0 22px 50px oklch(50% .1 var(--h) / .3); z-index: 3; }
+        /* Vrstice opomnikov so DEL kartice in se razprejo ob prehodu z miško.
+           Krčiti je treba tudi ŠIRINO, ne le višine: skrito besedilo je sicer
+           kartico raztegnilo že v mirovanju (Tina, 29. 8. 2026). */
+        .pd-k-vrstice {
+          display: grid; grid-template-rows: 0fr; width: 0; overflow: hidden;
+          opacity: 0; margin-top: 0; text-align: left;
+          transition: grid-template-rows .22s ease, width .22s ease, opacity .16s ease, margin-top .22s ease;
+        }
+        .pd-kartica:hover .pd-k-vrstice, .pd-kartica:focus-visible .pd-k-vrstice {
+          grid-template-rows: 1fr; width: 15rem; opacity: 1; margin-top: .55rem;
+        }
+        /* Navpična črta ob vrsticah — kot pri navedku; loči seznam od številke. */
+        .pd-k-vrstice > span {
+          min-height: 0; display: flex; flex-direction: column; gap: .12rem;
+          padding-left: .6rem; border-left: 2px solid color-mix(in oklch, var(--ink, #1a1a1a) 16%, transparent);
+        }
+        .pd-k-glava { display: flex; flex-direction: column; gap: .1rem; text-decoration: none; color: inherit; }
+        .pd-k-vrstice a { text-decoration: none; border-radius: 6px; padding: .1rem .2rem; margin: -.1rem -.2rem; transition: background .14s ease; }
+        .pd-k-vrstice a:hover em { color: var(--ink, #1a1a1a); }
+        .pd-k-vrstice a:hover { background: color-mix(in oklch, var(--ink, #1a1a1a) 6%, transparent); }
+        .pd-k-vrstice em {
+          font-style: normal; font-size: .68rem; line-height: 1.45;
+          color: color-mix(in oklch, var(--ink, #1a1a1a) 72%, transparent);
+          white-space: normal; overflow-wrap: anywhere;
+        }
+        .pd-kartica:hover { transform: scale(1.07); box-shadow: 0 22px 50px oklch(50% .1 var(--h) / .3); z-index: 6; }
         .pd-k-pika { position: absolute; top: .8rem; right: .8rem; width: .5rem; height: .5rem; border-radius: 50%; background: oklch(65% .19 var(--h)); box-shadow: 0 0 0 4px oklch(65% .19 var(--h) / .18); }
         .pd-kartica b { font: 700 1.15rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
         .pd-kartica small { font: 600 .66rem var(--font-sans), sans-serif; letter-spacing: .02em; color: color-mix(in oklch, var(--ink, #1a1a1a) 55%, transparent); }
@@ -1264,6 +1383,19 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         /* »v čakanju«: kar si napisala, medtem ko je Pupa razmišljala */
         .pd-caka-znak { margin-right: .25rem; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); }
         .pd-vr.jaz .pd-mehur.caka.ureja { opacity: .85; outline: 2px dashed color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); outline-offset: 2px; }
+        /* Poti, ki jih Pupa ponudi, kadar nima modela. Mirno, brez barve —
+           to je pomoč, ne poziv k dejanju. */
+        .pd-usmeri { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+        .pd-usmeri-cip {
+          display: inline-flex; flex-direction: column; gap: .05rem;
+          padding: .45rem .7rem; border-radius: 12px; text-decoration: none;
+          border: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 12%, transparent);
+          background: color-mix(in oklch, var(--paper, #fff) 70%, transparent);
+          transition: border-color .16s ease, transform .12s ease;
+        }
+        .pd-usmeri-cip:hover { border-color: var(--purple, oklch(58% .2 297)); transform: translateY(-1px); }
+        .pd-usmeri-cip b { font-size: .82rem; font-weight: 650; color: var(--ink, #1a1a1a); }
+        .pd-usmeri-cip small { font-size: .72rem; color: color-mix(in oklch, var(--ink, #1a1a1a) 62%, transparent); }
         .pd-navedek { display: block; margin-bottom: .4rem; padding-left: .6rem; border-left: 2px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); font-size: .82rem; line-height: 1.45; color: color-mix(in oklch, var(--ink, #1a1a1a) 58%, transparent); }
         .pd-citat { display: flex; align-items: center; gap: .45rem; padding: .5rem .65rem; border-left: 2px solid var(--purple, oklch(66% .2 297)); border-radius: 0 8px 8px 0; background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 7%, transparent); font-size: .82rem; color: color-mix(in oklch, var(--ink, #1a1a1a) 70%, transparent); }
         .pd-citat > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -78,6 +78,11 @@
 .navItem { display: flex; gap: .7rem; align-items: center; padding: .38rem .8rem; border-radius: .7rem; color: color-mix(in oklch, var(--ink) 85%, transparent); font-size: .82rem; font-weight: 700; text-decoration: none; transition: color 180ms ease, background 180ms ease; }
 .navItem span { font-size: .62rem; letter-spacing: .08em; opacity: .6; }
 .navItem:hover { color: var(--ink); background: oklch(96.5% .022 300); }
+/* Odziv na pritisk: vmesnik mora pokazati, da je klik slišal, še preden nova
+   stran pride s strežnika — to je delo, ki ga je prej opravljal vmesni zaslon
+   s sivimi bloki (Tina, 30. 8. 2026). */
+.navItem:active { transform: scale(.985); background: oklch(94% .03 300); }
+@media (prefers-reduced-motion: reduce) { .navItem:active { transform: none; } }
 /* aktivna postavka: brez crte in BREZ ozadja. Loci jo samo polni ink napis.
    Ozadje se pokaze le ob hoverju, enako kot pri ostalih. */
 .active { color: var(--ink); background: transparent; }
@@ -2879,3 +2884,41 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
 /* Podnaslov pod naslovom strani: pojasnilo orodja sodi sem, ne v kartico. */
 .podnaslov { max-width: 46rem; margin: .5rem 0 0; font: 400 .95rem/1.55 var(--font-sans), sans-serif;
   color: color-mix(in oklch, var(--ink) 70%, transparent); }
+
+/* VSTOP STRANI (Tina, 30. 8. 2026: »da se zapelje naslov, pol ena kartica in
+   druga; mehkoba manjka povsod«).
+   Vsak razdelek pride svoj hip za prejšnjim — 70 ms narazen, kolikor je dovolj,
+   da oko vidi zaporedje, in premalo, da bi stran delovala počasna. Krivulja je
+   močan ease-out: vstop mora biti takoj hiter in se mehko umiriti, sicer je
+   videti kot zamik in ne kot gib. Elementi ne pridejo iz nič — začnejo pri 98 %
+   velikosti, ker se v resničnem svetu nič ne pojavi iz praznine.
+   Kdor ima v sistemu izklopljene animacije, dobi stran takoj. */
+@media (prefers-reduced-motion: no-preference) {
+  .workspace > *:not(.detailBackdrop) { animation: pwVstop .42s cubic-bezier(.23, 1, .32, 1) both; }
+  .workspace > *:nth-child(1) { animation-delay: 0ms; }
+  .workspace > *:nth-child(2) { animation-delay: 60ms; }
+  .workspace > *:nth-child(3) { animation-delay: 110ms; }
+  .workspace > *:nth-child(n + 4) { animation-delay: 150ms; }
+
+  /* Besedilo v glavi pride po delih: nadnaslov, naslov, podnaslov — 45 ms
+     narazen. Naslov je tisto, kar oko najprej poišče, zato mora priti kot gib
+     in ne kot že narisana stvar (Tina, 30. 8. 2026). */
+  .topbar .eyebrow { animation: pwVstop .4s cubic-bezier(.23, 1, .32, 1) both; animation-delay: 40ms; }
+  .topbar h1 { animation: pwVstop .46s cubic-bezier(.23, 1, .32, 1) both; animation-delay: 85ms; }
+  .topbar .podnaslov { animation: pwVstop .42s cubic-bezier(.23, 1, .32, 1) both; animation-delay: 130ms; }
+}
+
+/* Mehkoba: rob se med prihodom razmehča in se izostri ob pristanku. Brez tega
+   je vstop videti kot preskok med dvema mirujočima slikama (Tina, 30. 8.). */
+/* NA RAVNI STRANI SAMO PROSOJNOST — brez transform in brez filter.
+ *
+ * Oboje naredi iz elementa vsebovalni blok in vsak position:fixed pod njim se
+ * postavi glede nanj namesto glede na okno. Ko se je kadr končal z `blur(0)`
+ * (kar ni `none`), je ta učinek ostal za vedno in Pupin dom je dobil bel
+ * pravokotnik čez pol zaslona (Tina, 30. 8. 2026). Tudi popravljen bi med
+ * animacijo za pol sekunde premikal fiksne elemente — zato tu ne tvegamo:
+ * gibanje in mehkoba ostaneta znotraj kartic, kjer fiksnih otrok ni. */
+@keyframes pwVstop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

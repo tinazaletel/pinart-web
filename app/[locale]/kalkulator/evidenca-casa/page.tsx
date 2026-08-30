@@ -10,8 +10,18 @@ export const metadata: Metadata = { title: 'Evidenca delovnega časa | Pinart Fl
 /* Evidenca po ZEPDSV je ZAKONSKA obveznost, ne poslovna analitika, zato NI za
    ključavnico (za razliko od Cilji/Čas/Poslovni okvir, ki so businessInsights).
    Kdor mora voditi evidenco, jo mora voditi tudi na brezplačnem paketu. */
-export default async function EvidencaCasaPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function EvidencaCasaPage(
+  { params, searchParams }: {
+    params: Promise<{ locale: string }>;
+    searchParams: Promise<{ nazaj?: string }>;
+  },
+) {
   const { locale } = await params;
+  /* »Nazaj« se pokaže SAMO, če si prišla od nekod (npr. s Profila), ne pa, če
+     si stran odprla iz levega menija — tam nazaj ni kam (Tina, 30. 8. 2026).
+     Kdo te je poslal, pove povezava sama (?nazaj=1); brskalnikova zgodovina
+     tega ne loči, ker je tudi klik v meniju navigacija. */
+  const { nazaj } = await searchParams;
   setRequestLocale(locale);
   const base = locale === 'sl' ? '' : `/${locale}`;
   const jeEn = locale === 'en';
@@ -24,7 +34,7 @@ export default async function EvidencaCasaPage({ params }: { params: Promise<{ l
           <div>
             {/* Povezava sodi V glavo, ne nadnjo: zunaj nje je stala ob levem robu
                 delovne povrsine in ni bila poravnana z naslovom (Tina, 25. 8.). */}
-            <NazajLink rezerva="/kalkulator/profil" label={jeEn ? 'Back to profile' : 'Nazaj na profil'} />
+            {nazaj && <NazajLink rezerva="/kalkulator/profil" label={jeEn ? 'Back' : 'Nazaj'} />}
             <p className={styles.eyebrow}>{jeEn ? 'WORKING TIME RECORDS' : 'EVIDENCA DELOVNEGA ČASA'}</p>
             <h1>{jeEn ? 'When the work actually happened.' : 'Kdaj je delo res potekalo.'}</h1>
           </div>

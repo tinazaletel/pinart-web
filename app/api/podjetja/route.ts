@@ -45,14 +45,28 @@ export async function GET(request: Request) {
 
   if (error) return NextResponse.json({ error: 'Iskanje ni uspelo.' }, { status: 500 });
 
-  /* Kar se ZAČNE z vpisanim, gre naprej ("ino" -> Inovis pred Inoks Ratej),
-     med enakovrednimi pa najprej krajše ime, ker je to praviloma matično
+  /* Ujemanja SREDI besede vržemo stran.
+     Poizvedba gre v bazo kot %niz%, zato je "Inovi" našel VUKAŠ-INOVI-Ć in
+     VUJAS-INOVI-Ć — tehnično pravilno, uporabno pa nesmiselno (Tina, 28. 8.
+     2026). Pri imenih podjetij človek vedno tipka ZAČETEK besede, ne sredine;
+     prazen seznam je zato boljši od naključnih priimkov.
+
+     Vrstni red: kar se začne z vpisanim, nato kjer se z vpisanim začne katera
+     od besed, med enakovrednimi pa krajše ime — to je praviloma matično
      podjetje in ne poslovna enota z dolgim opisom. */
+  const rang = (ime: string): number => {
+    const p = poenoti(ime);
+    if (p.startsWith(q)) return 0;
+    if (p.split(/[^a-z0-9]+/).some(b => b.startsWith(q))) return 1;
+    return 2;
+  };
+
   const zadetki = (data || [])
-    .map(v => ({ ...v, zacetek: poenoti(String(v.ime)).startsWith(q) }))
-    .sort((a, b) => (Number(b.zacetek) - Number(a.zacetek)) || (String(a.ime).length - String(b.ime).length))
+    .map(v => ({ ...v, r: rang(String(v.ime)) }))
+    .filter(v => v.r < 2)
+    .sort((a, b) => (a.r - b.r) || (String(a.ime).length - String(b.ime).length))
     .slice(0, 10)
-    .map(({ zacetek, ...ostalo }) => ostalo);
+    .map(({ r, ...ostalo }) => ostalo);
 
   return NextResponse.json({ zadetki });
 }

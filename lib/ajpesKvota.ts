@@ -20,8 +20,12 @@ export type Kvota = { dan: number; mesec: number };
 export const AJPES_KVOTE: Record<PaketId, Kvota> = {
   /* Brezplačni paket pregleda nima — v ceniku je naveden pri Premiumu. */
   free: { dan: 0, mesec: 0 },
-  premium: { dan: 5, mesec: 20 },
-  pro: { dan: 15, mesec: 60 },
+  /* Kvote so 30. 8. 2026 padle z 20 in 60 na 10 in 15. Prejšnji sta bili
+     postavljeni, preden je bila znana cena enote: ena enota stane okoli 1 €,
+     zato je 60 pregledov pri Pru za 48 € pomenilo več stroška kot prihodka.
+     Dnevna meja lovi navdušenje prvega dne, mesečna varuje zalogo točk. */
+  premium: { dan: 3, mesec: 10 },
+  pro: { dan: 5, mesec: 15 },
 };
 
 export function kvotaZa(paket: string): Kvota {
