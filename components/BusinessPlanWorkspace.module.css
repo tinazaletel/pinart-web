@@ -385,11 +385,18 @@
 .mesecTabela thead th:first-child { border-top-left-radius: .95rem; }
 .mesecTabela thead th:last-child { border-top-right-radius: .95rem; width: 2.4rem; }
 .mesecTabela tbody td { padding: .55rem .85rem; border-top: 1px solid var(--line); vertical-align: middle; }
+/* Dan je ključ vrstice — bralec ga išče prvega, zato je temnejši in krepkejši
+   od ostalih celic (Tina, 30. 8. 2026). */
+.mesecTabela tbody tr:not(.mesecOpombaVrsta) td:first-child { font-weight: 700; color: var(--ink); white-space: nowrap; }
 /* Safari podvoji ločnico glava/prva vrstica (thead border-bottom + tbody border-top) — ena črta */
 .mesecTabela tbody tr:first-child td { border-top: 0; }
 /* bolniska/dopust/praznik so cel dan brez ur — vrstica je nekoliko zbledela */
 .mesecTabela tbody tr[data-odsoten='true'] { color: var(--muted); background: oklch(97% .006 87 / .6); }
-.mesecTabela tbody td:last-child { text-align: center; }
+/* Zadnji stolpec poravnan desno z ISTIM robom kot ostale celice: sredinska
+   poravnava v ozkem stolpcu je pustila desni rob tesnejši od levega
+   (Tina, 30. 8. 2026). */
+.mesecTabela tbody td:last-child { text-align: right; white-space: nowrap; }
+.mesecTabela thead th:last-child { width: auto; }
 /* Mobilno: tabela naj FITA v telefon (ne drsi, ne reze) — brez fiksne 34rem sirine,
    tesnejsi L/R padding + manjsi razmiki med Prihod/Malica/Odhod, manjsa pisava. (Tina) */
 @media (max-width: 640px) {
@@ -422,6 +429,14 @@
 .mesecPrazno { padding: 1.4rem .85rem; color: var(--muted); text-align: center; }
 /* opomba pod dnevom, drobna in tiha — ne postane nov stolpec */
 .mesecOpomba { display: block; margin-top: .15rem; color: var(--muted); font-size: .72rem; font-weight: 400; font-style: italic; overflow-wrap: break-word; word-break: normal; hyphens: none; }
+/* Opomba ima svojo vrstico pod dnevom: cela širina, brez zgornje črte (spada k
+   dnevu nad njo) in z istim levim robom kot ostale celice (Tina, 30. 8. 2026). */
+/* Selektor mora biti močnejši od `.mesecTabela tbody td:last-child`: vrstica z
+   opombo ima en sam td, torej je hkrati zadnji, in ga je desna poravnava
+   potisnila k desnemu robu — videti je bilo kot ogromen levi rob
+   (Tina, 30. 8. 2026). */
+.mesecTabela tbody tr.mesecOpombaVrsta td { padding: 0 .85rem .55rem; border-top: 0; color: var(--muted); font-size: .76rem; font-style: italic; line-height: 1.45; text-align: left; white-space: normal; }
+.mesecTabela tbody tr.mesecOpombaVrsta[data-odsoten='true'] td { background: oklch(97% .006 87 / .6); }
 
 /* ── Vrsta dneva: pilula s piko, kot arh-status drugod v projektu ─────────── */
 .vrstaPilula {
@@ -991,3 +1006,23 @@
 .potrdiBris button[data-da] { border-color: transparent; background: oklch(45% .14 30); color: #fff; }
 .potrdiBris button:hover { border-color: var(--ink); }
 .potrdiBris button[data-da]:hover { background: oklch(40% .15 30); }
+
+/* MOBILNO: razgibavanje se zloži v stolpec — Pupa zgoraj, ura pod njo, gumb
+   čez celo širino na dnu, kot pri štoparici. Prej je Pupa držala svoj pas ob
+   desni, gumb pa je ostal v ozkem levem stolpcu in napis mu je ušel čez rob
+   (Tina, 30. 8. 2026). */
+@media (max-width: 620px) {
+  .razGlava {
+    grid-template-columns: minmax(0, 1fr); justify-items: center;
+    /* Ožji rob zgoraj in spodaj: prostor naj dobi Pupa, ne prazna ploskev. */
+    padding: .5rem 1.2rem .9rem; min-height: 0; row-gap: .25rem;
+  }
+  .razPupa { position: static; order: -1; height: 15rem; margin: 0 0 -.6rem; transform: none; }
+  .razStolpec { justify-items: center; text-align: center; }
+  /* Zrak med števkami in gumbom: razmik kartice je tesen zaradi Pupe, gumb pa
+     mora imeti svoj prostor, sicer je videti prilepljen na uro. */
+  .razGlava .startGumb { width: 100%; justify-self: stretch; padding-inline: 1rem; margin-top: .9rem; }
+  /* isto velja za uro prisotnosti */
+  .prisotnostGlava .glavnaVrsta { width: 100%; max-width: none; }
+  .prisotnostGlava .glavnaVrsta > button:first-child { flex: 1; }
+}

@@ -1288,7 +1288,6 @@ export default function ContractWorkspace({ base }: { base: string }) {
                 <label className="pg-polje pg-polje-obseg">{L('Obseg (ena postavka na vrstico)', 'Scope (one item per line)')}
                   <textarea rows={4} placeholder={L('npr.\nLogotip\nVizitke in dopisni papir', 'e.g.\nLogo\nBusiness cards and letterhead')} value={rocniObseg} onChange={event => setRocniObseg(event.target.value)} />
                 </label>
-                <p className="pg-namig">{L('Priporočamo: najprej ustvari ', 'We recommend: first create an ')}<b>{L('ponudbo', 'offer')}</b>{L(' — obseg, cena in številka se v pogodbo prenesejo sami. ', ' — the scope, price and number carry over into the contract automatically. ')}<a href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator →', 'Open calculator →')}</a></p>
               </>
             )}
         {/* opcijski cleni trenutne vrste: klik vklopi/izklopi člen (številčenje se prilagodi samo) */}
@@ -1304,11 +1303,16 @@ export default function ContractWorkspace({ base }: { base: string }) {
                izveš. */
             <details className="pg-klavzule pg-zlozka">
               <summary>
-                <span className="pg-klavzule-label">{L('Dodatni pogoji', 'Additional terms')}</span>
-                <span className="pg-zlozka-stanje">
-                  {vkljucenihSt === opcijski.length
-                    ? L(`vseh ${opcijski.length} vključenih`, `all ${opcijski.length} included`)
-                    : L(`${vkljucenihSt} od ${opcijski.length} vključenih`, `${vkljucenihSt} of ${opcijski.length} included`)}
+                <span className="pg-zlozka-znak" aria-hidden>+</span>
+                <span className="pg-zlozka-txt">
+                  <strong>{L('Dodatni pogoji', 'Additional terms')}</strong>
+                  <span>
+                    {vkljucenihSt === opcijski.length
+                      ? L(`Vseh ${opcijski.length} je vključenih.`, `All ${opcijski.length} are included.`)
+                      : vkljucenihSt === 0
+                        ? L(`Nobeden od ${opcijski.length} ni vključen.`, `None of the ${opcijski.length} are included.`)
+                        : L(`Vključenih ${vkljucenihSt} od ${opcijski.length}.`, `${vkljucenihSt} of ${opcijski.length} included.`)}
+                  </span>
                 </span>
               </summary>
               <div className="pg-klavzule-seznam" role="group" aria-label={L('Opcijski členi', 'Optional clauses')}>
@@ -1356,6 +1360,9 @@ export default function ContractWorkspace({ base }: { base: string }) {
             })}
           </div>
         )}
+        {/* Priporočilo je zadnje in brez okvirja: nasvet, ne opozorilo —
+            v črtkanem okvirju je bral kot napaka (Tina, 30. 8. 2026). */}
+        <p className="pg-namig">{L('Priporočamo: najprej ustvari ', 'We recommend: first create an ')}<b>{L('ponudbo', 'offer')}</b>{L(' — obseg, cena in številka se v pogodbo prenesejo sami. ', ' — the scope, price and number carry over into the contract automatically. ')}<a href={`${base}/kalkulator/orodje`}>{L('Odpri kalkulator →', 'Open calculator →')}</a></p>
                       </>
         ) : (
           /* pot "Od stranke": nalozi in preglej dokument — shrani takoj v arhiv (status Prejeta) */
@@ -1851,14 +1858,22 @@ export default function ContractWorkspace({ base }: { base: string }) {
       .pg-odstranke-link{margin-top:1rem}
       .pg-odstranke-nazaj{margin:0 0 1.1rem}
 
-      .pg-zlozka{padding:0}
-      .pg-zlozka>summary{display:flex;align-items:baseline;gap:.6rem;cursor:pointer;list-style:none;padding:.9rem .2rem;border-radius:12px}
+      /* Isti vzorec kot »Dodaj podrobnosti projekta«: crtkana kartica, vijolicen
+         plus in naslov, pod njim navadna razlaga (Tina, 30. 8. 2026). Prej je
+         bil razdelek komaj viden — sivo besedilo brez okvirja. */
+      .pg-zlozka{padding:0;margin:1.4rem 0 0;border:1px dashed rgba(124,58,237,.4);border-radius:14px;background:rgba(124,58,237,.03);transition:border-color .16s ease-out,background .16s ease-out}
+      .pg-zlozka:hover{border-color:rgba(124,58,237,.7);background:rgba(124,58,237,.06)}
+      .pg-zlozka>summary{display:flex;align-items:flex-start;gap:.55rem;cursor:pointer;list-style:none;padding:.95rem 1.05rem}
       .pg-zlozka>summary::-webkit-details-marker{display:none}
-      .pg-zlozka>summary::after{content:'';width:.5rem;height:.5rem;border-right:2px solid rgba(17,17,17,.45);border-bottom:2px solid rgba(17,17,17,.45);transform:rotate(45deg) translateY(-2px);transition:transform .18s cubic-bezier(.23,1,.32,1)}
+      .pg-zlozka>summary::after{content:'';flex:none;align-self:center;margin-left:auto;width:.5rem;height:.5rem;border-right:2px solid rgba(17,17,17,.4);border-bottom:2px solid rgba(17,17,17,.4);transform:rotate(45deg) translateY(-2px);transition:transform .18s cubic-bezier(.23,1,.32,1)}
       .pg-zlozka[open]>summary::after{transform:rotate(-135deg) translateY(1px)}
-      .pg-zlozka>summary:hover{background:rgba(17,17,17,.035)}
-      .pg-zlozka-stanje{margin-right:auto;font-size:.8rem;color:rgba(17,17,17,.55)}
-      .pg-namig{margin:0 0 1.2rem;padding:.8rem 1rem;border:1px dashed rgba(178,84,118,.45);border-radius:12px;background:rgba(178,84,118,.06);font-size:.85rem;line-height:1.5;color:rgba(17,17,17,.75)}
+      .pg-zlozka-znak{flex:none;font:700 1.05rem/1 var(--font-sans),sans-serif;color:#7C3AED}
+      .pg-zlozka-txt{display:grid;gap:.15rem;min-width:0}
+      .pg-zlozka-txt strong{font-size:.92rem;font-weight:700;color:#7C3AED}
+      .pg-zlozka-txt span{font-size:.82rem;line-height:1.45;color:rgba(17,17,17,.6)}
+      .pg-zlozka[open] .pg-zlozka-znak{color:rgba(17,17,17,.45)}
+      .pg-zlozka>.pg-klavzule-seznam{padding:0 1.05rem 1.05rem}
+      .pg-namig{margin:1.4rem 0 0;padding:0;border:0;background:none;font-size:.85rem;line-height:1.5;color:rgba(17,17,17,.6)}
       .pg-namig a{color:var(--accent,#B25476);font-weight:600;text-decoration:underline;text-underline-offset:.22em;white-space:nowrap}
 
       /* klikabilna kartica ponudbe (vir dogovora) */

@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useCallback, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { VALUTE_RACUN, valutaZnak } from '@/lib/valute';
 import { CaretDown, CaretUp, PencilSimple } from '@phosphor-icons/react';
@@ -1477,8 +1477,9 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
               const v = vrstaZapisa(p);
               const ure = uraZapisa(p);
               return (
-                <tr key={p.id} data-odsoten={brezUrVrsta(v)}>
-                  <td>{kratekDan(p.datum)}{p.opomba && <small className={styles.mesecOpomba}>{p.opomba}</small>}</td>
+                <Fragment key={p.id}>
+                <tr data-odsoten={brezUrVrsta(v)}>
+                  <td>{kratekDan(p.datum)}</td>
                   <td>{p.prihod || '—'}</td>
                   <td>{p.odmorMin ? `${p.odmorMin} min` : '—'}</td>
                   <td>{p.odhod || '—'}</td>
@@ -1512,6 +1513,15 @@ export default function BusinessPlanWorkspace({ view = 'all', omejeno = false }:
                     ))}
                   </td>
                 </tr>
+                {/* Opomba v SVOJI vrstici čez celo širino: v stolpcu »Dan« se je
+                    lomila v ozek stolp in vrstica je zrasla v pol tabele
+                    (Tina, 30. 8. 2026). */}
+                {p.opomba && (
+                  <tr className={styles.mesecOpombaVrsta} data-odsoten={brezUrVrsta(v)}>
+                    <td colSpan={7}>{p.opomba}</td>
+                  </tr>
+                )}
+                </Fragment>
               );
             })}
           </tbody>
