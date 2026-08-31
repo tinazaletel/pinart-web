@@ -59,16 +59,16 @@ export async function GET(request: Request) {
 
   /* Obiski (engagement): dni aktivnosti + skupaj odprtij, po user_id. Ce tabele
      'obiski' se ni (migracija nepognana), tiho -> stolpca ostaneta prazna. */
-  const obiskiMap = new Map<string, { dni: number; odprtij: number }>();
+  const obiskiMap = new Map<string, { dni: number; odprtij: number; sekunde: number }>();
   try {
-    const { data: ob } = await baza.from('obiski').select('user_id, dni, odprtij');
-    for (const o of ob ?? []) obiskiMap.set(o.user_id, { dni: o.dni ?? 0, odprtij: o.odprtij ?? 0 });
+    const { data: ob } = await baza.from('obiski').select('user_id, dni, odprtij, sekunde');
+    for (const o of ob ?? []) obiskiMap.set(o.user_id, { dni: o.dni ?? 0, odprtij: o.odprtij ?? 0, sekunde: o.sekunde ?? 0 });
   } catch { /* tabela morda se ne obstaja */ }
 
   const vrstice = (data ?? []).map((d) => {
     const u = authMap.get(String(d.email || '').toLowerCase());
     const ob = u ? obiskiMap.get(u.id) : undefined;
-    return { ...d, vpisan: !!u, zadnji_vpis: u?.zadnji_vpis ?? null, dni: ob?.dni ?? null, odprtij: ob?.odprtij ?? null };
+    return { ...d, vpisan: !!u, zadnji_vpis: u?.zadnji_vpis ?? null, dni: ob?.dni ?? null, odprtij: ob?.odprtij ?? null, sekunde: ob?.sekunde ?? null };
   });
   return NextResponse.json({ vrstice });
 }

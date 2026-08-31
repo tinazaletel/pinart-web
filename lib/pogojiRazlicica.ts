@@ -7,7 +7,7 @@
  * Uporabniki, ki so potrdili starejšo različico, bodo ob prvem pomembnem
  * dejanju (izvoz, pošiljanje, shranjevanje) znova pozvani k potrditvi.
  */
-export const POGOJI_RAZLICICA = '2026-08-23';
+export const POGOJI_RAZLICICA = '2026-08-31';
 
 const KLJUC = 'pinart-kalk-pogoji-potrditev';
 
