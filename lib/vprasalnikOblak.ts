@@ -48,8 +48,12 @@ export async function vprasalniki(): Promise<Vprasalnik[]> {
 export async function ustvariVprasalnik(vhod: {
   naslov?: string; uvod?: string; vprasanja?: Vprasanje[]; jeEn?: boolean;
 }): Promise<{ id: string; zeton: string } | null> {
+  /* Aktivno podjetje pove odjemalec — strežnik ga preveri. Brez tega bi
+     vprašalnik nastal v prvem podjetju po vrsti, seznam pa bere izbrano. */
+  const ctx = await getOrganizationContext();
   const odgovor = await fetch('/api/vprasalnik', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(vhod),
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...vhod, organizationId: ctx?.organizationId }),
   });
   if (!odgovor.ok) return null;
   return odgovor.json();

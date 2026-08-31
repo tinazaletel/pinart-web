@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-async function kontekst(request: Request) {
+async function kontekst(request: Request, izbrano?: string) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { napaka: NextResponse.json({ napaka: 'Prijava je potekla.' }, { status: 401 }) };
@@ -28,8 +28,14 @@ async function kontekst(request: Request) {
   const admin = createAdminClient();
   if (!admin) return { napaka: NextResponse.json({ napaka: 'Vprašalniki niso nastavljeni.' }, { status: 503 }) };
 
-  const { data: clanstvo } = await admin.from('organization_members')
-    .select('organization_id, role').eq('user_id', user.id).limit(1).maybeSingle();
+  /* IZBRANO podjetje, ne prvo po vrsti: kdor dela za dve podjetji, bi sicer
+     vprašalnik ustvaril v enem, seznam pa bi bral drugega — nastal bi in
+     izginil (Tina, 31. 8. 2026). Članstvo za izbrano podjetje vseeno
+     preverimo; odjemalcu ne verjamemo na besedo. */
+  let poizvedba = admin.from('organization_members')
+    .select('organization_id, role').eq('user_id', user.id);
+  if (izbrano && UUID.test(izbrano)) poizvedba = poizvedba.eq('organization_id', izbrano);
+  const { data: clanstvo } = await poizvedba.limit(1).maybeSingle();
   if (!clanstvo) return { napaka: NextResponse.json({ napaka: 'Podjetje ni povezano.' }, { status: 403 }) };
   /* Povezava navzven je odločitev lastnika ali skrbnika, ne vsakega člana. */
   if (!['owner', 'admin'].includes(String(clanstvo.role))) {
@@ -40,12 +46,12 @@ async function kontekst(request: Request) {
 
 /* POST { naslov?, uvod?, vprasanja?, jeEn? } -> nov vprašalnik; žeton vrne ENKRAT */
 export async function POST(request: Request) {
-  const ctx = await kontekst(request);
-  if ('napaka' in ctx) return ctx.napaka;
-
-  let telo: { naslov?: unknown; uvod?: unknown; vprasanja?: unknown; jeEn?: unknown };
+  let telo: { naslov?: unknown; uvod?: unknown; vprasanja?: unknown; jeEn?: unknown; organizationId?: unknown };
   try { telo = await preberiJson(request, 40_000); }
   catch (napaka) { return NextResponse.json({ napaka: sporociloValidacije(napaka) }, { status: 400 }); }
+
+  const ctx = await kontekst(request, typeof telo.organizationId === 'string' ? telo.organizationId : undefined);
+  if ('napaka' in ctx) return ctx.napaka;
 
   const jeEn = telo.jeEn === true;
   const naslov = String(telo.naslov || '').trim().slice(0, 200)

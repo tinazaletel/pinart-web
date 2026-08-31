@@ -10181,7 +10181,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             <>
             {vChatu && chatVpr(L('Super izbira! Zdaj še — komu pošiljaš ponudbo?', 'Great choice! Now — who are you sending the quote to?'), L('Naročnik za pošiljanje; lahko pustiš prazno in izpolniš pozneje.', 'The client for sending; you can leave it blank and fill it in later.'))}
             <div className="kartica">
-              <div className="k-naslov">Naročnik <span className="vec">{L('za pošiljanje ponudbe', 'for sending the quote')}</span></div>
+              <div className="k-naslov">{L('Naročnik', 'Client')} <span className="vec">{L('za pošiljanje ponudbe', 'for sending the quote')}</span></div>
               <div style={{ display: 'inline-flex', gap: 4, padding: 4, background: 'rgba(17,17,17,.05)', borderRadius: 999, margin: '0 0 1.1rem' }} role="group" aria-label={L('Tip naročnika', 'Client type')}>
                 {(['podjetje', 'fizicna'] as const).map(t => (
                   <button key={t} type="button" onClick={() => setNarocnikTip(t)}
