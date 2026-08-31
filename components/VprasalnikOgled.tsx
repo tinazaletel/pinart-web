@@ -13,7 +13,7 @@
 import { useEffect, useState } from 'react';
 import type { Vprasanje } from '@/lib/vprasalnik';
 
-type Podatki = { naslov: string; uvod?: string; podjetje?: string | null; vprasanja: Vprasanje[]; zaprt?: boolean };
+type Podatki = { naslov: string; uvod?: string; podjetje?: string | null; logo?: string | null; barva?: string | null; vprasanja: Vprasanje[]; zaprt?: boolean };
 
 export default function VprasalnikOgled({ zeton, jeEn = false }: { zeton: string; jeEn?: boolean }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
@@ -72,8 +72,9 @@ export default function VprasalnikOgled({ zeton, jeEn = false }: { zeton: string
     }
   }
 
+  /* Barva znamke poganja gumb in oznake izbir; brez nje ostane crna. */
   const ovoj = (vsebina: React.ReactNode) => (
-    <main className="vp">
+    <main className="vp" style={podatki?.barva ? ({ ['--znamka' as string]: podatki.barva }) : undefined}>
       {vsebina}
       <style jsx>{stil}</style>
     </main>
@@ -105,7 +106,9 @@ export default function VprasalnikOgled({ zeton, jeEn = false }: { zeton: string
   return ovoj(
     <>
       <header className="vp-glava">
-        {podatki.podjetje && <p className="vp-podjetje">{podatki.podjetje}</p>}
+        {podatki.logo
+          ? <img className="vp-logo" src={podatki.logo} alt={podatki.podjetje || ''} />
+          : podatki.podjetje && <p className="vp-podjetje">{podatki.podjetje}</p>}
         <h1>{podatki.naslov}</h1>
         {podatki.uvod && <p className="vp-uvod">{podatki.uvod}</p>}
       </header>
@@ -183,6 +186,7 @@ const stil = `
        zato tu var(--font-serif-flow) — sicer pade v Bodoni. */
     font-family: var(--font-serif-flow, var(--font-serif)), Georgia, serif;
   }
+  .vp-logo { display: block; max-width: 11rem; max-height: 4.5rem; width: auto; height: auto; margin: 0 0 1.4rem; }
   .vp-podjetje {
     margin: 0 0 .5rem;
     font-size: .75rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
@@ -202,7 +206,7 @@ const stil = `
     font: inherit; font-size: .95rem; color: #111;
   }
   .vp-polje textarea { resize: vertical; line-height: 1.55; }
-  .vp-polje input:focus, .vp-polje textarea:focus { outline: none; border-color: var(--purple, #7C3AED); }
+  .vp-polje input:focus, .vp-polje textarea:focus { outline: none; border-color: var(--znamka, var(--purple, #7C3AED)); }
 
   .vp-moznosti { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
   .vp-moznost {
@@ -210,14 +214,14 @@ const stil = `
     border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: 999px; background: #fff;
     font-size: .9rem; cursor: pointer;
   }
-  .vp-moznost.on { border-color: var(--purple, #7C3AED); color: var(--purple, #7C3AED); background: rgba(124,58,237,.07); }
+  .vp-moznost.on { border-color: var(--znamka, var(--purple, #7C3AED)); color: var(--znamka, var(--purple, #7C3AED)); background: color-mix(in oklch, var(--znamka, #7C3AED) 8%, transparent); }
   .vp-moznost input { accent-color: var(--purple, #7C3AED); }
 
   .vp-napaka { margin: .45rem 0 0; font-size: .85rem; font-weight: 600; color: oklch(52% .17 25); }
 
   .vp-poslji {
     margin-top: .6rem; padding: .85rem 1.6rem; border: 0; border-radius: 999px;
-    background: #111; color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+    background: var(--znamka, #111); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
   }
   .vp-poslji:disabled { opacity: .6; cursor: default; }
   .vp-drobno { margin: .9rem 0 0; font-size: .8rem; color: rgba(17,17,17,.55); }

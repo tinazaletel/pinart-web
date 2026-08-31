@@ -91,11 +91,29 @@ export async function GET(request: Request, { params }: { params: Promise<{ zeto
     .from('organizations').select('name').eq('id', v.organization_id).maybeSingle();
   const ime = podjetje?.name ? String(podjetje.name) : null;
 
-  if (!v.odprt) return NextResponse.json({ zaprt: true, naslov: v.naslov, podjetje: ime }, { status: 200 });
+  /* Logotip in barva iz videza dokumentov: stranka mora imeti obcutek, da je
+     stran od TISTEGA, ki ji je poslal povezavo (Tina, 31. 8. 2026). Ce videza
+     ni, stran ostane cista in brez znamke — nikoli nase. */
+  let logo: string | null = null;
+  let barva: string | null = null;
+  try {
+    const { data: videz } = await najdba.admin
+      .from('dok_videz').select('data').eq('organization_id', v.organization_id).maybeSingle();
+    const d = (videz?.data || {}) as { predloge?: Array<Record<string, unknown>>; aktivnaId?: string };
+    const p = (d.predloge || []).find(x => String(x.id) === String(d.aktivnaId)) || (d.predloge || [])[0];
+    if (p) {
+      if (typeof p.logo === 'string' && p.logo.length < 400_000) logo = p.logo;
+      if (typeof p.barva === 'string' && /^#[0-9a-f]{3,8}$/i.test(p.barva)) barva = p.barva;
+    }
+  } catch { /* brez videza pac brez znamke */ }
+
+  if (!v.odprt) return NextResponse.json({ zaprt: true, naslov: v.naslov, podjetje: ime, logo, barva }, { status: 200 });
   return NextResponse.json({
     naslov: v.naslov,
     uvod: v.uvod,
     podjetje: ime,
+    logo,
+    barva,
     vprasanja: v.vprasanja as Vprasanje[],
   });
 }

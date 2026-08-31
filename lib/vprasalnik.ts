@@ -87,7 +87,8 @@ export function privzetaVprasanja(jeEn = false): Vprasanje[] {
    Zato ob novem vprasalniku izberes nabor, ne enega samega splosnega
    (Tina, 31. 8. 2026). Vsak nabor je le izhodisce — vprasanja ureja sama. */
 
-export type NaborId = 'povprasevanje' | 'spletna' | 'cgp' | 'brief';
+export type NaborId = 'povprasevanje' | 'spletna' | 'cgp' | 'brief'
+  | 'marketing' | 'foto' | 'prostor' | 'direkcija' | 'pr';
 
 export type Nabor = {
   id: NaborId;
@@ -247,9 +248,157 @@ export const NABORI: Nabor[] = [
   },
 ];
 
+/* ── NABORI PO PODROCJIH ──────────────────────────────────────────────────
+   Vsebina je iz kataloga vprasanj po storitvah (lib/vprasanjaPoStoritvi), glas
+   pa OBRNJEN: tam sprasujemo kreativca o narocniku (»kaksen je budget
+   narocnika«), tu sprasuje kreativec stranko (»kaksen je vas proracun«).
+   Dobesedno prenasanje bi zvenelo, kot da stranka izpolnjuje tvoj interni
+   obrazec (Tina, 31. 8. 2026). */
+
+const NABORI_PODROCJA: Nabor[] = [
+  {
+    id: 'marketing',
+    ime: 'Marketing in oglasi', imeEn: 'Marketing and ads',
+    opis: 'Kampanja, oglasi, vsebine: cilj, kanali, občinstvo, meritve.',
+    opisEn: 'Campaign, ads, content: goal, channels, audience, measurement.',
+    naslov: 'Povpraševanje za marketing', naslovEn: 'Marketing inquiry',
+    uvod: 'Nekaj vprašanj, da razumem, kaj želite doseči in kje vas ljudje iščejo.',
+    uvodEn: 'A few questions so I understand what you want to achieve and where people look for you.',
+    vprasanja: (en) => {
+      const L = (sl: string, e: string) => (en ? e : sl);
+      return [
+        ...kontaktna(en),
+        { id: 'cilj', tip: 'dolgo', besedilo: L('Kaj želite doseči?', 'What do you want to achieve?'), obvezno: true,
+          namig: L('Več povpraševanj, prodaja, prepoznavnost, dogodek …', 'More inquiries, sales, awareness, an event …') },
+        {
+          id: 'kanali', tip: 'vec', besedilo: L('Kje ste prisotni ali bi radi bili?', 'Where are you present, or want to be?'),
+          moznosti: en
+            ? ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube', 'Newsletter', 'Google ads', 'Print', 'Not sure yet']
+            : ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube', 'E-novice', 'Google oglasi', 'Tisk', 'Še ne vem'],
+        },
+        { id: 'publika', tip: 'dolgo', besedilo: L('Komu govorite? Opišite tipično stranko.', 'Who are you speaking to? Describe a typical customer.'), obvezno: true },
+        { id: 'ponudba', tip: 'dolgo', besedilo: L('Kaj konkretno želite promovirati?', 'What exactly do you want to promote?') },
+        { id: 'vsebina', tip: 'izbira', besedilo: L('Kdo pripravi vsebine (besedila, fotografije)?', 'Who provides the content (copy, photos)?'),
+          moznosti: en ? ['We do', 'I would like you to', 'Partly each'] : ['Mi', 'Želimo, da vi', 'Deloma vsak'] },
+        { id: 'merilo', tip: 'dolgo', besedilo: L('Kako bomo vedeli, da je uspelo?', 'How will we know it worked?'),
+          namig: L('Število povpraševanj, prodaja, obisk strani, sledilci …', 'Inquiries, sales, site visits, followers …') },
+        ...rokInProracun(en),
+      ];
+    },
+  },
+  {
+    id: 'foto',
+    ime: 'Foto, video, motion', imeEn: 'Photo, video, motion',
+    opis: 'Snemanje: kaj, kje, koliko, za kateri kanal in kdo nastopa.',
+    opisEn: 'Shoot: what, where, how much, for which channel and who appears.',
+    naslov: 'Povpraševanje za fotografijo ali video', naslovEn: 'Photo or video inquiry',
+    uvod: 'Da pripravim ponudbo za snemanje, potrebujem nekaj podatkov o obsegu.',
+    uvodEn: 'To prepare a quote for a shoot, I need a few details about the scope.',
+    vprasanja: (en) => {
+      const L = (sl: string, e: string) => (en ? e : sl);
+      return [
+        ...kontaktna(en),
+        {
+          id: 'kaj', tip: 'vec', besedilo: L('Kaj potrebujete?', 'What do you need?'), obvezno: true,
+          moznosti: en
+            ? ['Product photos', 'People / team portraits', 'Space or interior', 'Event', 'Short video', 'Reels for social', 'Animation / motion']
+            : ['Fotografije izdelkov', 'Portreti ljudi ali ekipe', 'Prostor ali interier', 'Dogodek', 'Krajši video', 'Reels za omrežja', 'Animacija / motion'],
+        },
+        { id: 'obseg', tip: 'kratko', besedilo: L('Koliko posnetkov ali koliko minut?', 'How many shots, or how many minutes?'),
+          namig: L('Če ne veste, napišite približek.', 'A rough estimate is fine.') },
+        { id: 'lokacija', tip: 'kratko', besedilo: L('Kje bi snemali?', 'Where would we shoot?'), namig: L('Vaš prostor, studio, na terenu …', 'Your space, a studio, on location …') },
+        { id: 'ljudje', tip: 'izbira', besedilo: L('Bodo na posnetkih ljudje?', 'Will people appear?'),
+          moznosti: en ? ['Yes, our team', 'Yes, hired models', 'No people'] : ['Da, naša ekipa', 'Da, najeti modeli', 'Brez ljudi'] },
+        { id: 'uporaba', tip: 'dolgo', besedilo: L('Kje boste gradivo uporabljali?', 'Where will you use the material?'),
+          namig: L('Spletna stran, omrežja, oglasi, tisk — to vpliva na pravice uporabe.', 'Website, social, ads, print — this affects usage rights.') },
+        ...rokInProracun(en),
+      ];
+    },
+  },
+  {
+    id: 'prostor',
+    ime: 'Prostor in arhitektura', imeEn: 'Space and architecture',
+    opis: 'Interier ali razstavni prostor: kvadratura, faza, stanje, namen.',
+    opisEn: 'Interior or exhibition space: size, phase, condition, purpose.',
+    naslov: 'Povpraševanje za oblikovanje prostora', naslovEn: 'Space design inquiry',
+    uvod: 'Nekaj vprašanj o prostoru, da vem, kako obsežen je projekt.',
+    uvodEn: 'A few questions about the space, so I know how large the project is.',
+    vprasanja: (en) => {
+      const L = (sl: string, e: string) => (en ? e : sl);
+      return [
+        ...kontaktna(en),
+        { id: 'namen', tip: 'dolgo', besedilo: L('Za kakšen prostor gre in čemu služi?', 'What kind of space is it, and what is it for?'), obvezno: true,
+          namig: L('Stanovanje, lokal, pisarna, razstava, stojnica …', 'Home, café, office, exhibition, stand …') },
+        { id: 'kvadratura', tip: 'stevilka', besedilo: L('Približna kvadratura (m²)', 'Approximate size (m²)') },
+        { id: 'stanje', tip: 'izbira', besedilo: L('V kakšnem stanju je prostor?', 'What condition is the space in?'),
+          moznosti: en ? ['New build', 'Full renovation', 'Cosmetic refresh', 'Furnishing only'] : ['Novogradnja', 'Celovita prenova', 'Osvežitev', 'Samo oprema'] },
+        {
+          id: 'faze', tip: 'vec', besedilo: L('Kaj potrebujete?', 'What do you need?'),
+          moznosti: en
+            ? ['Concept and layout', 'Design drawings', 'Documentation for permits', 'Furniture selection', 'Site supervision']
+            : ['Zasnova in tloris', 'Idejni projekt', 'Dokumentacija za dovoljenja', 'Izbor opreme', 'Nadzor izvedbe'],
+        },
+        { id: 'obcutek', tip: 'dolgo', besedilo: L('Kakšen občutek naj prostor daje?', 'What should the space feel like?') },
+        ...rokInProracun(en),
+      ];
+    },
+  },
+  {
+    id: 'direkcija',
+    ime: 'Strategija in direkcija', imeEn: 'Strategy and direction',
+    opis: 'Za večje projekte: položaj znamke, konkurenca, odločevalci.',
+    opisEn: 'For larger projects: brand position, competition, decision makers.',
+    naslov: 'Povpraševanje za strategijo', naslovEn: 'Strategy inquiry',
+    uvod: 'Nekaj vprašanj o vaši znamki in trgu, da vidim, kje je največ dela.',
+    uvodEn: 'A few questions about your brand and market, so I can see where the work is.',
+    vprasanja: (en) => {
+      const L = (sl: string, e: string) => (en ? e : sl);
+      return [
+        ...kontaktna(en),
+        { id: 'polozaj', tip: 'dolgo', besedilo: L('Kje ste danes in kam želite priti?', 'Where are you today and where do you want to be?'), obvezno: true },
+        { id: 'konkurenca', tip: 'dolgo', besedilo: L('Kdo je vaša konkurenca in kaj vas loči?', 'Who are your competitors and what sets you apart?') },
+        { id: 'publika', tip: 'dolgo', besedilo: L('Komu prodajate?', 'Who do you sell to?') },
+        { id: 'ovire', tip: 'dolgo', besedilo: L('Kaj vas najbolj ovira?', 'What is holding you back most?') },
+        { id: 'odlocevalci', tip: 'kratko', besedilo: L('Kdo pri vas odloča o tem projektu?', 'Who decides on this project?') },
+        ...rokInProracun(en),
+      ];
+    },
+  },
+  {
+    id: 'pr',
+    ime: 'PR in odnosi z javnostmi', imeEn: 'PR and public relations',
+    opis: 'Sporočila, mediji, dogodki: kaj sporočate in komu.',
+    opisEn: 'Statements, media, events: what you announce and to whom.',
+    naslov: 'Povpraševanje za PR', naslovEn: 'PR inquiry',
+    uvod: 'Da pripravim predlog, potrebujem nekaj podatkov o tem, kaj sporočate.',
+    uvodEn: 'To prepare a proposal, I need a few details about what you are announcing.',
+    vprasanja: (en) => {
+      const L = (sl: string, e: string) => (en ? e : sl);
+      return [
+        ...kontaktna(en),
+        { id: 'povod', tip: 'dolgo', besedilo: L('Kaj je povod?', 'What is the occasion?'), obvezno: true,
+          namig: L('Nov izdelek, dogodek, sprememba v podjetju, kriza …', 'A new product, an event, a company change, a crisis …') },
+        { id: 'sporocilo', tip: 'dolgo', besedilo: L('Kaj naj ljudje odnesejo?', 'What should people take away?') },
+        {
+          id: 'mediji', tip: 'vec', besedilo: L('Kje bi radi bili objavljeni?', 'Where would you like to appear?'),
+          moznosti: en
+            ? ['National media', 'Local media', 'Trade press', 'Podcasts', 'Influencers', 'Not sure yet']
+            : ['Nacionalni mediji', 'Lokalni mediji', 'Strokovne revije', 'Podkasti', 'Vplivneži', 'Še ne vem'],
+        },
+        { id: 'gradivo', tip: 'dolgo', besedilo: L('Kaj že imate?', 'What do you already have?'),
+          namig: L('Sporočilo za javnost, fotografije, podatki, izjave.', 'A press release, photos, data, quotes.') },
+        ...rokInProracun(en),
+      ];
+    },
+  },
+];
+
 export function nabor(id: NaborId | string | undefined): Nabor {
-  return NABORI.find(n => n.id === id) || NABORI[0];
+  return VSI_NABORI.find(n => n.id === id) || VSI_NABORI[0];
 }
+
+/* Stirje osnovni + po podrocjih; vrstni red je vrstni red v izbirniku. */
+export const VSI_NABORI: Nabor[] = [...NABORI, ...NABORI_PODROCJA];
 
 /* ── preverjanje ─────────────────────────────────────────────────────────── */
 
