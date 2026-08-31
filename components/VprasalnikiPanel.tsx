@@ -12,13 +12,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ArrowClockwise, Check, Copy, Eye, Plus, Trash, X,
+  ArrowClockwise, ArrowSquareOut, Check, ClipboardText, Copy, Eye, Plus, Trash, X,
 } from '@phosphor-icons/react';
 import {
   izbrisiOdgovor, izbrisiVprasalnik, novZeton, odgovori as pridobiOdgovore,
   oznaciPregledano, shraniVprasalnik, ustvariVprasalnik, vprasalniki as pridobiVprasalnike,
 } from '@/lib/vprasalnikOblak';
-import { privzetaVprasanja, type Odgovor, type Vprasalnik, type Vprasanje } from '@/lib/vprasalnik';
+import { NABORI, privzetaVprasanja, type Nabor, type Odgovor, type Vprasalnik, type Vprasanje } from '@/lib/vprasalnik';
 import { preberiProjekti, type Projekt } from '@/lib/projekti';
 
 const TIPI: Array<{ id: Vprasanje['tip']; sl: string; en: string }> = [
@@ -43,6 +43,9 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
   /* Vprašalnik je lahko splošno povpraševanje ali brief za konkreten projekt —
      takrat odgovor pristane pri projektu (Tina, 31. 8. 2026). */
   const [projekti, setProjekti] = useState<Projekt[]>([]);
+  /* Brief za celostno podobo in povprasevanje za spletno stran nista isti
+     pogovor — zato najprej izberes nabor (Tina, 31. 8. 2026). */
+  const [izbiraNabora, setIzbiraNabora] = useState(false);
 
   const osvezi = useCallback(async () => {
     setNalagam(true);
@@ -51,6 +54,15 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
   }, []);
 
   useEffect(() => { void osvezi(); }, [osvezi]);
+  /* Vsako okno mora imeti izhod — tudi s tipkovnico (Tina, 31. 8. 2026). */
+  useEffect(() => {
+    const naTipko = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setIzbiraNabora(false); setUrejam(null); setOdgovoriZa(null);
+    };
+    window.addEventListener('keydown', naTipko);
+    return () => window.removeEventListener('keydown', naTipko);
+  }, []);
   useEffect(() => { try { setProjekti(preberiProjekti()); } catch { /* brez projektov */ } }, []);
 
   const imeProjekta = (id?: string) => (id ? projekti.find(p => p.id === id)?.naslov || id : '');
@@ -58,13 +70,20 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
   const povezava = (z: string) =>
     `${typeof window === 'undefined' ? '' : window.location.origin}${base}/v/${z}`;
 
-  async function nov() {
+  async function nov(n?: Nabor) {
     setNapaka('');
-    const izid = await ustvariVprasalnik({ jeEn });
-    if (!izid) { setNapaka(L('Ustvarjanje ni uspelo.', 'Could not create it.')); return; }
-    setZeton(izid);
-    setKopirano(false);
-    await osvezi();
+    setIzbiraNabora(false);
+    try {
+      const izid = await ustvariVprasalnik(n
+        ? { naslov: jeEn ? n.naslovEn : n.naslov, uvod: jeEn ? n.uvodEn : n.uvod, vprasanja: n.vprasanja(jeEn), jeEn }
+        : { jeEn });
+      if (!izid) { setNapaka(L('Ustvarjanje ni uspelo.', 'Could not create it.')); return; }
+      setZeton(izid);
+      setKopirano(false);
+      await osvezi();
+    } catch (e) {
+      setNapaka((e instanceof Error && e.message) || L('Ustvarjanje ni uspelo.', 'Could not create it.'));
+    }
   }
 
   async function novaPovezava(v: Vprasalnik) {
@@ -123,7 +142,7 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
           <h2>{L('Vprašalniki', 'Questionnaires')}</h2>
           <p>{L('Sestavi vprašanja, pošlji povezavo stranki, odgovori pridejo sem.', 'Build the questions, send the link to a client, answers land here.')}</p>
         </div>
-        <button type="button" className="vpp-glavni" onClick={nov}>
+        <button type="button" className="vpp-glavni" onClick={() => setIzbiraNabora(true)}>
           <Plus size={17} weight="bold" aria-hidden /> {L('Nov vprašalnik', 'New questionnaire')}
         </button>
       </header>
@@ -142,18 +161,30 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
               {kopirano ? <Check size={16} weight="bold" aria-hidden /> : <Copy size={16} aria-hidden />}
               {kopirano ? L('Kopirano', 'Copied') : L('Kopiraj', 'Copy')}
             </button>
+            {/* Predogled v NOVEM zavihku: da si lahko takoj ogledaš, kar bo
+                videla stranka, ne da bi zapustila panel (Tina, 31. 8. 2026). */}
+            <a className="vpp-odpri" href={povezava(zeton.zeton)} target="_blank" rel="noopener noreferrer">
+              <ArrowSquareOut size={16} aria-hidden /> {L('Odpri', 'Open')}
+            </a>
           </div>
-          <button type="button" className="vpp-tiho" onClick={() => setZeton(null)}>{L('Zapri', 'Close')}</button>
+          <button type="button" className="vpp-tiho vpp-zapri-zeton" onClick={() => setZeton(null)}>{L('Zapri', 'Close')}</button>
         </div>
       )}
 
       {nalagam && <p className="vpp-prazno">{L('Nalagam …', 'Loading …')}</p>}
 
       {!nalagam && !seznam.length && (
-        <p className="vpp-prazno">
-          {L('Vprašalnika še ni. Nov nastane z desetimi vprašanji, ki jih kreativec tako ali tako postavi na prvem sestanku — uredi jih po svoje.',
-             'No questionnaire yet. A new one starts with ten questions a creative asks at the first meeting — edit them as you like.')}
-        </p>
+        <div className="vpp-zacetek">
+          <ClipboardText size={30} weight="light" aria-hidden />
+          <h3>{L('Prvi vprašalnik nastane v pol minute.', 'Your first questionnaire takes half a minute.')}</h3>
+          <p>
+            {L('Dobiš deset vprašanj, ki jih na prvem sestanku tako ali tako postaviš — kdo je stranka, kaj potrebuje, rok in proračun. Uredi jih po svoje, pošlji povezavo in odgovori pridejo sem.',
+               'You get ten questions you would ask at a first meeting anyway — who the client is, what they need, deadline and budget. Edit them, send the link, and answers land here.')}
+          </p>
+          <button type="button" className="vpp-glavni" onClick={() => setIzbiraNabora(true)}>
+            <Plus size={17} weight="bold" aria-hidden /> {L('Nov vprašalnik', 'New questionnaire')}
+          </button>
+        </div>
       )}
 
       <ul className="vpp-seznam">
@@ -186,6 +217,30 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
           </li>
         ))}
       </ul>
+
+      {izbiraNabora && (
+        <div className="vpp-zastor" role="presentation" onMouseDown={e => e.target === e.currentTarget && setIzbiraNabora(false)}>
+          <div className="vpp-plosca" role="dialog" aria-modal="true" aria-label={L('Izberi nabor vprašanj', 'Pick a question set')}>
+            <button type="button" className="vpp-zapri" onClick={() => setIzbiraNabora(false)} aria-label={L('Zapri', 'Close')}><X size={18} /></button>
+            <h3>{L('Za kaj je vprašalnik?', 'What is the questionnaire for?')}</h3>
+            <p className="vpp-prazno">{L('Vsak nabor je izhodišče — vprašanja lahko potem urediš, dodaš ali izbrišeš.', 'Each set is a starting point — you can edit, add or remove questions afterwards.')}</p>
+            <ul className="vpp-nabori">
+              {NABORI.map(n => (
+                <li key={n.id}>
+                  <button type="button" onClick={() => nov(n)}>
+                    <strong>{jeEn ? n.imeEn : n.ime}</strong>
+                    <span>{jeEn ? n.opisEn : n.opis}</span>
+                    <small>{n.vprasanja(jeEn).length} {L('vprašanj', 'questions')}</small>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="vpp-plosca-noga">
+              <button type="button" className="vpp-tiho" onClick={() => setIzbiraNabora(false)}>{L('Prekliči', 'Cancel')}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── urejevalnik ─────────────────────────────────────────────────── */}
       {urejam && (
@@ -252,6 +307,7 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
               <button type="button" className="vpp-tiho" onClick={() => setUrejam({ ...urejam, vprasanja: privzetaVprasanja(jeEn) })}>
                 {L('Vrni privzeta', 'Reset to default')}
               </button>
+              <button type="button" className="vpp-tiho" onClick={() => setUrejam(null)}>{L('Prekliči', 'Cancel')}</button>
               <button type="button" className="vpp-glavni" onClick={() => shrani(urejam)}>{L('Shrani', 'Save')}</button>
             </div>
           </div>
@@ -265,6 +321,11 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
             <button type="button" className="vpp-zapri" onClick={() => setOdgovoriZa(null)} aria-label={L('Zapri', 'Close')}><X size={18} /></button>
             <h3>{odgovoriZa.naslov}</h3>
             {!odgovori.length && <p className="vpp-prazno">{L('Še ni odgovorov.', 'No answers yet.')}</p>}
+            {odgovori.length > 0 && (
+              <div className="vpp-plosca-noga">
+                <button type="button" className="vpp-tiho" onClick={() => setOdgovoriZa(null)}>{L('Zapri', 'Close')}</button>
+              </div>
+            )}
             {odgovori.map(o => (
               <article key={o.id} className={'vpp-odgovor' + (o.pregledano ? ' pregledan' : '')}>
                 <header>
@@ -305,29 +366,60 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
       )}
 
       <style jsx>{`
-        .vpp { display: grid; gap: 1rem; }
+        /* Ista bela kartica kot ostali razdelki Marketinga — brez nje je vsebina
+           lebdela naravnost na ozadju strani (Tina, 31. 8. 2026). */
+        .vpp {
+          display: grid;
+          gap: 1.1rem;
+          padding: 1.35rem 1.4rem 1.5rem;
+          border: 1px solid oklch(22% .015 60 / .05);
+          border-radius: 1.35rem;
+          background: #fff;
+          box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045);
+        }
+        .vpp-zacetek {
+          display: grid;
+          justify-items: start;
+          gap: .5rem;
+          padding: 1.6rem 1.7rem;
+          border: 1px dashed var(--line, rgba(17,17,17,.14));
+          border-radius: 1.1rem;
+        }
+        .vpp-zacetek svg { color: var(--purple, #7C3AED); }
+        .vpp-zacetek h3 { margin: 0; font-size: 1.05rem; font-weight: 650; }
+        .vpp-zacetek p { max-width: 46rem; margin: 0 0 .5rem; color: rgba(17,17,17,.62); font-size: .92rem; line-height: 1.55; }
         .vpp-glava { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-        .vpp-glava h2 { margin: 0; font-size: 1.15rem; }
+        /* Naslov razdelka je krepek, kot drugod v Flowu (Tina, 31. 8. 2026). */
+        .vpp-glava h2 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -.01em; }
         .vpp-glava p { margin: .25rem 0 0; font-size: .88rem; color: rgba(17,17,17,.62); }
         .vpp-glavni { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1.1rem; border: 0; border-radius: 999px; background: #111; color: #fff; font: inherit; font-weight: 600; font-size: .88rem; cursor: pointer; }
         .vpp-tiho { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: 999px; background: #fff; font: inherit; font-size: .86rem; cursor: pointer; }
-        .vpp-napaka { margin: 0; font-size: .86rem; font-weight: 600; color: rgb(150,52,88); }
+        .vpp-napaka { margin: 0; font-size: .86rem; font-weight: 600; color: oklch(52% .17 25); }
         .vpp-prazno { margin: 0; font-size: .9rem; line-height: 1.55; color: rgba(17,17,17,.6); max-width: 46rem; }
 
+        .vpp-zapri-zeton { justify-self: start; }
         .vpp-zeton { display: grid; gap: .6rem; padding: 1rem 1.1rem; border: 1px solid rgba(124,58,237,.3); border-radius: 14px; background: rgba(124,58,237,.06); }
         .vpp-zeton p { margin: 0; font-size: .88rem; line-height: 1.5; }
         .vpp-zeton-vrsta { display: flex; gap: .5rem; flex-wrap: wrap; }
         .vpp-zeton-vrsta input { flex: 1 1 22rem; min-width: 0; padding: .6rem .8rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; font: inherit; font-size: .85rem; }
+        .vpp-odpri {
+          display: inline-flex; align-items: center; gap: .4rem;
+          padding: .6rem 1rem; border: 1px solid var(--line, rgba(17,17,17,.14));
+          border-radius: .7rem; background: #fff; color: var(--ink);
+          font: inherit; font-size: .85rem; font-weight: 600; text-decoration: none;
+        }
+        .vpp-odpri:hover { border-color: var(--purple, #7C3AED); }
         .vpp-zeton-vrsta button { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1rem; border: 0; border-radius: .7rem; background: #111; color: #fff; font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; }
 
         .vpp-seznam { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
         .vpp-vrsta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .85rem 1rem; border: 1px solid var(--line, rgba(17,17,17,.12)); border-radius: 14px; background: #fff; }
-        .vpp-ime strong { display: block; font-size: .98rem; }
+        /* Ime vprasalnika je NASLOV vrstice, ne oznaka (Tina, 31. 8. 2026). */
+        .vpp-ime strong { display: block; font-size: 1.05rem; font-weight: 700; letter-spacing: -.005em; }
         .vpp-ime small { font-size: .82rem; color: rgba(17,17,17,.58); }
         .vpp-dejanja { display: flex; gap: .4rem; flex-wrap: wrap; }
         .vpp-dejanja button { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .8rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: 999px; background: #fff; font: inherit; font-size: .82rem; cursor: pointer; }
         .vpp-dejanja button:disabled { opacity: .45; cursor: default; }
-        .vpp-brisi { color: rgb(150,52,88); border-color: rgba(178,84,118,.35) !important; }
+        .vpp-brisi { color: oklch(52% .17 25); border-color: oklch(58% .18 25 / .3) !important; }
 
         .vpp-zastor { position: fixed; inset: 0; z-index: 140; background: rgba(17,17,17,.3); display: grid; place-items: center; padding: 1.2rem; }
         .vpp-plosca { position: relative; width: min(46rem, 100%); max-height: 86dvh; overflow: auto; padding: 1.5rem 1.6rem 1.6rem; border-radius: 18px; background: #fff; }
@@ -339,6 +431,19 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
         .vpp-vnos select { width: 100%; box-sizing: border-box; padding: .6rem .8rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; font: inherit; font-size: .92rem; }
         .vpp-vnos input, .vpp-vnos textarea { width: 100%; box-sizing: border-box; padding: .6rem .8rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; font: inherit; font-size: .92rem; }
         .vpp-stikalo { display: inline-flex; align-items: center; gap: .45rem; font-size: .88rem; margin-bottom: 1rem; }
+
+        .vpp-nabori { list-style: none; margin: .8rem 0 0; padding: 0; display: grid; gap: .5rem; }
+        .vpp-nabori button {
+          display: grid; gap: .15rem; width: 100%;
+          padding: .85rem 1rem;
+          border: 1px solid var(--line, rgba(17,17,17,.12)); border-radius: 14px;
+          background: #fff; font: inherit; text-align: left; cursor: pointer;
+          transition: border-color .15s ease, transform .15s ease;
+        }
+        .vpp-nabori button:hover { border-color: var(--purple, #7C3AED); transform: translateY(-1px); }
+        .vpp-nabori strong { font-size: 1rem; font-weight: 700; }
+        .vpp-nabori span { font-size: .88rem; color: rgba(17,17,17,.62); }
+        .vpp-nabori small { font-size: .76rem; color: rgba(17,17,17,.45); }
 
         .vpp-vprasanja { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
         .vpp-vprasanja li { padding: .7rem .8rem; border: 1px solid var(--line, rgba(17,17,17,.12)); border-radius: 12px; display: grid; gap: .45rem; }

@@ -13,7 +13,7 @@
 import { useEffect, useState } from 'react';
 import type { Vprasanje } from '@/lib/vprasalnik';
 
-type Podatki = { naslov: string; uvod?: string; vprasanja: Vprasanje[]; zaprt?: boolean };
+type Podatki = { naslov: string; uvod?: string; podjetje?: string | null; vprasanja: Vprasanje[]; zaprt?: boolean };
 
 export default function VprasalnikOgled({ zeton, jeEn = false }: { zeton: string; jeEn?: boolean }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
@@ -105,6 +105,7 @@ export default function VprasalnikOgled({ zeton, jeEn = false }: { zeton: string
   return ovoj(
     <>
       <header className="vp-glava">
+        {podatki.podjetje && <p className="vp-podjetje">{podatki.podjetje}</p>}
         <h1>{podatki.naslov}</h1>
         {podatki.uvod && <p className="vp-uvod">{podatki.uvod}</p>}
       </header>
@@ -166,7 +167,7 @@ export default function VprasalnikOgled({ zeton, jeEn = false }: { zeton: string
           {posiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji odgovore', 'Send answers')}
         </button>
         <p className="vp-drobno">
-          {L('Odgovore prejme le tisti, ki ti je poslal povezavo.', 'Only the person who sent you this link receives the answers.')}
+          {L('Odgovore prejme le', 'Only')} {podatki.podjetje || L('tisti, ki ti je poslal povezavo', 'the person who sent you this link')}{L('.', ' receives your answers.')}
         </p>
       </form>
     </>,
@@ -182,12 +183,17 @@ const stil = `
        zato tu var(--font-serif-flow) — sicer pade v Bodoni. */
     font-family: var(--font-serif-flow, var(--font-serif)), Georgia, serif;
   }
+  .vp-podjetje {
+    margin: 0 0 .5rem;
+    font-size: .75rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
+    color: rgba(17,17,17,.5);
+  }
   .vp-uvod { margin: .8rem 0 0; font-size: 1rem; line-height: 1.6; color: rgba(17,17,17,.72); }
   .vp-glava { margin-bottom: 2.2rem; }
 
   .vp-polje { border: 0; padding: 0; margin: 0 0 1.7rem; }
   .vp-polje legend { padding: 0; font-size: .98rem; font-weight: 650; line-height: 1.35; }
-  .vp-zvezda { color: rgb(178,84,118); }
+  .vp-zvezda { color: oklch(58% .18 25); }
   .vp-namig { margin: .3rem 0 0; font-size: .84rem; line-height: 1.5; color: rgba(17,17,17,.6); }
 
   .vp-polje input[type="text"], .vp-polje input[type="date"], .vp-polje input[type="number"], .vp-polje textarea {
@@ -207,7 +213,7 @@ const stil = `
   .vp-moznost.on { border-color: var(--purple, #7C3AED); color: var(--purple, #7C3AED); background: rgba(124,58,237,.07); }
   .vp-moznost input { accent-color: var(--purple, #7C3AED); }
 
-  .vp-napaka { margin: .45rem 0 0; font-size: .85rem; font-weight: 600; color: rgb(150,52,88); }
+  .vp-napaka { margin: .45rem 0 0; font-size: .85rem; font-weight: 600; color: oklch(52% .17 25); }
 
   .vp-poslji {
     margin-top: .6rem; padding: .85rem 1.6rem; border: 0; border-radius: 999px;

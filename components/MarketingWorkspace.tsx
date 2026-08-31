@@ -31,6 +31,8 @@ import {
   type MarketingStatus,
   type MarketingVrsta,
 } from '@/lib/marketing';
+import Image from 'next/image';
+import { demoMarketing, usePredogled } from '@/lib/predogled';
 import styles from './MarketingWorkspace.module.css';
 import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
 
@@ -109,6 +111,9 @@ export default function MarketingWorkspace({ base }: { base: string }) {
   const vrsteOznake = oznakeVrste(L);
   const statusiOznake = oznakeStatusa(L);
   const [zavihek, setZavihek] = useState<Zavihek>('pregled');
+  /* Predogled: demo mora izgledati poln, prazno stanje pa prazno — sicer
+     nobeden od obeh ne pokaze, kar mora (Tina, 31. 8. 2026). */
+  const [nacin] = usePredogled();
   const [kampanje, setKampanje] = useState<MarketingKampanja[]>([]);
   const [obrazecOdprt, setObrazecOdprt] = useState(false);
   const [urejamId, setUrejamId] = useState<string | null>(null);
@@ -119,6 +124,10 @@ export default function MarketingWorkspace({ base }: { base: string }) {
   const [kopiranoId, setKopiranoId] = useState<string | null>(null);
 
   useEffect(() => {
+    /* V demu izlozba, v »prazno« res prazno, sicer tvoji podatki. */
+    if (nacin === 'demo') { setKampanje(demoMarketing()); setObjave([]); return; }
+    if (nacin === 'empty') { setKampanje([]); setObjave([]); return; }
+    if (nacin === 'zacetek') { setKampanje(demoMarketing().slice(0, 2)); setObjave([]); return; }
     setKampanje(preberiMarketingKampanje());
     try {
       const shranjene = window.localStorage.getItem(OBJAVE_KLJUC);
@@ -126,7 +135,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       const kanali = window.localStorage.getItem(KANALI_KLJUC);
       setProfilniNaslovi(kanali ? JSON.parse(kanali) : {});
     } catch { setObjave([]); }
-  }, []);
+  }, [nacin]);
 
   useEffect(() => {
     if (!obrazecOdprt) return;
@@ -151,6 +160,25 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       .sort((a, b) => (a.datumOd || a.datum || '').localeCompare(b.datumOd || b.datum || ''))[0];
     return { stevci, naslednja };
   }, [kampanje]);
+
+  /* Kaj caka: osnutki, ki jim manjka datum, in kampanje z blizajocim rokom.
+     Najvec tri — seznam, ki ga ne prebereš, ni seznam. */
+  const caka = useMemo(() => {
+    const danes = new Date().toISOString().slice(0, 10);
+    const vrstice: Array<{ id: string; naslov: string; opis: string; nujno: boolean; odpri: () => void }> = [];
+    for (const k of kampanje) {
+      if (k.status === 'zakljuceno') continue;
+      const datum = k.datumOd || k.datum || '';
+      if (k.status === 'osnutek' && !datum) {
+        /* Osnutek brez datuma je tisto, kar res caka na TVOJO potezo. */
+        vrstice.push({ id: k.id, naslov: k.naslov, opis: L('manjka datum', 'date missing'), nujno: true, odpri: () => uredi(k) });
+      } else if (datum && datum >= danes) {
+        vrstice.push({ id: k.id, naslov: k.naslov, opis: formatirajRazpon(k, L), nujno: false, odpri: () => uredi(k) });
+      }
+    }
+    return vrstice.slice(0, 4);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kampanje, locale]);
 
   const odpriNovo = (vrsta: MarketingVrsta = 'email') => {
     setUrejamId(null);
@@ -276,8 +304,9 @@ export default function MarketingWorkspace({ base }: { base: string }) {
     <section className={styles.campaigns} aria-labelledby="kampanje-naslov">
       <header className={styles.sectionHeader}>
         <div>
-          <p className={styles.sectionLabel}>{L('KAMPANJE', 'CAMPAIGNS')}</p>
-          <h2 id="kampanje-naslov">{L('Od zamisli do objave.', 'From idea to launch.')}</h2>
+          {/* Brez drugega serifnega naslova: »Od zamisli do objave« je tekmoval
+              z naslovom strani (Tina, 31. 8. 2026). */}
+          <p className={styles.sectionLabel} id="kampanje-naslov">{L('KAMPANJE', 'CAMPAIGNS')}</p>
           <p>{kampanje.length === 0 ? L('Prva kampanja se začne z enim jasnim ciljem.', 'The first campaign starts with one clear goal.') : L(`${aktivne} aktivnih ali načrtovanih · ${kampanje.length} skupaj`, `${aktivne} active or planned · ${kampanje.length} total`)}</p>
         </div>
         <button className={styles.secondary} type="button" onClick={() => odpriNovo()}><Plus size={18} /> {L('Nova kampanja', 'New campaign')}</button>
@@ -293,7 +322,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <div className={styles.campaignList}>
           {kampanje.map((kampanja) => (
             <article className={styles.campaignRow} key={kampanja.id}>
-              <span className={styles.campaignIcon}><IkonaVrste vrsta={kampanja.vrsta} /></span>
+              <span className={styles.campaignIcon} data-vrsta={kampanja.vrsta}><IkonaVrste vrsta={kampanja.vrsta} /></span>
               <span className={styles.campaignTitle}>
                 <strong>{kampanja.naslov}</strong>
                 <small>{vrsteOznake[kampanja.vrsta]}{kampanja.opis ? ` · ${kampanja.opis}` : ''}</small>
@@ -318,7 +347,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       </header>
       <div className={styles.templateGrid}>
         {MARKETING_PREDLOGE.map((predloga) => (
-          <article className={styles.templateCard} key={predloga.id}>
+          <article className={styles.templateCard} data-vrsta={predloga.vrsta} key={predloga.id}>
             <IkonaVrste vrsta={predloga.vrsta} size={25} />
             {predloga.oznaka && <span className={styles.badge}>{predloga.oznaka}</span>}
             <h3>{predloga.naslov}</h3>
@@ -336,7 +365,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <div><p className={styles.sectionLabel}>{L('POVEZAVE', 'CONNECTIONS')}</p><h2 id="povezave-naslov">{L('Vse ostane v tvojem toku.', 'Everything stays in your flow.')}</h2><p>{L('Marketing se poveže z orodji, ki jih že uporabljaš v Flowu.', 'Marketing connects to the tools you already use in Flow.')}</p></div>
       </header>
       <div className={styles.integrationGrid}>
-        <article className={styles.integrationCard}><div className={styles.integrationHead}><ShareNetwork size={25} /><span className={styles.connectionState} data-ready="true">{L('Tvoji profili', 'Your profiles')}</span></div><h3>{L('Naslovi profilov', 'Profile URLs')}</h3><p>{L('Vpiši jih enkrat. Gumb »Odpri« te bo nato peljal naravnost na tvoj profil.', 'Enter them once. “Open” will then take you directly to your profile.')}</p>{(Object.keys(SOCIAL_OZNAKE) as SocialKanal[]).map(kanal => <label key={kanal} style={{ display: 'grid', gap: '.25rem', marginTop: '.5rem', color: '#6b655d', fontSize: '.75rem', fontWeight: 700 }}>{SOCIAL_OZNAKE[kanal]}<input type="url" value={profilniNaslovi[kanal] || ''} onChange={e => setProfilniNaslovi({ ...profilniNaslovi, [kanal]: e.target.value })} placeholder={SOCIAL_LINKI[kanal]} /></label>)}<button className={styles.secondary} type="button" onClick={shraniProfilneNaslove}>{L('Shrani naslove', 'Save URLs')}</button></article>
+        <article className={`${styles.integrationCard} ${styles.integrationSiroka}`}><div className={styles.integrationHead}><ShareNetwork size={25} /><span className={styles.connectionState} data-ready="true">{L('Tvoji profili', 'Your profiles')}</span></div><h3>{L('Naslovi profilov', 'Profile URLs')}</h3><p>{L('Vpiši jih enkrat. Gumb »Odpri« te bo nato peljal naravnost na tvoj profil.', 'Enter them once. “Open” will then take you directly to your profile.')}</p><div className={styles.naslovniGrid}>{(Object.keys(SOCIAL_OZNAKE) as SocialKanal[]).map(kanal => <label key={kanal} className={styles.naslovnoPolje}><span>{SOCIAL_OZNAKE[kanal]}</span><input type="url" value={profilniNaslovi[kanal] || ''} onChange={e => setProfilniNaslovi({ ...profilniNaslovi, [kanal]: e.target.value })} placeholder={SOCIAL_LINKI[kanal]} /></label>)}</div><button className={`${styles.secondary} ${styles.naslovniShrani}`} type="button" onClick={shraniProfilneNaslove}>{L('Shrani naslove', 'Save URLs')}</button></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CalendarBlank size={25} /><span className={styles.connectionState} data-ready="true">{L('Vključeno', 'Enabled')}</span></div><h3>{L('Flow Koledar', 'Flow Calendar')}</h3><p>{L('Načrtovani datumi kampanj so pripravljeni za pregled ob drugih rokih.', 'Planned campaign dates are ready to review alongside your other deadlines.')}</p><Link className={styles.secondary} href={`${base}/kalkulator/koledar`}>{L('Odpri koledar', 'Open calendar')}</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CheckSquare size={25} /><span className={styles.connectionState} data-ready="true">{L('Vključeno', 'Enabled')}</span></div><h3>{L('Flow Naloge', 'Flow Tasks')}</h3><p>{L('Pripravo besedil, vizualov in objav vodiš kot opravila.', 'You manage copy, visuals and post prep as tasks.')}</p><Link className={styles.secondary} href={`${base}/kalkulator/naloge`}>{L('Odpri naloge', 'Open tasks')}</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><EnvelopeSimple size={25} /><span className={styles.connectionState}>{L('Kmalu', 'Soon')}</span></div><h3>{L('Pošiljanje e-pošte', 'Email sending')}</h3><p>{L('Pred dejanskim pošiljanjem bomo dodali privolitev, odjavo in zanesljivo dostavo.', 'Before any real sending, we will add consent, unsubscribe and reliable delivery.')}</p></article>
@@ -348,11 +377,42 @@ export default function MarketingWorkspace({ base }: { base: string }) {
 
   return (
     <div className={styles.page}>
+      {/* Pasica je prej nosila samo poved in gumb — torej nic. Zdaj nosi to,
+          zaradi cesar to stran sploh odpres: kaj te caka. Ce ni nicesar, je
+          prazno stanje s Pupo in enim zacetkom (Tina, 31. 8. 2026). */}
       <section className={styles.hero}>
         <div className={styles.heroText}>
-          <p className={styles.eyebrow}>MARKETING</p>
-          <h2>{L('Naj te opazijo pravi ljudje.', 'Get noticed by the right people.')}</h2>
-          <p>{L('Načrtuj kampanje, pripravi vsebine in poveži roke z nalogami — brez še enega nepovezanega orodja.', 'Plan campaigns, prepare content and tie deadlines to tasks — without yet another disconnected tool.')}</p>
+          {caka.length > 0 ? (
+            <>
+              <p className={styles.eyebrow}>
+                {L('KAJ ČAKA NATE', 'WHAT IS WAITING')}
+                <span className={styles.cakaStevec}>{caka.length}</span>
+              </p>
+              <ul className={styles.cakaSeznam}>
+                {caka.map((v) => (
+                  <li key={v.id}>
+                    <button type="button" onClick={v.odpri}>
+                      <span className={styles.cakaPika} data-nujno={v.nujno} aria-hidden />
+                      <b>{v.naslov}</b>
+                      <span className={styles.cakaMeta}>{v.opis}</span>
+                      <ArrowRight className={styles.cakaPuscica} size={15} weight="bold" aria-hidden />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <>
+              <p className={styles.eyebrow}>{L('KAJ ČAKA NATE', 'WHAT IS WAITING')}</p>
+              <p className={styles.cakaPrazno}>
+                {L('Nič ne čaka. Začni z vprašalnikom, ki ga objaviš na strani, ali s kampanjo.',
+                   'Nothing waiting. Start with a questionnaire you publish on your site, or with a campaign.')}
+              </p>
+            </>
+          )}
+        </div>
+        <div className={styles.heroPupa} aria-hidden>
+          <Image src="/flow-pupa-marketing-2.png" alt="" width={190} height={190} priority={false} />
         </div>
         <button className={styles.primary} type="button" onClick={() => odpriNovo()}><Plus size={19} /> {L('Nova kampanja', 'New campaign')}</button>
       </section>
@@ -365,42 +425,36 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       </nav>
 
       {zavihek === 'pregled' && <>
-        <section className={styles.overviewGrid} aria-label={L('Povzetek kampanj', 'Campaign summary')}>
-          <article><span>{L('Aktivno', 'Active')}</span><strong>{povzetek.stevci.aktivno}</strong><small>{L('kampanj v teku', 'campaigns in progress')}</small></article>
-          <article><span>{L('Načrtovano', 'Planned')}</span><strong>{povzetek.stevci.nacrtovano}</strong><small>{L('pripravljenih kampanj', 'campaigns ready')}</small></article>
-          <article><span>{L('Osnutki', 'Drafts')}</span><strong>{povzetek.stevci.osnutek}</strong><small>{L('idej za dokončanje', 'ideas to finish')}</small></article>
-          <article className={styles.nextCampaign}>
-            <span>{L('Naslednji rok', 'Next deadline')}</span>
-            <strong>{povzetek.naslednja ? formatirajRazpon(povzetek.naslednja, L) : '—'}</strong>
-            <small>{povzetek.naslednja?.naslov || L('Ko določiš datum, ga vidiš tukaj.', 'Once you set a date, you will see it here.')}</small>
-          </article>
-        </section>
-        <section className={styles.quickGrid} aria-label={L('Hitri začetki', 'Quick starts')}>
-          <button className={styles.quickCard} type="button" onClick={() => odpriNovo('email')}><EnvelopeSimple aria-hidden="true" /><h2>{L('E-pošta', 'Email')}</h2><p>{L('Dobrodošlice, novosti in premišljena sporočila ob pravem času.', 'Welcomes, updates and thoughtful messages at the right time.')}</p><span className={styles.cardLink}>{L('Ustvari sporočilo →', 'Create a message →')}</span></button>
-          <button className={styles.quickCard} type="button" onClick={() => setZavihek('vprasalniki')}><Code aria-hidden="true" /><h2>{L('Vprašalnik', 'Questionnaire')}</h2><p>{L('Zberi kakovostna povpraševanja z obrazcem za svojo spletno stran.', 'Collect quality inquiries with a form for your website.')}</p><span className={styles.cardLink}>{L('Pripravi obrazec →', 'Build a form →')}</span></button>
-          <button className={styles.quickCard} type="button" onClick={() => odpriNovo('social')}><ShareNetwork aria-hidden="true" /><h2>{L('Družbena omrežja', 'Social media')}</h2><p>{L('Objave spremeni v jasen načrt z roki in opravili.', 'Turn posts into a clear plan with deadlines and tasks.')}</p><span className={styles.cardLink}>{L('Načrtuj objavo →', 'Plan a post →')}</span></button>
-        </section>
-        <section className={styles.designBanner} aria-labelledby="grafika-naslov">
-          <span className={styles.designIcon} aria-hidden="true"><PaintBrushBroad size={30} weight="light" /></span>
-          <div className={styles.designCopy}>
-            <p className={styles.sectionLabel}>PINART STUDIO</p>
-            <h2 id="grafika-naslov">{L('Potrebuješ tudi grafična dela?', 'Need graphic work too?')}</h2>
-            <p>{L('Če vizualov ne pripravljaš sama, ti Pinart oblikuje oglase, objave, tiskovine ali celotno kampanjsko podobo.', 'If you do not create the visuals yourself, Pinart designs your ads, posts, print materials or the whole campaign look.')}</p>
-            <ul className={styles.designTags} aria-label={L('Grafične storitve', 'Graphic services')}>
-              <li>{L('Oglasi', 'Ads')}</li><li>{L('Objave', 'Posts')}</li><li>{L('Tiskovine', 'Print')}</li><li>{L('Kampanjska podoba', 'Campaign look')}</li><li>{L('Spletna stran', 'Website')}</li>
-            </ul>
-          </div>
-          <div className={styles.designActions}>
-            <Link className={styles.secondary} href={`${base}/services/graphic`}>{L('Poglej storitve', 'View services')} <ArrowRight size={18} /></Link>
-            <Link className={styles.primary} href={`${base}/kalkulator/orodje`}>{L('Oddaj povpraševanje', 'Send an inquiry')} <ArrowRight size={18} /></Link>
-          </div>
-        </section>
-        <section className={styles.flowCard}>
-          <div><p className={styles.sectionLabel}>{L('POVEZANO S FLOWOM', 'CONNECTED TO FLOW')}</p><h2>{L('Kampanja ni osamljen seznam.', 'A campaign is not an isolated list.')}</h2><p>{L('Roke vodiš v koledarju, pripravo vsebin pa med nalogami. Tako vidiš, kaj sledi in kdo mora kaj dokončati.', 'You track deadlines in the calendar and content prep among your tasks. That way you see what is next and who needs to finish what.')}</p></div>
-          <div className={styles.flowActions}><Link className={styles.secondary} href={`${base}/kalkulator/naloge`}><CheckSquare size={18} /> {L('Naloge', 'Tasks')}</Link><Link className={styles.secondary} href={`${base}/kalkulator/koledar`}><CalendarBlank size={18} /> {L('Koledar', 'Calendar')}</Link></div>
-        </section>
+        {/* Stiri velike nicle so bile najslabse mozno prvo srecanje s stranjo:
+            povedale so, da nimas nic, in nic o tem, kaj naj narediš. Zdaj je to
+            tih pas, ki se pokaze SELE, ko je kaj za pokazati (Tina, 31. 8. 2026). */}
+        {(povzetek.stevci.aktivno + povzetek.stevci.nacrtovano + povzetek.stevci.osnutek > 0 || povzetek.naslednja) && (
+          <section className={styles.povzetekPas} aria-label={L('Povzetek kampanj', 'Campaign summary')}>
+            {/* Pike govorijo isto kot znacke v seznamu: zelena aktivno,
+                vijolicna nacrtovano, siva osnutek (Tina, 31. 8. 2026). */}
+            <span><i className={styles.pasPika} data-tone="aktivno" aria-hidden /><b>{povzetek.stevci.aktivno}</b> {L('aktivnih', 'active')}</span>
+            <span><i className={styles.pasPika} data-tone="nacrtovano" aria-hidden /><b>{povzetek.stevci.nacrtovano}</b> {L('načrtovanih', 'planned')}</span>
+            <span><i className={styles.pasPika} data-tone="osnutek" aria-hidden /><b>{povzetek.stevci.osnutek}</b> {povzetek.stevci.osnutek === 1 ? L('osnutek', 'draft') : L('osnutkov', 'drafts')}</span>
+            {povzetek.naslednja && (
+              <span className={styles.povzetekRok}>
+                <CalendarBlank size={15} weight="bold" aria-hidden />
+                <b>{formatirajRazpon(povzetek.naslednja, L)}</b>
+                <em>{povzetek.naslednja.naslov}</em>
+              </span>
+            )}
+          </section>
+        )}
+        {/* Hitri zacetki so PRAZNO STANJE, ne stalna oprema: ko kampanje ze
+            obstajajo, so ponovitev zavihkov (Tina, 31. 8. 2026). */}
+        {kampanje.length === 0 && <section className={styles.quickGrid} aria-label={L('Hitri začetki', 'Quick starts')}>
+          {/* SIVO = funkcija je nacrtovana, a je se ni. Tako se vidi, da pride,
+              in hkrati nihce ne pricakuje, da ze dela (Tina, 31. 8. 2026).
+              Ko posiljanje zazivi, se odstrani razred in oznaka. */}
+          <button className={`${styles.quickCard} ${styles.quickCardKmalu}`} type="button" onClick={() => odpriNovo('email')}><EnvelopeSimple aria-hidden="true" /><span className={styles.kmalu}>{L('kmalu', 'coming')}</span><h2>{L('E-pošta', 'Email')}</h2><p>{L('Dobrodošlice, novosti in premišljena sporočila ob pravem času. Zdaj jih načrtuješ; pošiljanje iz Flowa pride kasneje.', 'Welcomes, updates and thoughtful messages at the right time. For now you plan them; sending from Flow comes later.')}</p><span className={styles.cardLink}>{L('Načrtuj sporočilo →', 'Plan a message →')}</span></button>
+          <button className={styles.quickCard} type="button" onClick={() => setZavihek('vprasalniki')}><Code aria-hidden="true" /><h2>{L('Vprašalnik', 'Questionnaire')}</h2><p>{L('Sestavi vprašanja, pošlji povezavo stranki in odgovori pridejo sem.', 'Build the questions, send the link to a client, answers land here.')}</p><span className={styles.cardLink}>{L('Sestavi vprašalnik →', 'Build a questionnaire →')}</span></button>
+          <button className={`${styles.quickCard} ${styles.quickCardKmalu}`} type="button" onClick={() => odpriNovo('social')}><ShareNetwork aria-hidden="true" /><span className={styles.kmalu}>{L('kmalu', 'coming')}</span><h2>{L('Družbena omrežja', 'Social media')}</h2><p>{L('Objave spremeni v jasen načrt z roki in opravili. Objavljanje na Facebook in Instagram pride, ko bo povezava odobrena.', 'Turn posts into a clear plan with deadlines and tasks. Publishing to Facebook and Instagram arrives once the connection is approved.')}</p><span className={styles.cardLink}>{L('Načrtuj objavo →', 'Plan a post →')}</span></button>
+        </section>}
         {Kampanje()}
-        {Predloge()}
       </>}
       {zavihek === 'kampanje' && Kampanje()}
       {zavihek === 'objave' && Objave()}

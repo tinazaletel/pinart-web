@@ -85,10 +85,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ zeto
   if ('napaka' in najdba) return najdba.napaka;
   const v = najdba.vprasalnik;
 
-  if (!v.odprt) return NextResponse.json({ zaprt: true, naslov: v.naslov }, { status: 200 });
+  /* Ime podjetja, ki vprasalnik posilja: stran bo objavljena na NJENI spletni
+     strani, zato mora nositi njeno identiteto, ne Flowove (Tina, 31. 8. 2026). */
+  const { data: podjetje } = await najdba.admin
+    .from('organizations').select('name').eq('id', v.organization_id).maybeSingle();
+  const ime = podjetje?.name ? String(podjetje.name) : null;
+
+  if (!v.odprt) return NextResponse.json({ zaprt: true, naslov: v.naslov, podjetje: ime }, { status: 200 });
   return NextResponse.json({
     naslov: v.naslov,
     uvod: v.uvod,
+    podjetje: ime,
     vprasanja: v.vprasanja as Vprasanje[],
   });
 }

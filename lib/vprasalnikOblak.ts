@@ -56,7 +56,12 @@ export async function ustvariVprasalnik(vhod: {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...vhod, organizationId: ctx?.organizationId }),
   });
-  if (!odgovor.ok) return null;
+  if (!odgovor.ok) {
+    /* Pravi vzrok mora priti do vmesnika: »ni uspelo« brez razloga pomeni
+       ugibanje (manjka tabela? ni pravic? potekla prijava?) — Tina, 31. 8. 2026 */
+    const j = await odgovor.json().catch(() => null);
+    throw new Error(j?.napaka || `Strežnik je vrnil ${odgovor.status}.`);
+  }
   return odgovor.json();
 }
 

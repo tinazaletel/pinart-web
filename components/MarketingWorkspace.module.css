@@ -30,13 +30,18 @@
 .hero {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  /* Pupa gleda VEN iz pasice — zato tu ni overflow:hidden; gradient obreze
+     lastni ::before z istim radijem (Tina, 31. 8. 2026). */
+  overflow: visible;
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  min-height: 12rem;
-  padding: 1.1rem;
+  /* Nizje in poravnano na sredino: pri 12rem in poravnavi na dno je nad
+     besedilom zijala prazna ploskev (Tina, 31. 8. 2026). */
+  min-height: 12.5rem;
+  padding: 1.3rem 1.4rem;
+  margin-top: 3.5rem;
   border-radius: 1.6rem;
 }
 
@@ -45,20 +50,87 @@
   position: absolute;
   z-index: -1;
   inset: 0;
+  border-radius: inherit;
   background:
     radial-gradient(circle at 88% 18%, oklch(82% .14 300 / .7), transparent 24%),
     radial-gradient(circle at 74% 105%, oklch(86% .12 165 / .62), transparent 31%),
     linear-gradient(115deg, oklch(98% .012 80 / .75), oklch(96% .025 300 / .55));
 }
 
-.heroText { max-width: 50rem; }
+/* Brez min-width:0 se je besedilni stolpec stisnil in ime kampanje je ostalo
+   na »I…« (Tina, 31. 8. 2026). Sirino omeji Pupa, ne vsebina. */
+.heroText { flex: 1 1 auto; min-width: 0; max-width: min(34rem, 52%); }
+
+/* »Kaj caka« mora biti videti kot opomnik, ne kot drobna opomba: vsaka vrstica
+   ima piko stanja, ime, meta podatek desno in puscico. Rozna pika = ceka na
+   tvojo potezo, vijolicna = prihaja (Tina, 31. 8. 2026). */
+.cakaSeznam { list-style: none; margin: .1rem 0 0; padding: 0; display: grid; gap: .1rem; max-width: 34rem; }
+/* Crta pod VSAKO vrstico, tudi ce je edina: brez nje je bila spodaj samo
+   praznina in ni bilo jasno, zakaj je toliko prostora (Tina, 31. 8. 2026). */
+.cakaSeznam li { border-bottom: 1px solid oklch(22% .015 60 / .1); }
+.cakaSeznam button {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  width: 100%;
+  padding: .5rem .6rem;
+  margin-left: -.6rem;
+  border: 0;
+  border-radius: .7rem;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cakaSeznam button:hover { background: oklch(100% 0 0 / .6); }
+.cakaSeznam b { flex: 1 1 auto; min-width: 0; font-weight: 650; font-size: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cakaPika { box-sizing: border-box; flex: none; width: .6rem; height: .6rem; border-radius: 50%; }
+/* Brez novih barv: polna vijolicna = caka na tvojo potezo, prazna vijolicna =
+   prihaja. Jantar in rozna nista iz Flowovega slogovnika (Tina, 31. 8. 2026). */
+.cakaPika[data-nujno='true'] { background: var(--purple, oklch(66% .2 297)); }
+.cakaPika[data-nujno='false'] { background: transparent; border: 2px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); }
+.cakaMeta { flex: none; margin-left: auto; color: var(--muted); font-size: .84rem; white-space: nowrap; }
+.cakaPuscica { flex: none; color: var(--muted); opacity: 0; transition: opacity .15s ease; }
+.cakaSeznam button:hover .cakaPuscica { opacity: 1; }
+.cakaStevec {
+  display: inline-grid; place-items: center;
+  min-width: 1.25rem; height: 1.25rem; margin-left: .5rem; padding: 0 .35rem;
+  border-radius: 999px; background: var(--purple, oklch(66% .2 297)); color: #fff;
+  font-size: .7rem; font-weight: 800; letter-spacing: 0;
+}
+.cakaPrazno { max-width: 34rem; margin: 0; color: var(--muted); line-height: 1.5; }
+
+/* Pupa z megafonom, obrezana do pasu, sedi na spodnjem robu pasice — vecja in
+   blizje, da pasica ni prazna ploskev (Tina, 31. 8. 2026). */
+.heroPupa {
+  position: absolute;
+  right: clamp(12rem, 21vw, 20rem);
+  bottom: -.1rem;
+  /* Visja od pasice: glava in megafon stojita nad njenim robom. */
+  height: clamp(9.5rem, 18vw, 15rem);
+  pointer-events: none;
+  z-index: 1;
+}
+.heroPupa img {
+  display: block;
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+@media (max-width: 900px) {
+  /* Na ozkem zaslonu bi Pupa silila v besedilo — takrat je ni. */
+  .heroPupa { display: none; }
+}
 .eyebrow,
 .sectionLabel {
-  margin: 0 0 .6rem;
-  font-size: .72rem;
+  margin: 0 0 .35rem;
+  font-size: .7rem;
   font-weight: 800;
   letter-spacing: .16em;
   text-transform: uppercase;
+  color: color-mix(in oklch, var(--ink) 45%, transparent);
 }
 .hero h2 {
   max-width: 14ch;
@@ -95,10 +167,30 @@
   text-decoration: none;
 }
 .primary { flex: none; padding: .8rem 1.25rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
-.secondary { padding: .75rem 1rem; border: 1px solid var(--line); background: color-mix(in oklch, var(--paper) 82%, transparent); color: var(--ink); }
+/* Barve CGP: bela pilula s tanko crto, ne pescena ploskev (Tina, 31. 8. 2026). */
+.secondary { padding: .75rem 1rem; border: 1px solid var(--line); background: #fff; color: var(--ink); }
 .quietButton { padding: .7rem 1rem; border: 1px solid var(--line); background: transparent; color: var(--ink); }
-.primary:hover, .primary:focus-visible { transform: translateY(-2px); }
-.secondary:hover, .quietButton:hover, .templateButton:hover { border-color: var(--ink); }
+/* Isti hover kot gumbi v kalkulatorju: rahel poskok, mehka senca in svetlobni
+   odsev cez gumb (Tina, 31. 8. 2026). */
+.primary { position: relative; overflow: hidden; transition: transform .2s ease, box-shadow .2s ease; }
+.primary::after {
+  content: '';
+  position: absolute; top: 0; left: -160%;
+  width: 90%; height: 100%;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.5) 50%, transparent 100%);
+  transform: skewX(-18deg);
+  transition: left .6s cubic-bezier(.16,1,.3,1);
+  pointer-events: none;
+}
+.primary:hover::after, .primary:focus-visible::after { left: 170%; }
+.primary:hover, .primary:focus-visible { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 22px rgba(35,18,45,.18); }
+.primary:active { transform: translateY(0) scale(.985); }
+
+.secondary, .quietButton, .templateButton { transition: border-color .18s ease, background .18s ease, transform .18s ease; }
+/* Obroba ob hoverju je VIJOLICNA, ne crna — tako je povsod drugod v Flowu
+   (Tina, 31. 8. 2026). */
+.secondary:hover, .quietButton:hover, .templateButton:hover { border-color: var(--purple, oklch(66% .2 297)); transform: translateY(-1px); }
+.secondary:active, .quietButton:active, .templateButton:active { transform: translateY(0) scale(.99); }
 
 .tabs {
   display: flex;
@@ -138,52 +230,93 @@
 .overviewGrid article {
   display: grid;
   align-content: space-between;
-  min-height: 8.5rem;
-  padding: 1rem;
+  min-height: 6.4rem;
+  padding: .9rem 1rem;
   border: 1px solid oklch(22% .015 60 / .05);
   border-radius: 1.15rem;
   background: #fff;
   box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .045);
 }
-.overviewGrid article:nth-child(1) { background: linear-gradient(145deg, oklch(97% .025 165), oklch(92% .055 165)); }
-.overviewGrid article:nth-child(2) { background: linear-gradient(145deg, oklch(98% .025 65), oklch(94% .055 65)); }
-.overviewGrid article:nth-child(3) { background: linear-gradient(145deg, oklch(98% .02 300), oklch(94% .045 300)); }
+/* Brez barvnih polnil: barva prej ni pomenila nicesar, samo hrupela je. */
 .overviewGrid span { font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.overviewGrid strong { font: 500 2rem/1 var(--font-serif), Georgia, serif; }
+.overviewGrid strong { font: 650 1.9rem/1 var(--font-sans), sans-serif; }
 .overviewGrid small { color: var(--muted); line-height: 1.35; }
 .overviewGrid .nextCampaign { background: #fff; color: var(--ink); }
 .overviewGrid .nextCampaign small { color: var(--muted); }
 
+/* Tih pas namesto stirih kartic: ena bela pilula, hairline locila, brez barv.
+   Rok je desno, z ikono in imenom kampanje v posevnem (Tina, 31. 8. 2026). */
+.povzetekPas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3rem 1.1rem;
+  padding: .2rem 1.4rem;
+  color: var(--muted);
+  font-size: .9rem;
+}
+.povzetekPas b { color: var(--ink); font-weight: 650; }
+.pasPika { width: .5rem; height: .5rem; border-radius: 50%; flex: none; }
+.pasPika[data-tone='aktivno'] { background: oklch(60% .12 165); }
+.pasPika[data-tone='nacrtovano'] { background: var(--purple, oklch(66% .2 297)); }
+.pasPika[data-tone='osnutek'] { background: color-mix(in oklch, var(--ink) 26%, transparent); }
+.povzetekPas > span { display: inline-flex; align-items: center; gap: .35rem; min-width: 0; }
+.povzetekPas > span + span { padding-left: 1.1rem; border-left: 1px solid var(--line); }
+.povzetekRok { flex: 1 1 auto; justify-content: flex-end; }
+.povzetekRok svg { color: var(--purple, oklch(66% .2 297)); }
+.povzetekRok em {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-style: normal; color: color-mix(in oklch, var(--ink) 55%, transparent);
+}
+.povzetekRok em::before { content: '· '; }
+
 .quickGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
+/* Vsebina tece normalno, brez absolutne povezave na dnu — ta se je prekrivala
+   z opisom. Ploskev je bela s tanko crto; barvo nosi ikona, ziva kartica pa
+   blago zelen preliv, ki se izteče v belo (Tina, 31. 8. 2026). */
 .quickCard {
   font: inherit;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .35rem;
   overflow: hidden;
-  min-height: 13rem;
-  padding: 1.2rem;
+  min-height: 11rem;
+  padding: 1.15rem 1.2rem 1.1rem;
+  border: 1px solid oklch(22% .015 60 / .07);
   border-radius: 1.3rem;
+  background: linear-gradient(160deg, oklch(97% .022 165), #fff 62%);
   color: inherit;
   text-align: left;
   cursor: pointer;
 }
-.quickCard::after {
-  content: '';
-  position: absolute;
-  right: -2.2rem;
-  bottom: -3.4rem;
-  width: 9rem;
-  aspect-ratio: 1;
-  border: 1px solid oklch(100% 0 0 / .58);
-  border-radius: 50%;
+.quickCard > svg { color: oklch(52% .11 165); }
+
+/* Sivo = se ne dela. Barvo dobi samo tisto, kar RES dela. */
+.quickCardKmalu {
+  background: #fff;
+  color: color-mix(in oklch, var(--ink) 62%, transparent);
 }
-.quickCard:nth-child(1) { background: linear-gradient(135deg, oklch(94% .07 300), oklch(88% .12 300)); }
-.quickCard:nth-child(2) { background: linear-gradient(135deg, oklch(94% .065 165), oklch(88% .11 175)); }
-.quickCard:nth-child(3) { background: linear-gradient(135deg, oklch(96% .065 65), oklch(90% .11 45)); }
-.quickCard:hover { transform: translateY(-3px); box-shadow: 0 16px 36px oklch(30% .03 80 / .1); }
+.quickCardKmalu > svg { color: color-mix(in oklch, var(--ink) 38%, transparent); }
+.quickCardKmalu h2 { color: color-mix(in oklch, var(--ink) 72%, transparent); }
+.kmalu {
+  position: absolute;
+  top: 1.2rem; right: 1.2rem;
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  background: oklch(100% 0 0 / .7);
+  font: 700 .68rem var(--font-sans), sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--ink) 55%, transparent);
+}
+.quickCard:hover { transform: translateY(-3px); box-shadow: 0 16px 36px oklch(30% .03 80 / .1); outline: 1px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 45%, transparent); }
 .quickCard svg { width: 1.7rem; height: 1.7rem; }
-.quickCard h2 { margin: 2.2rem 0 .4rem; font: 500 1.8rem/1 var(--font-serif), Georgia, serif; }
+.quickCard h2 { margin: .5rem 0 0; font: 650 1.1rem/1.25 var(--font-sans), sans-serif; }
 .quickCard p { max-width: 28rem; margin: 0; color: color-mix(in oklch, var(--ink) 68%, transparent); line-height: 1.45; }
-.cardLink { position: absolute; left: 1.2rem; bottom: 1.1rem; font-weight: 750; font-size: .82rem; }
+.cardLink { margin-top: auto; padding-top: .7rem; font-weight: 700; font-size: .84rem; color: var(--purple, oklch(66% .2 297)); }
+.quickCardKmalu .cardLink { color: color-mix(in oklch, var(--ink) 55%, transparent); }
 
 .designBanner {
   position: relative;
@@ -263,12 +396,14 @@
 .postActions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
 .postActions .iconButton { margin-left: auto; }
 .sectionHeader { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-.sectionHeader h2 { margin: 0; font: 500 2rem var(--font-serif), Georgia, serif; }
+/* En serifni naslov na stran (glava strani). Razdelki imajo samo oznako in
+   podnaslov — sicer stran govori s petimi glasovi hkrati (Tina, 31. 8. 2026). */
+.sectionHeader h2 { margin: .1rem 0 0; font: 650 1.35rem/1.2 var(--font-sans), sans-serif; letter-spacing: -.01em; }
 .sectionHeader p { margin: .35rem 0 0; color: var(--muted); }
 .campaignList { display: grid; }
 .campaignRow {
   display: grid;
-  grid-template-columns: 2.2rem minmax(12rem, 1fr) minmax(8rem, .4fr) minmax(7rem, .35fr) auto;
+  grid-template-columns: 1.5rem minmax(12rem, 1fr) minmax(8rem, .4fr) minmax(7rem, .35fr) auto;
   align-items: center;
   gap: 1rem;
   min-height: 4.8rem;
@@ -276,15 +411,27 @@
   border-top: 1px solid var(--line);
 }
 .campaignRow:first-child { border-top: 0; }
-.campaignIcon { display: grid; place-items: center; width: 2.2rem; aspect-ratio: 1; border-radius: 50%; background: oklch(94% .05 300); }
+/* Ikona brez ploskve: sest okroglih ploskvic v stolpcu je bilo sest kvadratkov,
+   ki niso povedali nicesar — vrsta kampanje je ze zapisana v podnaslovu
+   (Tina, 31. 8. 2026). */
+.campaignIcon { display: grid; place-items: center; width: 1.5rem; aspect-ratio: 1; background: none; color: color-mix(in oklch, var(--ink) 42%, transparent); }
+.campaignIcon[data-vrsta='email'] { color: oklch(56% .17 300); }
+.campaignIcon[data-vrsta='vprasalnik'] { color: oklch(52% .11 165); }
+.campaignIcon[data-vrsta='social'] { color: oklch(58% .12 70); }
+.campaignIcon svg { width: 1.15rem; height: 1.15rem; }
 .campaignTitle { display: grid; gap: .18rem; }
 .campaignTitle small, .campaignDate { color: var(--muted); }
-.status { width: fit-content; padding: .4rem .65rem; border-radius: 999px; background: oklch(94% .025 85); font-size: .78rem; font-weight: 750; }
-.status[data-status='nacrtovano'] { background: oklch(93% .065 85); }
-.status[data-status='aktivno'] { background: oklch(91% .075 160); }
-.status[data-status='zakljuceno'] { background: oklch(92% .02 250); }
+/* Ista govorica kot drugod v Flowu: vijolicna = v teku pri tebi, zelena =
+   opravljeno, nevtralna siva = osnutek (Tina, 31. 8. 2026). */
+.status { width: fit-content; padding: .4rem .65rem; border-radius: 999px; background: color-mix(in oklch, var(--ink) 6%, transparent); color: color-mix(in oklch, var(--ink) 62%, transparent); font-size: .78rem; font-weight: 750; }
+.status[data-status='nacrtovano'] { background: color-mix(in oklch, var(--purple, #7C3AED) 13%, transparent); color: oklch(46% .19 297); }
+.status[data-status='aktivno'] { background: oklch(92% .09 155); color: oklch(40% .11 155); }
+.status[data-status='zakljuceno'] { background: color-mix(in oklch, var(--ink) 6%, transparent); color: color-mix(in oklch, var(--ink) 55%, transparent); }
 .rowActions { display: flex; gap: .25rem; }
-.iconButton { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
+/* Svincnik in kos sta VEDNO vidna: skrivanje do prehoda miske je pomenilo, da
+   na dotik nista dosegljiva in da uporabnik ne ve, da vrstico lahko uredi
+   (Tina, 31. 8. 2026). */
+.iconButton { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; transition: background .15s ease, color .15s ease; }
 .iconButton:hover { background: oklch(93% .02 85); color: var(--ink); }
 
 .empty { display: grid; place-items: center; min-height: 14rem; padding: 2rem; border: 1px dashed var(--line); border-radius: 1rem; text-align: center; }
@@ -293,16 +440,61 @@
 .empty p { max-width: 30rem; margin: .4rem 0 1rem; color: var(--muted); }
 
 .templateGrid,
-.integrationGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
+.integrationGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+/* Osem naslovov v enem ozkem stolpcu je bila stena; kartica gre cez celo
+   sirino, polja pa v dva ali tri stolpce (Tina, 31. 8. 2026). */
+.integrationSiroka { grid-column: 1 / -1; }
+.naslovniGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .6rem .9rem; margin-top: .3rem; }
+.naslovnoPolje { display: grid; gap: .25rem; min-width: 0; }
+/* Cista vijolicna iz slogovnika, brez mesanja z crno — mesanica je dala
+   bordo, ki ga v Flowu ni (Tina, 31. 8. 2026). */
+.naslovnoPolje > span { font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--purple, oklch(66% .2 297)); }
+/* Visja specificnost: splosno pravilo za input v tem modulu je polje sicer
+   pobelilo do nevidnosti (Tina, 31. 8. 2026). */
+.naslovniGrid .naslovnoPolje input {
+  width: 100%; box-sizing: border-box;
+  padding: .6rem .85rem;
+  border: 1px solid var(--line);
+  border-radius: .75rem;
+  background: #fff;
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 500;
+  color: var(--ink);
+  box-shadow: 0 1px 1px oklch(30% .02 55 / .03);
+}
+.naslovniGrid .naslovnoPolje input:hover { border-color: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 40%, transparent); }
+.naslovniGrid .naslovnoPolje input:focus {
+  outline: none;
+  border-color: var(--purple, oklch(66% .2 297));
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--purple, oklch(66% .2 297)) 14%, transparent);
+}
+.naslovnoPolje input::placeholder { color: color-mix(in oklch, var(--ink) 38%, transparent); }
+.naslovniShrani { justify-self: end; margin-top: .4rem; }
 .templateCard,
 .integrationCard { display: grid; align-content: start; gap: .7rem; min-height: 13rem; padding: 1.15rem; border-radius: 1.15rem; }
-.templateCard { border: 1px solid var(--line); background: color-mix(in oklch, var(--paper) 75%, transparent); }
-.templateCard:nth-child(1) { background: linear-gradient(145deg, oklch(97% .025 300), oklch(94% .05 300)); }
-.templateCard:nth-child(2) { background: linear-gradient(145deg, oklch(97% .025 165), oklch(93% .05 170)); }
-.templateCard:nth-child(3) { background: linear-gradient(145deg, oklch(98% .025 70), oklch(95% .05 55)); }
-.templateCard h3, .integrationCard h3 { margin: 0; font-size: 1rem; }
+/* Stanje se vidi ze na ploskvi, ne sele v znacki: zeleno = dela, jantar = pride,
+   nevtralno = nacrtovano. Zadnja kartica zapolni vrsto, da v mrezi ni luknje
+   (Tina, 31. 8. 2026). */
+.integrationCard:has([data-ready='true']) { background: linear-gradient(160deg, oklch(97% .02 165), #fff 58%); }
+.integrationCard:has([data-ready='true']) > .integrationHead svg { color: oklch(52% .11 165); }
+.integrationCard:has(.connectionState:not([data-ready='true'])) { background: linear-gradient(160deg, oklch(98% .018 70), #fff 58%); }
+.integrationCard:has(.connectionState:not([data-ready='true'])) > .integrationHead svg { color: oklch(58% .12 70); }
+.integrationGrid > .integrationCard:last-child:nth-child(odd) { grid-column: 1 / -1; }
+/* BARVA PO VRSTI VSEBINE, ne po vrstnem redu kartice: e-posta vijolicna,
+   vprasalnik zelena, druzbena omrezja jantar. Ista barva se ponovi pri ikoni
+   kampanje v seznamu, zato barva nekaj POVE — prej so bile tri pastele brez
+   pomena (Tina, 31. 8. 2026). */
+.templateCard { border: 1px solid oklch(22% .015 60 / .07); background: #fff; }
+.templateCard[data-vrsta='email'] { background: linear-gradient(160deg, oklch(97% .022 300), #fff 62%); }
+.templateCard[data-vrsta='vprasalnik'] { background: linear-gradient(160deg, oklch(97% .022 165), #fff 62%); }
+.templateCard[data-vrsta='social'] { background: linear-gradient(160deg, oklch(97% .025 70), #fff 62%); }
+.templateCard[data-vrsta='email'] svg { color: oklch(56% .17 300); }
+.templateCard[data-vrsta='vprasalnik'] svg { color: oklch(52% .11 165); }
+.templateCard[data-vrsta='social'] svg { color: oklch(58% .12 70); }
+.templateCard h3, .integrationCard h3 { margin: 0; font-size: 1rem; font-weight: 650; }
 .templateCard p, .integrationCard p { margin: 0; color: var(--muted); line-height: 1.48; }
-.badge { width: fit-content; padding: .32rem .55rem; border-radius: 999px; background: oklch(100% 0 0 / .62); font-size: .72rem; font-weight: 800; }
+.badge { width: fit-content; padding: .32rem .55rem; border-radius: 999px; background: color-mix(in oklch, var(--purple, #7C3AED) 13%, transparent); color: oklch(46% .19 297); font-size: .72rem; font-weight: 800; }
 .templateButton { align-self: end; margin-top: auto; padding: .7rem .9rem; border: 1px solid var(--line); background: oklch(100% 0 0 / .45); color: var(--ink); }
 .integrationCard { min-height: 11rem; }
 .integrationHead { display: flex; align-items: center; justify-content: space-between; }
@@ -338,7 +530,7 @@
   .flowCard { grid-template-columns: 1fr; }
   .designBanner { grid-template-columns: auto minmax(0, 1fr); }
   .designActions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
-  .campaignRow { grid-template-columns: 2.2rem minmax(0, 1fr) auto; }
+  .campaignRow { grid-template-columns: 1.5rem minmax(0, 1fr) auto; }
   .plannerGrid { grid-template-columns: 1fr; }
   .campaignDate { grid-column: 2; }
   .campaignRow > .status { grid-column: 3; grid-row: 1; }
