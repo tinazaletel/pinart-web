@@ -89,7 +89,9 @@
    prihaja. Jantar in rozna nista iz Flowovega slogovnika (Tina, 31. 8. 2026). */
 .cakaPika[data-nujno='true'] { background: var(--purple, oklch(66% .2 297)); }
 .cakaPika[data-nujno='false'] { background: transparent; border: 2px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); }
-.cakaMeta { flex: none; margin-left: auto; color: var(--muted); font-size: .84rem; white-space: nowrap; }
+/* Datum se sme skrciti: pri ozkem stolpcu je prej silil iz kartice, ker je
+   bil flex:none in nowrap (Tina, 31. 8. 2026). */
+.cakaMeta { flex: 0 1 auto; min-width: 0; margin-left: auto; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: .84rem; white-space: nowrap; }
 .cakaPuscica { flex: none; color: var(--muted); opacity: 0; transition: opacity .15s ease; }
 .cakaSeznam button:hover .cakaPuscica { opacity: 1; }
 .cakaStevec {
@@ -120,8 +122,20 @@
 }
 
 @media (max-width: 900px) {
-  /* Na ozkem zaslonu bi Pupa silila v besedilo — takrat je ni. */
-  .heroPupa { display: none; }
+  /* Pupa ostane tudi na ozkem zaslonu (Tina: »pupe ni«) — le da se preseli iz
+     ozadja v svojo celico: besedilo dobi celo sirino zgoraj, spodaj sta ob
+     sebi gumb in Pupa, prilepljena na spodnji rob pasice. */
+  .hero { grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+  .heroText { grid-column: 1 / -1; grid-row: 1; max-width: 100%; }
+  .heroPupa {
+    position: static;
+    grid-column: 2; grid-row: 2;
+    align-self: end; justify-self: end;
+    height: 7.5rem;
+    margin: -.7rem -.35rem -1.3rem 0;
+  }
+  .heroPupa img { object-position: right bottom; }
+  .hero .primary { grid-column: 1; grid-row: 2; align-self: end; width: fit-content; }
 }
 .eyebrow,
 .sectionLabel {
@@ -540,7 +554,12 @@
 @media (max-width: 650px) {
   .page { gap: .75rem; padding-inline: .5rem; }
   .hero { display: grid; align-items: start; min-height: 0; padding: 1.1rem; border-radius: 1.2rem; }
-  .hero .primary { width: 100%; }
+  /* Gumb ni vec cez celo sirino: desno od njega stoji Pupa. */
+  .hero .primary { width: fit-content; justify-self: start; }
+  .heroPupa { height: 6.4rem; margin: -.4rem -.25rem -1.1rem 0; }
+  /* Na najozjem zaslonu ima datum manj prostora — manjsa crka, brez puscice. */
+  .cakaMeta { font-size: .76rem; }
+  .cakaPuscica { display: none; }
   .tabs { width: 100%; }
   .tab { flex: 1; }
   .overviewGrid { grid-template-columns: 1fr 1fr; }

@@ -276,7 +276,13 @@ export default function ArhivFilter({ iskanje, onIskanje, placeholder, datumOd, 
 
       /* ── akcijski gumb (skupni videz, npr. + Nova ponudba) ── */
       .af-akcija-gumb{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;white-space:nowrap;padding:.7rem 1.1rem;border:none;border-radius:999px;background-color:var(--ink,#111);color:var(--paper,#fff);font:inherit;font-size:.82rem;font-weight:700;text-decoration:none;cursor:pointer;transition:transform .15s,opacity .15s}
-      .af-akcija-gumb:hover{transform:translateY(-1px);opacity:.92}
+      /* Pravi Flow hover (dvig, senca, odsev); beli krogec izvoza ima svojega. */
+      .af-akcija-gumb:not(.af-akcija-izvoz){position:relative;overflow:hidden}
+      .af-akcija-gumb:not(.af-akcija-izvoz)::after{content:'';position:absolute;top:0;left:-160%;width:90%;height:100%;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.5) 50%,transparent 100%);transform:skewX(-18deg);transition:left .6s cubic-bezier(.16,1,.3,1);pointer-events:none}
+      .af-akcija-gumb:not(.af-akcija-izvoz):hover::after{left:170%}
+      .af-akcija-gumb:not(.af-akcija-izvoz):hover{transform:translateY(-2px) scale(1.02);opacity:1;box-shadow:0 8px 22px rgba(35,18,45,.18)}
+      .af-akcija-gumb:not(.af-akcija-izvoz):active{transform:translateY(0) scale(.985)}
+      .af-akcija-izvoz:hover{transform:translateY(-1px)}
       /* »Izvoz za računovodstvo« = VEDNO le ikona-krogec (bel, hover fill), na vseh širinah */
       .af-akcija-izvoz{width:2.75rem;height:2.75rem;flex:none;padding:0;gap:0;background-color:#fff;border:1px solid color-mix(in oklch,var(--ink,#111) 18%,transparent);color:var(--ink,#111);transition:background-color .16s,color .16s,transform .16s cubic-bezier(.2,.8,.3,1),box-shadow .16s}
       .af-akcija-izvoz:hover{background-color:var(--ink,#111);color:var(--paper,#fff);transform:translateY(-1px);box-shadow:0 .4rem 1rem color-mix(in oklch,var(--ink,#111) 18%,transparent)}

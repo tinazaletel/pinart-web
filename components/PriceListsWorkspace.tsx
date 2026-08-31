@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import { MagnifyingGlass, PencilSimple, Trash, ArrowCounterClockwise } from '@phosphor-icons/react';
 import Paginacija from '@/components/Paginacija';
@@ -128,7 +129,8 @@ export default function PriceListsWorkspace() {
 
   return <div className={styles.priceListsPage}>
     {notice && <div className={styles.goalSaved} role="status">{notice}</div>}
-    <section className={styles.priceListIntro}><div><p className={styles.eyebrow}>{L('PROFILI CEN', 'PRICE PROFILES')}</p><h2>{L('Različne cene za različne načine dela.', 'Different prices for different kinds of work.')}</h2><p>{L('Pripravi cenik za lokalne stranke, tujino ali posamezno vrsto storitev. Aktivni cenik uporablja kalkulator.', 'Build a price list for local clients, abroad, or a single kind of service. The active list is used by the calculator.')}</p></div>{pogled === 'storitve' ? <button onClick={create} disabled={samoOgled} title={samoOgled ? L('Ni na voljo v predogledu (demo)', 'Not available in preview (demo)') : undefined}>{L('+ Nov cenik', '+ New price list')}</button> : <button onClick={addProdukt} disabled={samoOgled} title={samoOgled ? L('Ni na voljo v predogledu (demo)', 'Not available in preview (demo)') : undefined}>{L('+ Nov produkt', '+ New product')}</button>}</section>
+    <section className={styles.priceListIntro}><div><p className={styles.eyebrow}>{L('PROFILI CEN', 'PRICE PROFILES')}</p><h2>{L('Različne cene za različne načine dela.', 'Different prices for different kinds of work.')}</h2><p>{L('Pripravi cenik za lokalne stranke, tujino ali posamezno vrsto storitev. Aktivni cenik uporablja kalkulator.', 'Build a price list for local clients, abroad, or a single kind of service. The active list is used by the calculator.')}</p></div>
+      <Image className={styles.priceListPupa} src="/flow-pupa-cenik.png" alt="" width={520} height={582} sizes="180px" priority={false} />{pogled === 'storitve' ? <button onClick={create} disabled={samoOgled} title={samoOgled ? L('Ni na voljo v predogledu (demo)', 'Not available in preview (demo)') : undefined}>{L('+ Nov cenik', '+ New price list')}</button> : <button onClick={addProdukt} disabled={samoOgled} title={samoOgled ? L('Ni na voljo v predogledu (demo)', 'Not available in preview (demo)') : undefined}>{L('+ Nov produkt', '+ New product')}</button>}</section>
     <div className={styles.priceViewSwitch} role="tablist">
       <button type="button" role="tab" aria-selected={pogled === 'storitve'} className={pogled === 'storitve' ? styles.priceViewActive : ''} onClick={() => setPogled('storitve')}>{L('Storitve', 'Services')}</button>
       <button type="button" role="tab" aria-selected={pogled === 'produkti'} className={pogled === 'produkti' ? styles.priceViewActive : ''} onClick={() => setPogled('produkti')}>{L('Produkti', 'Products')}</button>

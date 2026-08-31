@@ -1979,7 +1979,10 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR', ponudba = '
 
         {/* Podpora tik nad nogo — kdor pride do sem, je stran prebral do konca. */}
         <section className="fl-podpri">
-          <PodpriBanner locale={locale} razlicica="landing" />
+          {/* PASICA ZA PODPORO JE UMAKNJENA (Tina, 31. 8. 2026): ni sporna
+              zakonitost — prostovoljno placilo d.o.o. je dovoljeno — ampak
+              davcna obravnava (ali je predmet DDV) do potrditve racunovodkinje
+              oziroma FURS. Komponenta ostaja, vrnitev je ena vrstica. */}
         </section>
 
         <footer className="fl-footer" data-nav-dark>
