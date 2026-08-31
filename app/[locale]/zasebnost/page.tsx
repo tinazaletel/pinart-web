@@ -61,7 +61,7 @@ const sl = {
     },
     {
       heading: '6. Google Analytics',
-      text: `Spletna stran uporablja Google Analytics za analizo obiskanosti. Google Analytics zbira anonimne podatke o obisku (tip naprave, država, strani). Podatki se ne povežejo z vašo osebno identiteto. Zbiranje podatkov lahko onemogočite z namestitvijo Google Analytics Opt-out Browser Add-on ali s prilagoditev nastavitev piškotkov v vašem brskalniku.`,
+      text: `Spletna stran uporablja Google Analytics za analizo obiskanosti. Google Analytics zbira anonimne podatke o obisku (tip naprave, država, strani). Podatki se ne povežejo z vašo osebno identiteto. Zbiranje podatkov lahko onemogočite z namestitvijo Google Analytics Opt-out Browser Add-on ali s prilagoditev nastavitev piškotkov v vašem brskalniku.\n\nNa PREDSTAVITVENIH straneh uporabljamo tudi PostHog (EU oblak, Frankfurt) za razumevanje uporabe: toplotne karte klikov, posnetke sej in lijake. Posnetek seje je zapis vaših klikov, pomikanja in poti po strani; vsebina vpisnih polj je v njem zakrita. Oboje teče IZKLJUČNO po vaši privolitvi za piškotke in NIKOLI v aplikaciji ali kalkulatorju — tam vpisujete podatke svojih strank in teh ne pošiljamo nikamor. Privolitev lahko kadar koli prekličete v nastavitvah piškotkov; takrat se snemanje ustavi.`,
     },
     {
       heading: '7. Vaše pravice',
@@ -69,7 +69,7 @@ const sl = {
     },
     {
       heading: '8. Piškotki',
-      text: `Spletna stran uporablja funkcionalne piškotke za delovanje in analitične piškotke (Google Analytics). Ob prvem obisku imate možnost upravljanja s piškotki.`,
+      text: `Spletna stran uporablja funkcionalne piškotke za delovanje in analitične piškotke (Google Analytics in PostHog). Ob prvem obisku imate možnost upravljanja s piškotki; brez vaše privolitve se analitični piškotki in snemanje sej ne naložijo.`,
     },
     {
       heading: '9. Umetna inteligenca (Pupa) in varnost podatkov',
@@ -128,7 +128,7 @@ const en = {
     },
     {
       heading: '6. Google Analytics',
-      text: `This website uses Google Analytics to analyse site traffic. Google Analytics collects anonymous data (device type, country, pages visited). This data is not linked to your personal identity. You may opt out by installing the Google Analytics Opt-out Browser Add-on or by adjusting your browser's cookie settings.`,
+      text: `This website uses Google Analytics to analyse site traffic. Google Analytics collects anonymous data (device type, country, pages visited). This data is not linked to your personal identity. You may opt out by installing the Google Analytics Opt-out Browser Add-on or by adjusting your browser's cookie settings.\n\nOn the MARKETING pages we also use PostHog (EU cloud, Frankfurt) to understand usage: click heatmaps, session recordings and funnels. A session recording captures your clicks, scrolling and path through the page; the content of input fields is masked. Both run ONLY with your cookie consent and NEVER inside the app or the calculator — there you enter your own clients' data, and we do not send it anywhere. You can withdraw consent at any time in the cookie settings; recording then stops.`,
     },
     {
       heading: '7. Your Rights',
@@ -136,7 +136,7 @@ const en = {
     },
     {
       heading: '8. Cookies',
-      text: `This website uses functional cookies for operation and analytical cookies (Google Analytics). On your first visit you may manage your cookie preferences.`,
+      text: `This website uses functional cookies for operation and analytical cookies (Google Analytics and PostHog). On your first visit you may manage your cookie preferences; without your consent, analytical cookies and session recording are not loaded.`,
     },
     {
       heading: '9. Artificial Intelligence (Pupa) and Data Security',
