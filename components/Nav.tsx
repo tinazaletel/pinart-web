@@ -101,7 +101,11 @@ export default function Nav() {
   /* Celozaslonsko orodje kalkulatorja ima svojo slim glavo (← Predstavitev);
      marketinski meni tam samo trka z vprasalnimi karticami — skrijemo ga.
      Landing (/kalkulator) obdrzi polni meni. */
-  if (pathname?.includes('/kalkulator/orodje') || pathname?.includes('/kalkulator/prijava') || pathname?.includes('/kalkulator/pregled') || pathname?.includes('/kalkulator/pogodbe') || pathname?.includes('/kalkulator/racuni') || pathname?.includes('/kalkulator/stroski') || pathname?.includes('/kalkulator/stranke') || pathname?.includes('/kalkulator/projekti') || pathname?.includes('/kalkulator/racunovodstvo') || pathname?.includes('/kalkulator/dolgorocno') || pathname?.includes('/kalkulator/cilji') || pathname?.includes('/kalkulator/poslovni-nacrt') || pathname?.includes('/kalkulator/profil') || pathname?.includes('/kalkulator/ceniki') || pathname?.includes('/kalkulator/admin') || pathname?.includes('/kalkulator') || pathname?.includes('/flow')) return null;
+  if (pathname?.includes('/kalkulator/orodje') || pathname?.includes('/kalkulator/prijava') || pathname?.includes('/kalkulator/pregled') || pathname?.includes('/kalkulator/pogodbe') || pathname?.includes('/kalkulator/racuni') || pathname?.includes('/kalkulator/stroski') || pathname?.includes('/kalkulator/stranke') || pathname?.includes('/kalkulator/projekti') || pathname?.includes('/kalkulator/racunovodstvo') || pathname?.includes('/kalkulator/dolgorocno') || pathname?.includes('/kalkulator/cilji') || pathname?.includes('/kalkulator/poslovni-nacrt') || pathname?.includes('/kalkulator/profil') || pathname?.includes('/kalkulator/ceniki') || pathname?.includes('/kalkulator/admin') || pathname?.includes('/kalkulator') || pathname?.includes('/flow')
+    /* Strani, ki jih vidi STRANKA (portal in vprasalnik), so brez menija: to ni
+       nasa spletna stran, ampak dokument, ki ga je nekdo poslal. Pinartov meni
+       je tam tuj in odpelje stran (Tina, 31. 8. 2026). */
+    || /(^|\/)(p|v)\//.test(pathname || '')) return null;
 
   return (
     <>

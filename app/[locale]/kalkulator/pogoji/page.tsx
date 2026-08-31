@@ -839,6 +839,7 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Cloudflare</strong> — receiving and forwarding inbound email on @pinartflow.com addresses<br />
                 — <strong>Anthropic</strong> — the AI assistant Pupa (only when used)<br />
                 — <strong>FreeTSA (RFC 3161)</strong> — independent timestamp for the vault (receives only the fingerprint)<br />
+                — PostHog (EU) — usage measurement on the marketing pages (with consent)
                 — Stripe — subscription payment processing (Merchant of Record)
                 — AJPES — business register and annual-report lookups
               </>
@@ -851,6 +852,7 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Cloudflare</strong> — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com<br />
                 — <strong>Anthropic</strong> — AI asistentka Pupa (samo ob uporabi)<br />
                 — <strong>FreeTSA (RFC 3161)</strong> — neodvisni časovni žig sefa (prejme samo odtis)<br />
+                — PostHog (EU) — merjenje uporabe predstavitvenih strani (po privolitvi)
                 — Stripe — obdelava plačil naročnine (Merchant of Record)
                 — AJPES — poizvedbe v Poslovni register in letna poročila
               </>

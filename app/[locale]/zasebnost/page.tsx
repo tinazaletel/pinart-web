@@ -48,6 +48,7 @@ const sl = {
     {
       heading: '5a. Podobdelovalci',
       text: `Vaših podatkov ne prodajamo in ne dajemo v najem. Za delovanje storitve jih obdelujejo naslednji podobdelovalci, izključno po naših navodilih:\n\n– Supabase — oblačna baza in shramba (EU)\n– Vercel — gostovanje in dostava aplikacije\n– Resend — pošiljanje e-pošte\n– Google — prijava z Google računom (OAuth) in preglednica Google Sheets, v katero se zapišejo povpraševanja s kontaktnega obrazca in prijave iz kalkulatorja (ime, e-naslov, sporočilo)\n– Cloudflare — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com\n– Anthropic — AI asistentka Pupa (samo ob uporabi; glejte točko 9)\n– FreeTSA (freetsa.org) — neodvisni overitelj časovnega žiga sefa po standardu RFC 3161 (prejme samo 32-bajtni odtis, nikoli datoteke, njenega imena ali opisa dela)\n– Stripe — obdelava plačil naročnine kot pooblaščeni ponudnik plačil (Merchant of Record); podatkov o kartici ne vidimo in ne hranimo
+– PostHog (EU oblak, Frankfurt) — merjenje uporabe predstavitvenih strani: toplotne karte, posnetki sej in lijaki. Teče SAMO po vaši privolitvi in samo na predstavitvenih straneh, nikoli v aplikaciji ali kalkulatorju; vsebina vpisnih polj je v posnetkih zakrita
 – AJPES — poizvedba v Poslovni register in v javno objavljena letna poročila; posredujemo matično številko PODJETJA, o katerem poizvedujete, ne vaših osebnih podatkov\n\nPodatke posredujemo tretjim tudi, kadar to zahteva zakon. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.`,
     },
     {
@@ -60,7 +61,7 @@ const sl = {
     },
     {
       heading: '6. Google Analytics',
-      text: `Spletna stran uporablja Google Analytics za analizo obiskanosti. Google Analytics zbira anonimne podatke o obisku (tip naprave, država, strani). Podatki se ne povežejo z vašo osebno identiteto. Zbiranje podatkov lahko onemogočite z namestitvijo Google Analytics Opt-out Browser Add-on ali s prilagoditev nastavitev piškotkov v vašem brskalniku.`,
+      text: `Spletna stran uporablja Google Analytics za analizo obiskanosti. Google Analytics zbira anonimne podatke o obisku (tip naprave, država, strani). Podatki se ne povežejo z vašo osebno identiteto. Zbiranje podatkov lahko onemogočite z namestitvijo Google Analytics Opt-out Browser Add-on ali s prilagoditev nastavitev piškotkov v vašem brskalniku.\n\nNa PREDSTAVITVENIH straneh uporabljamo tudi PostHog (EU oblak, Frankfurt) za razumevanje uporabe: toplotne karte klikov, posnetke sej in lijake. Posnetek seje je zapis vaših klikov, pomikanja in poti po strani; vsebina vpisnih polj je v njem zakrita. Oboje teče IZKLJUČNO po vaši privolitvi za piškotke in NIKOLI v aplikaciji ali kalkulatorju — tam vpisujete podatke svojih strank in teh ne pošiljamo nikamor. Privolitev lahko kadar koli prekličete v nastavitvah piškotkov; takrat se snemanje ustavi.`,
     },
     {
       heading: '7. Vaše pravice',
@@ -68,7 +69,7 @@ const sl = {
     },
     {
       heading: '8. Piškotki',
-      text: `Spletna stran uporablja funkcionalne piškotke za delovanje in analitične piškotke (Google Analytics). Ob prvem obisku imate možnost upravljanja s piškotki.`,
+      text: `Spletna stran uporablja funkcionalne piškotke za delovanje in analitične piškotke (Google Analytics in PostHog). Ob prvem obisku imate možnost upravljanja s piškotki; brez vaše privolitve se analitični piškotki in snemanje sej ne naložijo.`,
     },
     {
       heading: '9. Umetna inteligenca (Pupa) in varnost podatkov',
@@ -114,6 +115,7 @@ const en = {
     {
       heading: '5a. Subprocessors',
       text: `We do not sell or rent your data. To operate the service it is processed by the following subprocessors, strictly on our instructions:\n\n– Supabase — cloud database and storage (EU)\n– Vercel — hosting and application delivery\n– Resend — sending email\n– Google — sign-in with a Google account (OAuth) and a Google Sheets spreadsheet that records contact-form inquiries and calculator sign-ups (name, email, message)\n– Cloudflare — receiving and forwarding inbound email on @pinartflow.com addresses\n– Anthropic — the AI assistant Pupa (only when used; see section 9)\n– FreeTSA (freetsa.org) — independent time-stamping authority for the vault under RFC 3161 (receives only the 32-byte fingerprint, never the file, its name or the work description)\n– Stripe — subscription payment processing as the authorised payment provider (Merchant of Record); we neither see nor store card details
+– PostHog (EU cloud, Frankfurt) — usage measurement on the marketing pages: heatmaps, session recordings and funnels. It runs ONLY with your consent and only on the marketing pages, never inside the app or the calculator; input fields are masked in recordings
 – AJPES — lookups in the Slovenian business register and published annual reports; we send the registration number of the COMPANY you look up, not your personal data\n\nWe also share data with third parties where required by law. The current list of subprocessors is available on request at tina@pinart.si.`,
     },
     {
@@ -126,7 +128,7 @@ const en = {
     },
     {
       heading: '6. Google Analytics',
-      text: `This website uses Google Analytics to analyse site traffic. Google Analytics collects anonymous data (device type, country, pages visited). This data is not linked to your personal identity. You may opt out by installing the Google Analytics Opt-out Browser Add-on or by adjusting your browser's cookie settings.`,
+      text: `This website uses Google Analytics to analyse site traffic. Google Analytics collects anonymous data (device type, country, pages visited). This data is not linked to your personal identity. You may opt out by installing the Google Analytics Opt-out Browser Add-on or by adjusting your browser's cookie settings.\n\nOn the MARKETING pages we also use PostHog (EU cloud, Frankfurt) to understand usage: click heatmaps, session recordings and funnels. A session recording captures your clicks, scrolling and path through the page; the content of input fields is masked. Both run ONLY with your cookie consent and NEVER inside the app or the calculator — there you enter your own clients' data, and we do not send it anywhere. You can withdraw consent at any time in the cookie settings; recording then stops.`,
     },
     {
       heading: '7. Your Rights',
@@ -134,7 +136,7 @@ const en = {
     },
     {
       heading: '8. Cookies',
-      text: `This website uses functional cookies for operation and analytical cookies (Google Analytics). On your first visit you may manage your cookie preferences.`,
+      text: `This website uses functional cookies for operation and analytical cookies (Google Analytics and PostHog). On your first visit you may manage your cookie preferences; without your consent, analytical cookies and session recording are not loaded.`,
     },
     {
       heading: '9. Artificial Intelligence (Pupa) and Data Security',
