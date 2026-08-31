@@ -174,7 +174,7 @@ export default function Dostopnost({ gumb = false, jeEn = false, base = '' }: {
       ), document.body)}
 
       <style jsx>{`
-        .dost-gumb { position: fixed; left: 1.4rem; bottom: 4.9rem; z-index: 61; width: 2.3rem; height: 2.3rem; border-radius: 999px; border: 1px solid rgba(124,58,237,.4); background: rgba(255,255,255,.92); color: #111; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
+        .dost-gumb { position: fixed; left: 1.1rem; bottom: 1.1rem; z-index: 61; width: 2.3rem; height: 2.3rem; border-radius: 999px; border: 1px solid rgba(124,58,237,.4); background: rgba(255,255,255,.92); color: #111; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
         .dost-gumb:hover { border-color: rgba(124,58,237,.75); }
         .dost-zastor { position: fixed; inset: 0; z-index: 140; background: rgba(17,17,17,.28); backdrop-filter: blur(2px); }
         .dost-okno { position: fixed; z-index: 141; left: 50%; top: 50%; transform: translate(-50%,-50%); width: min(27rem, calc(100vw - 2rem)); max-height: min(80dvh, 40rem); overflow: auto; border: 1px solid rgba(17,17,17,.14); border-radius: 16px; background: #fff; padding: 1.15rem 1.25rem 1.25rem; box-shadow: 0 1.4rem 3rem rgba(17,17,17,.18); color: #111; }
