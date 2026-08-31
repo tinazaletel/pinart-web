@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
@@ -85,6 +86,51 @@ export default function GoalsWorkspace({ base }: { base: string }) {
   const costBase = enteredCosts + recurringCosts;
   const recommended = Math.ceil((costBase + desiredIncome) / Math.max(.05, 1 - reservePercent / 100) / 100) * 100;
   const progress = goal ? Math.min(100, Math.round(paid / goal * 100)) : 0;
+
+  /* Krog se ob odprtju napolni, stevilka pa steje do konca. Brez animacije je
+     100 % samo podatek; z njo je dosezek (Tina, 31. 8. 2026). Kdor ima izklopljeno
+     gibanje, dobi koncno vrednost takoj. */
+  const [prikazanProgress, setPrikazanProgress] = useState(0);
+  const [prikazanZnesek, setPrikazanZnesek] = useState(0);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mirno = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (mirno || progress === 0) { setPrikazanProgress(progress); return; }
+    const trajanje = 1100;
+    let zacetek = 0;
+    let zahteva = 0;
+    const korak = (cas: number) => {
+      if (!zacetek) zacetek = cas;
+      const t = Math.min(1, (cas - zacetek) / trajanje);
+      /* mehko iztekanje (easeOutCubic): hitro stece, nato se umiri */
+      const e = 1 - Math.pow(1 - t, 3);
+      setPrikazanProgress(Math.round(progress * e));
+      if (t < 1) zahteva = window.requestAnimationFrame(korak);
+    };
+    zahteva = window.requestAnimationFrame(korak);
+    return () => window.cancelAnimationFrame(zahteva);
+  }, [progress]);
+
+  /* Isto steje tudi glavni znesek: cifra zraste do cilja in se ustavi. */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mirno = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (mirno || !goal) { setPrikazanZnesek(goal); return; }
+    const trajanje = 1100;
+    let zacetek = 0;
+    let zahteva = 0;
+    const korak = (cas: number) => {
+      if (!zacetek) zacetek = cas;
+      const t = Math.min(1, (cas - zacetek) / trajanje);
+      const e = 1 - Math.pow(1 - t, 3);
+      /* zaokrozeno na 10 €, da se stevilka ne trese po enicah */
+      setPrikazanZnesek(Math.round(goal * e / 10) * 10);
+      if (t < 1) zahteva = window.requestAnimationFrame(korak);
+      else setPrikazanZnesek(goal);
+    };
+    zahteva = window.requestAnimationFrame(korak);
+    return () => window.cancelAnimationFrame(zahteva);
+  }, [goal]);
   const remaining = Math.max(0, goal - paid);
 
   const months = useMemo(() => Array.from({ length: 6 }, (_, index) => {
@@ -108,9 +154,27 @@ export default function GoalsWorkspace({ base }: { base: string }) {
   return <div className={styles.goalsPage}>
     {saved && <div className={styles.goalSaved} role="status">{L('Cilj je shranjen.', 'Goal saved.')}</div>}
     <section className={styles.goalOverview}>
-      <div><p className={styles.eyebrow}>{L('TA MESEC', 'THIS MONTH')}</p><h2>{money(goal)}</h2><p>{L('Cilj temelji na stroških, tvojem želenem dohodku in rezervi — znesek je ', 'The goal is based on costs, your desired income and reserve — the amount is ')}<strong>{L('bruto promet', 'gross revenue')}</strong>{L(', ki ga zaračunaš.', ' you invoice.')}</p></div>
-      <div className={styles.goalOverviewStats}><span><small>{L('Potrjena plačila', 'Confirmed payments')}</small><strong>{money(paid)}</strong></span><span><small>{L('Do cilja manjka', 'Left to goal')}</small><strong>{money(remaining)}</strong></span></div>
-      <div className={styles.goalLargeDial} style={{ '--goal-progress': `${progress}%` } as React.CSSProperties}><div><strong>{progress}%</strong><small>{L('doseženo', 'reached')}</small></div></div>
+      <div><p className={styles.eyebrow}>{L('TA MESEC', 'THIS MONTH')}</p><h2>{money(prikazanZnesek)}</h2><p>{L('Cilj temelji na stroških, tvojem želenem dohodku in rezervi — znesek je ', 'The goal is based on costs, your desired income and reserve — the amount is ')}<strong>{L('bruto promet', 'gross revenue')}</strong>{L(', ki ga zaračunaš.', ' you invoice.')}</p></div>
+      {/* Pike povedo stanje, kot drugod v Flowu: zelena je priliv, vijolicna
+          preostanek. Ko preostanka ni, je to DOSEZEK in ne prazna nicla
+          (Tina, 31. 8. 2026). */}
+      <div className={styles.goalOverviewStats}>
+        <span>
+          <small><i className={styles.statPika} data-tone="prihod" aria-hidden />{L('Potrjena plačila', 'Confirmed payments')}</small>
+          <strong>{money(paid)}</strong>
+        </span>
+        <span>
+          <small><i className={styles.statPika} data-tone={remaining > 0 ? 'ostanek' : 'dosezeno'} aria-hidden />{L('Do cilja manjka', 'Left to goal')}</small>
+          {remaining > 0
+            ? <strong>{money(remaining)}</strong>
+            : <strong className={styles.statDosezeno}>{L('cilj dosežen', 'goal reached')}</strong>}
+        </span>
+      </div>
+      {/* Pupa kaze na tablo s podatki (Tinina zamisel): karton v rokah je bil
+          nelogicen — ce vidimo graf, ga mora kazati nam
+          (Tina, 31. 8. 2026). */}
+      <Image className={styles.goalPupa} src="/flow-pupa-tabla-2.png" alt="" width={1230} height={810} sizes="420px" priority={false} />
+      <div className={styles.goalLargeDial} style={{ '--goal-progress': `${prikazanProgress}%` } as React.CSSProperties}><div><strong>{prikazanProgress}%</strong><small>{L('doseženo', 'reached')}</small></div></div>
     </section>
 
     {/* Iste štiri analizne kartice kot prej na strani ČAS — od tam preseljene,
