@@ -12,6 +12,7 @@ import FloatingUI from '@/components/FloatingUI';
 import PageTransition from '@/components/PageTransition';
 import CookieBanner from '@/components/CookieBanner';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import Sledenje from '@/components/Sledenje';
 import ContentProtect from '@/components/ContentProtect';
 import '../globals.css';
 import { Analytics } from '@vercel/analytics/next';
@@ -160,6 +161,7 @@ export default async function LocaleLayout({
           <PageTransition />
           <CookieBanner />
           <GoogleAnalytics />
+          <Sledenje />
           <ContentProtect />
           {/* Vercelovo štetje obiskov: brez piškotkov, zato ne potrebuje privolitve
               in prešteje tudi tiste, ki banner zavrnejo — Google Analytics jih ne.

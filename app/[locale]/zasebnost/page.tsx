@@ -48,6 +48,7 @@ const sl = {
     {
       heading: '5a. Podobdelovalci',
       text: `Vaših podatkov ne prodajamo in ne dajemo v najem. Za delovanje storitve jih obdelujejo naslednji podobdelovalci, izključno po naših navodilih:\n\n– Supabase — oblačna baza in shramba (EU)\n– Vercel — gostovanje in dostava aplikacije\n– Resend — pošiljanje e-pošte\n– Google — prijava z Google računom (OAuth) in preglednica Google Sheets, v katero se zapišejo povpraševanja s kontaktnega obrazca in prijave iz kalkulatorja (ime, e-naslov, sporočilo)\n– Cloudflare — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com\n– Anthropic — AI asistentka Pupa (samo ob uporabi; glejte točko 9)\n– FreeTSA (freetsa.org) — neodvisni overitelj časovnega žiga sefa po standardu RFC 3161 (prejme samo 32-bajtni odtis, nikoli datoteke, njenega imena ali opisa dela)\n– Stripe — obdelava plačil naročnine kot pooblaščeni ponudnik plačil (Merchant of Record); podatkov o kartici ne vidimo in ne hranimo
+– PostHog (EU oblak, Frankfurt) — merjenje uporabe predstavitvenih strani: toplotne karte, posnetki sej in lijaki. Teče SAMO po vaši privolitvi in samo na predstavitvenih straneh, nikoli v aplikaciji ali kalkulatorju; vsebina vpisnih polj je v posnetkih zakrita
 – AJPES — poizvedba v Poslovni register in v javno objavljena letna poročila; posredujemo matično številko PODJETJA, o katerem poizvedujete, ne vaših osebnih podatkov\n\nPodatke posredujemo tretjim tudi, kadar to zahteva zakon. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.`,
     },
     {
@@ -114,6 +115,7 @@ const en = {
     {
       heading: '5a. Subprocessors',
       text: `We do not sell or rent your data. To operate the service it is processed by the following subprocessors, strictly on our instructions:\n\n– Supabase — cloud database and storage (EU)\n– Vercel — hosting and application delivery\n– Resend — sending email\n– Google — sign-in with a Google account (OAuth) and a Google Sheets spreadsheet that records contact-form inquiries and calculator sign-ups (name, email, message)\n– Cloudflare — receiving and forwarding inbound email on @pinartflow.com addresses\n– Anthropic — the AI assistant Pupa (only when used; see section 9)\n– FreeTSA (freetsa.org) — independent time-stamping authority for the vault under RFC 3161 (receives only the 32-byte fingerprint, never the file, its name or the work description)\n– Stripe — subscription payment processing as the authorised payment provider (Merchant of Record); we neither see nor store card details
+– PostHog (EU cloud, Frankfurt) — usage measurement on the marketing pages: heatmaps, session recordings and funnels. It runs ONLY with your consent and only on the marketing pages, never inside the app or the calculator; input fields are masked in recordings
 – AJPES — lookups in the Slovenian business register and published annual reports; we send the registration number of the COMPANY you look up, not your personal data\n\nWe also share data with third parties where required by law. The current list of subprocessors is available on request at tina@pinart.si.`,
     },
     {
