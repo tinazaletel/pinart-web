@@ -190,14 +190,14 @@ export default async function KalkulatorPogojiPage({
           <p style={P}>
             {en ? (
               <>
-                Payments are processed by an <strong>external authorised payment provider (Merchant of Record)</strong>,
+                Payments are processed by <strong>Stripe</strong> as an external authorised payment provider (Merchant of Record),
                 which issues the invoice in its own name and calculates and settles any VAT according to your
                 country. For this purpose the payment provider is an independent controller of the payment data;
                 the provider (Pinart d.o.o.) does not receive or store the full payment card number.
               </>
             ) : (
               <>
-                Plačila obdeluje <strong>zunanji pooblaščeni ponudnik plačil (Merchant of Record)</strong>,
+                Plačila obdeluje <strong>Stripe</strong> kot zunanji pooblaščeni ponudnik plačil (Merchant of Record),
                 ki v svojem imenu izda račun ter obračuna in poravna morebitni DDV glede na tvojo
                 državo. Ponudnik plačil je za ta namen samostojni upravljavec plačilnih podatkov;
                 ponudnik (Pinart d.o.o.) ne prejme in ne hrani celotne številke plačilne kartice.
@@ -839,7 +839,8 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Cloudflare</strong> — receiving and forwarding inbound email on @pinartflow.com addresses<br />
                 — <strong>Anthropic</strong> — the AI assistant Pupa (only when used)<br />
                 — <strong>FreeTSA (RFC 3161)</strong> — independent timestamp for the vault (receives only the fingerprint)<br />
-                — an authorised payment provider (Merchant of Record) — subscription payment processing
+                — Stripe — subscription payment processing (Merchant of Record)
+                — AJPES — business register and annual-report lookups
               </>
             ) : (
               <>
@@ -850,7 +851,8 @@ export default async function KalkulatorPogojiPage({
                 — <strong>Cloudflare</strong> — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com<br />
                 — <strong>Anthropic</strong> — AI asistentka Pupa (samo ob uporabi)<br />
                 — <strong>FreeTSA (RFC 3161)</strong> — neodvisni časovni žig sefa (prejme samo odtis)<br />
-                — pooblaščeni ponudnik plačil (Merchant of Record) — obdelava plačil naročnine
+                — Stripe — obdelava plačil naročnine (Merchant of Record)
+                — AJPES — poizvedbe v Poslovni register in letna poročila
               </>
             )}
           </p>

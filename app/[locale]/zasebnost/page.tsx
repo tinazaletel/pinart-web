@@ -23,7 +23,7 @@ export async function generateMetadata({
 
 const sl = {
   title: 'Politika zasebnosti',
-  updated: `Različica ${POGOJI_RAZLICICA} · Zadnja posodobitev: 23. avgust 2026`,
+  updated: `Različica ${POGOJI_RAZLICICA} · Zadnja posodobitev: 31. avgust 2026`,
   sections: [
     {
       heading: '1. Upravljavec osebnih podatkov',
@@ -31,7 +31,7 @@ const sl = {
     },
     {
       heading: '2. Kateri podatki se zbirajo',
-      text: `Glede na to, kako uporabljate storitev, obdelujemo:\n\n– Kontaktni obrazec: ime in priimek, e-naslov, vsebino sporočila (na vašo pobudo).\n– Uporabniški račun: e-naslov in ime, ki ju prejmemo od ponudnika prijave (npr. Google) ob prijavi.\n– Poslovni podatki v aplikaciji: ponudbe, pogodbe, računi, stranke, projekti, stroški in naloge, ki jih vnesete med uporabo (shranjeni na vaš račun).\n– Komunikacije: vsebina projektnega klepeta in projektne pošte, če te funkcije uporabljate.\n– Sef avtorstva: ime datoteke, kriptografski odtis (SHA-256), datum in podatki o delu; ob plačljivem trezorju tudi sama datoteka.\n– Podatki o uporabi (prijavljeni): število obiskov in dni aktivnosti vašega računa ter čas zadnjega vpisa — za spremljanje in izboljševanje storitve. To ni anonimno (vezano na vaš račun); ni v povezavi z anonimno cenovno statistiko.\n– Anonimna statistika cen: brez osebnih podatkov in je ni mogoče povezati z vami (glejte spodaj).`,
+      text: `Glede na to, kako uporabljate storitev, obdelujemo:\n\n– Kontaktni obrazec: ime in priimek, e-naslov, vsebino sporočila (na vašo pobudo).\n– Uporabniški račun: e-naslov in ime, ki ju prejmemo od ponudnika prijave (npr. Google) ob prijavi.\n– Poslovni podatki v aplikaciji: ponudbe, pogodbe, računi, stranke, projekti, stroški in naloge, ki jih vnesete med uporabo (shranjeni na vaš račun).\n– Komunikacije: vsebina projektnega klepeta in projektne pošte, če te funkcije uporabljate.\n– Sef avtorstva: ime datoteke, kriptografski odtis (SHA-256), datum in podatki o delu; ob plačljivem trezorju tudi sama datoteka.\n– Podatki o uporabi (prijavljeni): število obiskov in dni aktivnosti vašega računa, čas zadnjega vpisa in skupen čas, ko je aplikacija odprta in dejavna (merimo le, kadar je zavihek viden, in po petih minutah mirovanja nehamo šteti) — za spremljanje in izboljševanje storitve. To ni anonimno (vezano na vaš račun); ni v povezavi z anonimno cenovno statistiko.\n– Anonimna statistika cen: brez osebnih podatkov in je ni mogoče povezati z vami (glejte spodaj).`,
     },
     {
       heading: '3. Namen in pravna podlaga obdelave',
@@ -47,7 +47,8 @@ const sl = {
     },
     {
       heading: '5a. Podobdelovalci',
-      text: `Vaših podatkov ne prodajamo in ne dajemo v najem. Za delovanje storitve jih obdelujejo naslednji podobdelovalci, izključno po naših navodilih:\n\n– Supabase — oblačna baza in shramba (EU)\n– Vercel — gostovanje in dostava aplikacije\n– Resend — pošiljanje e-pošte\n– Google — prijava z Google računom (OAuth) in preglednica Google Sheets, v katero se zapišejo povpraševanja s kontaktnega obrazca in prijave iz kalkulatorja (ime, e-naslov, sporočilo)\n– Cloudflare — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com\n– Anthropic — AI asistentka Pupa (samo ob uporabi; glejte točko 9)\n– FreeTSA (freetsa.org) — neodvisni overitelj časovnega žiga sefa po standardu RFC 3161 (prejme samo 32-bajtni odtis, nikoli datoteke, njenega imena ali opisa dela)\n– pooblaščeni ponudnik plačil (Merchant of Record) — obdelava plačil naročnine\n\nPodatke posredujemo tretjim tudi, kadar to zahteva zakon. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.`,
+      text: `Vaših podatkov ne prodajamo in ne dajemo v najem. Za delovanje storitve jih obdelujejo naslednji podobdelovalci, izključno po naših navodilih:\n\n– Supabase — oblačna baza in shramba (EU)\n– Vercel — gostovanje in dostava aplikacije\n– Resend — pošiljanje e-pošte\n– Google — prijava z Google računom (OAuth) in preglednica Google Sheets, v katero se zapišejo povpraševanja s kontaktnega obrazca in prijave iz kalkulatorja (ime, e-naslov, sporočilo)\n– Cloudflare — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com\n– Anthropic — AI asistentka Pupa (samo ob uporabi; glejte točko 9)\n– FreeTSA (freetsa.org) — neodvisni overitelj časovnega žiga sefa po standardu RFC 3161 (prejme samo 32-bajtni odtis, nikoli datoteke, njenega imena ali opisa dela)\n– Stripe — obdelava plačil naročnine kot pooblaščeni ponudnik plačil (Merchant of Record); podatkov o kartici ne vidimo in ne hranimo
+– AJPES — poizvedba v Poslovni register in v javno objavljena letna poročila; posredujemo matično številko PODJETJA, o katerem poizvedujete, ne vaših osebnih podatkov\n\nPodatke posredujemo tretjim tudi, kadar to zahteva zakon. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.`,
     },
     {
       heading: '5b. Sef avtorstva',
@@ -88,7 +89,7 @@ Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si. Več: 
 
 const en = {
   title: 'Privacy Policy',
-  updated: `Version ${POGOJI_RAZLICICA} · Last updated: 23 August 2026`,
+  updated: `Version ${POGOJI_RAZLICICA} · Last updated: 31 August 2026`,
   sections: [
     {
       heading: '1. Data Controller',
@@ -96,7 +97,7 @@ const en = {
     },
     {
       heading: '2. Data We Collect',
-      text: `Depending on how you use the service, we process:\n\n– Contact form: first and last name, email, message content (at your initiative).\n– User account: email and name received from your sign-in provider (e.g. Google) when you log in.\n– Business data in the app: proposals, contracts, invoices, clients, projects, expenses and tasks you enter while using the service (stored to your account).\n– Communications: the content of project chat and project mail, if you use those features.\n– Authorship vault: file name, cryptographic fingerprint (SHA-256), date and work details; and, with the paid vault, the file itself.\n– Usage data (logged in): the number of visits and active days of your account and the time of your last sign-in — to monitor and improve the service. This is not anonymous (tied to your account) and is unrelated to the anonymous pricing statistics.\n– Anonymous pricing statistics: no personal data, cannot be linked to you (see below).`,
+      text: `Depending on how you use the service, we process:\n\n– Contact form: first and last name, email, message content (at your initiative).\n– User account: email and name received from your sign-in provider (e.g. Google) when you log in.\n– Business data in the app: proposals, contracts, invoices, clients, projects, expenses and tasks you enter while using the service (stored to your account).\n– Communications: the content of project chat and project mail, if you use those features.\n– Authorship vault: file name, cryptographic fingerprint (SHA-256), date and work details; and, with the paid vault, the file itself.\n– Usage data (logged in): the number of visits and active days of your account, the time of your last sign-in and the total time the app is open and active (measured only while the tab is visible; counting stops after five minutes of inactivity) — to monitor and improve the service. This is not anonymous (tied to your account) and is unrelated to the anonymous pricing statistics.\n– Anonymous pricing statistics: no personal data, cannot be linked to you (see below).`,
     },
     {
       heading: '3. Purpose and Legal Basis',
@@ -112,7 +113,8 @@ const en = {
     },
     {
       heading: '5a. Subprocessors',
-      text: `We do not sell or rent your data. To operate the service it is processed by the following subprocessors, strictly on our instructions:\n\n– Supabase — cloud database and storage (EU)\n– Vercel — hosting and application delivery\n– Resend — sending email\n– Google — sign-in with a Google account (OAuth) and a Google Sheets spreadsheet that records contact-form inquiries and calculator sign-ups (name, email, message)\n– Cloudflare — receiving and forwarding inbound email on @pinartflow.com addresses\n– Anthropic — the AI assistant Pupa (only when used; see section 9)\n– FreeTSA (freetsa.org) — independent time-stamping authority for the vault under RFC 3161 (receives only the 32-byte fingerprint, never the file, its name or the work description)\n– an authorised payment provider (Merchant of Record) — subscription payment processing\n\nWe also share data with third parties where required by law. The current list of subprocessors is available on request at tina@pinart.si.`,
+      text: `We do not sell or rent your data. To operate the service it is processed by the following subprocessors, strictly on our instructions:\n\n– Supabase — cloud database and storage (EU)\n– Vercel — hosting and application delivery\n– Resend — sending email\n– Google — sign-in with a Google account (OAuth) and a Google Sheets spreadsheet that records contact-form inquiries and calculator sign-ups (name, email, message)\n– Cloudflare — receiving and forwarding inbound email on @pinartflow.com addresses\n– Anthropic — the AI assistant Pupa (only when used; see section 9)\n– FreeTSA (freetsa.org) — independent time-stamping authority for the vault under RFC 3161 (receives only the 32-byte fingerprint, never the file, its name or the work description)\n– Stripe — subscription payment processing as the authorised payment provider (Merchant of Record); we neither see nor store card details
+– AJPES — lookups in the Slovenian business register and published annual reports; we send the registration number of the COMPANY you look up, not your personal data\n\nWe also share data with third parties where required by law. The current list of subprocessors is available on request at tina@pinart.si.`,
     },
     {
       heading: '5b. Authorship Vault',

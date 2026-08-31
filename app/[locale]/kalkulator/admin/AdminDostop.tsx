@@ -26,8 +26,20 @@ type Dodelitev = {
   vpisan?: boolean;          // ali se je e-mail dejansko prijavil (auth uporabnik obstaja)
   zadnji_vpis?: string | null; // ISO zadnjega vpisa
   dni?: number | null;       // stevilo razlicnih dni aktivnosti
+  sekunde?: number | null;   // skupen cas z VIDNIM zavihkom
   odprtij?: number | null;   // skupaj odprtij aplikacije
 };
+
+/* »2 h 14 min« namesto 8040: stevilka v sekundah pove, da smo jo izmerili, ne
+   koliko casa je nekdo bral (Tina, 31. 8. 2026). */
+function zapisiCas(sek: number): string {
+  if (sek < 60) return `${sek} s`;
+  const min = Math.round(sek / 60);
+  if (min < 60) return `${min} min`;
+  const ure = Math.floor(min / 60);
+  const ost = min % 60;
+  return ost ? `${ure} h ${ost} min` : `${ure} h`;
+}
 
 const PRAZEN = { email: '', vrsta: 'tester' as Vrsta, velja_od: '', velja_do: '', popust: '', opomba: '' };
 
@@ -132,7 +144,7 @@ export default function AdminDostop() {
       }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.86rem', minWidth: 880 }}>
           <thead><tr style={{ textAlign: 'left', borderBottom: '1px solid rgba(17,17,17,.15)' }}>
-            <th style={TD}>E-mail</th><th style={TD}>Vrsta</th><th style={TD}>Vpisan?</th><th style={TD}>Obiskov (dni)</th><th style={TD}>Zadnji vpis</th><th style={TD}>Obdobje</th>
+            <th style={TD}>E-mail</th><th style={TD}>Vrsta</th><th style={TD}>Vpisan?</th><th style={TD}>Obiskov (dni)</th><th style={TD}>Čas na strani</th><th style={TD}>Zadnji vpis</th><th style={TD}>Obdobje</th>
             <th style={TD}>Popust</th><th style={TD}>Opomba</th><th style={TD}></th>
           </tr></thead>
           <tbody>
@@ -155,6 +167,10 @@ export default function AdminDostop() {
                   {d.dni != null
                     ? <span><strong>{d.dni}</strong> <span style={{ opacity: .5 }}>{d.dni === 1 ? 'dan' : 'dni'}</span></span>
                     : <span style={{ opacity: .4 }}>—</span>}
+                </td>
+                <td style={{ ...TD, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}
+                  title="Cas, ko je bil zavihek viden; po petih minutah mirovanja se ne steje">
+                  {d.sekunde ? <strong>{zapisiCas(d.sekunde)}</strong> : <span style={{ opacity: .4 }}>—</span>}
                 </td>
                 <td style={{ ...TD, opacity: .7, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                   {d.zadnji_vpis ? new Date(d.zadnji_vpis).toLocaleDateString('sl-SI', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'}
