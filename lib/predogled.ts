@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { FlowClient, FlowContract, FlowData, FlowExpense, FlowInvoice, FlowOffer } from './pinartFlowStore';
 import type { Projekt } from './projekti';
 import type { Sodelavec } from './naloge';
+import type { MarketingKampanja, MarketingStatus, MarketingVrsta } from './marketing';
 import { PRICING_SERVICES, type PricingService } from './pricingCatalog';
 
 /**
@@ -303,6 +304,36 @@ export function demoPodatki(): FlowData {
 /* ── Demo sodelavci (ekipa) — samo za predogled »polno poslovanje«. Njihovi id-ji
    se ujemajo z Projekt.dodeljeni v demoRealZaOffer spodaj, da se v Delovnem pogledu
    projekta pokaze prava ekipa z imeni. ── */
+/* MARKETING V PREDOGLEDU (Tina, 31. 8. 2026: »na polno poslovanje naj izgleda
+   polno«). Demo je izlozba: prazna stran z eno ničlo ne pokaze, kaj orodje
+   zna. Datumi so relativni na danes, da nikoli ne zastarijo. */
+export function demoMarketing(): MarketingKampanja[] {
+  const dan = (zamik: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + zamik);
+    return d.toISOString().slice(0, 10);
+  };
+  const zdaj = new Date().toISOString();
+  const k = (
+    id: string, naslov: string, vrsta: MarketingVrsta, status: MarketingStatus,
+    od?: string, do_?: string, opis?: string,
+  ): MarketingKampanja => ({ id: `demo-mk-${id}`, naslov, vrsta, status, datumOd: od, datumDo: do_, opis, ustvarjeno: zdaj });
+
+  return [
+    k('1', 'Jesenska ponudba za obrtnike', 'email', 'aktivno', dan(-6), dan(9),
+      'Tri sporočila: napoved, ponudba, zadnji dan.'),
+    k('2', 'Instagram: zakulisje prenove', 'social', 'aktivno', dan(-2), dan(12),
+      'Šest objav, dve na teden, iz fotografij s terena.'),
+    k('3', 'Vprašalnik za nove stranke', 'vprasalnik', 'nacrtovano', dan(3), dan(30),
+      'Povezava na strani in v podpisu e-pošte.'),
+    k('4', 'Novoletna voščilnica', 'email', 'nacrtovano', dan(21), dan(24)),
+    k('5', 'Predstavitev nove storitve', 'social', 'osnutek', undefined, undefined,
+      'Manjka datum in besedilo prve objave.'),
+    k('6', 'Poletna akcija', 'email', 'zakljuceno', dan(-64), dan(-38),
+      'Odprtost 41 %, štiri povpraševanja.'),
+  ];
+}
+
 export function demoSodelavci(): Sodelavec[] {
   return [
     { id: 'demo-sod-tina', ime: 'Tina Zaletel', email: 'tina@pinart.si', vloga: 'admin', aktiven: true },

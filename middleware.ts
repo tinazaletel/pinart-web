@@ -231,6 +231,9 @@ export default async function middleware(request: NextRequest) {
     || pot === '/ai-politika'
     || /^\/povprasevanje(?:\/|$)/.test(pot)
     || /^\/p\//.test(pot)
+    /* Vprasalnik, ki ga izpolni stranka: javna pot z zetonom, enako kot portal.
+       Brez tega bi obrazec pristal za predzagonskim geslom (Tina, 31. 8. 2026). */
+    || /^\/v\//.test(pot)
     || pot === '/obvescanje';
 
   /* Pred-launch geslo-zid — skrijemo VES Flow do launcha:

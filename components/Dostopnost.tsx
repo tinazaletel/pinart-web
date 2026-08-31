@@ -18,6 +18,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { PersonSimple } from '@phosphor-icons/react';
 
 export const DOGODEK_DOSTOPNOST = 'pinart:odpri-dostopnost';
@@ -114,7 +115,10 @@ export default function Dostopnost({ gumb = false, jeEn = false, base = '' }: {
         </button>
       )}
 
-      {odprt && (
+      {/* PORTAL NA <body>: stranska vrstica ima transform, ta pa naredi iz nje
+          vsebovalni blok za position:fixed — okno je zato pristalo izven zaslona
+          (Tina, 31. 8. 2026). Ista past kot pri Pupinem domu. */}
+      {odprt && typeof document !== 'undefined' && createPortal((
         <>
           <div className="dost-zastor" onClick={() => setOdprt(false)} aria-hidden />
           <div className="dost-okno" role="dialog" aria-modal="true" aria-label={L('Dostopnost', 'Accessibility')}>
@@ -167,7 +171,7 @@ export default function Dostopnost({ gumb = false, jeEn = false, base = '' }: {
             </Link>
           </div>
         </>
-      )}
+      ), document.body)}
 
       <style jsx>{`
         .dost-gumb { position: fixed; left: 1.4rem; bottom: 4.9rem; z-index: 61; width: 2.3rem; height: 2.3rem; border-radius: 999px; border: 1px solid rgba(124,58,237,.4); background: rgba(255,255,255,.92); color: #111; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 .7rem 1.8rem rgba(17,17,17,.08); }
