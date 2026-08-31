@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import VprasalnikiPanel from './VprasalnikiPanel';
 import MobTabs from '@/components/MobTabs';
 import { useLocale } from 'next-intl';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
@@ -33,7 +34,7 @@ import {
 import styles from './MarketingWorkspace.module.css';
 import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
 
-type Zavihek = 'pregled' | 'objave' | 'kampanje' | 'predloge' | 'povezave';
+type Zavihek = 'pregled' | 'objave' | 'kampanje' | 'predloge' | 'povezave' | 'vprasalniki';
 type SocialKanal = 'instagram' | 'facebook' | 'linkedin' | 'tiktok' | 'youtube' | 'x' | 'threads' | 'pinterest';
 type Kanal = SocialKanal | 'lasten';
 type NacrtovanaObjava = { id: string; kanal: Kanal; kanalIme?: string; kanalUrl?: string; naslov?: string; besedilo: string; datum: string; ustvarjeno: string; nalogaId?: string };
@@ -356,9 +357,9 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <button className={styles.primary} type="button" onClick={() => odpriNovo()}><Plus size={19} /> {L('Nova kampanja', 'New campaign')}</button>
       </section>
 
-      <MobTabs label={L('Marketing pogledi', 'Marketing views')} vrednost={zavihek} naVrednost={id => setZavihek(id as Zavihek)} opcije={[{ id: 'pregled', label: L('Pregled', 'Overview') }, { id: 'objave', label: L('Objave', 'Posts') }, { id: 'kampanje', label: L('Kampanje', 'Campaigns') }, { id: 'predloge', label: L('Predloge', 'Templates') }, { id: 'povezave', label: L('Povezave', 'Connections') }]} />
+      <MobTabs label={L('Marketing pogledi', 'Marketing views')} vrednost={zavihek} naVrednost={id => setZavihek(id as Zavihek)} opcije={[{ id: 'pregled', label: L('Pregled', 'Overview') }, { id: 'objave', label: L('Objave', 'Posts') }, { id: 'kampanje', label: L('Kampanje', 'Campaigns') }, { id: 'predloge', label: L('Predloge', 'Templates') }, { id: 'vprasalniki', label: L('Vprašalniki', 'Questionnaires') }, { id: 'povezave', label: L('Povezave', 'Connections') }]} />
       <nav className={`${styles.tabs} mobtabs-hide`} aria-label={L('Marketing pogledi', 'Marketing views')}>
-        {([['pregled', L('Pregled', 'Overview')], ['objave', L('Objave', 'Posts')], ['kampanje', L('Kampanje', 'Campaigns')], ['predloge', L('Predloge', 'Templates')], ['povezave', L('Povezave', 'Connections')]] as const).map(([id, napis]) => (
+        {([['pregled', L('Pregled', 'Overview')], ['objave', L('Objave', 'Posts')], ['kampanje', L('Kampanje', 'Campaigns')], ['predloge', L('Predloge', 'Templates')], ['vprasalniki', L('Vprašalniki', 'Questionnaires')], ['povezave', L('Povezave', 'Connections')]] as const).map(([id, napis]) => (
           <button key={id} className={styles.tab} type="button" data-active={zavihek === id} onClick={() => setZavihek(id)}>{napis}</button>
         ))}
       </nav>
@@ -376,7 +377,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         </section>
         <section className={styles.quickGrid} aria-label={L('Hitri začetki', 'Quick starts')}>
           <button className={styles.quickCard} type="button" onClick={() => odpriNovo('email')}><EnvelopeSimple aria-hidden="true" /><h2>{L('E-pošta', 'Email')}</h2><p>{L('Dobrodošlice, novosti in premišljena sporočila ob pravem času.', 'Welcomes, updates and thoughtful messages at the right time.')}</p><span className={styles.cardLink}>{L('Ustvari sporočilo →', 'Create a message →')}</span></button>
-          <button className={styles.quickCard} type="button" onClick={() => odpriNovo('vprasalnik')}><Code aria-hidden="true" /><h2>{L('Vprašalnik', 'Questionnaire')}</h2><p>{L('Zberi kakovostna povpraševanja z obrazcem za svojo spletno stran.', 'Collect quality inquiries with a form for your website.')}</p><span className={styles.cardLink}>{L('Pripravi obrazec →', 'Build a form →')}</span></button>
+          <button className={styles.quickCard} type="button" onClick={() => setZavihek('vprasalniki')}><Code aria-hidden="true" /><h2>{L('Vprašalnik', 'Questionnaire')}</h2><p>{L('Zberi kakovostna povpraševanja z obrazcem za svojo spletno stran.', 'Collect quality inquiries with a form for your website.')}</p><span className={styles.cardLink}>{L('Pripravi obrazec →', 'Build a form →')}</span></button>
           <button className={styles.quickCard} type="button" onClick={() => odpriNovo('social')}><ShareNetwork aria-hidden="true" /><h2>{L('Družbena omrežja', 'Social media')}</h2><p>{L('Objave spremeni v jasen načrt z roki in opravili.', 'Turn posts into a clear plan with deadlines and tasks.')}</p><span className={styles.cardLink}>{L('Načrtuj objavo →', 'Plan a post →')}</span></button>
         </section>
         <section className={styles.designBanner} aria-labelledby="grafika-naslov">
@@ -404,6 +405,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
       {zavihek === 'kampanje' && Kampanje()}
       {zavihek === 'objave' && Objave()}
       {zavihek === 'predloge' && Predloge()}
+      {zavihek === 'vprasalniki' && <VprasalnikiPanel jeEn={locale === 'en'} base={base} />}
       {zavihek === 'povezave' && Povezave()}
 
       {obrazecOdprt && (
