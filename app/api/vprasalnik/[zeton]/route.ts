@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { omejiApi } from '@/lib/rate-limit';
+import { odgovorNaslov, posiljatelj } from '@/lib/posiljatelj';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { jeVeljavnaOblika, zgostiZeton } from '@/lib/vprasalnikZeton';
 import { izlusciKontakt, preveriOdgovore, type Vprasanje } from '@/lib/vprasalnik';
@@ -16,6 +18,48 @@ import { izlusciKontakt, preveriOdgovore, type Vprasanje } from '@/lib/vprasalni
  */
 
 export const dynamic = 'force-dynamic';
+
+/* Obvestilo o novem odgovoru. Namenoma NE vsebuje odgovorov samih: e-posta ni
+   sifrirana od konca do konca, vsebina povprasevanja pa je poslovni podatek
+   stranke — v pismu je zato samo, da je odgovor prisel, in kdo ga je oddal. */
+async function obvesti(
+  admin: ReturnType<typeof createAdminClient>,
+  organizationId: string,
+  naslovVprasalnika: string,
+  kontakt: { ime?: string; eposta?: string; podjetje?: string },
+): Promise<void> {
+  const kljuc = process.env.RESEND_API_KEY;
+  if (!admin || !kljuc) return;
+
+  const { data: skrbniki } = await admin
+    .from('organization_members')
+    .select('user_id, role')
+    .eq('organization_id', organizationId)
+    .in('role', ['owner', 'admin']);
+
+  const naslovi: string[] = [];
+  for (const s of skrbniki || []) {
+    try {
+      const { data } = await admin.auth.admin.getUserById(String(s.user_id));
+      if (data?.user?.email) naslovi.push(data.user.email);
+    } catch { /* brez e-poste pac ne obvestimo */ }
+  }
+  if (!naslovi.length) return;
+
+  const kdo = kontakt.podjetje || kontakt.ime || 'Nekdo';
+  await new Resend(kljuc).emails.send({
+    from: posiljatelj(),
+    to: naslovi,
+    replyTo: kontakt.eposta || odgovorNaslov(),
+    subject: `Nov odgovor na vprašalnik — ${kdo}`,
+    text: [
+      `${kdo} je izpolnil vprašalnik »${naslovVprasalnika}«.`,
+      kontakt.eposta ? `E-naslov: ${kontakt.eposta}` : '',
+      '',
+      'Odgovore prebereš v Flowu: Marketing → Vprašalniki → Odgovori.',
+    ].filter(Boolean).join('\n'),
+  });
+}
 
 async function najdi(zeton: string) {
   if (!jeVeljavnaOblika(zeton)) return { napaka: NextResponse.json({ napaka: 'Povezava ni veljavna.' }, { status: 404 }) };
@@ -79,5 +123,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ zet
   });
 
   if (error) return NextResponse.json({ napaka: 'Oddaja ni uspela.' }, { status: 500 });
+
+  /* Odgovor, ki ga nihce ne vidi, je izgubljena stranka: obvestimo lastnike in
+     skrbnike takoj. Ce poste ni nastavljene, tiho odnehamo — odgovor je v bazi
+     in ga uporabnica vidi v Marketingu (Tina, 31. 8. 2026). */
+  void obvesti(najdba.admin, v.organization_id, v.naslov, kontakt).catch(() => undefined);
+
   return NextResponse.json({ ok: true });
 }
