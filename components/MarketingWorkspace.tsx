@@ -412,7 +412,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
           )}
         </div>
         <div className={styles.heroPupa} aria-hidden>
-          <Image src="/flow-pupa-marketing-2.png" alt="" width={190} height={190} priority={false} />
+          <Image src="/flow-pupa-marketing-2.png" alt="" width={783} height={711} sizes="320px" priority={false} />
         </div>
         <button className={styles.primary} type="button" onClick={() => odpriNovo()}><Plus size={19} /> {L('Nova kampanja', 'New campaign')}</button>
       </section>
