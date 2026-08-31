@@ -19,6 +19,7 @@ const izVrstice = (v: Vrstica): Vprasalnik => ({
   uvod: v.uvod ? String(v.uvod) : undefined,
   vprasanja: Array.isArray(v.vprasanja) ? (v.vprasanja as Vprasanje[]) : [],
   odprt: v.odprt !== false,
+  projekt: v.projekt ? String(v.projekt) : undefined,
   ustvarjen: v.created_at ? String(v.created_at) : undefined,
 });
 
@@ -73,6 +74,7 @@ export async function shraniVprasalnik(v: Vprasalnik): Promise<boolean> {
   const supa = createClient();
   const { error } = await supa.from('vprasalniki').update({
     naslov: v.naslov, uvod: v.uvod ?? null, vprasanja: v.vprasanja, odprt: v.odprt,
+    projekt: v.projekt ?? null,
     updated_at: new Date().toISOString(),
   }).eq('id', v.id);
   return !error;
@@ -102,6 +104,7 @@ export async function odgovori(vprasalnikId?: string): Promise<Odgovor[]> {
       ime: o.ime ? String(o.ime) : undefined,
       eposta: o.eposta ? String(o.eposta) : undefined,
       podjetje: o.podjetje ? String(o.podjetje) : undefined,
+      projekt: o.projekt ? String(o.projekt) : undefined,
       pregledano: o.pregledano === true,
       ustvarjen: String(o.created_at || ''),
     };

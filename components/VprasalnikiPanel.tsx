@@ -19,6 +19,7 @@ import {
   oznaciPregledano, shraniVprasalnik, ustvariVprasalnik, vprasalniki as pridobiVprasalnike,
 } from '@/lib/vprasalnikOblak';
 import { privzetaVprasanja, type Odgovor, type Vprasalnik, type Vprasanje } from '@/lib/vprasalnik';
+import { preberiProjekti, type Projekt } from '@/lib/projekti';
 
 const TIPI: Array<{ id: Vprasanje['tip']; sl: string; en: string }> = [
   { id: 'kratko', sl: 'Kratek odgovor', en: 'Short answer' },
@@ -39,6 +40,9 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
   const [zeton, setZeton] = useState<{ id: string; zeton: string } | null>(null);
   const [kopirano, setKopirano] = useState(false);
   const [napaka, setNapaka] = useState('');
+  /* Vprašalnik je lahko splošno povpraševanje ali brief za konkreten projekt —
+     takrat odgovor pristane pri projektu (Tina, 31. 8. 2026). */
+  const [projekti, setProjekti] = useState<Projekt[]>([]);
 
   const osvezi = useCallback(async () => {
     setNalagam(true);
@@ -47,6 +51,9 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
   }, []);
 
   useEffect(() => { void osvezi(); }, [osvezi]);
+  useEffect(() => { try { setProjekti(preberiProjekti()); } catch { /* brez projektov */ } }, []);
+
+  const imeProjekta = (id?: string) => (id ? projekti.find(p => p.id === id)?.naslov || id : '');
 
   const povezava = (z: string) =>
     `${typeof window === 'undefined' ? '' : window.location.origin}${base}/v/${z}`;
@@ -158,6 +165,7 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
                 {v.vprasanja.length} {L('vprašanj', 'questions')}
                 {' · '}
                 {v.odgovorov ? `${v.odgovorov} ${L('odgovorov', 'answers')}` : L('brez odgovorov', 'no answers')}
+                {v.projekt && ` · ${imeProjekta(v.projekt)}`}
                 {!v.odprt && ` · ${L('zaprt', 'closed')}`}
               </small>
             </div>
@@ -193,6 +201,14 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
             <label className="vpp-vnos">
               <span>{L('Uvod za stranko', 'Intro for the client')}</span>
               <textarea rows={2} value={urejam.uvod || ''} onChange={e => setUrejam({ ...urejam, uvod: e.target.value })} />
+            </label>
+            <label className="vpp-vnos">
+              <span>{L('Projekt', 'Project')}</span>
+              <select value={urejam.projekt || ''} onChange={e => setUrejam({ ...urejam, projekt: e.target.value || undefined })}>
+                <option value="">{L('— splošno povpraševanje —', '— general inquiry —')}</option>
+                {projekti.map(p => <option key={p.id} value={p.id}>{p.naslov}</option>)}
+              </select>
+              <small>{L('Če izbereš projekt, odgovori pristanejo pri njem — uporabno za brief.', 'If you pick a project, answers land there — useful for a brief.')}</small>
             </label>
             <label className="vpp-stikalo">
               <input type="checkbox" checked={urejam.odprt} onChange={e => setUrejam({ ...urejam, odprt: e.target.checked })} />
@@ -253,7 +269,7 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
               <article key={o.id} className={'vpp-odgovor' + (o.pregledano ? ' pregledan' : '')}>
                 <header>
                   <strong>{o.podjetje || o.ime || L('Brez imena', 'No name')}</strong>
-                  <small>{new Date(o.ustvarjen).toLocaleString('sl-SI')}</small>
+                  <small>{o.projekt ? `${imeProjekta(o.projekt)} · ` : ''}{new Date(o.ustvarjen).toLocaleString('sl-SI')}</small>
                 </header>
                 <dl>
                   {odgovoriZa.vprasanja.map(v => {
@@ -319,6 +335,8 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
         .vpp-zapri { position: absolute; top: .9rem; right: .9rem; width: 2rem; height: 2rem; display: grid; place-items: center; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: 50%; background: #fff; cursor: pointer; }
         .vpp-vnos { display: grid; gap: .3rem; margin-bottom: .8rem; }
         .vpp-vnos span { font-size: .8rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: rgba(17,17,17,.6); }
+        .vpp-vnos small { font-size: .78rem; color: rgba(17,17,17,.55); }
+        .vpp-vnos select { width: 100%; box-sizing: border-box; padding: .6rem .8rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; background: #fff; font: inherit; font-size: .92rem; }
         .vpp-vnos input, .vpp-vnos textarea { width: 100%; box-sizing: border-box; padding: .6rem .8rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: .7rem; font: inherit; font-size: .92rem; }
         .vpp-stikalo { display: inline-flex; align-items: center; gap: .45rem; font-size: .88rem; margin-bottom: 1rem; }
 

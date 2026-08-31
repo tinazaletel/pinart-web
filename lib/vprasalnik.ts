@@ -30,6 +30,8 @@ export type Vprasalnik = {
   uvod?: string;
   vprasanja: Vprasanje[];
   odprt: boolean;
+  /* lokalni id projekta (Projekt.id); prazno = splosno povprasevanje */
+  projekt?: string;
   /* povezavo vidiš samo ob nastanku ali ob ponovni izdaji */
   zeton?: string;
   odgovorov?: number;
@@ -38,6 +40,7 @@ export type Vprasalnik = {
 
 export type Odgovor = {
   id: string;
+  projekt?: string;
   odgovori: Record<string, string | string[]>;
   ime?: string;
   eposta?: string;

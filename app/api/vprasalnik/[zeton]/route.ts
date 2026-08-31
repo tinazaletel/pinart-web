@@ -67,7 +67,7 @@ async function najdi(zeton: string) {
   if (!admin) return { napaka: NextResponse.json({ napaka: 'Vprašalniki niso nastavljeni.' }, { status: 503 }) };
 
   const { data } = await admin.from('vprasalniki')
-    .select('id, organization_id, naslov, uvod, vprasanja, odprt')
+    .select('id, organization_id, naslov, uvod, vprasanja, odprt, projekt')
     .eq('zeton_zgostitev', zgostiZeton(zeton))
     .maybeSingle();
 
@@ -116,6 +116,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ zet
   const { error } = await najdba.admin.from('vprasalnik_odgovori').insert({
     vprasalnik_id: v.id,
     organization_id: v.organization_id,
+    /* Odgovor podeduje projekt vprasalnika: tako pristane pri projektu in ne
+       na skupnem kupu (Tina, 31. 8. 2026). */
+    projekt: v.projekt ?? null,
     odgovori: izid.odgovori,
     ime: kontakt.ime ?? null,
     eposta: kontakt.eposta ?? null,
