@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, PaperPlaneRight, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip, Check, List } from '@phosphor-icons/react';
+import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, PaperPlaneRight, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip, Check, List, Eye, EyeSlash } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import Paginacija from '@/components/Paginacija';
 import MetricIcon from '@/components/MetricIcon';
 import ProjectDetailModern from '@/components/ProjectDetailModern';
 import SwapText from '@/components/SwapText';
-import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink } from '@/lib/pinartFlowStore';
+import { loadFlowData, loadProjectLinks, saveOfferAmount, saveOfferStatus, saveProjectLinks, type FlowClient, type FlowContract, type FlowExpense, type FlowInvoice, type FlowOffer, type FlowOfferStatus, type FlowProjectLink, saveOfferTitle, saveOffers } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled, demoSodelavci, demoRealZaOffer } from '@/lib/predogled';
 import { preberiPostoProjekta, dodajPosto, premakniPosto, nastaviOznakePoste, type PostaVnos } from '@/lib/postaDnevnik';
 import { preberiKlepet, dodajKlepet, nitId, type KlepetSporocilo } from '@/lib/klepet';
@@ -20,7 +20,7 @@ import { pullProjectMail, saveDraft, trashProjectMail, restoreProjectMail, delet
 import { posljiMail } from '@/lib/posta';
 import { type PodpisPodatki, podpisHtml, podpisPrazen } from '@/lib/podpis';
 import { aktivniLogo } from '@/lib/dokVidez';
-import { fazaProjekta, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
+import { fazaProjekta, izbrisiProjekt, preberiProjekti, shraniProjekt, type Projekt, type ProjektFaza, type ProjektStatus as ProjektEntitetaStatus } from '@/lib/projekti';
 import { preberiSodelavci, shraniSodelavci } from '@/lib/sodelavci';
 import Toast from '@/components/Toast';
 import KomunikacijaWorkspace from '@/components/KomunikacijaWorkspace';
@@ -247,6 +247,31 @@ const pwStyles = `
 .pw-dok-vrstica-ur{border-color:var(--purple);box-shadow:0 0 0 2px color-mix(in oklch,var(--purple) 20%,transparent)}
 .pw-dok-prazno-t{margin:.4rem 0;font:500 .85rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 72%,transparent)}
 .pw-dok-obrazec{display:flex;flex-direction:column;gap:.7rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line)}
+/* Ime projekta v glavi detajla je uredljivo: pero ob naslovu, vnos podeduje
+   pisavo naslova, da je videti kot popravljanje na mestu. */
+.pw-det-orodja{flex:none;display:inline-flex;align-items:flex-start;gap:.5rem}
+.pw-det-brisi{flex:none;display:inline-grid;place-items:center;width:2.1rem;height:2.1rem;padding:0;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:color-mix(in oklch,var(--ink) 50%,transparent);cursor:pointer;transition:color .15s ease,border-color .15s ease}
+.pw-det-brisi:hover{color:oklch(58% .19 25);border-color:color-mix(in oklch,oklch(58% .19 25) 40%,transparent)}
+.pw-det-brisi:focus-visible{outline:3px solid var(--purple);outline-offset:2px}
+.pw-det-naslov{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
+.pw-det-pero{flex:none;display:inline-grid;place-items:center;width:1.9rem;height:1.9rem;padding:0;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:color-mix(in oklch,var(--ink) 50%,transparent);cursor:pointer;opacity:.6;transition:opacity .15s ease,color .15s ease,border-color .15s ease}
+.pw-det-naslov:hover .pw-det-pero{opacity:1}
+.pw-det-pero:hover{color:var(--purple);border-color:color-mix(in oklch,var(--purple) 40%,transparent)}
+.pw-det-pero:focus-visible{opacity:1;outline:3px solid var(--purple);outline-offset:2px}
+.pw-det-naslov-vnos{font:inherit;color:inherit;width:min(100%,22ch);box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.6rem;padding:.05rem .5rem;background:#fff}
+.pw-det-naslov-vnos:focus{outline:none;border-color:var(--purple)}
+/* Opomba ob povezavi (geslo, uporabnisko ime …) — oko jo zakrije/odkrije. */
+.pw-dok-opomba-polje{position:relative;display:block}
+.pw-dok-opomba-polje input{padding-right:2.4rem}
+.pw-dok-opomba-polje button{position:absolute;right:.35rem;top:50%;transform:translateY(-50%);display:inline-grid;place-items:center;width:1.9rem;height:1.9rem;padding:0;border:none;border-radius:.5rem;background:transparent;color:color-mix(in oklch,var(--ink) 55%,transparent);cursor:pointer}
+.pw-dok-opomba-polje button:hover{color:var(--purple)}
+.pw-dok-namig{margin:-.25rem 0 0;font:500 .72rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 60%,transparent)}
+.pw-dok-glavni{flex:1;min-width:0;display:flex;flex-direction:column;gap:.35rem}
+.pw-dok-opomba{display:inline-flex;align-items:center;gap:.35rem;min-width:0;font:500 .78rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--ink) 78%,transparent)}
+.pw-dok-opomba>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw-dok-opomba-zakrita{letter-spacing:.14em}
+.pw-dok-opomba button{flex:none;display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;padding:0;border:none;border-radius:.45rem;background:transparent;color:color-mix(in oklch,var(--ink) 55%,transparent);cursor:pointer}
+.pw-dok-opomba button:hover{color:var(--purple)}
 .pw-dok-prazno{border:0;background:none;text-align:left;cursor:pointer;font:inherit;color:inherit;padding:0}
 .pw-dok-prazno:hover{color:var(--purple)}
 .pw-ai-panel{flex:none;width:360px}
@@ -1104,6 +1129,15 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
   const [dodajOdprt, setDodajOdprt] = useState(false);
   const [dokOdprt, setDokOdprt] = useState(false);   /* Dokumentacija slide (upravljanje povezav) */
   const [dokUredi, setDokUredi] = useState<number | null>(null);   /* indeks povezave v urejanju */
+  /* Opomba ob povezavi (geslo, uporabnisko ime, kaj je v mapi). Oko pove, ali
+     naj bo v seznamu zakrita — ni nujno geslo, zato je polje splosno. */
+  const [linkOpomba, setLinkOpomba] = useState('');
+  const [linkSkrita, setLinkSkrita] = useState(false);
+  const [razkrite, setRazkrite] = useState<number[]>([]);
+  /* Preimenovanje projekta kar v glavi detajla (Tina, 1. 9. 2026: "ne morem
+     editirati imena projekta"). */
+  const [naslovUredim, setNaslovUredim] = useState(false);
+  const [naslovOsnutek, setNaslovOsnutek] = useState('');
   /* SLIDE "Vsi <tip>" z desne (pogodbe/računi/stroški) — kartica pokaže le povzetek
      (najnovejših 5), poln seznam z iskalnikom+paginacijo je v slideu. Stanje se
      resetira ob menjavi projekta (useEffect spodaj) in ob zaprtju (closeVsi). */
@@ -1469,18 +1503,57 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     if (samoOgled || !selectedId) return;
     const next = links.filter((_, i) => i !== index);
     setLinks(next); saveProjectLinks(selectedId, next);
-    if (dokUredi === index) { setDokUredi(null); setLinkOznaka(''); setLinkUrl(''); }
+    setRazkrite([]);
+    if (dokUredi === index) { setDokUredi(null); pocistiObrazecLink(); }
   };
+  const pocistiObrazecLink = () => { setLinkOznaka(''); setLinkUrl(''); setLinkOpomba(''); setLinkSkrita(false); };
+  const preklopiRazkrij = (index: number) =>
+    setRazkrite(prev => (prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]));
   /* shrani povezavo: če je dokUredi nastavljen, POSODOBI, sicer DODAJ novo */
   const shraniLink = () => {
     if (samoOgled || !selectedId) return;
     const oznaka = linkOznaka.trim(); const url = linkUrl.trim();
     if (!oznaka || !url) return;
-    const next = dokUredi !== null ? links.map((l, i) => (i === dokUredi ? { oznaka, url } : l)) : [...links, { oznaka, url }];
+    const opomba = linkOpomba.trim();
+    const vnos: FlowProjectLink = { oznaka, url, ...(opomba ? { opomba, skrita: linkSkrita } : {}) };
+    const next = dokUredi !== null ? links.map((l, i) => (i === dokUredi ? vnos : l)) : [...links, vnos];
     setLinks(next); saveProjectLinks(selectedId, next);
-    setLinkOznaka(''); setLinkUrl(''); setDokUredi(null);
+    pocistiObrazecLink(); setDokUredi(null); setRazkrite([]);
   };
-  const zacniUrejanjeLink = (index: number) => { setDokUredi(index); setLinkOznaka(links[index].oznaka); setLinkUrl(links[index].url); };
+  const zacniUrejanjeLink = (index: number) => {
+    setDokUredi(index);
+    setLinkOznaka(links[index].oznaka); setLinkUrl(links[index].url);
+    setLinkOpomba(links[index].opomba || ''); setLinkSkrita(!!links[index].skrita);
+  };
+
+  /* PREIMENOVANJE PROJEKTA — pravi projekt piše v svoj zapis (naslov), projekt
+     izpeljan iz ponudbe pa v ponudbo, ker od tam dobi ime. */
+  const shraniNaslovProjekta = () => {
+    if (!selected) { setNaslovUredim(false); return; }
+    const nov = naslovOsnutek.trim();
+    setNaslovUredim(false);
+    if (samoOgled || !nov || nov === selected.offer.title) return;
+    if (selected.real) naSaveBrief(selected.real, { naslov: nov });
+    else { setOffers(prev => prev.map(o => (o.id === selected.offer.id ? { ...o, title: nov } : o))); saveOfferTitle(selected.offer.id, nov); }
+  };
+
+  /* BRISANJE PROJEKTA (Tina, 1. 9. 2026: "mam kup sranja iz testnega okolja in
+     ne morem zbrisat"). Pravi projekt se briše mehko (nagrobnik se sinhronizira,
+     zato se ne vrne z druge naprave). Vrstica, ki je v resnici PONUDBA, pa nima
+     svojega zapisa — tam brišemo ponudbo in to jasno povemo v vprašanju. */
+  const izbrisiIzbrani = () => {
+    if (!selected || samoOgled) return;
+    const ime = selected.offer.title || L('ta projekt', 'this project');
+    const vprasanje = selected.real
+      ? L(`Izbrišem projekt »${ime}«?\n\nPonudbe, pogodbe, računi in stroški ostanejo — izgine samo projekt.`,
+          `Delete project “${ime}”?\n\nOffers, contracts, invoices and expenses stay — only the project is removed.`)
+      : L(`»${ime}« je ponudba, iz katere je nastala ta vrstica. Če jo izbrišeš, izgine tudi ponudba. Nadaljujem?`,
+          `“${ime}” is the offer this row comes from. Deleting it removes the offer as well. Continue?`);
+    if (!window.confirm(vprasanje)) return;
+    if (selected.real) setRealProjekti(izbrisiProjekt(selected.real.id));
+    else { const next = offers.filter(o => o.id !== selected.offer.id); setOffers(next); saveOffers(next); }
+    goBack();
+  };
 
   /* poštni odjemalec — izlušč iz tabelnega, da ga uporabim tudi v komunikacijskem panelu (Delovni pogled) */
   const komVsebina = () => (
@@ -1787,12 +1860,23 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
     ) : (
       <section ref={storyRef} className={`${styles.projectStory} pw-stran`}>
         <button type="button" className="pw-nazaj" onClick={goBack} aria-label={L('Nazaj na seznam projektov', 'Back to projects list')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M19 12H5M11 18l-6-6 6-6" /></svg> {L('Nazaj', 'Back')}</button>
-        <header><div><p className={styles.eyebrow}>{L('PROJEKT', 'PROJECT')} · {selected.offer.number || L('BREZ ŠTEVILKE', 'NO NUMBER')}</p><h2>{selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-statusured" data-editable="" title={L('Spremeni status', 'Change status')}>
+        <header><div><p className={styles.eyebrow}>{L('PROJEKT', 'PROJECT')} · {selected.offer.number || L('BREZ ŠTEVILKE', 'NO NUMBER')}</p><h2 className="pw-det-naslov">{naslovUredim ? (
+          <input className="pw-det-naslov-vnos" value={naslovOsnutek} autoFocus aria-label={L('Ime projekta', 'Project name')}
+            onChange={e => setNaslovOsnutek(e.target.value)}
+            onBlur={shraniNaslovProjekta}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); } if (e.key === 'Escape') { setNaslovUredim(false); } }} />
+        ) : (<>{selected.offer.title}{!samoOgled && (
+          <button type="button" className="pw-det-pero" title={L('Preimenuj projekt', 'Rename project')} aria-label={L('Preimenuj projekt', 'Rename project')}
+            onClick={() => { setNaslovOsnutek(selected.offer.title); setNaslovUredim(true); }}><NotePencil size={16} /></button>
+        )}</>)}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-orodja"><span className="pw-det-statusured" data-editable="" title={L('Spremeni status', 'Change status')}>
           <button type="button" className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone} aria-haspopup="listbox" aria-expanded={statusUrejam === 'det-' + selected.offer.id} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={e => { e.stopPropagation(); setStatusUrejam(statusUrejam === 'det-' + selected.offer.id ? null : 'det-' + selected.offer.id); }}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
           {statusUrejam === 'det-' + selected.offer.id && (selected.real
             ? statusMeni('det-' + selected.offer.id, Object.entries(projektStatusOznaka) as Array<[string, string]>, selected.real.status, v => naStatusProjekt(selected.real!, v as ProjektEntitetaStatus))
             : statusMeni('det-' + selected.offer.id, Object.entries(statusLabel) as Array<[string, string]>, selected.offer.status, v => naStatusOffer(selected.offer.id, v as FlowOfferStatus)))}
-        </span></header>
+        </span>{!samoOgled && (
+          <button type="button" className="pw-det-brisi" onClick={izbrisiIzbrani}
+            title={L('Izbriši projekt', 'Delete project')} aria-label={L('Izbriši projekt', 'Delete project')}><Trash size={16} /></button>
+        )}</span></header>
         {pogledDetajl === 'moderni' ? (
           <ProjectDetailModern
             data={selected}
@@ -1993,8 +2077,24 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
                 <p className={styles.eyebrow} style={{ margin: 0 }}>{dokUredi !== null ? L('UREJANJE POVEZAVE', 'EDITING LINK') : L('NOVA POVEZAVA', 'NEW LINK')}</p>
                 <label className="pw-naloga-l"><span>{L('Oznaka', 'Label')}</span><input type="text" value={linkOznaka} onChange={e => setLinkOznaka(e.target.value)} placeholder={L('npr. Figma · Dizajn', 'e.g. Figma · Design')} /></label>
                 <label className="pw-naloga-l"><span>{L('Naslov (URL)', 'Address (URL)')}</span><input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://…" /></label>
+                {/* Opomba ob povezavi: geslo, uporabnisko ime, kaj je v mapi.
+                    Oko hkrati zakrije pisanje in oznaci, da naj bo zakrita tudi
+                    v seznamu — polje je splosno, ni nujno geslo. */}
+                <label className="pw-naloga-l"><span>{L('Opomba (neobvezno)', 'Note (optional)')}</span>
+                  <span className="pw-dok-opomba-polje">
+                    <input type={linkSkrita ? 'password' : 'text'} value={linkOpomba} autoComplete="off"
+                      onChange={e => setLinkOpomba(e.target.value)}
+                      placeholder={L('npr. geslo, uporabniško ime, kaj je notri', 'e.g. password, username, what is inside')} />
+                    <button type="button" onClick={() => setLinkSkrita(v => !v)} aria-pressed={linkSkrita}
+                      title={linkSkrita ? L('Opomba bo zakrita', 'Note will be hidden') : L('Skrij opombo', 'Hide note')}
+                      aria-label={linkSkrita ? L('Opomba bo zakrita', 'Note will be hidden') : L('Skrij opombo', 'Hide note')}>
+                      {linkSkrita ? <EyeSlash size={16} /> : <Eye size={16} />}
+                    </button>
+                  </span>
+                </label>
+                <p className="pw-dok-namig">{L('Z očesom opombo zakriješ. Ostane na tej napravi in ni šifrirana.', 'The eye hides the note. It stays on this device and is not encrypted.')}</p>
                 <div className="pw-naloga-akcije">
-                  {dokUredi !== null && <button type="button" className="pw-naloga-preklic" onClick={() => { setDokUredi(null); setLinkOznaka(''); setLinkUrl(''); }}>{L('Prekliči', 'Cancel')}</button>}
+                  {dokUredi !== null && <button type="button" className="pw-naloga-preklic" onClick={() => { setDokUredi(null); pocistiObrazecLink(); }}>{L('Prekliči', 'Cancel')}</button>}
                   <button type="button" className="pw-naloga-shrani" onClick={shraniLink} disabled={!linkOznaka.trim() || !linkUrl.trim()}>{dokUredi !== null ? L('Shrani spremembe', 'Save changes') : L('+ Dodaj povezavo', '+ Add link')}</button>
                 </div>
               </div>
@@ -2003,7 +2103,23 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
               <div className="pw-dok-linki">
                 {links.map((link, index) => (
                   <div key={`${link.url}-${index}`} className={`pw-dok-vrstica${dokUredi === index ? ' pw-dok-vrstica-ur' : ''}`}>
-                    <a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}<span className="pw-dok-url">{link.url}</span></a>
+                    <span className="pw-dok-glavni">
+                      <a href={link.url} target="_blank" rel="noopener noreferrer">{link.oznaka}<span className="pw-dok-url">{link.url}</span></a>
+                      {link.opomba && (
+                        <span className="pw-dok-opomba">
+                          <span className={link.skrita && !razkrite.includes(index) ? 'pw-dok-opomba-zakrita' : ''}>
+                            {link.skrita && !razkrite.includes(index) ? '••••••••' : link.opomba}
+                          </span>
+                          {link.skrita && (
+                            <button type="button" onClick={() => preklopiRazkrij(index)}
+                              title={razkrite.includes(index) ? L('Skrij', 'Hide') : L('Pokaži', 'Show')}
+                              aria-label={razkrite.includes(index) ? L('Skrij opombo', 'Hide note') : L('Pokaži opombo', 'Show note')}>
+                              {razkrite.includes(index) ? <EyeSlash size={15} /> : <Eye size={15} />}
+                            </button>
+                          )}
+                        </span>
+                      )}
+                    </span>
                     {!samoOgled && <span className="pw-dok-akc">
                       <button type="button" className="pw-dok-uredi" onClick={() => zacniUrejanjeLink(index)}>{L('Uredi', 'Edit')}</button>
                       <button type="button" className="pw-dok-brisi" onClick={() => removeLink(index)} aria-label={`${L('Izbriši', 'Delete')} ${link.oznaka}`}>✕</button>

@@ -326,6 +326,16 @@ export const saveOffers = (offers: FlowOffer[]) => {
   scheduleCloudSync(next);
 };
 
+/* Preimenovanje projekta/ponudbe iz glave detajla. Enak vzorec kot znesek:
+   lokalno takoj, v oblak z rednim usklajevanjem. */
+export const saveOfferTitle = (offerId: string, title: string) => {
+  const data = loadFlowData();
+  const offers = data.offers.map(offer => offer.id === offerId ? { ...offer, title, updatedAt: new Date().toISOString() } : offer);
+  localStorage.setItem(FLOW_KEY, JSON.stringify({ ...data, offers }));
+  window.dispatchEvent(new CustomEvent('pinart-flow-change', { detail: { key: 'offers' } }));
+  scheduleCloudSync({ ...data, offers });
+};
+
 export const saveOfferAmount = (offerId: string, agreedAmount: number) => {
   const data = loadFlowData();
   const offers = data.offers.map(offer => offer.id === offerId ? { ...offer, agreedAmount, updatedAt: new Date().toISOString() } : offer);
@@ -388,7 +398,10 @@ export const saveOfferStatus = (offerId: string, status: FlowOfferStatus) => {
 /* Povezave do zunanjih datotek projekta (Figma/Miro/IDD/mapa Drive ipd.) —
    "05 · DOKUMENTACIJA" v detajlu projekta. Ločena, lahka shramba (ni del
    FlowData/cloud sinhronizacije): kljuc offer.id -> seznam povezav. */
-export type FlowProjectLink = { oznaka: string; url: string };
+/* opomba = prosto besedilo ob povezavi (geslo, uporabnisko ime, kaj je v mapi);
+   skrita = v seznamu je zakrita, dokler je uporabnica ne odkrije z ocesom.
+   Shramba je lokalna in NEsifrirana — namenjena je udobju, ne trezorju. */
+export type FlowProjectLink = { oznaka: string; url: string; opomba?: string; skrita?: boolean };
 
 const PROJECT_LINKS_KEY = 'pinart-flow-projekt-linki';
 

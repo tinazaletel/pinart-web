@@ -175,7 +175,7 @@ export default function SodelavciPanel() {
       {preview === 'mine' && (
         <section className={styles.card}>
           <h2>Ekipa v oblaku</h2>
-          <p>Kdo ima <b>resničen dostop</b> do delovnega prostora — člani in čakajoča vabila. Vabilo se sprejme, ko se oseba prijavi z istim e-naslovom.</p>
+          <p>Kdo ima <b>resničen dostop</b> do delovnega prostora — člani in čakajoča vabila. Vabilo se sprejme, ko se oseba prijavi z istim <span style={{ whiteSpace: 'nowrap' }}>e-naslovom</span>.</p>
 
           {ekipa?.sedezi && (
             <p className={styles.opomba}>
@@ -270,7 +270,7 @@ export default function SodelavciPanel() {
 
       <section className={styles.card}>
         <h2>Sodelavci</h2>
-        <p>Imena za <b>dodeljevanje nalog</b> in prenos ob odhodu. Za resničen dostop (login) glej »Ekipa v oblaku« zgoraj.</p>
+        <p>Imena, med katerimi izbiraš, ko dodeljuješ naloge. To niso prijave v Flow — če se mora nekdo prijaviti, ga povabi zgoraj v »Ekipi v oblaku«.</p>
 
         {sodelavci.length > 0 && (
           <ul className={styles.ekipaSeznam}>
