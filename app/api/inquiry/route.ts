@@ -15,6 +15,9 @@ export async function POST(request: Request) {
   if (!omejenNiz(body.name, 120, true) || !jeEmail(body.email) || !omejenNiz(body.brief, 5000, true)) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
+  /* Neobvezna polja obrazca: podjetje, proracun, termin. Ce niso poslana ali so
+     predolga, gredo naprej kot prazen niz — obrazec zaradi njih ne pade. */
+  const neobvezno = (v: unknown, meja = 160) => (omejenNiz(v, meja) ? String(v) : '');
   if (!endpoint) {
     return NextResponse.json({ error: 'Google Sheets webhook is not configured' }, { status: 503 });
   }
@@ -23,9 +26,18 @@ export async function POST(request: Request) {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     /* Pošlji SAMO potrjena polja (ne cel body) — da nevalidirane dodatne
-       ključe iz zahteve ne posredujemo naprej na Google Sheets webhook. */
+       ključe iz zahteve ne posredujemo naprej na Google Sheets webhook.
+       Podjetje, proracun in termin so med utrjevanjem izpadli, zato je bila
+       zadeva maila "… undefined", Proracun in Rok pa "-" (Tina, 1. 9. 2026). */
     body: JSON.stringify({
       name: String(body.name), email: String(body.email), brief: String(body.brief),
+      company: neobvezno(body.company),
+      budget: neobvezno(body.budget),
+      timing: neobvezno(body.timing),
+      /* Skrita polja obrazca — skripta iz njih sestavi zadevo in loci vir. */
+      type: neobvezno(body.type, 60),
+      locale: neobvezno(body.locale, 10),
+      source: neobvezno(body.source, 60),
       submittedAt: new Date().toISOString(),
     }),
     redirect: 'follow',
