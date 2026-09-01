@@ -10,6 +10,7 @@ import { createPortal } from 'react-dom';
 import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus, List, FunnelSimple, Check } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, dodajUdelezenca, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
+import { prevzemiOsnutek } from '@/lib/komOsnutek';
 import { preberiVsePoste, premakniPosto, nastaviOznakePoste, nastaviPopravekPoste, dodajPosto, oznaciPostoPrebrano, oznaciPostoIzbrisano, izbrisiPostoTrajno, type PostaVnos } from '@/lib/postaDnevnik';
 import { pullAllMail, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent, updateProjectMailRevision } from '@/lib/pinartMailCloud';
 import { PriponkeSeznam, PriponkeVnos, datotekeIzOdlozisca } from '@/components/Priponke';
@@ -122,6 +123,19 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
      na streznik gredo potem samo poti — glej lib/priponke.ts in lib/posta.ts.
      pisiSklic zdruzi priponke enega sestavka v svojo mapo. */
   const [pisiPriponke, setPisiPriponke] = useState<Priponka[]>([]);
+
+  /* Osnutek iz marketinškega zaporedja: korak odpre pisanje z že vpisanim
+     besedilom in zadevo. Osnutek se ob prevzemu pobriše, da se ne odpre
+     drugič (Tina, 1. 9. 2026). */
+  useEffect(() => {
+    const o = prevzemiOsnutek();
+    if (!o) return;
+    setPisiVrsta('nova');
+    if (o.za) setPisiZa(o.za);
+    if (o.zadeva) setPisiZadeva(o.zadeva);
+    if (o.telo) setPisiTelo(o.telo);
+    if (o.projekt) setPisiProjekt(o.projekt);
+  }, []);
   const [pisiSklic, setPisiSklic] = useState('');
   const novSklic = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `m-${Date.now()}`);
   const [toast, setToast] = useState('');

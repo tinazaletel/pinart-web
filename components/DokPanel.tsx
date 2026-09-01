@@ -28,14 +28,18 @@ export type DokPanelProps = {
   children: ReactNode;
   onZapri: () => void;
   jeEn?: boolean;
+  /* Kaj uporabnica tu dela — Pupa s tem pozdravi po zadevi, ne na splošno
+     (npr. »pripravljaš kampanjo«). */
+  pupaDelo?: string;
 };
 
-export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja, children, onZapri, jeEn = false }: DokPanelProps) {
+export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja, children, onZapri, jeEn = false, pupaDelo }: DokPanelProps) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const panelRef = useRef<HTMLDivElement>(null);
   const vrniFokus = useRef<HTMLElement | null>(null);
   const [montiran, setMontiran] = useState(false);
   useEffect(() => setMontiran(true), []);
+
 
   /* Stran za panelom obmiruje: ko je panel odprt, se premika samo panel. Sicer se
      ob drsenju nad njim pomika stran spodaj, kar je videti kot dva drsnika hkrati.
@@ -54,18 +58,33 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
   }, [odprt]);
 
   /* Esc zapre, fokus gre v panel in se ob zaprtju vrne tja, od koder je prišel.
-     Brez tega je panel za tipkovnico past — glej docs/DOSTOPNOST-pregled.md. */
+     Brez tega je panel za tipkovnico past — glej docs/DOSTOPNOST-pregled.md.
+     POZOR: ucinek sme biti odvisen SAMO od `odprt`. Klicatelji podajajo
+     onZapri kot vgnezdeno funkcijo, ki je ob vsakem izrisu nova; ce je v
+     odvisnostih, se ucinek po vsaki tipki pocisti in znova pozene, fokus pa
+     odleti iz polja nazaj na panel — »napisem crko in me vrze ven«
+     (Tina, 1. 9. 2026). Zato gre onZapri v ref. */
+  const zapriRef = useRef(onZapri);
+  useEffect(() => { zapriRef.current = onZapri; });
+
+  /* PANEL SI FOKUSA NE VZAME. Vsak poskus (tudi enkraten, ob odprtju) je v
+     praksi konceval tako, da je fokus pristal na okviru panela — uporabnica je
+     videla, kako se cel desni panel obarva vijolicno, in pisanja ni bilo
+     (Tina, 1. 9. 2026). Pisanje je pomembnejse od samodejnega fokusa; panel je
+     s tipkovnico dosegljiv s tabulatorjem, izhod pa ima z Esc in gumbom Zapri.
+     Ob zaprtju fokus vrnemo tja, od koder je prisel, a le ce je bil v panelu. */
+  useEffect(() => {
+    if (odprt) { vrniFokus.current = document.activeElement as HTMLElement; return; }
+    return;
+  }, [odprt]);
+
+  /* Esc zapre panel; poslusalec ni vezan na izris, zato ne posega v fokus. */
   useEffect(() => {
     if (!odprt) return;
-    vrniFokus.current = document.activeElement as HTMLElement;
-    panelRef.current?.focus();
-    const naTipko = (e: KeyboardEvent) => { if (e.key === 'Escape') onZapri(); };
+    const naTipko = (e: KeyboardEvent) => { if (e.key === 'Escape') zapriRef.current(); };
     document.addEventListener('keydown', naTipko);
-    return () => {
-      document.removeEventListener('keydown', naTipko);
-      vrniFokus.current?.focus?.();
-    };
-  }, [odprt, onZapri]);
+    return () => document.removeEventListener('keydown', naTipko);
+  }, [odprt]);
 
   if (!odprt || !montiran) return null;
 
@@ -90,7 +109,20 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
         {/* Papir: isti občutek kot natisnjen dokument, zato bela stran s tihimi robovi. */}
         <div className="dp-papir">
           {nadnaslov && <p className="dp-nad">{nadnaslov}</p>}
-          <h1 className="dp-naslov">{naslov}</h1>
+          <div className="dp-naslov-vrsta">
+            <h1 className="dp-naslov">{naslov}</h1>
+            {/* Gumb za Pupo ob naslovu: krogca spodaj desno marsikdo ne poveže z
+                AI, zato je vstop tam, kjer je delo (Tina, 1. 9. 2026). Odpre
+                obstoječo Pupo — panel se ob njej umakne levo. */}
+            <button
+              type="button"
+              className="dp-pupa"
+              onClick={() => window.dispatchEvent(new CustomEvent('pupa:odpri', { detail: { nacin: 'chat', delo: pupaDelo } }))}
+            >
+              <span className="dp-pupa-orb" aria-hidden />
+              {L('Vprašaj Pupo', 'Ask Pupa')}
+            </button>
+          </div>
           {podnaslov && <p className="dp-pod">{podnaslov}</p>}
           <div className="dp-vsebina">{children}</div>
         </div>
@@ -101,6 +133,10 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
       <style jsx>{`
         .dp-back { position: fixed; inset: 0; z-index: 70; background: oklch(30% .03 300 / .22); animation: dpFade .2s ease; }
         @keyframes dpFade { from { opacity: 0; } to { opacity: 1; } }
+        /* Ko je Pupa odprta, se panel umakne levo za njeno sirino — delata
+           skupaj, ne eden cez drugega (Tina, 1. 9. 2026). */
+        :global(body.pupa-odprta) .dp { right: var(--pupa-sirina, 0); }
+        :global(body.pupa-odprta) .dp-back { right: var(--pupa-sirina, 0); }
         .dp { position: fixed; top: 0; right: 0; z-index: 71; height: 100dvh; width: min(46rem, 94vw); display: flex; flex-direction: column;
               background: rgba(255,255,255,.86); backdrop-filter: blur(24px) saturate(1.4); -webkit-backdrop-filter: blur(24px) saturate(1.4);
               border-left: 1px solid rgba(255,255,255,.7); box-shadow: -18px 0 50px oklch(40% .08 300 / .18);
@@ -119,6 +155,16 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
         /* Stran, ne okno: bel papir z velikodušnimi robovi, kot v tisku. */
         .dp-papir { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0 1rem; padding: 2.4rem clamp(1.4rem, 4vw, 3rem) 3rem;
                     background: #fff; border-radius: 1rem 1rem 0 0; box-shadow: 0 -2px 24px oklch(40% .08 300 / .08); }
+        .dp-naslov-vrsta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .dp-pupa { flex: none; display: inline-flex; align-items: center; gap: .45rem;
+                   padding: .5rem .9rem; border: 1px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 40%, transparent);
+                   border-radius: 999px; background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 8%, #fff);
+                   font: 750 .8rem var(--font-sans), sans-serif; color: oklch(42% .16 300); cursor: pointer;
+                   transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+        .dp-pupa:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.12);
+                         background: color-mix(in oklch, var(--purple, oklch(66% .2 297)) 14%, #fff); }
+        .dp-pupa-orb { width: 1.05rem; height: 1.05rem; border-radius: 50%;
+                       background: conic-gradient(from 210deg, oklch(70% .19 300), oklch(72% .16 200), oklch(80% .13 150), oklch(78% .16 60), oklch(70% .19 300)); }
         .dp-nad { margin: 0 0 .3rem; font: 800 .62rem var(--font-sans), sans-serif; letter-spacing: .18em; text-transform: uppercase; color: var(--purple, oklch(60% .2 297)); }
         /* --font-serif-flow (DM Serif), NE --font-serif. Panel visi v portalu na
            <body>, torej zunaj .shell, kjer je --font-serif preslikan v Flow serif.

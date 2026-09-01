@@ -30,7 +30,10 @@ const TIPI: Array<{ id: Vprasanje['tip']; sl: string; en: string }> = [
   { id: 'stevilka', sl: 'Številka', en: 'Number' },
 ];
 
-export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: boolean; base?: string }) {
+export default function VprasalnikiPanel(
+  { jeEn = false, base = '', zacetniNabor = null, naNabor }:
+  { jeEn?: boolean; base?: string; zacetniNabor?: string | null; naNabor?: () => void },
+) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [seznam, setSeznam] = useState<Vprasalnik[]>([]);
   const [nalagam, setNalagam] = useState(true);
@@ -46,6 +49,16 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
   /* Brief za celostno podobo in povprasevanje za spletno stran nista isti
      pogovor — zato najprej izberes nabor (Tina, 31. 8. 2026). */
   const [izbiraNabora, setIzbiraNabora] = useState(false);
+  /* Predloga iz Marketinga lahko pove, kateri nabor naj se odpre — takrat
+     preskocimo izbiro in gremo naravnost v pravi vprasalnik
+     (Tina, 31. 8. 2026: »kaksna je razlika med povprasevanjem in vprasalnikom«). */
+  useEffect(() => {
+    if (!zacetniNabor) return;
+    const n = NABORI.find(v => v.id === zacetniNabor);
+    naNabor?.();
+    if (n) void nov(n); else setIzbiraNabora(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zacetniNabor]);
 
   const osvezi = useCallback(async () => {
     setNalagam(true);
