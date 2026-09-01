@@ -223,11 +223,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
   async function odpriZgodovino() { setZgodovina(await nalozPogovore()); setZgodovinaOdprta(true); }
   async function naloziPogovor(id: string) { const spor = await nalozSporocila(id); setPogovorId(id); setPupaSpor(spor); setZgodovinaOdprta(false); }
-  function novPogovor() { setPupaSpor([]); setPogovorId(null); setZgodovinaOdprta(false); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
+  function novPogovor() { setPupaSpor([]); setPogovorId(null); setZgodovinaOdprta(false); setZive([]); setOdhajajo([]); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
   async function briseZgodovino(id: string) {
     await izbrisiPogovor(id);
     setZgodovina(prev => prev.filter(z => z.id !== id));
-    if (id === pogovorId) { setPupaSpor([]); setPogovorId(null); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
+    if (id === pogovorId) { setPupaSpor([]); setPogovorId(null); setZive([]); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
   }
 
   /* Razvojna zavora za preizkus cakalne vrste: ?pocasi=1 zadrzi Pupin odgovor
