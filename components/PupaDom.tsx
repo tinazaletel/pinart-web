@@ -1072,19 +1072,40 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd { position: relative; min-height: calc(100dvh - 3rem); overflow: hidden; display: grid; place-items: center; }
         /* EDINO ozadje: fiksno čez cel zaslon (ne panel-v-panelu) */
         .pd-aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; filter: blur(70px); opacity: .5; }
-        .pd-aurora i { position: absolute; display: block; border-radius: 50%; }
-        .pd-aurora .a1 { width: 44vw; height: 44vw; top: -10vw; left: -8vw; background: radial-gradient(circle, oklch(72% .16 300 / .85), transparent 68%); animation: pdFloat 24s ease-in-out infinite; }
-        .pd-aurora .a2 { width: 40vw; height: 40vw; top: 20vw; right: -10vw; background: radial-gradient(circle, oklch(78% .13 200 / .8), transparent 68%); animation: pdFloat 28s ease-in-out infinite reverse; }
-        .pd-aurora .a3 { width: 36vw; height: 36vw; bottom: -12vw; left: 26vw; background: radial-gradient(circle, oklch(80% .12 150 / .75), transparent 68%); animation: pdFloat 32s ease-in-out infinite; }
-        @keyframes pdFloat { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(2vw,-2vw) scale(1.06); } }
+        /* Oblaki niso krogi, ampak organske packe: polna barva pod mocno zameglitvijo
+           in border-radius, ki se preliva. Krog se premika neopazno, packa pa se ob
+           premiku tudi prelije in gibanje se vidi (Tina, 1. 9. 2026). */
+        .pd-aurora i { position: absolute; display: block; will-change: transform, border-radius; }
+        .pd-aurora .a1 { width: 46vw; height: 42vw; top: -12vw; left: -10vw; background: oklch(78% .1 300 / .5);
+                         border-radius: 58% 42% 46% 54% / 52% 48% 52% 48%;
+                         animation: pdFloat 24s ease-in-out infinite, pdPacka 19s ease-in-out infinite; }
+        .pd-aurora .a2 { width: 44vw; height: 38vw; top: 18vw; right: -12vw; background: oklch(83% .085 200 / .46);
+                         border-radius: 44% 56% 62% 38% / 46% 58% 42% 54%;
+                         animation: pdFloat 28s ease-in-out infinite reverse, pdPacka 23s ease-in-out 2s infinite reverse; }
+        .pd-aurora .a3 { width: 40vw; height: 34vw; bottom: -14vw; left: 24vw; background: oklch(85% .08 150 / .42);
+                         border-radius: 62% 38% 40% 60% / 58% 44% 56% 42%;
+                         animation: pdFloat 32s ease-in-out infinite, pdPacka 27s ease-in-out 4s infinite; }
+        /* Barva je mirnejsa, zato mora gibanje govoriti samo: daljsa pot in vecji
+           razpon merila, sicer se ne vidi, da se premika (Tina, 1. 9. 2026). */
+        @keyframes pdPacka {
+          0%, 100% { border-radius: 58% 42% 46% 54% / 52% 48% 52% 48%; }
+          25%      { border-radius: 40% 60% 62% 38% / 44% 62% 38% 56%; }
+          50%      { border-radius: 66% 34% 38% 62% / 60% 40% 60% 40%; }
+          75%      { border-radius: 46% 54% 58% 42% / 38% 56% 44% 62%; }
+        }
+        @keyframes pdFloat {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33%      { transform: translate(6vw, -4vw) scale(1.16); }
+          66%      { transform: translate(-4vw, 3vw) scale(.92); }
+        }
         /* Pupino srce (živa AI): mehki modro-vijola gradient za pogovorom, nežen srčni utrip */
         /* ISTA animacija kot stranska Pupa (pupaBlob): organsko se preliva — border-radius morfa + vrti + rahlo diha, BREZ utripa */
-        .pd-srce { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: min(49vw, 38rem); height: min(49vw, 38rem); z-index: 1; pointer-events: none; border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; filter: blur(42px); background: radial-gradient(circle at 40% 34%, oklch(64% .26 290 / .98), oklch(70% .2 262 / .72) 52%, transparent 74%); animation: pdSrceBlob 8s ease-in-out infinite; will-change: transform, border-radius; }
+        .pd-srce { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: min(49vw, 38rem); height: min(49vw, 38rem); z-index: 1; pointer-events: none; border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; filter: blur(42px); background: radial-gradient(circle at 40% 34%, oklch(74% .15 290 / .62), oklch(79% .12 262 / .4) 52%, transparent 76%); animation: pdSrceBlob 8s ease-in-out infinite; will-change: transform, border-radius; }
         .pd-srce.bije { animation-duration: 4.5s; }
         @keyframes pdSrceBlob {
           0%, 100% { border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%; transform: translate(-50%, -50%) rotate(0deg) scale(1); }
-          33% { border-radius: 62% 38% 42% 58% / 55% 62% 38% 45%; transform: translate(-50%, -50%) rotate(120deg) scale(1.1); }
-          66% { border-radius: 45% 55% 62% 38% / 40% 52% 48% 60%; transform: translate(-50%, -50%) rotate(240deg) scale(.95); }
+          33% { border-radius: 62% 38% 42% 58% / 55% 62% 38% 45%; transform: translate(-46%, -54%) rotate(120deg) scale(1.22); }
+          66% { border-radius: 45% 55% 62% 38% / 40% 52% 48% 60%; transform: translate(-56%, -46%) rotate(240deg) scale(.88); }
         }
         @media (prefers-reduced-motion: reduce) { .pd-srce { animation: none; } }
 

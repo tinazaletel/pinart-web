@@ -10,6 +10,7 @@ import { createPortal } from 'react-dom';
 import { PaperPlaneRight, ChatsCircle, Paperclip, EnvelopeSimple, ChatCircle, MagnifyingGlass, Tray, NotePencil, Trash, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, ArrowBendUpLeft, ArrowBendUpRight, Smiley, Plus, UserPlus, List, FunnelSimple, Check } from '@phosphor-icons/react';
 import { mojeNiti, mojEmail, nalozSporocila, posljiSporocilo, narociSporocila, dodajUdelezenca, type OblacnaNit, type OblacnoSporocilo } from '@/lib/klepetCloud';
 import { usePredogled } from '@/lib/predogled';
+import { prevzemiOsnutek } from '@/lib/komOsnutek';
 import { preberiVsePoste, premakniPosto, nastaviOznakePoste, nastaviPopravekPoste, dodajPosto, oznaciPostoPrebrano, oznaciPostoIzbrisano, izbrisiPostoTrajno, type PostaVnos } from '@/lib/postaDnevnik';
 import { pullAllMail, trashProjectMail, restoreProjectMail, deleteProjectMailPermanent, updateProjectMailRevision } from '@/lib/pinartMailCloud';
 import { PriponkeSeznam, PriponkeVnos, datotekeIzOdlozisca } from '@/components/Priponke';
@@ -122,6 +123,19 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
      na streznik gredo potem samo poti — glej lib/priponke.ts in lib/posta.ts.
      pisiSklic zdruzi priponke enega sestavka v svojo mapo. */
   const [pisiPriponke, setPisiPriponke] = useState<Priponka[]>([]);
+
+  /* Osnutek iz marketinškega zaporedja: korak odpre pisanje z že vpisanim
+     besedilom in zadevo. Osnutek se ob prevzemu pobriše, da se ne odpre
+     drugič (Tina, 1. 9. 2026). */
+  useEffect(() => {
+    const o = prevzemiOsnutek();
+    if (!o) return;
+    setPisiVrsta('nova');
+    if (o.za) setPisiZa(o.za);
+    if (o.zadeva) setPisiZadeva(o.zadeva);
+    if (o.telo) setPisiTelo(o.telo);
+    if (o.projekt) setPisiProjekt(o.projekt);
+  }, []);
   const [pisiSklic, setPisiSklic] = useState('');
   const novSklic = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `m-${Date.now()}`);
   const [toast, setToast] = useState('');
@@ -693,7 +707,11 @@ export default function KomunikacijaWorkspace({ jeEn = false, projektId, projekt
         .km-posta-vrh .km-iskalnik{flex:1 1 15rem;margin-bottom:0}
         .km-prejemniki{flex:none;border:1px solid var(--k-line);border-radius:999px;padding:.5rem .9rem;font:600 .8rem var(--font-sans),sans-serif;color:var(--k-ink);background:#fff;cursor:pointer}
         .km-nova{flex:none;display:inline-flex;align-items:center;gap:.4rem;border:0;border-radius:999px;padding:.55rem 1.1rem;font:700 .8rem var(--font-sans),sans-serif;color:#fff;background:var(--k-ink);cursor:pointer;transition:opacity .15s,transform .15s}
-        .km-nova:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+        .km-nova{position:relative;overflow:hidden}
+        .km-nova::after{content:'';position:absolute;top:0;left:-160%;width:90%;height:100%;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.5) 50%,transparent 100%);transform:skewX(-18deg);transition:left .6s cubic-bezier(.16,1,.3,1);pointer-events:none}
+        .km-nova:hover:not(:disabled)::after{left:170%}
+        .km-nova:hover:not(:disabled){opacity:1;transform:translateY(-2px) scale(1.02);box-shadow:0 8px 22px rgba(35,18,45,.18)}
+        .km-nova:active:not(:disabled){transform:translateY(0) scale(.985)}
         .km-nova:disabled{opacity:.4;cursor:default;transform:none}
         .km-mail-telo{padding:.2rem 1rem 1rem 3.6rem;font:500 .84rem var(--font-sans),sans-serif;color:color-mix(in oklch,var(--k-ink) 80%,transparent);line-height:1.55;white-space:pre-wrap}
         .km-posta-ovoj{max-width:none}

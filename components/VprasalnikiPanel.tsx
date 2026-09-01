@@ -30,7 +30,10 @@ const TIPI: Array<{ id: Vprasanje['tip']; sl: string; en: string }> = [
   { id: 'stevilka', sl: 'Številka', en: 'Number' },
 ];
 
-export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: boolean; base?: string }) {
+export default function VprasalnikiPanel(
+  { jeEn = false, base = '', zacetniNabor = null, naNabor }:
+  { jeEn?: boolean; base?: string; zacetniNabor?: string | null; naNabor?: () => void },
+) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [seznam, setSeznam] = useState<Vprasalnik[]>([]);
   const [nalagam, setNalagam] = useState(true);
@@ -46,6 +49,16 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
   /* Brief za celostno podobo in povprasevanje za spletno stran nista isti
      pogovor — zato najprej izberes nabor (Tina, 31. 8. 2026). */
   const [izbiraNabora, setIzbiraNabora] = useState(false);
+  /* Predloga iz Marketinga lahko pove, kateri nabor naj se odpre — takrat
+     preskocimo izbiro in gremo naravnost v pravi vprasalnik
+     (Tina, 31. 8. 2026: »kaksna je razlika med povprasevanjem in vprasalnikom«). */
+  useEffect(() => {
+    if (!zacetniNabor) return;
+    const n = NABORI.find(v => v.id === zacetniNabor);
+    naNabor?.();
+    if (n) void nov(n); else setIzbiraNabora(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zacetniNabor]);
 
   const osvezi = useCallback(async () => {
     setNalagam(true);
@@ -393,6 +406,12 @@ export default function VprasalnikiPanel({ jeEn = false, base = '' }: { jeEn?: b
         .vpp-glava h2 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -.01em; }
         .vpp-glava p { margin: .25rem 0 0; font-size: .88rem; color: rgba(17,17,17,.62); }
         .vpp-glavni { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1.1rem; border: 0; border-radius: 999px; background: #111; color: #fff; font: inherit; font-weight: 600; font-size: .88rem; cursor: pointer; }
+        /* Enak hover kot drugod v Flowu: dvig, senca in svetlobni odsev. */
+        .vpp-glavni { position: relative; overflow: hidden; transition: transform .2s ease, box-shadow .2s ease; }
+        .vpp-glavni::after { content: ''; position: absolute; top: 0; left: -160%; width: 90%; height: 100%; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.5) 50%, transparent 100%); transform: skewX(-18deg); transition: left .6s cubic-bezier(.16,1,.3,1); pointer-events: none; }
+        .vpp-glavni:hover::after { left: 170%; }
+        .vpp-glavni:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 22px rgba(35,18,45,.18); }
+        .vpp-glavni:active { transform: translateY(0) scale(.985); }
         .vpp-tiho { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1rem; border: 1px solid var(--line, rgba(17,17,17,.14)); border-radius: 999px; background: #fff; font: inherit; font-size: .86rem; cursor: pointer; }
         .vpp-napaka { margin: 0; font-size: .86rem; font-weight: 600; color: oklch(52% .17 25); }
         .vpp-prazno { margin: 0; font-size: .9rem; line-height: 1.55; color: rgba(17,17,17,.6); max-width: 46rem; }

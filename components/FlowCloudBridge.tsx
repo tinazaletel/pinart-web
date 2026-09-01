@@ -13,7 +13,7 @@ import { pushDnevnik, sinhronizirajDnevnik } from '@/lib/dnevnikOblak';
 import { pushKataloge, sinhronizirajKataloge } from '@/lib/katalogiOblak';
 import {
   pushKlepet, pushMarketing, pushKomObvestila, pushPostaDnevnik, pushPupaNastavitve,
-  sinhronizirajKlepet, sinhronizirajMarketing, sinhronizirajKomObvestila,
+  sinhronizirajKlepet, sinhronizirajMarketing, sinhronizirajObjave, sinhronizirajKomObvestila,
   sinhronizirajPostaDnevnik, sinhronizirajPupaNastavitve,
 } from '@/lib/preostaleShrambeOblak';
 import { createClient } from '@/utils/supabase/client';
@@ -171,6 +171,7 @@ export default function FlowCloudBridge() {
            poštni dnevnik, Pupine nastavitve — s tem ni več ničesar samo v brskalniku */
         sinhronizirajKlepet(),
         sinhronizirajMarketing(),
+        sinhronizirajObjave(),
         sinhronizirajKomObvestila(),
         sinhronizirajPostaDnevnik(),
         sinhronizirajPupaNastavitve(),

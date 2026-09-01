@@ -4,13 +4,14 @@ import { createClient } from '@/utils/supabase/client';
 import { getOrganizationContext } from './pinartFlowCloud';
 import { jeSamoPredogled } from './predogled';
 import { preberiKlepetVsi, zapisiKlepetVsi, type KlepetSporocilo } from './klepet';
-import { preberiMarketingKampanjeVse, zapisiMarketingKampanjeVse, type MarketingKampanja } from './marketing';
+import { preberiMarketingKampanjeVse, zapisiMarketingKampanjeVse, preberiObjaveVse, zapisiObjaveVse,
+         type MarketingKampanja, type MarketingObjava } from './marketing';
 import { preberiVsoPostoSurovo, zapisiVsoPostoSurovo, type PostaVnos } from './postaDnevnik';
 import { preberiVideno, shraniVideno } from './komObvestila';
 import { preberiPupaStanjeZapis, zapisiPupaStanjeZapis, type PupaStanjeZapis } from './pupaNastavitve';
 
 type Zapis = { id: string; updatedAt?: string; deletedAt?: string; [kljuc: string]: unknown };
-type Zbirka = 'klepet' | 'marketing' | 'kom-obvestila' | 'posta' | 'pupa-nastavitve';
+type Zbirka = 'klepet' | 'marketing' | 'objave' | 'kom-obvestila' | 'posta' | 'pupa-nastavitve';
 type Vrstica = { external_id: string; data: unknown; updated_at: string | null; deleted_at: string | null };
 
 const cas = (z: { updatedAt?: string }): number => {
@@ -77,12 +78,14 @@ const zapisiVideno = (z: Zapis[]) => shraniVideno(Object.fromEntries(z.filter(v 
 
 export const pushKlepet = () => push('klepet', preberiKlepetVsi() as Zapis[]);
 export const pushMarketing = () => push('marketing', preberiMarketingKampanjeVse() as Zapis[]);
+export const pushObjave = () => push('objave', preberiObjaveVse() as Zapis[]);
 export const pushKomObvestila = () => push('kom-obvestila', beriVideno());
 export const pushPostaDnevnik = () => push('posta', preberiVsoPostoSurovo() as Zapis[]);
 export const pushPupaNastavitve = () => push('pupa-nastavitve', [preberiPupaStanjeZapis()]);
 
 export const sinhronizirajKlepet = () => sinhroniziraj('klepet', preberiKlepetVsi as () => Zapis[], z => zapisiKlepetVsi(z as KlepetSporocilo[]));
 export const sinhronizirajMarketing = () => sinhroniziraj('marketing', preberiMarketingKampanjeVse as () => Zapis[], z => zapisiMarketingKampanjeVse(z as MarketingKampanja[]));
+export const sinhronizirajObjave = () => sinhroniziraj('objave', preberiObjaveVse as () => Zapis[], z => zapisiObjaveVse(z as MarketingObjava[]));
 export const sinhronizirajKomObvestila = () => sinhroniziraj('kom-obvestila', beriVideno, zapisiVideno);
 export const sinhronizirajPostaDnevnik = () => sinhroniziraj('posta', preberiVsoPostoSurovo as () => Zapis[], z => zapisiVsoPostoSurovo(z as PostaVnos[]));
 export const sinhronizirajPupaNastavitve = () => sinhroniziraj('pupa-nastavitve', () => [preberiPupaStanjeZapis()], z => z[0] && zapisiPupaStanjeZapis(z[0] as PupaStanjeZapis));

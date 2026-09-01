@@ -38,6 +38,18 @@ export default function Pupa() {
   const [stanje, setStanje] = useState<PupaStanje>('vklopljena');   /* SSR-varno; pravo stanje se prebere ob mountu */
   const [pupaDovoljena, setPupaDovoljena] = useState(true);         /* paket dovoljuje AI (pro); free -> nadgradnja */
   const [odprt, setOdprt] = useState(false);
+  const [delo, setDelo] = useState('');
+
+  /* Ko je Pupa odprta, se drugi paneli umaknejo levo, da delata skupaj in ne
+     eden cez drugega (Tina, 1. 9. 2026). Znak nosi <body>, sirino pa
+     spremenljivka, da je na enem mestu. */
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const b = document.body;
+    if (odprt) { b.classList.add('pupa-odprta'); b.style.setProperty('--pupa-sirina', 'min(400px, 94vw)'); }
+    else { b.classList.remove('pupa-odprta'); b.style.removeProperty('--pupa-sirina'); }
+    return () => { b.classList.remove('pupa-odprta'); b.style.removeProperty('--pupa-sirina'); };
+  }, [odprt]);
   const [ctx, setCtx] = useState<PupaKontekst>({ nasveti: [], kontekst: '', naslov: '' });
   const [spor, setSpor] = useState<Sporocilo[]>([]);
   const [vnos, setVnos] = useState('');
@@ -84,8 +96,12 @@ export default function Pupa() {
     window.addEventListener('storage', onStanje);
     const onCtx = () => setCtx(preberiPupaKontekst());
     const onOpen = (e: Event) => {
-      const d = (e as CustomEvent).detail as { nacin?: 'chat' | 'glas' } | undefined;
+      const d = (e as CustomEvent).detail as { nacin?: 'chat' | 'glas'; delo?: string } | undefined;
       if (d?.nacin) { setNacin(d.nacin); if (d.nacin === 'glas') setZvok(true); }
+      /* Kaj uporabnica ravno dela: pozdrav mora vedeti, od kod si jo odprla —
+         »ne zdravo, vprašaj me o cenah, ampak: vidim, da delaš kampanjo«
+         (Tina, 1. 9. 2026). */
+      setDelo(d?.delo || '');
       setOdprt(true);
     };
     window.addEventListener('pupa:kontekst', onCtx);
@@ -151,6 +167,11 @@ export default function Pupa() {
   };
 
   const posljiPupi = async (besedilo?: string) => {
+    /* Polje se po pošiljanju vrne na eno vrstico. */
+    queueMicrotask(() => {
+      const el = document.querySelector<HTMLTextAreaElement>('.pupa-vnos');
+      if (el) el.style.height = 'auto';
+    });
     const q = (besedilo ?? vnos).trim();
     if (!q || caka) return;
     const zgodovina = spor.slice(-8);
@@ -254,7 +275,7 @@ export default function Pupa() {
           Odpira jo tudi sparkle (✨) v glavi prek 'pupa:odpri'. */}
       {/* Na MOBILU je orb spodaj desno vedno visel čez akcijske gumbe (Shrani/Pošlji/Pripravi
           ponudbo). Zato ga tam prestavimo gor desno OB hamburger — desktop ostane spodaj desno. */}
-      <style>{'body:has(.izbirnik-zastor) .pupa-fab,body:has(.izbirnik-plosca) .pupa-fab,body:has(.soglasje) .pupa-fab{display:none!important}.pupa-fab-mini{display:none}@media (max-width:760px){.pupa-fab{top:.55rem!important;bottom:auto!important;right:5rem!important;width:2rem!important;height:2rem!important;background:transparent!important;border:0!important;box-shadow:none!important;display:flex!important;align-items:center!important;justify-content:center!important}.pupa-fab .pupa-fab-full{display:none!important}.pupa-fab .pupa-fab-mini{display:block!important}}'}</style>
+      <style>{'.pupa-vnos{scrollbar-width:thin;scrollbar-color:rgba(42,32,53,.22) transparent}.pupa-vnos::-webkit-scrollbar{width:6px}.pupa-vnos::-webkit-scrollbar-track{background:transparent}.pupa-vnos::-webkit-scrollbar-thumb{background:rgba(42,32,53,.2);border-radius:99px}'+'body:has(.izbirnik-zastor) .pupa-fab,body:has(.izbirnik-plosca) .pupa-fab,body:has(.soglasje) .pupa-fab{display:none!important}.pupa-fab-mini{display:none}@media (max-width:760px){.pupa-fab{top:.55rem!important;bottom:auto!important;right:5rem!important;width:2rem!important;height:2rem!important;background:transparent!important;border:0!important;box-shadow:none!important;display:flex!important;align-items:center!important;justify-content:center!important}.pupa-fab .pupa-fab-full{display:none!important}.pupa-fab .pupa-fab-mini{display:block!important}}'}</style>
       {!odprt && (
         <button type="button" className={'pupa-fab' + (skritScroll ? ' pupa-skrit' : '')} onClick={() => setOdprt(true)} aria-label={L('Odpri Pupo', 'Open Pupa')} title={L('Pupa: pomočnica', 'Pupa: assistant')}
           style={{ position: 'fixed', right: '1.4rem', bottom: '1.4rem', zIndex: 90, width: 58, height: 58, flex: 'none', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'conic-gradient(from 210deg,#ffd54a,#7be0a0,#63c7e8,#a78bfa,#f78fb0,#ffd54a)', boxShadow: '0 12px 30px rgba(42,32,53,.30)' }}>
@@ -340,11 +361,14 @@ export default function Pupa() {
               )}
             </div>
           ) : (
-          <><div ref={sporRef} style={{ position: 'relative', flex: 1, overflowY: 'auto', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+          <><div ref={sporRef} style={{ position: 'relative', flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '1rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
             <div aria-hidden style={{ position: 'absolute', top: '26%', left: 0, right: 0, marginLeft: 'auto', marginRight: 'auto', width: 'min(78%, 270px)', aspectRatio: '1', zIndex: 0, pointerEvents: 'none', borderRadius: '50%', background: 'radial-gradient(circle at 34% 30%, rgba(180,140,255,.46), rgba(120,165,240,.28) 55%, transparent 74%)', filter: 'blur(8px)', animation: 'pupaBlob 7s ease-in-out infinite', transition: 'opacity .4s ease', opacity: caka ? 1 : .68 }} />
             <div style={{ position: 'relative', zIndex: 1, alignSelf: 'flex-start', maxWidth: '92%', padding: '.65rem .8rem', borderRadius: 16, background: 'rgba(167,139,250,.12)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
               <p style={{ margin: 0, fontSize: '.88rem', lineHeight: 1.45 }}>
-                {imaPonudbo
+                {delo
+                  ? L(`Vidim, da ${delo}. Povej mi, za koga je in kaj želiš doseči, pa greva.`,
+                      `I see you are working on ${delo}. Tell me who it is for and what you want to achieve.`)
+                  : imaPonudbo
                   ? L('Zdravo! Pogledala sem tvojo ponudbo. Karkoli te zanima, kar vprašaj — pomagam s ceno, pravicami in besedilom.', 'Hi! I reviewed your quote. Ask me anything — I help with pricing, rights and wording.')
                   : L('Zdravo, tu Pupa! Vprašaj me karkoli o cenah, avtorskih pravicah ali svojem poslovanju.', 'Hi, I’m Pupa! Ask me anything about pricing, copyright or running your business.')}
               </p>
@@ -384,8 +408,32 @@ export default function Pupa() {
                 {agenti.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
               </select>
             )}
-            <input value={vnos} onChange={e => setVnos(e.target.value)} placeholder={poslusa ? L('Poslušam…', 'Listening…') : L('Vprašaj Pupo…', 'Ask Pupa…')}
-              style={{ flex: 1, border: '1px solid rgba(42,32,53,.18)', borderRadius: 12, padding: '.55rem .75rem', fontSize: '.9rem', fontFamily: 'inherit', outline: 'none' }} />
+            {/* Polje raste z besedilom (do 9 vrstic), sicer daljšega sporočila
+                ne vidiš, ko ga pišeš (Tina, 1. 9. 2026). Enter pošlje,
+                Shift+Enter naredi novo vrstico. */}
+            <textarea
+              className="pupa-vnos"
+              value={vnos}
+              rows={1}
+              onChange={e => {
+                setVnos(e.target.value);
+                const el = e.currentTarget;
+                /* Meja je v odstotkih okna, ne v pikslih: na prenosniku polje
+                   ne poje pogovora, na velikem zaslonu pa pusti pisati.
+                   Drsnik se prikaze SELE, ko besedilo mejo preseze — sicer ga
+                   macOS narise ze pri drugi vrstici (Tina, 1. 9. 2026). */
+                const meja = Math.max(120, Math.round(window.innerHeight * 0.32));
+                el.style.height = 'auto';
+                el.style.height = `${Math.min(el.scrollHeight, meja)}px`;
+                el.style.overflowY = el.scrollHeight > meja ? 'auto' : 'hidden';
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void posljiPupi(); }
+              }}
+              placeholder={poslusa ? L('Poslušam…', 'Listening…') : L('Vprašaj Pupo…', 'Ask Pupa…')}
+              style={{ flex: 1, minWidth: 0, border: '1px solid rgba(42,32,53,.18)', borderRadius: 12,
+                       padding: '.55rem .75rem', fontSize: '.9rem', lineHeight: 1.45, fontFamily: 'inherit',
+                       outline: 'none', resize: 'none', maxHeight: '32dvh', overflowY: 'hidden' }} />
             {caka ? (
               <button type="button" onClick={prekini} aria-label={L('Ustavi', 'Stop')} title={L('Ustavi', 'Stop')}
                 style={{ flex: 'none', border: 'none', borderRadius: 12, padding: '.55rem .9rem', background: '#2A2035', color: '#fff', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}>

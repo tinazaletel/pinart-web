@@ -89,7 +89,9 @@
    prihaja. Jantar in rozna nista iz Flowovega slogovnika (Tina, 31. 8. 2026). */
 .cakaPika[data-nujno='true'] { background: var(--purple, oklch(66% .2 297)); }
 .cakaPika[data-nujno='false'] { background: transparent; border: 2px solid color-mix(in oklch, var(--purple, oklch(66% .2 297)) 55%, transparent); }
-.cakaMeta { flex: none; margin-left: auto; color: var(--muted); font-size: .84rem; white-space: nowrap; }
+/* Datum se sme skrciti: pri ozkem stolpcu je prej silil iz kartice, ker je
+   bil flex:none in nowrap (Tina, 31. 8. 2026). */
+.cakaMeta { flex: 0 1 auto; min-width: 0; margin-left: auto; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: .84rem; white-space: nowrap; }
 .cakaPuscica { flex: none; color: var(--muted); opacity: 0; transition: opacity .15s ease; }
 .cakaSeznam button:hover .cakaPuscica { opacity: 1; }
 .cakaStevec {
@@ -120,8 +122,20 @@
 }
 
 @media (max-width: 900px) {
-  /* Na ozkem zaslonu bi Pupa silila v besedilo — takrat je ni. */
-  .heroPupa { display: none; }
+  /* Pupa ostane tudi na ozkem zaslonu (Tina: »pupe ni«) — le da se preseli iz
+     ozadja v svojo celico: besedilo dobi celo sirino zgoraj, spodaj sta ob
+     sebi gumb in Pupa, prilepljena na spodnji rob pasice. */
+  .hero { grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+  .heroText { grid-column: 1 / -1; grid-row: 1; max-width: 100%; }
+  .heroPupa {
+    position: static;
+    grid-column: 2; grid-row: 2;
+    align-self: end; justify-self: end;
+    height: 7.5rem;
+    margin: -.7rem -.35rem -1.3rem 0;
+  }
+  .heroPupa img { object-position: right bottom; }
+  .hero .primary { grid-column: 1; grid-row: 2; align-self: end; width: fit-content; }
 }
 .eyebrow,
 .sectionLabel {
@@ -540,7 +554,12 @@
 @media (max-width: 650px) {
   .page { gap: .75rem; padding-inline: .5rem; }
   .hero { display: grid; align-items: start; min-height: 0; padding: 1.1rem; border-radius: 1.2rem; }
-  .hero .primary { width: 100%; }
+  /* Gumb ni vec cez celo sirino: desno od njega stoji Pupa. */
+  .hero .primary { width: fit-content; justify-self: start; }
+  .heroPupa { height: 6.4rem; margin: -.4rem -.25rem -1.1rem 0; }
+  /* Na najozjem zaslonu ima datum manj prostora — manjsa crka, brez puscice. */
+  .cakaMeta { font-size: .76rem; }
+  .cakaPuscica { display: none; }
   .tabs { width: 100%; }
   .tab { flex: 1; }
   .overviewGrid { grid-template-columns: 1fr 1fr; }
@@ -578,3 +597,121 @@
   -webkit-backdrop-filter: blur(18px) saturate(1.35);
   box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .05), inset 0 1px 0 rgba(255,255,255,.5);
 }
+
+/* Oznaka projekta na nacrtovani objavi — marketing tako ni vec otok, ampak se
+   vidi, za koga je vsebina (Tina, 31. 8. 2026). */
+.projektZnacka {
+  display: inline-flex; align-items: center;
+  margin-left: .5rem; padding: .12rem .5rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--mk-violet) 22%, transparent);
+  color: oklch(42% .16 300);
+  font-size: .68rem; font-weight: 750; letter-spacing: .01em;
+}
+
+/* Kaj bo predloga naredila — kratek seznam korakov na kartici. */
+.predlogaKoraki { list-style: none; margin: .7rem 0 0; padding: 0; display: grid; gap: .3rem; }
+.predlogaKoraki li { display: flex; gap: .5rem; font-size: .82rem; color: color-mix(in oklch, var(--ink) 66%, transparent); }
+.predlogaKoraki b {
+  flex: none; min-width: 4.6rem; padding: .05rem .45rem; border-radius: 999px;
+  background: color-mix(in oklch, var(--mk-violet) 20%, transparent);
+  color: oklch(42% .16 300); font-size: .7rem; font-weight: 800; text-align: center;
+}
+
+/* ── ZAPOREDJE SPOROČIL v desnem panelu ────────────────────────────────────
+   Prej je bilo vse zbasano v eno majhno polje za opis in se ni dalo brati
+   (Tina, 31. 8. 2026). Zdaj je vsak korak svoj blok z rokom, naslovom in
+   besedilom, panel pa je isti DokPanel kot drugod v Flowu. */
+.zapMeta { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem 1rem; }
+.zapMeta label { display: grid; gap: .3rem; font-size: .74rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1a1a1a) 52%, transparent); }
+.zapMeta input, .zapMeta select {
+  min-height: 2.7rem; padding: 0 .75rem; border: 1px solid oklch(22% .015 60 / .14); border-radius: .7rem;
+  background: #fff; font: 500 .95rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a);
+}
+.zapMeta input:focus, .zapMeta select:focus { outline: none; border-color: var(--mk-violet, oklch(73% .15 300)); }
+
+.zapSeznam { list-style: none; margin: 1.6rem 0 1rem; padding: 0; display: grid; gap: 1rem; }
+.zapSeznam li {
+  display: grid; gap: .55rem; padding: 1rem 1.1rem;
+  border: 1px solid oklch(22% .015 60 / .1); border-radius: .9rem;
+  background: oklch(99% .004 300);
+}
+.zapRok { display: flex; align-items: center; gap: .55rem; }
+.zapRok input { width: 4.2rem; min-height: 2.2rem; padding: 0 .5rem; border: 1px solid oklch(22% .015 60 / .16); border-radius: .55rem; background: #fff; font: 700 .9rem var(--font-sans), sans-serif; }
+.zapRok span { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1a1a1a) 48%, transparent); }
+.zapRok button { margin-left: auto; display: grid; place-items: center; width: 2rem; height: 2rem; border: 0; border-radius: 50%; background: none; color: color-mix(in oklch, var(--ink, #1a1a1a) 45%, transparent); cursor: pointer; }
+.zapRok button:hover { background: oklch(94% .02 20); color: oklch(52% .17 25); }
+.zapNaslov { min-height: 2.6rem; padding: 0 .7rem; border: 1px solid oklch(22% .015 60 / .12); border-radius: .6rem; background: #fff; font: 700 1rem var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); }
+.zapSeznam textarea {
+  padding: .6rem .7rem; border: 1px solid oklch(22% .015 60 / .12); border-radius: .6rem; background: #fff;
+  font: 400 .92rem/1.5 var(--font-sans), sans-serif; color: var(--ink, #1a1a1a); resize: vertical;
+}
+.zapNaslov:focus, .zapSeznam textarea:focus { outline: none; border-color: var(--mk-violet, oklch(73% .15 300)); }
+
+@media (max-width: 640px) { .zapMeta { grid-template-columns: 1fr; } }
+
+/* Kazipot na vprasalnike: ena tiha vrstica namesto podvojene kartice. */
+.predlogaKazipot { margin: .5rem 0 0; font-size: .86rem; color: color-mix(in oklch, var(--ink) 60%, transparent); }
+.predlogaKazipot button {
+  border: 0; background: none; padding: 0; font: inherit; font-weight: 750;
+  color: var(--mk-violet); text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.predlogaKazipot button:hover { color: oklch(42% .16 300); }
+
+/* Izhodi koraka: Pupa napise, rok pade v naloge, sporocilo se odpre pripravljeno.
+   Brez teh treh je zaporedje samo zapisek (Tina, 31. 8. 2026). */
+.zapIzhodi { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .2rem; }
+.zapIzhodi button {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .38rem .7rem; border: 1px solid oklch(22% .015 60 / .14); border-radius: 999px;
+  background: #fff; font: 700 .78rem var(--font-sans, ui-sans-serif), sans-serif;
+  color: var(--ink, #1a1a1a); cursor: pointer;
+  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.zapIzhodi button:hover:not(:disabled) {
+  border-color: var(--mk-violet, oklch(73% .15 300));
+  transform: translateY(-1px); box-shadow: 0 6px 16px rgba(35,18,45,.1);
+}
+.zapIzhodi button:disabled { opacity: .55; cursor: default; }
+
+.zapNapaka { margin: .6rem 0 0; font-size: .84rem; font-weight: 600; color: oklch(52% .17 25); }
+
+/* Pupa v nacrtovalcu objav: en gumb, ki naredi razliko do zunanjega bota. */
+.pupaVrsta { display: grid; gap: .3rem; margin-top: .2rem; }
+.pupaVrsta button {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  min-height: 2.7rem; padding: 0 1rem; border: 1px solid var(--mk-violet);
+  border-radius: 999px; background: color-mix(in oklch, var(--mk-violet) 12%, #fff);
+  font: 750 .86rem var(--font-sans), sans-serif; color: oklch(38% .16 300); cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.pupaVrsta button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.12); }
+.pupaVrsta button:disabled { opacity: .6; cursor: default; }
+.pupaVrsta small { color: color-mix(in oklch, var(--ink) 55%, transparent); font-size: .78rem; }
+
+/* Pogovorna vrstica nad kampanjami: vhod v orodje je poved, ne prazen obrazec. */
+.pupaVrstica {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .5rem;
+  margin-bottom: 1rem; padding: .7rem .8rem;
+  border: 1px solid color-mix(in oklch, var(--mk-violet) 35%, transparent);
+  border-radius: 1rem;
+  background: linear-gradient(120deg, color-mix(in oklch, var(--mk-violet) 10%, #fff), #fff 60%);
+  color: oklch(42% .16 300);
+}
+.pupaVrstica input {
+  flex: 1 1 22rem; min-width: 0; min-height: 2.7rem; padding: 0 .9rem;
+  border: 1px solid oklch(22% .015 60 / .12); border-radius: 999px; background: #fff;
+  font: 500 .92rem var(--font-sans), sans-serif; color: var(--ink);
+}
+.pupaVrstica input:focus { outline: none; border-color: var(--mk-violet); }
+.pupaVrstica button:first-of-type {
+  flex: none; min-height: 2.7rem; padding: 0 1.2rem; border: 0; border-radius: 999px;
+  background: var(--ink); color: var(--paper); font: 750 .86rem var(--font-sans), sans-serif; cursor: pointer;
+}
+.pupaVrstica button:first-of-type:disabled { opacity: .5; cursor: default; }
+.pupaPrazno {
+  flex: none; border: 0; background: none; padding: .3rem .2rem;
+  font: 600 .82rem var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink) 55%, transparent);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.pupaPrazno:hover { color: var(--mk-violet); }

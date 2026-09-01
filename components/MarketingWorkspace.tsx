@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import VprasalnikiPanel from './VprasalnikiPanel';
+import MarketingZaporedjePanel, { type Zaporedje } from './MarketingZaporedjePanel';
 import MobTabs from '@/components/MobTabs';
 import { useLocale } from 'next-intl';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
@@ -24,24 +25,50 @@ import {
 import {
   MARKETING_PREDLOGE,
   novaMarketingKampanja,
+  novaObjava,
   preberiMarketingKampanje,
+  preberiObjave,
   shraniMarketingKampanje,
+  shraniObjave,
   type MarketingKampanja,
   type MarketingPredloga,
   type MarketingStatus,
+  type MarketingObjava,
   type MarketingVrsta,
+  type KampanjaKorak,
 } from '@/lib/marketing';
+import { preberiProjekti, type Projekt } from '@/lib/projekti';
+import { getAccessTier } from '@/lib/pinartFlowEntitlements';
+import { shraniOsnutek } from '@/lib/komOsnutek';
+import { popraviZaporedje, pripraviZaporedje, type PupaPredlog } from '@/lib/pupaZaporedje';
 import Image from 'next/image';
 import { demoMarketing, usePredogled } from '@/lib/predogled';
 import styles from './MarketingWorkspace.module.css';
 import { preberiNaloge, shraniNaloge, type Naloga } from '@/lib/naloge';
 
-type Zavihek = 'pregled' | 'objave' | 'kampanje' | 'predloge' | 'povezave' | 'vprasalniki';
+/* Zavihka Pregled ni vec: kazal je iste kampanje kot Kampanje, le s stevci nad
+   njimi — »trenutno mi ni vidne razlike« (Tina, 1. 9. 2026). Stevci in prazno
+   stanje sta se preselila v Kampanje. */
+type Zavihek = 'objave' | 'kampanje' | 'predloge' | 'povezave' | 'vprasalniki';
+
+/* NAČRTOVALEC OBJAV JE ZA LANSIRANJE SKRIT (Tina, 31. 8. 2026).
+ *
+ * Meta Business Suite ima nacrt, koledar in razporejanje objav zastonj — in za
+ * razliko od nas tudi res objavi. Dokler Flow ne objavlja ZA STRANKE iz enega
+ * mesta (kar zahteva Meta App Review), bi tu ponujali slabso razlicico necesa,
+ * kar uporabnica ze ima. Koda ostane cela; vrne se s spremembo te vrednosti na
+ * true — z njo se vrne tudi predloga »Lansiranje nove storitve«, ki vodi vanj. */
+const OBJAVE_VIDNE = false;
+
+/* POVEZAVE SO ZA LANSIRANJE SKRITE (Tina, 1. 9. 2026: »kaj mi nucajo te
+   povezave?«). V zavihku so bili naslovi profilov (rabijo jih skrite Objave),
+   dva opisa tega, kar Flow itak dela sam, ena obljuba in povezava na Metino
+   orodje — torej zavihek obljub. Vrne se skupaj z Objavami. */
+const POVEZAVE_VIDNE = OBJAVE_VIDNE;
 type SocialKanal = 'instagram' | 'facebook' | 'linkedin' | 'tiktok' | 'youtube' | 'x' | 'threads' | 'pinterest';
 type Kanal = SocialKanal | 'lasten';
-type NacrtovanaObjava = { id: string; kanal: Kanal; kanalIme?: string; kanalUrl?: string; naslov?: string; besedilo: string; datum: string; ustvarjeno: string; nalogaId?: string };
+type NacrtovanaObjava = MarketingObjava & { kanal: Kanal };
 
-const OBJAVE_KLJUC = 'pinart-flow-marketing-objave-v1';
 const KANALI_KLJUC = 'pinart-flow-marketing-kanali-v1';
 const SOCIAL_LINKI: Record<SocialKanal, string> = {
   instagram: 'https://www.instagram.com/',
@@ -71,6 +98,7 @@ const PRAZEN = {
   datumOd: '',
   datumDo: '',
   opis: '',
+  projekt: '',
 };
 
 type Prevod = (sl: string, en: string) => string;
@@ -110,7 +138,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
   const dl = locale === 'en' ? 'en-GB' : 'sl-SI';
   const vrsteOznake = oznakeVrste(L);
   const statusiOznake = oznakeStatusa(L);
-  const [zavihek, setZavihek] = useState<Zavihek>('pregled');
+  const [zavihek, setZavihek] = useState<Zavihek>('kampanje');
   /* Predogled: demo mora izgledati poln, prazno stanje pa prazno — sicer
      nobeden od obeh ne pokaze, kar mora (Tina, 31. 8. 2026). */
   const [nacin] = usePredogled();
@@ -119,7 +147,22 @@ export default function MarketingWorkspace({ base }: { base: string }) {
   const [urejamId, setUrejamId] = useState<string | null>(null);
   const [obrazec, setObrazec] = useState(PRAZEN);
   const [objave, setObjave] = useState<NacrtovanaObjava[]>([]);
-  const [objava, setObjava] = useState<{ kanal: Kanal; kanalIme: string; kanalUrl: string; naslov: string; besedilo: string; datum: string }>({ kanal: 'instagram', kanalIme: '', kanalUrl: '', naslov: '', besedilo: '', datum: '' });
+  /* Kampanja in objava sta lahko vezani na projekt (Tina, 31. 8. 2026):
+     brez tega je bil marketing otok, ki ni vedel, za koga dela. */
+  const [projekti, setProjekti] = useState<Projekt[]>([]);
+  /* Brez plačljivega paketa Pupe ni: takrat panel ne kaže klepeta, ampak samo
+     obrazec s predlogo — »za tistega, ki nima AI, pa ok« (Tina, 1. 9. 2026). */
+  const [imaPupo, setImaPupo] = useState(false);
+  useEffect(() => { void getAccessTier().then(t => setImaPupo(t === 'pro')); }, []);
+  useEffect(() => { try { setProjekti(preberiProjekti()); } catch { setProjekti([]); } }, []);
+  /* Zaporedje sporocil se ureja v desnem panelu, ne v majhnem polju za opis. */
+  const [zapOdprt, setZapOdprt] = useState(false);
+  const [zapUvod, setZapUvod] = useState<string | undefined>(undefined);
+  const [zap, setZap] = useState<{
+    id?: string; naslov: string; vrsta: MarketingVrsta; status: MarketingStatus;
+    datumOd: string; projekt: string; opis: string; koraki: KampanjaKorak[];
+  }>({ id: undefined, naslov: '', vrsta: 'email', status: 'nacrtovano', datumOd: '', projekt: '', opis: '', koraki: [] });
+  const [objava, setObjava] = useState<{ kanal: Kanal; kanalIme: string; kanalUrl: string; naslov: string; besedilo: string; datum: string; projekt: string }>({ kanal: 'instagram', kanalIme: '', kanalUrl: '', naslov: '', besedilo: '', datum: '', projekt: '' });
   const [profilniNaslovi, setProfilniNaslovi] = useState<Partial<Record<SocialKanal, string>>>({});
   const [kopiranoId, setKopiranoId] = useState<string | null>(null);
 
@@ -130,8 +173,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
     if (nacin === 'zacetek') { setKampanje(demoMarketing().slice(0, 2)); setObjave([]); return; }
     setKampanje(preberiMarketingKampanje());
     try {
-      const shranjene = window.localStorage.getItem(OBJAVE_KLJUC);
-      setObjave(shranjene ? JSON.parse(shranjene) : []);
+      setObjave(preberiObjave() as NacrtovanaObjava[]);
       const kanali = window.localStorage.getItem(KANALI_KLJUC);
       setProfilniNaslovi(kanali ? JSON.parse(kanali) : {});
     } catch { setObjave([]); }
@@ -180,36 +222,203 @@ export default function MarketingWorkspace({ base }: { base: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kampanje, locale]);
 
+  /* Kampanja NI obrazec z naslovom in datumom — je zaporedje korakov z roki.
+     Zato gre tudi nova kampanja v isti desni panel (Tina, 31. 8. 2026:
+     »a je lansiranje kampanje res sam en beden obrazec«). */
   const odpriNovo = (vrsta: MarketingVrsta = 'email') => {
-    setUrejamId(null);
-    setObrazec({ ...PRAZEN, vrsta });
-    setObrazecOdprt(true);
+    setZap({
+      id: undefined, naslov: '', vrsta, status: 'osnutek',
+      datumOd: cezDni(0), projekt: '', opis: '',
+      koraki: [{ zamikDni: 0, naslov: '', besedilo: '' }],
+    });
+    setZapUvod(undefined);
+    setZapOdprt(true);
+  };
+
+  /* Predloga mora nekaj USTVARITI, ne le odpreti praznega obrazca
+     (Tina, 31. 8. 2026: »te predloge niso predloge«).
+       - vprasalnik: pelje v Vprasalnike na pravi nabor, ker je prava stvar ze tam
+       - objave: naredi kampanjo IN tri nacrtovane objave z datumi
+       - kampanja: odpre obrazec z zapisanim zaporedjem sporocil in roki */
+  /* Pupa pise vsebino TU, s kontekstom projekta in stranke — to je edina
+     razlika do pogovora z zunanjim botom (Tina, 31. 8. 2026: »zakaj bi tole
+     imela«). Brez tega je nacrtovalec samo obrazec. */
+  const [pupaDela, setPupaDela] = useState<string | null>(null);
+  const [pupaNapaka, setPupaNapaka] = useState('');
+
+  const kontekstProjekta = (id?: string) => {
+    const pr = projekti.find(x => x.id === id);
+    if (!pr) return '';
+    return `Projekt: ${pr.naslov}${pr.strankaIme ? `; stranka: ${pr.strankaIme}` : ''}${pr.opis ? `; opis: ${pr.opis.slice(0, 300)}` : ''}`;
+  };
+
+  async function vprasajPupo(kljuc: string, vprasanje: string, kontekst: string): Promise<string | null> {
+    setPupaNapaka('');
+    setPupaDela(kljuc);
+    try {
+      const r = await fetch('/api/pupa', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ vprasanje, kontekst }),
+      });
+      const d = await r.json();
+      if (d.napaka) { setPupaNapaka(String(d.napaka)); return null; }
+      if (d.brezKljuca) { setPupaNapaka(String(d.odgovor || '')); return null; }
+      return String(d.odgovor || '').trim() || null;
+    } catch {
+      setPupaNapaka(L('Pupa se ni odzvala. Poskusi znova.', 'Pupa did not respond. Try again.'));
+      return null;
+    } finally {
+      setPupaDela(null);
+    }
+  }
+
+  const pupaNapisiObjavo = async () => {
+    const kanal = oznakaKanala({ kanal: objava.kanal, kanalIme: objava.kanalIme } as NacrtovanaObjava);
+    const vprasanje = `Napiši objavo za ${kanal}.${objava.naslov ? ` Tema: ${objava.naslov}.` : ''}`
+      + ' Piši v slovenščini, 3 do 5 povedi, brez oklepajev z navodili, brez hashtagov,'
+      + ' konec naj bo jasen poziv k dejanju. Vrni SAMO besedilo objave, brez uvoda in brez narekovajev.';
+    const odgovor = await vprasajPupo('objava', vprasanje, kontekstProjekta(objava.projekt));
+    if (odgovor) setObjava(o => ({ ...o, besedilo: odgovor }));
+  };
+
+  const pupaNapisiKorak = async (k: KampanjaKorak, projekt: string, kljuc: string) => {
+    const kdaj = k.zamikDni === 0 ? 'takoj ob začetku' : `${k.zamikDni} dni po začetku`;
+    /* Kar je ze v polju, je NAVODILO, ne besedilo za popravljanje: Tina je
+       vanj napisala »napiši mi sporočilo, predlagaj mi prvo kampanjo«
+       (1. 9. 2026). Ce je polje prazno, se opremo na naslov koraka. */
+    const navodilo = k.besedilo.trim();
+    const vprasanje = `Napiši e-poštno sporočilo stranki, ki gre ven ${kdaj}.`
+      + (navodilo ? ` Moje navodilo: ${navodilo}.` : '')
+      + (k.naslov ? ` Namen sporočila: ${k.naslov}.` : '')
+      + ' Piši v slovenščini, toplo in kratko, največ 6 povedi, brez pozdravnih fraz v oglatih oklepajih.'
+      + ' Vrni SAMO besedilo sporočila, brez zadeve in brez narekovajev.';
+    return vprasajPupo(kljuc, vprasanje, kontekstProjekta(projekt));
+  };
+
+  /* Korak dobi rok v Nalogah in Koledarju — zato se zaporedje res zgodi. */
+  const nalogaIzKoraka = (k: KampanjaKorak, z: Zaporedje): string | null => {
+    if (k.nalogaId) return null;
+    const zac = z.datumOd ? new Date(`${z.datumOd}T12:00:00`) : new Date();
+    zac.setDate(zac.getDate() + k.zamikDni);
+    const naloga: Naloga = {
+      id: crypto.randomUUID(),
+      naslov: `${z.naslov || L('Kampanja', 'Campaign')} · ${k.naslov || L('sporočilo', 'message')}`,
+      opis: k.besedilo, stolpec: 'todo', rok: zac.toISOString().slice(0, 10),
+      created: new Date().toISOString(), oznake: ['marketing', 'zaporedje'],
+    };
+    shraniNaloge([naloga, ...preberiNaloge()]);
+    return naloga.id;
+  };
+
+  /* Sporocilo se odpre v Komunikaciji z ze vpisanim naslovnikom in besedilom. */
+  const sporociloIzKoraka = (k: KampanjaKorak, z: Zaporedje) => {
+    const pr = projekti.find(x => x.id === z.projekt);
+    shraniOsnutek({
+      za: '', zadeva: k.naslov || z.naslov, telo: k.besedilo,
+      projekt: pr?.naslov || '',
+    });
+    window.location.href = `${base}/kalkulator/komunikacija`;
+  };
+
+  /* Pripravljeno za skupno Pupo: ko bo njen klepet pisal naravnost v panel,
+     bosta ti dve funkciji njegov most (Tina, 1. 9. 2026). Zaenkrat ju ne kliče
+     nihče, zato sta izvožena prek okna, da ne odpadeta iz gradnje. */
+  const vPredlog = (z: { naslov: string; koraki: KampanjaKorak[] }): PupaPredlog =>
+    ({ naslov: z.naslov, koraki: z.koraki });
+
+  /* Popravek iz panela: Pupa vrne CELO zaporedje, panel ga prevzame. */
+  const pupaPopravi = async (navodilo: string, trenutno: Zaporedje) => {
+    setPupaNapaka('');
+    const jePrazno = !trenutno.koraki.some(k => k.naslov || k.besedilo);
+    const kontekst = kontekstProjekta(trenutno.projekt);
+    const { predlog, napaka } = jePrazno
+      ? await pripraviZaporedje(navodilo, kontekst)
+      : await popraviZaporedje(navodilo, vPredlog(trenutno), kontekst);
+    if (napaka || !predlog) { setPupaNapaka(napaka || ''); return null; }
+    return {
+      zaporedje: {
+        ...trenutno,
+        naslov: predlog.naslov || trenutno.naslov,
+        opis: predlog.povzetek || trenutno.opis,
+        koraki: predlog.koraki,
+      },
+      odgovor: predlog.povzetek || 'Pripravila sem zaporedje — poglej desno in mi povej, kaj popravim.',
+    };
+  };
+
+  useEffect(() => {
+    (window as unknown as { pupaKampanja?: unknown }).pupaKampanja = { pupaPopravi, pupaNapisiKorak, pupaNapisiObjavo };
+  });
+
+  const imeProjekta = (id?: string) => (id ? projekti.find(pr => pr.id === id)?.naslov || '' : '');
+
+  const cezDni = (dni: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + dni);
+    return d.toISOString().slice(0, 10);
   };
 
   const uporabiPredlogo = (predloga: MarketingPredloga) => {
-    /* predloga vodi v PRAVO orodje glede na vrsto — ne vse v isti generični obrazec */
-    if (predloga.vrsta === 'social') {
-      setObjava((o) => ({ ...o, besedilo: predloga.opis }));
+    const koraki = predloga.koraki || [];
+    const zadnji = koraki.length ? koraki[koraki.length - 1].zamikDni : 14;
+
+    if (predloga.cilj === 'objave') {
+      /* Kampanja drzi celoto, objave pa so tisto, kar res pride ven. */
+      const kampanja = novaMarketingKampanja({
+        naslov: predloga.naslov, vrsta: predloga.vrsta, status: 'nacrtovano',
+        datumOd: cezDni(0), datumDo: cezDni(zadnji), opis: predloga.opis,
+      });
+      const naslednjeKampanje = [kampanja, ...kampanje];
+      setKampanje(naslednjeKampanje);
+      shraniMarketingKampanje(naslednjeKampanje);
+
+      const nove = koraki.map(k => novaObjava({
+        kanal: objava.kanal, kanalIme: objava.kanalIme || undefined, kanalUrl: objava.kanalUrl || undefined,
+        naslov: k.naslov, besedilo: k.besedilo, datum: cezDni(k.zamikDni), projekt: objava.projekt || undefined,
+      }) as NacrtovanaObjava);
+      const naslednjeObjave = [...nove, ...objave];
+      setObjave(naslednjeObjave);
+      shraniObjave(naslednjeObjave);
       setZavihek('objave');
       return;
     }
-    setUrejamId(null);
-    setObrazec({ ...PRAZEN, naslov: predloga.naslov, opis: predloga.opis, vrsta: predloga.vrsta });
-    setObrazecOdprt(true);
+
+    /* Zaporedje sporocil: vsak korak je svoj blok v desnem panelu. */
+    setZap({
+      id: undefined, naslov: predloga.naslov, vrsta: predloga.vrsta, status: 'nacrtovano',
+      datumOd: cezDni(0), projekt: '', opis: predloga.opis, koraki: koraki.map(k => ({ ...k })),
+    });
+    setZapUvod(L(
+      `Vzela sem predlogo »${predloga.naslov}«. Povej mi, za koga je in kaj želiš doseči, pa jo prilagodim.`,
+      `I started from the “${predloga.naslov}” template. Tell me who it is for and what you want to achieve, and I will adapt it.`,
+    ));
+    setZapOdprt(true);
+  };
+
+  const shraniZaporedje = (osnutek: Zaporedje) => {
+    const zadnji = osnutek.koraki.length ? Math.max(...osnutek.koraki.map(k => k.zamikDni)) : 14;
+    const vrednosti = {
+      naslov: osnutek.naslov, vrsta: osnutek.vrsta, status: osnutek.status,
+      datumOd: osnutek.datumOd, datumDo: cezDni(zadnji), opis: osnutek.opis,
+      projekt: osnutek.projekt || undefined, koraki: osnutek.koraki,
+    };
+    const naslednje = osnutek.id
+      ? kampanje.map(k => k.id === osnutek.id ? { ...k, ...vrednosti } : k)
+      : [{ ...novaMarketingKampanja(vrednosti), koraki: osnutek.koraki, projekt: osnutek.projekt || undefined }, ...kampanje];
+    setKampanje(naslednje);
+    shraniMarketingKampanje(naslednje);
+    setZapOdprt(false);
     setZavihek('kampanje');
   };
 
   const uredi = (kampanja: MarketingKampanja) => {
-    setUrejamId(kampanja.id);
-    setObrazec({
-      naslov: kampanja.naslov,
-      vrsta: kampanja.vrsta,
-      status: kampanja.status,
-      datumOd: kampanja.datumOd || kampanja.datum || '',
-      datumDo: kampanja.datumDo || kampanja.datum || '',
+    setZap({
+      id: kampanja.id, naslov: kampanja.naslov, vrsta: kampanja.vrsta, status: kampanja.status,
+      datumOd: kampanja.datumOd || kampanja.datum || '', projekt: kampanja.projekt || '',
       opis: kampanja.opis || '',
+      koraki: (kampanja.koraki || []).map(k => ({ ...k })),
     });
-    setObrazecOdprt(true);
+    setZapOdprt(true);
   };
 
   const shrani = (dogodek: FormEvent) => {
@@ -231,21 +440,17 @@ export default function MarketingWorkspace({ base }: { base: string }) {
 
   const shraniObjavo = (dogodek: FormEvent) => {
     dogodek.preventDefault();
-    const nova: NacrtovanaObjava = {
-      ...objava,
-      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `objava-${Date.now()}`,
-      ustvarjeno: new Date().toISOString(),
-    };
+    const nova = novaObjava(objava) as NacrtovanaObjava;
     const naslednje = [nova, ...objave];
     setObjave(naslednje);
-    window.localStorage.setItem(OBJAVE_KLJUC, JSON.stringify(naslednje));
-    setObjava({ kanal: objava.kanal, kanalIme: objava.kanalIme, kanalUrl: objava.kanalUrl, naslov: '', besedilo: '', datum: '' });
+    shraniObjave(naslednje);
+    setObjava({ kanal: objava.kanal, kanalIme: objava.kanalIme, kanalUrl: objava.kanalUrl, naslov: '', besedilo: '', datum: '', projekt: objava.projekt });
   };
 
   const izbrisiObjavo = (id: string) => {
     const naslednje = objave.filter((vnos) => vnos.id !== id);
     setObjave(naslednje);
-    window.localStorage.setItem(OBJAVE_KLJUC, JSON.stringify(naslednje));
+    shraniObjave(naslednje);
   };
 
   const kopirajObjavo = async (vnos: NacrtovanaObjava) => {
@@ -263,7 +468,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
     const naloga: Naloga = { id: crypto.randomUUID(), naslov: vnos.naslov?.trim() || `${oznakaKanala(vnos)} · ${vnos.besedilo.trim().slice(0, 70)}`, opis: vnos.besedilo, stolpec: 'todo', rok: vnos.datum, created: zdaj, oznake: ['marketing', 'objava'] };
     shraniNaloge([naloga, ...preberiNaloge()]);
     const naslednje = objave.map(o => o.id === vnos.id ? { ...o, nalogaId: naloga.id } : o);
-    setObjave(naslednje); window.localStorage.setItem(OBJAVE_KLJUC, JSON.stringify(naslednje));
+    setObjave(naslednje); shraniObjave(naslednje);
   };
 
   const Objave = () => (
@@ -278,14 +483,23 @@ export default function MarketingWorkspace({ base }: { base: string }) {
           {objava.kanal === 'lasten' && <><label>{L('Ime kanala', 'Channel name')}<input required value={objava.kanalIme} onChange={e => setObjava({ ...objava, kanalIme: e.target.value })} placeholder={L('Npr. Novičnik', 'E.g. Newsletter')} /></label><label>{L('Naslov (neobvezno)', 'URL (optional)')}<input type="url" value={objava.kanalUrl} onChange={e => setObjava({ ...objava, kanalUrl: e.target.value })} placeholder="https://…" /></label></>}
           <label>{L('Naslov objave', 'Post title')}<input required value={objava.naslov} onChange={e => setObjava({ ...objava, naslov: e.target.value })} placeholder={L('Npr. Nova identiteta hotela', 'E.g. New hotel identity')} /></label>
           <label>{L('Datum objave', 'Post date')}<input required type="date" value={objava.datum} onChange={(e) => setObjava({ ...objava, datum: e.target.value })} />{objava.datum && <small style={{ display: 'block', marginTop: '.3rem', fontSize: '.72rem', color: 'rgba(17,17,17,.72)' }}>{new Date(objava.datum + 'T00:00:00').toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</small>}</label>
+          <label>{L('Projekt', 'Project')}<select value={objava.projekt} onChange={(e) => setObjava({ ...objava, projekt: e.target.value })}><option value="">{L('Brez projekta', 'No project')}</option>{projekti.map(pr => <option key={pr.id} value={pr.id}>{pr.naslov}</option>)}</select></label>
           <label className={styles.captionField}>{L('Besedilo objave', 'Post text')}<textarea required value={objava.besedilo} onChange={(e) => setObjava({ ...objava, besedilo: e.target.value })} placeholder={L('Napiši uvod, glavno sporočilo in jasen naslednji korak …', 'Write an intro, the main message and a clear next step …')} /></label>
+          <div className={styles.pupaVrsta}>
+            <button type="button" onClick={pupaNapisiObjavo} disabled={pupaDela !== null}>
+              <Sparkle size={16} weight="fill" />
+              {pupaDela === 'objava' ? L('Pupa piše …', 'Pupa is writing …') : L('Pupa naj napiše objavo', 'Let Pupa write the post')}
+            </button>
+            <small>{L('Pupa pozna projekt in stranko, ki ju izbereš zgoraj.', 'Pupa knows the project and client you pick above.')}</small>
+          </div>
+          {pupaNapaka && <p className={styles.zapNapaka} role="alert">{pupaNapaka}</p>}
           <p className={styles.manualNote}>{L('Flow vsebine ne objavi samodejno. Po shranjevanju jo kopiraš in odpreš izbrano omrežje.', 'Flow does not post content automatically. After saving, you copy it and open the chosen network.')}</p>
           <button className={styles.primary} type="submit">{L('Shrani načrtovano objavo', 'Save planned post')}</button>
         </form>
         <div className={styles.postList} aria-live="polite">
           {objave.length === 0 ? <div className={styles.postEmpty}><ShareNetwork size={30} /><strong>{L('Še nimaš načrtovanih objav.', 'You have no planned posts yet.')}</strong><p>{L('Prva se bo po shranjevanju prikazala tukaj.', 'The first one will appear here after you save it.')}</p></div> : objave.map((vnos) => (
             <article className={styles.postCard} key={vnos.id}>
-              <header><span>{oznakaKanala(vnos)}</span><time dateTime={vnos.datum}>{new Date(`${vnos.datum}T12:00:00`).toLocaleDateString(dl)}</time></header>
+              <header><span>{oznakaKanala(vnos)}</span>{imeProjekta(vnos.projekt) && <span className={styles.projektZnacka}>{imeProjekta(vnos.projekt)}</span>}<time dateTime={vnos.datum}>{new Date(`${vnos.datum}T12:00:00`).toLocaleDateString(dl)}</time></header>
               {vnos.naslov && <h3>{vnos.naslov}</h3>}<p>{vnos.besedilo}</p>
               <div className={styles.postActions}>
                 <button className={styles.secondary} type="button" onClick={() => kopirajObjavo(vnos)}>{kopiranoId === vnos.id ? <Check size={18} /> : <Code size={18} />}{kopiranoId === vnos.id ? L('Kopirano', 'Copied') : L('Kopiraj besedilo', 'Copy text')}</button>
@@ -325,7 +539,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
               <span className={styles.campaignIcon} data-vrsta={kampanja.vrsta}><IkonaVrste vrsta={kampanja.vrsta} /></span>
               <span className={styles.campaignTitle}>
                 <strong>{kampanja.naslov}</strong>
-                <small>{vrsteOznake[kampanja.vrsta]}{kampanja.opis ? ` · ${kampanja.opis}` : ''}</small>
+                <small>{vrsteOznake[kampanja.vrsta]}{imeProjekta(kampanja.projekt) ? ` · ${imeProjekta(kampanja.projekt)}` : ''}{kampanja.opis ? ` · ${kampanja.opis}` : ''}</small>
               </span>
               <span className={styles.campaignDate}>{formatirajRazpon(kampanja, L)}</span>
               <span className={styles.status} data-status={kampanja.status}>{statusiOznake[kampanja.status]}</span>
@@ -343,15 +557,32 @@ export default function MarketingWorkspace({ base }: { base: string }) {
   const Predloge = () => (
     <section className={styles.templates} aria-labelledby="predloge-naslov">
       <header className={styles.sectionHeader}>
-        <div><p className={styles.sectionLabel}>{L('PREDLOGE', 'TEMPLATES')}</p><h2 id="predloge-naslov">{L('Začni z dobro osnovo.', 'Start with a solid base.')}</h2></div>
+        <div><p className={styles.sectionLabel}>{L('PREDLOGE', 'TEMPLATES')}</p><h2 id="predloge-naslov">{L('Začni z dobro osnovo.', 'Start with a solid base.')}</h2>
+          {/* Vprasalnik ima svoj zavihek — kartica zanj bi bila ista stvar na dveh
+              koncih (Tina, 31. 8. 2026). Tu je samo kazipot. */}
+          <p className={styles.predlogaKazipot}>{L('Iščeš vprašalnik za stranko?', 'Looking for a client questionnaire?')} <button type="button" onClick={() => setZavihek('vprasalniki')}>{L('Odpri Vprašalnike', 'Open Questionnaires')}</button></p>
+        </div>
       </header>
       <div className={styles.templateGrid}>
-        {MARKETING_PREDLOGE.map((predloga) => (
+        {MARKETING_PREDLOGE.filter(p => OBJAVE_VIDNE || p.cilj !== 'objave').map((predloga) => (
           <article className={styles.templateCard} data-vrsta={predloga.vrsta} key={predloga.id}>
             <IkonaVrste vrsta={predloga.vrsta} size={25} />
             {predloga.oznaka && <span className={styles.badge}>{predloga.oznaka}</span>}
             <h3>{predloga.naslov}</h3>
             <p>{predloga.opis}</p>
+            {/* Predloga mora vnaprej povedati, kaj bo ustvarila — sicer je videti
+                kot navaden gumb (Tina, 31. 8. 2026). */}
+            {predloga.koraki && predloga.koraki.length > 0 && (
+              <ul className={styles.predlogaKoraki}>
+                {predloga.koraki.map((k, i) => (
+                  <li key={i}>
+                    <b>{k.zamikDni === 0 ? L('takoj', 'now') : `+${k.zamikDni} ${L('dni', 'days')}`}</b>
+                    {k.naslov}
+                  </li>
+                ))}
+              </ul>
+            )}
+
             <button className={styles.templateButton} type="button" onClick={() => uporabiPredlogo(predloga)}>{L('Uporabi predlogo', 'Use template')} <ArrowRight size={17} /></button>
           </article>
         ))}
@@ -369,7 +600,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CalendarBlank size={25} /><span className={styles.connectionState} data-ready="true">{L('Vključeno', 'Enabled')}</span></div><h3>{L('Flow Koledar', 'Flow Calendar')}</h3><p>{L('Načrtovani datumi kampanj so pripravljeni za pregled ob drugih rokih.', 'Planned campaign dates are ready to review alongside your other deadlines.')}</p><Link className={styles.secondary} href={`${base}/kalkulator/koledar`}>{L('Odpri koledar', 'Open calendar')}</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><CheckSquare size={25} /><span className={styles.connectionState} data-ready="true">{L('Vključeno', 'Enabled')}</span></div><h3>{L('Flow Naloge', 'Flow Tasks')}</h3><p>{L('Pripravo besedil, vizualov in objav vodiš kot opravila.', 'You manage copy, visuals and post prep as tasks.')}</p><Link className={styles.secondary} href={`${base}/kalkulator/naloge`}>{L('Odpri naloge', 'Open tasks')}</Link></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><EnvelopeSimple size={25} /><span className={styles.connectionState}>{L('Kmalu', 'Soon')}</span></div><h3>{L('Pošiljanje e-pošte', 'Email sending')}</h3><p>{L('Pred dejanskim pošiljanjem bomo dodali privolitev, odjavo in zanesljivo dostavo.', 'Before any real sending, we will add consent, unsubscribe and reliable delivery.')}</p></article>
-        <article className={styles.integrationCard}><div className={styles.integrationHead}><ShareNetwork size={25} /><span className={styles.connectionState}>{L('Kmalu (beta)', 'Soon (beta)')}</span></div><h3>{L('Družbena omrežja', 'Social media')}</h3><p>{L('Objave načrtuješ v Flowu, nato besedilo kopiraš in jih ročno objaviš. Samodejna objava še ni na voljo.', 'You plan posts in Flow, then copy the text and publish them manually. Automatic posting is not available yet.')}</p><button className={styles.secondary} type="button" onClick={() => setZavihek('objave')}>{L('Odpri načrtovalec', 'Open planner')}</button></article>
+        <article className={styles.integrationCard}><div className={styles.integrationHead}><ShareNetwork size={25} /><span className={styles.connectionState}>{L('Kmalu (beta)', 'Soon (beta)')}</span></div><h3>{L('Družbena omrežja', 'Social media')}</h3><p>{L('Načrtovanje in objavljanje na Facebooku in Instagramu danes teče v Meta Business Suite — tam je koledar in objava res gre ven. Flow te odloži tja; objavljanje pride sem, ko bo Flow objavljal za tvoje stranke iz enega mesta.', 'Planning and publishing on Facebook and Instagram happens in Meta Business Suite today — that is where the calendar lives and where the post actually goes out. Flow takes you there; publishing moves here once Flow posts for your clients from one place.')}</p><a className={styles.secondary} href="https://business.facebook.com/latest/home" target="_blank" rel="noreferrer">{L('Odpri Meta Business Suite', 'Open Meta Business Suite')} <ArrowRight size={17} /></a></article>
         <article className={styles.integrationCard}><div className={styles.integrationHead}><Megaphone size={25} /><span className={styles.connectionState}>{L('Načrtovano', 'Planned')}</span></div><h3>{L('Merjenje obiska', 'Traffic tracking')}</h3><p>{L('Ko povežeš analitiko, bo kampanja pokazala tudi obisk, povpraševanja in dejanski rezultat.', 'Once you connect analytics, each campaign will also show traffic, inquiries and real results.')}</p></article>
       </div>
     </section>
@@ -412,19 +643,19 @@ export default function MarketingWorkspace({ base }: { base: string }) {
           )}
         </div>
         <div className={styles.heroPupa} aria-hidden>
-          <Image src="/flow-pupa-marketing-2.png" alt="" width={783} height={711} sizes="320px" priority={false} />
+          <Image src="/flow-pupa-marketing-2.png" alt="" width={783} height={711} sizes="320px" priority />
         </div>
         <button className={styles.primary} type="button" onClick={() => odpriNovo()}><Plus size={19} /> {L('Nova kampanja', 'New campaign')}</button>
       </section>
 
-      <MobTabs label={L('Marketing pogledi', 'Marketing views')} vrednost={zavihek} naVrednost={id => setZavihek(id as Zavihek)} opcije={[{ id: 'pregled', label: L('Pregled', 'Overview') }, { id: 'objave', label: L('Objave', 'Posts') }, { id: 'kampanje', label: L('Kampanje', 'Campaigns') }, { id: 'predloge', label: L('Predloge', 'Templates') }, { id: 'vprasalniki', label: L('Vprašalniki', 'Questionnaires') }, { id: 'povezave', label: L('Povezave', 'Connections') }]} />
+      <MobTabs label={L('Marketing pogledi', 'Marketing views')} vrednost={zavihek} naVrednost={id => setZavihek(id as Zavihek)} opcije={[...(OBJAVE_VIDNE ? [{ id: 'objave', label: L('Objave', 'Posts') }] : []), { id: 'kampanje', label: L('Kampanje', 'Campaigns') }, { id: 'predloge', label: L('Predloge', 'Templates') }, { id: 'vprasalniki', label: L('Vprašalniki', 'Questionnaires') }, ...(POVEZAVE_VIDNE ? [{ id: 'povezave', label: L('Povezave', 'Connections') }] : [])]} />
       <nav className={`${styles.tabs} mobtabs-hide`} aria-label={L('Marketing pogledi', 'Marketing views')}>
-        {([['pregled', L('Pregled', 'Overview')], ['objave', L('Objave', 'Posts')], ['kampanje', L('Kampanje', 'Campaigns')], ['predloge', L('Predloge', 'Templates')], ['vprasalniki', L('Vprašalniki', 'Questionnaires')], ['povezave', L('Povezave', 'Connections')]] as const).map(([id, napis]) => (
+        {([...(OBJAVE_VIDNE ? [['objave', L('Objave', 'Posts')] as const] : []), ['kampanje', L('Kampanje', 'Campaigns')] as const, ['predloge', L('Predloge', 'Templates')], ['vprasalniki', L('Vprašalniki', 'Questionnaires')] as const, ...(POVEZAVE_VIDNE ? [['povezave', L('Povezave', 'Connections')] as const] : [])] as const).map(([id, napis]) => (
           <button key={id} className={styles.tab} type="button" data-active={zavihek === id} onClick={() => setZavihek(id)}>{napis}</button>
         ))}
       </nav>
 
-      {zavihek === 'pregled' && <>
+      {zavihek === 'kampanje' && <>
         {/* Stiri velike nicle so bile najslabse mozno prvo srecanje s stranjo:
             povedale so, da nimas nic, in nic o tem, kaj naj narediš. Zdaj je to
             tih pas, ki se pokaze SELE, ko je kaj za pokazati (Tina, 31. 8. 2026). */}
@@ -456,11 +687,22 @@ export default function MarketingWorkspace({ base }: { base: string }) {
         </section>}
         {Kampanje()}
       </>}
-      {zavihek === 'kampanje' && Kampanje()}
-      {zavihek === 'objave' && Objave()}
+      {OBJAVE_VIDNE && zavihek === 'objave' && Objave()}
       {zavihek === 'predloge' && Predloge()}
+      <MarketingZaporedjePanel
+        odprt={zapOdprt}
+        zacetno={zap}
+        projekti={projekti}
+        jeEn={locale === 'en'}
+        napaka={pupaNapaka}
+        onZapri={() => setZapOdprt(false)}
+        onShrani={shraniZaporedje}
+        onNaloga={nalogaIzKoraka}
+        onSporocilo={sporociloIzKoraka}
+      />
+
       {zavihek === 'vprasalniki' && <VprasalnikiPanel jeEn={locale === 'en'} base={base} />}
-      {zavihek === 'povezave' && Povezave()}
+      {POVEZAVE_VIDNE && zavihek === 'povezave' && Povezave()}
 
       {obrazecOdprt && (
         <div className={styles.dialogBackdrop} role="presentation" onMouseDown={(e) => e.target === e.currentTarget && setObrazecOdprt(false)}>
@@ -475,6 +717,7 @@ export default function MarketingWorkspace({ base }: { base: string }) {
               <label>Status<select value={obrazec.status} onChange={(e) => setObrazec({ ...obrazec, status: e.target.value as MarketingStatus })}><option value="osnutek">{L('Osnutek', 'Draft')}</option><option value="nacrtovano">{L('Načrtovano', 'Planned')}</option><option value="aktivno">{L('Aktivno', 'Active')}</option><option value="zakljuceno">{L('Zaključeno', 'Completed')}</option></select></label>
               <label>{L('Začetek', 'Start')}<input type="date" value={obrazec.datumOd} max={obrazec.datumDo || undefined} onChange={(e) => setObrazec({ ...obrazec, datumOd: e.target.value })} />{obrazec.datumOd && <small style={{ display: 'block', marginTop: '.3rem', fontSize: '.72rem', color: 'rgba(17,17,17,.72)' }}>{new Date(obrazec.datumOd + 'T00:00:00').toLocaleDateString(dl, { day: 'numeric', month: 'long', year: 'numeric' })}</small>}</label>
               <label>{L('Konec', 'End')}<input type="date" value={obrazec.datumDo} min={obrazec.datumOd || undefined} onChange={(e) => setObrazec({ ...obrazec, datumDo: e.target.value })} />{obrazec.datumDo && <small style={{ display: 'block', marginTop: '.3rem', fontSize: '.72rem', color: 'rgba(17,17,17,.72)' }}>{new Date(obrazec.datumDo + 'T00:00:00').toLocaleDateString(dl, { day: 'numeric', month: 'long', year: 'numeric' })}</small>}</label>
+              <label>{L('Projekt', 'Project')}<select value={obrazec.projekt} onChange={(e) => setObrazec({ ...obrazec, projekt: e.target.value })}><option value="">{L('Brez projekta', 'No project')}</option>{projekti.map(pr => <option key={pr.id} value={pr.id}>{pr.naslov}</option>)}</select></label>
               <label>{L('Kratek opis', 'Short description')}<textarea value={obrazec.opis} onChange={(e) => setObrazec({ ...obrazec, opis: e.target.value })} placeholder={L('Kaj želiš doseči in komu govoriš?', 'What do you want to achieve and who are you speaking to?')} /></label>
               <div className={styles.formActions}><button className={styles.quietButton} type="button" onClick={() => setObrazecOdprt(false)}>{L('Prekliči', 'Cancel')}</button><button className={styles.primary} type="submit">{L('Shrani kampanjo', 'Save campaign')}</button></div>
             </form>

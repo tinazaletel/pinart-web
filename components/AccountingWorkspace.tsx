@@ -1,10 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import { strToU8, zipSync } from 'fflate';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
-import { loadFlowData } from '@/lib/pinartFlowStore';
+import { loadFlowData, type FlowData } from '@/lib/pinartFlowStore';
+
+/* Enako, kot vrne loadFlowData na strezniku — glej zaporo montaze spodaj. */
+const PRAZEN_FLOW: FlowData = { version: 1, offers: [], invoices: [], expenses: [], contracts: [], clients: [] };
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
 import { getBusinessDocumentUrl, listAccountingExports, loadCloudSettings, recordAccountingExport, saveCloudSettings, uploadBusinessDocument, type AccountingExportRecord } from '@/lib/pinartFlowCloud';
 import Paginacija from '@/components/Paginacija';
@@ -100,7 +104,16 @@ export default function AccountingWorkspace() {
   const [predogledNacin] = usePredogled();
   const samoOgled = predogledNacin !== 'mine';
 
-  const flow = useMemo(() => podatkiZaPredogled(predogledNacin, loadFlowData()), [predogledNacin]);
+  /* HIDRACIJA: loadFlowData bere localStorage, streznik ga nima — brez zapore
+     se prvi izris na odjemalcu razlikuje od streznikovega HTML (»Server: 0,
+     Client: 1«) in React javi Unhandled Runtime Error. Do montaze zato beremo
+     prazne podatke, takoj po njej prave (Tina, 31. 8. 2026). */
+  const [montirano, setMontirano] = useState(false);
+  useEffect(() => { setMontirano(true); }, []);
+  const flow = useMemo(
+    () => podatkiZaPredogled(predogledNacin, montirano ? loadFlowData() : PRAZEN_FLOW),
+    [predogledNacin, montirano],
+  );
   const inPeriod = (date: string) => date.slice(0, 10) >= period.start && date.slice(0, 10) <= period.end;
   const invoices = useMemo(() => flow.invoices.filter(i => i.date.slice(0, 10) >= period.start && i.date.slice(0, 10) <= period.end), [flow, period.start, period.end]);
   const expenses = useMemo(() => flow.expenses.filter(e => e.date.slice(0, 10) >= period.start && e.date.slice(0, 10) <= period.end), [flow, period.start, period.end]);
@@ -244,7 +257,8 @@ export default function AccountingWorkspace() {
   return <div className={styles.accountingPage}>
     {notice && <div className={styles.goalSaved} role="status">{notice}</div>}
     <section className={styles.accountingSetup}>
-      <div><p className={styles.eyebrow}>{L('OBDOBJE', 'PERIOD')}</p><h2>{L('Za računovodkinjo.', 'For your accountant.')}</h2><p>{L('Izberi obdobje — Flow sam pobere račune, stroške in priloge. Vidiš, kaj pošiljaš, in odkljukaš, kar nočeš. Vsak paket ostane v evidenci spodaj.', 'Pick a period — Flow gathers the invoices, expenses and attachments itself. You see what you are sending and untick anything you don’t want. Every package stays in the log below.')}</p></div>
+      <div><p className={styles.eyebrow}>{L('OBDOBJE', 'PERIOD')}</p><h2>{L('Za računovodkinjo.', 'For your accountant.')}</h2><p>{L('Izberi obdobje — Flow sam pobere račune, stroške in priloge. Vidiš, kaj pošiljaš, in odkljukaš, kar nočeš. Vsak paket ostane v evidenci spodaj.', 'Pick a period — Flow gathers the invoices, expenses and attachments itself. You see what you are sending and untick anything you don’t want. Every package stays in the log below.')}</p>
+        <Image className={styles.accountingPupa} src="/flow-pupa-racuni.png" alt="" width={622} height={662} sizes="280px" priority={false} /></div>
       <div className={styles.accountingForm}>
         <div className={styles.periodSwitch} aria-label={L('Način izbire obdobja', 'Period selection mode')}><button className={periodMode === 'monthly' ? styles.periodActive : ''} onClick={() => changeFrequency('monthly')}>{L('Vsak mesec', 'Every month')}</button><button className={periodMode === 'quarterly' ? styles.periodActive : ''} onClick={() => changeFrequency('quarterly')}>{L('Na 3 mesece', 'Every 3 months')}</button><button className={periodMode === 'custom' ? styles.periodActive : ''} onClick={() => setPeriodMode('custom')}>{L('Po meri', 'Custom')}</button></div>
         <div className={styles.accountingDates}><label>{L('Od', 'From')}<input type="date" max={period.end || undefined} value={period.start} onChange={event => { setPeriodMode('custom'); setPeriod(value => ({ ...value, start: event.target.value })); }} /></label><label>{L('Do', 'To')}<input type="date" min={period.start || undefined} value={period.end} onChange={event => { setPeriodMode('custom'); setPeriod(value => ({ ...value, end: event.target.value })); }} /></label></div>

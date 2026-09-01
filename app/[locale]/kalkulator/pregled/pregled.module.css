@@ -246,7 +246,7 @@
 /* EN skupni glass za vse glavne vsebinske kartice (stranke, ceniki, cilji, stroški, računovodstvo).
    Samo veliki paneli — vrstice/gumbi/kontrole ostanejo (imajo svoje ožje selektorje). */
 .clientDirectory, .clientProfile,
-.goalOverview, .goalBuilder, .goalChecklist, .goalHistory,
+.goalBuilder, .goalChecklist, .goalHistory,
 .priceProfileList, .priceEditor, .produktEditor,
 .accountingHistory, .accountingForm,
 .expenseEditor, .expenseArchive, .recurringCosts {
@@ -821,14 +821,18 @@
 .expenseSummary article:nth-child(1) { background: linear-gradient(140deg, oklch(96% .04 60), oklch(89% .075 52)); }
 .expenseSummary article:nth-child(2) { background: linear-gradient(140deg, oklch(96% .025 165), oklch(88% .065 165)); }
 .expenseSummary article:nth-child(3) { background: linear-gradient(140deg, oklch(95% .025 295), oklch(89% .06 295)); }
-.expenseSummary small, .expenseSummary span { font-size: .6rem; }
-.expenseSummary article strong { margin-top: auto; font: 500 1.8rem var(--font-sans), Georgia, serif; }
+/* Napis je bil .6rem — skoraj neberljiv. Enaka lestvica kot na Ciljih:
+   majhen tih napis zgoraj, mocna stevilka spodaj (Tina, 31. 8. 2026). */
+.expenseSummary small { font-size: .78rem; font-weight: 600; color: color-mix(in oklch, var(--ink) 55%, transparent); }
+.expenseSummary span { font-size: .78rem; }
+.expenseSummary article strong { margin-top: auto; font: 650 1.9rem/1 var(--font-sans), sans-serif; letter-spacing: -.02em; }
 .expenseSummary article span { margin-top: .25rem; color: var(--muted); }
-.expenseSummary > button { border: 0; background: var(--ink); color: var(--paper); cursor: pointer; }
+.expenseSummary > button { border: 0; background: var(--ink); color: var(--paper); cursor: pointer; text-align: left; transition: transform .18s ease, box-shadow .18s ease; }
+.expenseSummary > button:hover { transform: translateY(-2px); box-shadow: 0 10px 26px oklch(30% .02 55 / .16); }
 /* "+" je bil .6rem, ker ga zajame splosno pravilo ".expenseSummary span".
    Tu ga vrnemo na berljivo velikost — krogec je gumb, ne drobna oznaka. */
 .expenseSummary > button span { display: grid; place-items: center; width: 2.35rem; aspect-ratio: 1; border: 1px solid oklch(100% 0 0 / .3); border-radius: 50%; font-size: 1.35rem; font-weight: 400; line-height: 1; }
-.expenseSummary > button strong { margin-top: auto; font: 500 1.4rem var(--font-sans), Georgia, serif; }
+.expenseSummary > button strong { margin-top: auto; font: 650 1.25rem/1.2 var(--font-sans), sans-serif; letter-spacing: -.01em; }
 .expenseSummary > button small { margin-top: .25rem; color: oklch(100% 0 0 / .6); }
 .subpageMetricIcon { position: absolute; z-index: 0; right: .8rem; bottom: .75rem; top: auto; display: grid; place-items: center; width: 5.3rem; aspect-ratio: 1; border: 0; border-radius: 0; background: none; box-shadow: none; opacity: .18; transform: rotate(-9deg); pointer-events: none; }
 .subpageMetricIcon svg { width: 5.1rem !important; height: 4.8rem !important; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transform: none; }
@@ -1723,7 +1727,13 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
   background:
     radial-gradient(circle at 88% 18%, oklch(82% .14 300 / .7), transparent 24%),
     radial-gradient(circle at 74% 105%, oklch(86% .12 165 / .62), transparent 31%),
-    linear-gradient(115deg, oklch(98% .012 80 / .75), oklch(96% .025 300 / .55));
+    linear-gradient(115deg, oklch(98% .012 80 / .75), oklch(96% .025 300 / .55)),
+    #fff;
+  /* Steklo si pasica postavi sama: skupno pravilo za velike panele ima
+     background z !important in bi preliv pobelilo (Tina, 31. 8. 2026). */
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  box-shadow: 0 1px 2px oklch(30% .02 55 / .035), 0 10px 26px oklch(30% .02 55 / .05), inset 0 1px 0 rgba(255,255,255,.5);
 }
 .goalOverview h2 { margin: 0; font: 600 3.6rem/.95 var(--font-sans), system-ui, sans-serif; letter-spacing: -.03em; -webkit-text-stroke: 0; }
 .goalOverview > div:first-child > p:last-child { max-width: 34rem; margin: .7rem 0 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
@@ -1849,7 +1859,21 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
   object-position: bottom;
   pointer-events: none;
 }
-@media (max-width: 1240px) { .goalPupa { display: none; } }
+/* Pod 1240 px Pupa ni skrita (Tina: »pupe ni«): kartica se prelomi na dva
+   stolpca, Pupa pa sede pod krog na spodnji rob — v prostor, ki bi sicer
+   ostal prazen (Tina, 31. 8. 2026). */
+@media (max-width: 1240px) {
+  .goalOverview { grid-template-columns: minmax(0, 1fr) auto; }
+  .goalOverview > div:first-child { grid-column: 1; grid-row: 1; }
+  .goalOverviewStats { grid-column: 1; grid-row: 2; }
+  .goalLargeDial { grid-column: 2; grid-row: 1; }
+  .goalPupa {
+    grid-column: 2; grid-row: 2;
+    align-self: end; justify-self: end;
+    height: 8.5rem;
+    margin: 0 -.4rem -1.5rem 0;
+  }
+}
 
 .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; }
 .summary article { position: relative; overflow: hidden; display: grid; gap: .5rem; min-height: 9.5rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: 1.25rem; background: linear-gradient(140deg, oklch(96% .035 295), oklch(88% .075 297)); }
@@ -1874,10 +1898,52 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
 .summary article > :not(.metricIkona) { position: relative; z-index: 1; }
 
 .priceListsPage { display: grid; gap: 1rem; }
-.priceListIntro { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1.4rem; background: linear-gradient(125deg, oklch(98% .018 87), oklch(95% .028 295), oklch(95% .025 165)); }
-.priceListIntro h2 { margin: 0; font: 500 2rem/1 var(--font-serif), Georgia, serif; }
+/* Pasica ceni ima isti recept kot Marketing in Cilji: mehak vijolicno-mentin
+   preliv in Pupa, ki sedi na spodnjem robu ter gleda z glavo cez zgornjega
+   (Tina, 31. 8. 2026: »o pasico v pupa stilu«). */
+.priceListIntro {
+  position: relative;
+  display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+  min-height: 9rem; padding: 1.5rem 1.6rem;
+  border: 1px solid var(--line); border-radius: 1.4rem;
+  background:
+    radial-gradient(circle at 88% 18%, oklch(82% .14 300 / .7), transparent 24%),
+    radial-gradient(circle at 74% 105%, oklch(86% .12 165 / .62), transparent 31%),
+    linear-gradient(115deg, oklch(98% .012 80 / .75), oklch(96% .025 300 / .55)),
+    #fff;
+}
+/* Sirino besedila omeji Pupa, ne obratno — sicer bi ji stopilo pod roke. */
+.priceListIntro > div:first-child { min-width: 0; max-width: min(44rem, 58%); }
+.priceListPupa {
+  position: absolute;
+  right: clamp(9rem, 15vw, 14rem);
+  bottom: -.05rem;
+  width: auto;
+  height: clamp(7rem, 12vw, 10.5rem);
+  object-fit: contain;
+  object-position: bottom;
+  pointer-events: none;
+}
+/* Brez drugega serifnega naslova: nad pasico stoji ze naslov strani in oba
+   sta tekmovala (Tina, 31. 8. 2026). */
+.priceListIntro h2 { margin: 0; font: 650 1.35rem/1.25 var(--font-sans), sans-serif; letter-spacing: -.01em; }
 .priceListIntro p:last-child { max-width: 42rem; margin: .65rem 0 0; color: var(--muted); }
-.priceListIntro > button, .activatePriceList { min-height: 2.8rem; padding: 0 1rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font-weight: 800; white-space: nowrap; cursor: pointer; }
+.priceListIntro > button, .activatePriceList { min-height: 2.8rem; padding: 0 1.2rem; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font-weight: 650; white-space: nowrap; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+/* Pravi hover kot drugod v Flowu: poskok, mehka senca in svetlobni odsev
+   cez gumb (Tina, 31. 8. 2026). */
+.priceListIntro > button, .activatePriceList { position: relative; overflow: hidden; }
+.priceListIntro > button::after, .activatePriceList::after {
+  content: '';
+  position: absolute; top: 0; left: -160%;
+  width: 90%; height: 100%;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.5) 50%, transparent 100%);
+  transform: skewX(-18deg);
+  transition: left .6s cubic-bezier(.16,1,.3,1);
+  pointer-events: none;
+}
+.priceListIntro > button:hover::after, .activatePriceList:hover::after { left: 170%; }
+.priceListIntro > button:hover, .activatePriceList:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 22px rgba(35,18,45,.18); }
+.priceListIntro > button:active, .activatePriceList:active { transform: translateY(0) scale(.985); }
 .priceListsLayout { display: grid; grid-template-columns: minmax(17rem, .34fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
 .priceProfileList, .priceEditor { overflow: hidden; border: 1px solid rgba(255,255,255,.55); border-radius: 1.4rem; background: rgba(255,255,255,.5); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); }
 .priceProfileList > header { display: flex; justify-content: space-between; padding: 1.1rem; }
@@ -1973,7 +2039,7 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
 @media (max-width: 1100px) {
   .goalOverview { grid-template-columns: 1fr auto; }
   .goalOverviewStats { grid-column: 1; grid-row: 2; }
-  .goalLargeDial { grid-column: 2; grid-row: 1 / span 2; }
+  .goalLargeDial { grid-column: 2; grid-row: 1; }
   .summary { grid-template-columns: 1fr 1fr; }
   .goalsLayout { grid-template-columns: 1fr; }
   .priceListsLayout { grid-template-columns: minmax(0, 1fr); }
@@ -1987,8 +2053,12 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
   .goalOverview > div:first-child > p:last-child { font-size: .78rem; }
   .goalOverviewStats { grid-column: 1; grid-row: 2; flex-direction: row; flex-wrap: wrap; gap: .6rem 1.4rem; }
   .goalOverviewStats span { min-width: 0; }
-  .goalLargeDial { grid-column: 2; grid-row: 1 / span 2; width: 5.6rem; }
+  /* Ko se postavki zlozita eno pod drugo, navpicna crta in zamik nista vec
+     locilo, ampak videti kot zamaknjena vrstica (Tina, 31. 8. 2026). */
+  .goalOverviewStats > span + span { padding-left: 0; border-left: 0; }
+  .goalLargeDial { grid-column: 2; grid-row: 1; width: 5.6rem; }
   .goalLargeDial strong { font-size: 1.35rem; }
+  .goalPupa { height: 6.2rem; margin: 0 -.5rem -1.1rem 0; }
   .goalBuilder, .goalChecklist, .goalHistory { padding: 1.1rem 1.15rem; }
   .goalBuilder { gap: 1rem; }
   .goalBuilder header h2, .goalChecklist h2, .goalHistory h2 { font-size: 1.5rem; }
@@ -2004,8 +2074,22 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
   .goalChecklist > small { width: 100%; }
   .goalHistory { overflow: hidden; }
   .goalHistory > div { grid-template-columns: repeat(6, minmax(4.5rem, 1fr)); overflow-x: auto; }
-  /* mobile: banner PROFILI CEN in poln seznam ven; namesto seznama = dropdown (priceMobBar) */
-  .priceListIntro { display: none; }
+  /* mobile: poln seznam cenikov ven, namesto njega dropdown (priceMobBar).
+     Pasica OSTANE — brez nje na mobilnem ni bilo Pupe (Tina, 31. 8. 2026) —
+     le da se stisne: opis in podvojeni gumb ven, ostane napis, naslov in Pupa,
+     ki sedi na spodnjem robu. Gumb »+ Nov cenik« je ze v vrstici pod njo. */
+  .priceListIntro {
+    align-items: end; gap: .7rem;
+    min-height: 0; padding: .9rem 1rem; border-radius: 1.2rem;
+  }
+  .priceListIntro > div:first-child { max-width: 100%; }
+  .priceListIntro h2 { font-size: 1.15rem; }
+  .priceListIntro p:last-child { display: none; }
+  .priceListIntro > button { display: none; }
+  .priceListPupa {
+    position: static; flex: none; align-self: end;
+    height: 6.2rem; margin: -.4rem -.4rem -.9rem 0;
+  }
   .priceProfileList { display: none; }
   .priceMobBar { display: flex; align-items: center; gap: .5rem; }
   /* icon gumba (svinčnik+koš) NAD naslov, desno (column-reverse) */
@@ -2169,10 +2253,26 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
 @media (max-width: 640px) { .accountingPage { padding-left: .5rem; padding-right: .5rem; box-sizing: border-box; } }
 .accountingSetup,
 .accountingHistory { border: 1px solid rgba(255,255,255,.6); border-radius: 1.5rem; background: rgba(255,255,255,.5); backdrop-filter: blur(18px) saturate(1.35); -webkit-backdrop-filter: blur(18px) saturate(1.35); box-shadow: 0 10px 26px oklch(30% .02 55 / .06), inset 0 1px 0 rgba(255,255,255,.5); padding: 1.5rem; }
-.accountingSetup { display: grid; grid-template-columns: minmax(15rem, .8fr) minmax(28rem, 1.2fr); gap: 2rem; align-items: start; }
+.accountingSetup { position: relative; display: grid; grid-template-columns: minmax(15rem, .8fr) minmax(28rem, 1.2fr); gap: 2rem; align-items: start; }
 .accountingSetup h2,
 .accountingHistory h2 { margin: .35rem 0 .6rem; font-family: var(--font-serif), Georgia, serif; font-size: clamp(1.35rem, 2vw, 2rem); font-weight: 500; -webkit-text-stroke: 0; }
 .accountingSetup p { max-width: 34rem; color: var(--muted); line-height: 1.55; }
+/* Levi stolpec je bil pod besedilom prazen — tja sede Pupa z dokumenti
+   (Tina, 31. 8. 2026). Stolpec se raztegne cez celo vrstico, Pupa pa se
+   z margin-top:auto odrine na dno in sede na spodnji rob panela. */
+.accountingSetup > div:first-child { min-width: 0; }
+/* margin-top: auto jo potisne na DNO stolpca, spodnji negativni rob pa
+   natanko iznici notranji odmik panela — tako sede NA rob in ne visi cezenj.
+   Vodoravno je poravnana na sredino stolpca (Tina, 31. 8. 2026). */
+/* Absolutno na DNU panela: v navadnem toku je bila odvisna od visine obrazca
+   in je rob panela sekal kovance. bottom: 0 pomeni natanko notranji rob
+   obrobe — Pupa torej stoji NA robu (Tina, 31. 8. 2026). */
+.accountingPupa { position: absolute; z-index: 0; left: calc(3.5rem + 40px); bottom: 0; width: clamp(10.5rem, 19vw, calc(14rem + 25px)); height: auto; pointer-events: none; }
+@media (max-width: 980px) {
+  /* Na mobilnem Pupe ni: stolpca se zlozita in zanjo ni mesta, kjer ne bi bila
+     videti nalepljena med besedilo in obrazec (Tina, 31. 8. 2026). */
+  .accountingPupa { display: none; }
+}
 .accountingForm { display: grid; gap: .9rem; padding: 1rem; border: 1px solid rgba(255,255,255,.5); border-radius: 1.15rem; background: #fff; }
 .accountingForm label { display: grid; gap: .4rem; font-weight: 700; }
 .accountingForm input { min-height: 3rem; padding: .65rem .85rem; border: 1px solid var(--line); border-radius: .8rem; background: white; color: var(--ink); font: 500 1rem/1.3 var(--font-sans), sans-serif; }
@@ -2995,3 +3095,112 @@ button.emptyState { width: 100%; font: inherit; text-align: left; cursor: pointe
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
+/* ── EN HOVER ZA VSE ČRNE GUMBE ──────────────────────────────────────────
+   Tina, 31. 8. 2026: »črnemu gumbu manjka hover«. Pravilo je bilo doslej
+   pisano od gumba do gumba, zato ga polovica ni imela. Tu je enkrat, po
+   vzoru .primaryAction: rahel dvig, mehka senca in svetlobni odsev, ki
+   potuje čez gumb. Kdor ima svojega (npr. .tipCta), ga obdrži. */
+.detailPanel > button:last-child,
+.projectBundle > button,
+.goalRecommendation button,
+.goalRecommended button,
+.contractActions button,
+.contractSetup button, .uploadContract > button, .contractSave button,
+.openContractFile,
+.invoiceSummary > button,
+.invoiceCreator form > button,
+.expenseSummary > button,
+.expenseEditorActions button:last-child,
+.recurringForm > button,
+.clientToolbar > button:last-child,
+.clientEditorActions button:last-child,
+.clientLinkDodaj,
+.projectsToolbar > a,
+.create,
+.priceMobNew {
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.detailPanel > button:last-child::after,
+.projectBundle > button::after,
+.goalRecommendation button::after,
+.goalRecommended button::after,
+.contractActions button::after,
+.contractSetup button::after, .uploadContract > button::after, .contractSave button::after,
+.openContractFile::after,
+.invoiceSummary > button::after,
+.invoiceCreator form > button::after,
+.expenseSummary > button::after,
+.expenseEditorActions button:last-child::after,
+.recurringForm > button::after,
+.clientToolbar > button:last-child::after,
+.clientEditorActions button:last-child::after,
+.clientLinkDodaj::after,
+.projectsToolbar > a::after,
+.create::after,
+.priceMobNew::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -160%;
+  width: 90%; height: 100%;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.5) 50%, transparent 100%);
+  transform: skewX(-18deg);
+  transition: left .6s cubic-bezier(.16,1,.3,1);
+  pointer-events: none;
+}
+.detailPanel > button:last-child:hover::after,
+.projectBundle > button:hover::after,
+.goalRecommendation button:hover::after,
+.goalRecommended button:hover::after,
+.contractActions button:hover::after,
+.contractSetup button:hover::after, .uploadContract > button:hover::after, .contractSave button:hover::after,
+.openContractFile:hover::after,
+.invoiceSummary > button:hover::after,
+.invoiceCreator form > button:hover::after,
+.expenseSummary > button:hover::after,
+.expenseEditorActions button:last-child:hover::after,
+.recurringForm > button:hover::after,
+.clientToolbar > button:last-child:hover::after,
+.clientEditorActions button:last-child:hover::after,
+.clientLinkDodaj:hover::after,
+.projectsToolbar > a:hover::after,
+.create:hover::after,
+.priceMobNew:hover::after { left: 170%; }
+.detailPanel > button:last-child:hover,
+.projectBundle > button:hover,
+.goalRecommendation button:hover,
+.goalRecommended button:hover,
+.contractActions button:hover,
+.contractSetup button:hover, .uploadContract > button:hover, .contractSave button:hover,
+.openContractFile:hover,
+.invoiceSummary > button:hover,
+.invoiceCreator form > button:hover,
+.expenseSummary > button:hover,
+.expenseEditorActions button:last-child:hover,
+.recurringForm > button:hover,
+.clientToolbar > button:last-child:hover,
+.clientEditorActions button:last-child:hover,
+.clientLinkDodaj:hover,
+.projectsToolbar > a:hover,
+.create:hover,
+.priceMobNew:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 22px rgba(35,18,45,.18); }
+.detailPanel > button:last-child:active,
+.projectBundle > button:active,
+.goalRecommendation button:active,
+.goalRecommended button:active,
+.contractActions button:active,
+.contractSetup button:active, .uploadContract > button:active, .contractSave button:active,
+.openContractFile:active,
+.invoiceSummary > button:active,
+.invoiceCreator form > button:active,
+.expenseSummary > button:active,
+.expenseEditorActions button:last-child:active,
+.recurringForm > button:active,
+.clientToolbar > button:last-child:active,
+.clientEditorActions button:last-child:active,
+.clientLinkDodaj:active,
+.projectsToolbar > a:active,
+.create:active,
+.priceMobNew:active { transform: translateY(0) scale(.985); }

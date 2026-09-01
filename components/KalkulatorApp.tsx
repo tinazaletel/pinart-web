@@ -11299,7 +11299,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
             {/* Podpora šele TU: korak s ceno je sredina dela, Zaključek pa
                 trenutek, ko ima človek ponudbo v rokah in je nekaj dobil
                 (Tina, 29. 8. 2026). Med procesom ne prekinjamo. */}
-            <PodpriBanner locale={locale} />
+            {/* PASICA ZA PODPORO JE UMAKNJENA (Tina, 31. 8. 2026): ni sporna
+              zakonitost — prostovoljno placilo d.o.o. je dovoljeno — ampak
+              davcna obravnava (ali je predmet DDV) do potrditve racunovodkinje
+              oziroma FURS. Komponenta ostaja, vrnitev je ena vrstica. */}
             </>
           )}
         </div>
