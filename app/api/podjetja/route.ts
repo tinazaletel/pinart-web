@@ -37,11 +37,18 @@ export async function GET(request: Request) {
      imena v registru so polna vejic (»Inovis, druzba za …«) in brez njih
      iskanje polnega imena ne najde nicesar. */
   const varen = q.replace(/[%_]/g, ' ');
-  const { data, error } = await supabase
+  /* Iscemo po BESEDAH, ne po celem nizu. Register hrani imena v svojem
+     vrstnem redu ("MANCINI LUKA s.p."), uporabnik pa tipka po svoje
+     ("Luka Mancini") — z enim samim %niz% ni bilo zadetka (Tina, 2. 9. 2026).
+     Vsaka beseda mora biti v imenu, vrstni red pa ni pomemben. */
+  const besede = varen.split(/\s+/).filter(b => b.length >= 2);
+  let poizvedba = supabase
     .from('podjetja')
-    .select('maticna,ime,naslov,posta_st,posta,davcna,ddv')
-    .ilike('iskalno', `%${varen}%`)
-    .limit(25);
+    .select('maticna,ime,naslov,posta_st,posta,davcna,ddv');
+  for (const beseda of (besede.length ? besede : [varen])) {
+    poizvedba = poizvedba.ilike('iskalno', `%${beseda}%`);
+  }
+  const { data, error } = await poizvedba.limit(25);
 
   if (error) return NextResponse.json({ error: 'Iskanje ni uspelo.' }, { status: 500 });
 
@@ -57,7 +64,12 @@ export async function GET(request: Request) {
   const rang = (ime: string): number => {
     const p = poenoti(ime);
     if (p.startsWith(q)) return 0;
-    if (p.split(/[^a-z0-9]+/).some(b => b.startsWith(q))) return 1;
+    const deli = p.split(/[^a-z0-9]+/).filter(Boolean);
+    /* Vsaka vpisana beseda mora ZACETI katero od besed imena. Tako
+       "luka mancini" najde "mancini luka s.p.", "inovi" pa se vedno ne
+       ujame sredi "vukasinovic". */
+    if (besede.length && besede.every(b => deli.some(d => d.startsWith(b)))) return 1;
+    if (deli.some(d => d.startsWith(q))) return 1;
     return 2;
   };
 
