@@ -1,3 +1,5 @@
+import { imaRazpon, okvirZa } from '@/lib/trzniOkvir';
+
 /* UTEŽI ZA OBSEG DELA
  *
  * Doslej so odgovori na podrobnosti šli samo v besedilo ponudbe, na ceno pa
@@ -223,10 +225,20 @@ export function cenaVrstice(osnovaZUtezjo: number, dodatki: number, mult: number
 /* VAROVALKA. Ne reže cene — samo pove, da je nekaj nenavadno.
  *   · zmnožek množiteljev čez 3 pomeni, da se je nabralo veliko izbir
  *   · cena nad zgornjim robom trga za to storitev */
-export const TRZNI_RAZPON: Record<string, [number, number]> = {
-  logo: [500, 2500], cgp: [1200, 5000], publikacija: [350, 3500],
-  fotografija: [250, 2000], render3d: [300, 3000], embalaza: [425, 2500],
-};
+/* Tržni razpon NE pišemo tu. Vzamemo ga iz lib/trzniOkvir.ts, kjer stoji
+   raziskava z navedenimi viri — dve tabeli o istem trgu bi se zanesljivo
+   razšli, in moja je bila ugibana (Tina, 3. 9. 2026).
+   Primerjamo samo, kadar je okvir za CEL PROJEKT: publikacija ima okvir na
+   stran (20–30 €), fotografija na dan (400–600 €), zato bi primerjava s ceno
+   projekta vedno lagala. Za tisti dve varovalka o razponu zaenkrat molči —
+   raje nič kot izmišljena številka. Kakovost C in D se ne uporablja. */
+export function trzniRazpon(sid: string): [number, number] | null {
+  const o = okvirZa(sid);
+  if (!o || !imaRazpon(o)) return null;
+  if (o.enota !== 'projekt') return null;
+  if (o.kakovost !== 'A' && o.kakovost !== 'B') return null;
+  return [o.od, o.do];
+}
 
 export function opozorilo(sid: string, cena: number, mult: number, jeEn = false): string | null {
   if (mult > 3) {
@@ -234,7 +246,7 @@ export function opozorilo(sid: string, cena: number, mult: number, jeEn = false)
       ? 'Many choices are stacked here. Check that each one is right.'
       : 'Nabralo se je veliko izbir. Preveri, ali je vsaka res prava.';
   }
-  const razpon = TRZNI_RAZPON[sid];
+  const razpon = trzniRazpon(sid);
   if (razpon && cena > razpon[1]) {
     return jeEn
       ? `Above what the market usually pays for this (${razpon[0]}–${razpon[1]} €). Check the choices.`

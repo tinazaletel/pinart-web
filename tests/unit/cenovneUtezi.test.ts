@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   BREZ_DOPLACILA, cenaVrstice, ENOTE_IZ_IZBIRE, opozorilo, predlogZaProracun,
-  preveriUtezi, proracunIzOdgovora, utezZaStoritev, zaokrozi50,
+  preveriUtezi, proracunIzOdgovora, trzniRazpon, utezZaStoritev, zaokrozi50,
 } from '@/lib/cenovneUtezi';
+import { okvirZa } from '@/lib/trzniOkvir';
 import { VPRASANJA_PO_STORITVI } from '@/lib/vprasanjaPoStoritvi';
 
 /* Uteži so vezane na TOČNO besedilo izbire v vprašalniku. Če kdo besedilo
@@ -139,7 +140,7 @@ describe('varovalka opozori, ne reže', () => {
   });
 
   it('opozori, ko cena preseže tržni razpon', () => {
-    expect(opozorilo('fotografija', 4000, 1)).toContain('trg');
+    expect(opozorilo('logo', 4000, 1)).toContain('trg');
   });
 
   it('pri običajni ceni molči', () => {
@@ -191,5 +192,36 @@ describe('proračun naročnika', () => {
     expect(predlogZaProracun('logo', 650, { ...polna, budget: 'Nad 2.000 €' }, {})).toBeNull();
     expect(predlogZaProracun('logo', 650, { ...polna, budget: '1.000 € do 2.000 €' }, {})).toBeNull();
     expect(predlogZaProracun('logo', 650, polna, {})).toBeNull();
+  });
+});
+
+/* Razpon za varovalko mora prihajati iz raziskave z viri, ne iz druge tabele.
+   Dva vira resnice o istem trgu se zanesljivo razideta. */
+describe('tržni razpon prihaja iz raziskave', () => {
+  it('logo uporabi razpon iz lib/trzniOkvir.ts, ne svojega', () => {
+    const o = okvirZa('logo');
+    expect(trzniRazpon('logo')).toEqual([o!.od, o!.do]);
+  });
+
+  it('publikacija molči, ker je njen okvir na stran in ne na projekt', () => {
+    expect(okvirZa('publikacija')?.enota).toBe('stran');
+    expect(trzniRazpon('publikacija')).toBeNull();
+    expect(opozorilo('publikacija', 99000, 1)).toBeNull();
+  });
+
+  it('fotografija molči, ker je njen okvir na dan', () => {
+    expect(okvirZa('fotografija')?.enota).toBe('dan');
+    expect(trzniRazpon('fotografija')).toBeNull();
+  });
+
+  it('okvir kakovosti C se ne uporablja', () => {
+    expect(okvirZa('render3d')?.kakovost).toBe('C');
+    expect(trzniRazpon('render3d')).toBeNull();
+  });
+
+  it('opozorilo navede razpon, ki je res v raziskavi', () => {
+    const o = okvirZa('logo')!;
+    expect(opozorilo('logo', 4000, 1)).toContain(`${o.od}`);
+    expect(opozorilo('logo', 4000, 1)).toContain(`${o.do}`);
   });
 });
