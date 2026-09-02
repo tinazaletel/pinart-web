@@ -79,7 +79,7 @@ const zaklenjenoHtml = (en: boolean, skrijKalkulator = false, poKodi = '') => `<
     display:grid;place-items:center;width:2.2rem;height:2.2rem;margin:0;padding:0;
     border:none;background:none;color:rgba(17,17,17,.55);cursor:pointer}
   .geslo-ovoj button:hover{color:#111}
-  .nazaj{display:inline-block;margin-bottom:1.2rem;font-size:.9rem;font-weight:600;color:rgba(17,17,17,.72);text-decoration:none}
+  .nazaj{display:inline-block;margin-bottom:2.6rem;font-size:.9rem;font-weight:600;color:rgba(17,17,17,.72);text-decoration:none}
   .nazaj:hover{color:#111}
   .se-ne{margin-top:1.1rem;padding-top:1rem;border-top:1px solid rgba(17,17,17,.12);text-align:center}
   .se-ne p{margin:0 0 .6rem;font-size:.9rem;color:rgba(17,17,17,.7)}
