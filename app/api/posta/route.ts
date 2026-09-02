@@ -28,6 +28,9 @@ type ResendPriponka = { filename: string; content: string };
    so meja, pri kateri filtri se ne postanejo pozorni. */
 const PRIPNI_DO_BAJTOV = 3 * 1024 * 1024;
 
+/* Velika datoteka, ki gre kot povezava namesto kot priponka. */
+type PriponkaPovezava = { ime: string; url: string; velikost: number };
+
 /* Clovesko berljiva velikost za vrstico s povezavo. */
 const berljivo = (b: number) => (b >= 1024 * 1024
   ? `${(b / 1024 / 1024).toFixed(1).replace('.', ',')} MB`
@@ -37,8 +40,8 @@ async function pripraviPriponke(
   admin: SupabaseClient,
   organizationId: string,
   surove: unknown,
-): Promise<{ napaka?: string; zapisi: Priponka[]; resend: ResendPriponka[] }> {
-  const prazno = { zapisi: [] as Priponka[], resend: [] as ResendPriponka[], povezave: [] as { ime: string; url: string; velikost: number }[] };
+): Promise<{ napaka?: string; zapisi: Priponka[]; resend: ResendPriponka[]; povezave: PriponkaPovezava[] }> {
+  const prazno = { zapisi: [] as Priponka[], resend: [] as ResendPriponka[], povezave: [] as PriponkaPovezava[] };
   if (surove === undefined || surove === null) return prazno;
   if (!Array.isArray(surove)) return { ...prazno, napaka: 'Priponke niso veljavne.' };
   if (!surove.length) return prazno;
@@ -90,7 +93,7 @@ async function pripraviPriponke(
         (Tina + Luka, 2. 9. 2026). Povezava je majhna, dostava je zanesljivejsa,
         datoteka pa je tako ali tako ze v Flowu. */
   const resend: ResendPriponka[] = [];
-  const povezave: { ime: string; url: string; velikost: number }[] = [];
+  const povezave: PriponkaPovezava[] = [];
   for (const zapis of zapisi) {
     const vedro = String(poPoti.get(zapis.pot!)?.bucket || 'business-documents');
     if (zapis.velikost > PRIPNI_DO_BAJTOV) {
