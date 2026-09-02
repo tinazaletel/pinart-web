@@ -226,6 +226,7 @@ export async function pushFlowData(data: FlowData): Promise<void> {
       items: invoice.items || [],
       file_path: invoice.filePath || null,
       issued_at: invoice.issuedAt || null,
+      payment_method: invoice.paymentMethod || null,
       version: invoice.version || 1,
       supersedes_id: invoice.supersedesId || null,
       storno_of_id: invoice.stornoOfId || null,
@@ -372,6 +373,7 @@ export async function pullFlowData(): Promise<FlowData | null> {
       cancelReason: row.cancel_reason || undefined,
       fiscalConfirmedAt: row.fiscal_confirmed_at || undefined, fiscalEor: row.fiscal_eor || undefined,
       fiscalZoi: row.fiscal_zoi || undefined, fiscalProvider: row.fiscal_provider || undefined,
+      fiscalCode: row.fiscal_qr_payload || undefined, paymentMethod: row.payment_method || undefined,
       deletedAt: row.deleted_at || undefined, deletedBy: row.deleted_by || undefined, updatedAt: row.updated_at || undefined,
     })),
     expenses: brezDemo(expensesResult.data || []).map(row => ({

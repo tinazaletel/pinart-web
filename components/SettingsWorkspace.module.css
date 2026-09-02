@@ -1,5 +1,6 @@
 .wrap { display: grid; gap: 1.2rem; width: 100%; max-width: 46rem; min-width: 0; }
 .wrap > * { min-width: 0; max-width: 100%; }
+.racuniDavki { gap: 2rem; }
 
 .card { padding: clamp(1.1rem, 3vw, 1.7rem); border: 1px solid var(--line); border-radius: 1rem; background: oklch(99% .006 87); }
 .card h2 { margin: 0 0 .35rem; font-size: 1.05rem; font-weight: 750; }
@@ -26,7 +27,7 @@
 .stevilcenjePolja input { min-height: 2.75rem; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: .6rem; background: #fff; color: var(--ink); font: 400 .9rem var(--font-sans), sans-serif; }
 .stevilcenjePolja input[aria-invalid="true"] { border-color: #a4342a; }
 .stevilcenjePolja small { min-height: 1.1rem; color: color-mix(in oklch, var(--ink) 72%, transparent); font-weight: 400; line-height: 1.4; }
-.stevilcenjePredogled { margin: 1rem 0; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--paper); color: var(--ink) !important; }
+.stevilcenjePredogled { margin: 1.5rem 0 1rem !important; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--paper); color: var(--ink) !important; }
 .stevilcenjePredogled strong { font-size: 1.05rem; }
 .mirnaRazlaga { margin: 0 !important; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: .7rem; color: var(--ink) !important; }
 .nastavitevSkelet { height: 9rem; border-radius: .8rem; background: color-mix(in oklch, var(--ink) 5%, transparent); }

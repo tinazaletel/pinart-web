@@ -14,7 +14,7 @@ const OBLAK_VLOGA: Record<string, string> = {
 };
 
 /* Razdelek »Sodelavci« + pod-blok »Prenos ob odhodu«.
-   PRENESEN iz SettingsWorkspace na stran »Račun in ekipa«, da vsi ljudje/ekipa
+   PRENESEN iz SettingsWorkspace na stran »Ekipa in dostopi«, da vsi ljudje/ekipa
    živijo na enem mestu. Logika je enaka: seznam ekipe je lokalna shramba iz
    lib/sodelavci.ts (isti seznam bere tudi Task Manager za dodeljevanje nalog). */
 export default function SodelavciPanel() {

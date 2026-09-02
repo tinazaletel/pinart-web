@@ -15,7 +15,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CaretDown, CaretUp, FileArrowDown, FileText, Receipt, Scroll, Warning, ListBullets, Kanban } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, FileArrowDown, FileText, Receipt, Scroll, Warning, ListBullets, Kanban, ArrowCounterClockwise } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferStatus, type FlowContract, type FlowContractStatus, type FlowInvoice, type FlowOffer, type FlowOfferStatus } from '@/lib/pinartFlowStore';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -28,6 +28,8 @@ import { posljiMail } from '@/lib/posta';
 import Toast from '@/components/Toast';
 import Skeleton from '@/components/Skeleton';
 import { useOblakPripravljen } from '@/lib/oblakStanje';
+import { pullFlowData, pushFlowData, stornirajRacun } from '@/lib/pinartFlowCloud';
+import { fursQrDataUrl } from '@/lib/fursQr';
 
 type Zavihek = 'projekti' | 'ponudbe' | 'pogodbe' | 'racuni';
 
@@ -103,7 +105,7 @@ function najdiKljucPonudbe(offer: FlowOffer): string | null {
 type Odtenek = 'success' | 'waiting' | 'danger' | 'neutral';
 const statusOdtenek = (label: string): Odtenek =>
   ['Sprejeta', 'Podpisana', 'Plačano', 'Aktivna'].includes(label) ? 'success'
-    : label === 'Zavrnjena' ? 'danger'
+    : ['Zavrnjena', 'Storniran', 'Cancelled'].includes(label) ? 'danger'
       : ['Poslana', 'Prejeta', 'V pregledu', 'Odprto'].includes(label) ? 'waiting'
         : 'neutral';
 /* enoten prikaz statusa (pilula + pika) — povsod isti dizajn */
@@ -132,6 +134,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const [nacin] = usePredogled();
   const [revizijaPodatkov, setRevizijaPodatkov] = useState(0);
+  const [stornoOdprt, setStornoOdprt] = useState<string | null>(null);
+  const [stornoRazlog, setStornoRazlog] = useState('');
+  const [stornoDela, setStornoDela] = useState(false);
+  const [stornoObvestilo, setStornoObvestilo] = useState<{ t: string; ok: boolean } | null>(null);
   useEffect(() => {
     const osvezi = () => setRevizijaPodatkov(v => v + 1);
     window.addEventListener('pinart-flow-change', osvezi);
@@ -386,6 +392,60 @@ export default function ArhivWorkspace({ base }: { base: string }) {
   const pocistiFiltre = () => { setObdobjeOd(''); setObdobjeDo(''); setStatusPonudba('vse'); setStatusPogodba('vse'); setPlacano('vse'); setStatusProjekt('vse'); };
 
   const zapriDetajl = () => { setDetajl(null); setDetObsegOdprt(false); };
+
+  const osveziRacuneIzOblaka = async () => {
+    const oblak = await pullFlowData();
+    if (!oblak) throw new Error(L('Za storno moraš biti prijavljena.', 'You must be signed in to cancel an invoice.'));
+    saveFlowCollection('invoices', oblak.invoices);
+    return oblak.invoices;
+  };
+
+  const potrdiStornoPriFurs = async (invoiceId: string, nacin: FlowInvoice['paymentMethod']) => {
+    const preslikava = { cash: 'gotovina', card: 'kartica', other_cash: 'drugo_gotovinsko' } as const;
+    if (!nacin || nacin === 'bank_transfer') return;
+    const odgovor = await fetch('/api/furs/potrdi', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invoiceId, nacinPlacila: preslikava[nacin], potrjenoGotovinskoPlacilo: true }),
+    });
+    const vsebina = await odgovor.json().catch(() => ({})) as { napaka?: string };
+    if (!odgovor.ok) throw new Error(vsebina.napaka || L('Davčna potrditev storna ni uspela.', 'Fiscal verification of the cancellation failed.'));
+  };
+
+  const izvediStorno = async (racun: FlowInvoice) => {
+    const razlog = stornoRazlog.trim();
+    if (!razlog || stornoDela) return;
+    setStornoDela(true);
+    let stornoUstvarjen = false;
+    try {
+      await pushFlowData(loadFlowData());
+      const stornoId = await stornirajRacun(racun.id, razlog);
+      stornoUstvarjen = true;
+      if (racun.fiscalConfirmedAt) await potrdiStornoPriFurs(stornoId, racun.paymentMethod);
+      await osveziRacuneIzOblaka();
+      setStornoOdprt(null); setStornoRazlog(''); setDetajl(null);
+      setStornoObvestilo({ t: racun.fiscalConfirmedAt
+        ? L('Storno račun je ustvarjen in davčno potrjen.', 'The cancellation invoice has been created and fiscally verified.')
+        : L('Storno račun je ustvarjen. Izvirni račun je ostal v arhivu.', 'The cancellation invoice has been created. The original invoice remains in the archive.'), ok: true });
+    } catch (napaka) {
+      try { await osveziRacuneIzOblaka(); } catch { /* prvotna napaka je pomembnejša */ }
+      setStornoObvestilo({ t: stornoUstvarjen
+        ? L('Storno račun je ustvarjen, davčna potrditev pa ni uspela. Odpri storno in poskusi znova.', 'The cancellation invoice was created, but fiscal verification failed. Open it and try again.')
+        : napaka instanceof Error ? napaka.message : L('Storna ni bilo mogoče ustvariti.', 'The cancellation could not be created.'), ok: false });
+    } finally { setStornoDela(false); }
+  };
+
+  const ponoviFursStorno = async (racun: FlowInvoice) => {
+    if (stornoDela) return;
+    setStornoDela(true);
+    try {
+      await potrdiStornoPriFurs(racun.id, racun.paymentMethod);
+      await osveziRacuneIzOblaka();
+      setDetajl(null);
+      setStornoObvestilo({ t: L('Storno račun je davčno potrjen.', 'The cancellation invoice has been fiscally verified.'), ok: true });
+    } catch (napaka) {
+      setStornoObvestilo({ t: napaka instanceof Error ? napaka.message : L('Davčna potrditev ni uspela.', 'Fiscal verification failed.'), ok: false });
+    } finally { setStornoDela(false); }
+  };
   /* Panel se je odpiral ze zdrsnjen: fokus je pristal na gumbu pod glavo in
      brskalnik ga je potegnil v pogled, naslov pa je ostal nad vidnim delom.
      Zato ob vsakem odprtju postavimo drsnik nazaj na vrh. */
@@ -735,7 +795,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                       <span className="arh-mut">{r.number || '—'}</span>
                       <span className="arh-mut">{r.client}</span>
                       <span className="arh-mut">{datStr(r.date)}</span>
-                      <span><StatusUredi tip="invoice" id={r.id} vrednost={statusVred('invoice', r.id, String(r.paid))} opcije={invoiceOpcije} /></span>
+                      <span>{r.status === 'cancelled' ? <StatusPika label={L('Storniran', 'Cancelled')} /> : r.stornoOfId ? <StatusPika label={L('Storno', 'Cancellation')} /> : <StatusUredi tip="invoice" id={r.id} vrednost={statusVred('invoice', r.id, String(r.paid))} opcije={invoiceOpcije} />}</span>
                       <span className="arh-desno">{eur(r.amount)}</span>
                       <span className="arh-kazalec" aria-hidden>›</span>
                     </button>
@@ -748,6 +808,7 @@ export default function ArhivWorkspace({ base }: { base: string }) {
       </div>
 
       <Toast sporocilo={postaObvestilo?.t || ''} ton={postaObvestilo?.ok ? 'uspeh' : 'napaka'} onClose={() => setPostaObvestilo(null)} />
+      <Toast sporocilo={stornoObvestilo?.t || ''} ton={stornoObvestilo?.ok ? 'uspeh' : 'napaka'} trajanje={stornoObvestilo?.ok ? 3500 : 0} onClose={() => setStornoObvestilo(null)} />
 
       {/* ── DETAJL PANEL Z DESNE (vzorec ContractWorkspace: detailBackdrop + detailPanel + lepljivi X) ── */}
       {detajl && (
@@ -850,16 +911,16 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                   return <>
                     <DetajlGlava
                       ikona={<Receipt size={17} weight="regular" />}
-                      naslov={`${r.predracun ? L('Predračun', 'Proforma') : L('Račun', 'Invoice')}${r.number ? ' ' + r.number : ''}`}
+                      naslov={`${r.stornoOfId ? L('Storno račun', 'Cancellation invoice') : r.predracun ? L('Predračun', 'Proforma') : L('Račun', 'Invoice')}${r.number ? ' ' + r.number : ''}`}
                       podnaslov={`${r.client}${r.date ? ' · ' + datStr(r.date) : ''}`}
-                      status={<StatusUredi tip="invoice" id={r.id} vrednost={statusVred('invoice', r.id, String(r.paid))} opcije={invoiceOpcije} />}
+                      status={r.status === 'cancelled' ? <StatusPika label={L('Storniran', 'Cancelled')} /> : r.stornoOfId ? <StatusPika label={L('Storno', 'Cancellation')} /> : <StatusUredi tip="invoice" id={r.id} vrednost={statusVred('invoice', r.id, String(r.paid))} opcije={invoiceOpcije} />}
                     />
 
                     {/* cel racun/predracun v panelu (kot pogodba/ponudba): letterhead + postavke + vsote */}
                     <div id="arh-izvoz" className="arh-ponudba-dok">
                       <div className="arh-ponudba-dok-glava">
-                        <p className="arh-ponudba-dok-kick">{r.predracun ? L('PREDRAČUN', 'PROFORMA') : L('RAČUN', 'INVOICE')}{r.number ? ` · ${r.number}` : ''}</p>
-                        <h3 className="arh-ponudba-dok-naslov">{r.title || (r.predracun ? L('Predračun', 'Proforma') : L('Račun', 'Invoice'))}</h3>
+                        <p className="arh-ponudba-dok-kick">{r.stornoOfId ? L('STORNO RAČUN', 'CANCELLATION INVOICE') : r.predracun ? L('PREDRAČUN', 'PROFORMA') : L('RAČUN', 'INVOICE')}{r.number ? ` · ${r.number}` : ''}</p>
+                        <h3 className="arh-ponudba-dok-naslov">{r.title || (r.stornoOfId ? L('Storno računa', 'Invoice cancellation') : r.predracun ? L('Predračun', 'Proforma') : L('Račun', 'Invoice'))}</h3>
                         <div className="arh-ponudba-dok-meta">
                           <span><small>{L('Stranka', 'Client')}</small><strong>{r.client}</strong></span>
                           <span><small>{L('Datum', 'Date')}</small><strong>{datStr(r.date)}</strong></span>
@@ -888,9 +949,10 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                           <div className="arh-racun-vsote">
                             {typeof r.net === 'number' && <div><span>{L('Neto', 'Net')}</span><strong>{eur(r.net)}</strong></div>}
                             {typeof r.vatAmount === 'number' && r.vatAmount > 0 && <div><span>{L('DDV', 'VAT')}</span><strong>{eur(r.vatAmount)}</strong></div>}
-                            <div className="arh-racun-skupaj"><span>{L('Za plačilo', 'Amount due')}</span><strong>{eur(r.amount)}</strong></div>
+                            <div className="arh-racun-skupaj"><span>{r.stornoOfId ? L('Stornirani znesek', 'Cancelled amount') : L('Za plačilo', 'Amount due')}</span><strong>{eur(r.amount)}</strong></div>
                           </div>
                           {r.vatPayer === false && <p className="arh-mini">{L('Nisem zavezanec za DDV — DDV ni obračunan.', 'Not registered for VAT — VAT is not charged.')}</p>}
+                          {r.fiscalEor && r.fiscalZoi && <div className="arh-racun-furs"><div><b>EOR</b><span>{r.fiscalEor}</span><b>ZOI</b><span>{r.fiscalZoi}</span></div>{r.fiscalCode && <img src={fursQrDataUrl(r.fiscalCode)} alt={L('QR-koda davčne potrditve', 'Fiscal verification QR code')} />}</div>}
                         </div>
                       ) : (
                         <div className="arh-ponudba-dok-telo">
@@ -904,6 +966,32 @@ export default function ArhivWorkspace({ base }: { base: string }) {
                       <a className="arh-povezava arh-povezava-sekundarna" href={`${base}/kalkulator/racuni`}>{L('Uredi v Računih', 'Edit in Invoices')} <svg className="puscica-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M8 7h9v9" /></svg></a>
                     </div>
                     <p className="arh-mini">{L('Do postavitve pošiljanja s priponko pripni PDF ročno (Prenesi → priloži).', 'Until attachment sending is set up, attach the PDF manually (Download → attach).')}</p>
+
+                    {!r.predracun && r.issuedAt && !r.cancelledAt && r.status !== 'cancelled' && !r.stornoOfId && (
+                      <section className="arh-storno">
+                        {stornoOdprt !== r.id ? (
+                          <button type="button" className="arh-storno-odpri" onClick={() => { setStornoOdprt(r.id); setStornoRazlog(''); }}>
+                            <ArrowCounterClockwise size={17} weight="bold" /> {L('Storniraj račun', 'Cancel invoice')}
+                          </button>
+                        ) : (
+                          <div className="arh-storno-potrditev">
+                            <div className="arh-storno-opozorilo">
+                              <Warning size={21} weight="bold" aria-hidden />
+                              <div><strong>{L('Nastane nov storno račun', 'A new cancellation invoice will be created')}</strong><p>{L(`Račun ${r.number || ''} ostane nespremenjen v arhivu. Nastane nov račun z negativnim zneskom ${eur(Math.abs(r.amount))}. Tega dejanja ni mogoče razveljaviti.`, `Invoice ${r.number || ''} remains unchanged in the archive. A new invoice with the negative amount of ${eur(Math.abs(r.amount))} will be created. This action cannot be undone.`)}</p></div>
+                            </div>
+                            <label htmlFor={`storno-razlog-${r.id}`}>{L('Razlog stornacije', 'Reason for cancellation')}</label>
+                            <textarea id={`storno-razlog-${r.id}`} value={stornoRazlog} onChange={e => setStornoRazlog(e.target.value)} rows={3} placeholder={L('Npr. napačen znesek ali podvojen račun', 'E.g. incorrect amount or duplicate invoice')} />
+                            <p className="arh-storno-vracilo">{L('Storno ne vrne denarja samodejno. Morebitno vračilo urediš posebej pri ponudniku plačila.', 'Cancellation does not refund the payment automatically. Arrange any refund separately with the payment provider.')}</p>
+                            <div className="arh-storno-gumbi">
+                              <button type="button" className="arh-storno-potrdi" disabled={!stornoRazlog.trim() || stornoDela} onClick={() => izvediStorno(r)}>{stornoDela ? L('Ustvarjam …', 'Creating …') : L('Ustvari storno račun', 'Create cancellation invoice')}</button>
+                              <button type="button" className="arh-storno-preklici" disabled={stornoDela} onClick={() => { setStornoOdprt(null); setStornoRazlog(''); }}>{L('Ne, obdrži račun', 'No, keep invoice')}</button>
+                            </div>
+                          </div>
+                        )}
+                      </section>
+                    )}
+                    {(r.cancelledAt || r.status === 'cancelled') && <div className="arh-storno-stanje"><strong>{L('Račun je storniran', 'Invoice cancelled')}</strong>{r.cancelReason && <span>{r.cancelReason}</span>}</div>}
+                    {r.stornoOfId && <div className="arh-storno-stanje"><strong>{L('Storno račun', 'Cancellation invoice')}</strong><span>{L('Ta dokument razveljavlja prvotni račun.', 'This document cancels the original invoice.')}</span>{!r.fiscalConfirmedAt && r.paymentMethod && r.paymentMethod !== 'bank_transfer' && <button type="button" className="arh-storno-ponovi" disabled={stornoDela} onClick={() => ponoviFursStorno(r)}>{stornoDela ? L('Potrjujem …', 'Verifying …') : L('Ponovi davčno potrditev', 'Retry fiscal verification')}</button>}</div>}
                   </>;
                 })()}
               </>;
@@ -1118,6 +1206,25 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-poslji{display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap;padding:.6rem 1.05rem;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
         .arh-poslji:hover{background:transparent;color:var(--ink)}
         .arh-akcije .arh-povezava{margin-top:0}
+        .arh-storno{margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line)}
+        .arh-storno-odpri{display:inline-flex;align-items:center;gap:.45rem;min-height:2.75rem;padding:0 1rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:700 .78rem var(--font-sans),sans-serif;cursor:pointer}
+        .arh-storno-odpri:hover{border-color:oklch(58% .18 25);color:oklch(46% .17 25)}
+        .arh-storno-potrditev{display:grid;gap:.8rem}
+        .arh-storno-opozorilo{display:flex;gap:.7rem;align-items:flex-start;padding:.9rem 1rem;border:1px solid oklch(76% .13 25 / .65);border-radius:.8rem;background:oklch(95.5% .05 25)}
+        .arh-storno-opozorilo>svg{flex:none;color:oklch(52% .17 25)}
+        .arh-storno-opozorilo strong{display:block;color:oklch(46% .17 25);font-size:.86rem}
+        .arh-storno-opozorilo p{margin:.25rem 0 0;color:var(--ink);font-size:.82rem;line-height:1.5}
+        .arh-storno-potrditev label{font-size:.78rem;font-weight:800}
+        .arh-storno-potrditev textarea{width:100%;resize:vertical;padding:.7rem .8rem;border:1px solid color-mix(in oklch,var(--ink) 16%,transparent);border-radius:.7rem;background:#fff;color:var(--ink);font:500 .86rem/1.5 var(--font-sans),sans-serif}
+        .arh-storno-vracilo{margin:0;font-size:.8rem;line-height:1.45;color:var(--muted)}
+        .arh-storno-gumbi{display:flex;flex-wrap:wrap;gap:.55rem}
+        .arh-storno-gumbi button{min-height:2.75rem;padding:0 1rem;border-radius:999px;font:750 .76rem var(--font-sans),sans-serif;cursor:pointer}
+        .arh-storno-potrdi{border:0;background:var(--ink);color:var(--paper)}
+        .arh-storno-potrdi:disabled{opacity:.42;cursor:not-allowed}
+        .arh-storno-preklici{border:1px solid var(--line);background:#fff;color:var(--ink)}
+        .arh-storno-stanje{display:grid;gap:.2rem;margin-top:1.2rem;padding:.85rem 1rem;border:1px solid var(--line);border-radius:.75rem;background:oklch(96% .02 87);font-size:.82rem}
+        .arh-storno-stanje span{color:var(--muted);line-height:1.45}
+        .arh-storno-ponovi{justify-self:start;min-height:2.75rem;margin-top:.45rem;padding:0 1rem;border:1px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);font:750 .76rem var(--font-sans),sans-serif;cursor:pointer}
 
         /* ── račun kot DOKUMENT v panelu (postavke + vsote), znotraj arh-ponudba-dok letterheada ── */
         .arh-racun-telo{padding:.2rem .1rem .1rem}
@@ -1133,6 +1240,8 @@ export default function ArhivWorkspace({ base }: { base: string }) {
         .arh-racun-skupaj{margin-top:.25rem;padding-top:.45rem;border-top:1px solid oklch(93% .006 82 / .55)}
         .arh-racun-skupaj span{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(17,17,17,.6)}
         .arh-racun-skupaj strong{font:700 1.3rem var(--font-sans),system-ui,sans-serif;letter-spacing:-.01em}
+        .arh-racun-furs{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin:1.2rem .5rem 0;padding-top:.9rem;border-top:1px solid var(--line);font-size:.68rem;line-height:1.45;word-break:break-all}
+        .arh-racun-furs>div{display:grid;gap:.12rem}.arh-racun-furs b{margin-top:.25rem;letter-spacing:.08em}.arh-racun-furs img{width:88px;height:88px;flex:none}
 
         /* ── ponudba kot DOKUMENT (NALOGA #44): kremni list + senca + Bodoni naslov,
            mini letterhead videz namesto golih kartic ── */
