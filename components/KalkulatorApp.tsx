@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import PreveriPoslovanje from '@/components/PreveriPoslovanje';
 import Dostopnost from '@/components/Dostopnost';
 import { localePath } from '@/i18n/routing';
+import { utezZaStoritev, opozorilo as utezOpozorilo, ENOTE_IZ_IZBIRE } from '@/lib/cenovneUtezi';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import TrzniOkvirZnacka from '@/components/TrzniOkvirZnacka';
 import PodpriBanner from '@/components/PodpriBanner';
@@ -3367,15 +3368,43 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* bogatejsi trg placa vec, revnejsi manj; nikoli pod 70 % in nikoli cez 220 % */
     const trgMult = clamp(trg(trgNarocnika).lvl / trg(mojTrg).lvl, 0.7, 2.2);
 
-    const vsotaStoritev = linije.reduce((a, l) => a + osnovaZa(l.s) * Math.max(1, Math.round(l.kolicina)), 0);
+    /* UTEZI ZA OBSEG (Tina, 2. 9. 2026). Odgovori na podrobnosti odslej stejejo:
+       obseg dela osnovo POMNOZI, dodatno opravljeno delo (raziskava, retusa,
+       prelom strani) pa se PRISTEJE. Dodatki se NE mnozijo z narocnikom in
+       trgom — sest retus je enako dela za veliko in za majhno stranko, in tako
+       je ceno lazje zagovarjati (dogovor s Tino). */
+    const obsegVrstic = linije.map(l => {
+      const osn = osnovaZa(l.s) * Math.max(1, Math.round(l.kolicina));
+      const odg: Record<string, string> = {};
+      const enote: Record<string, number> = {};
+      for (const [k, v] of Object.entries(odgovori)) {
+        if (!k.startsWith(`${l.uid}:`) || !v) continue;
+        const qid = k.slice(l.uid.length + 1);
+        odg[qid] = String(v);
+        const n = ENOTE_IZ_IZBIRE[String(v)];
+        if (n) enote[qid] = n;
+      }
+      const u = utezZaStoritev(l.sid, osn, odg, enote);
+      return { l, osnovaZUtezjo: u.cena - u.dodatki, dodatki: u.dodatki,
+               mult: u.mult, razclenitev: u.razclenitev };
+    });
+    const vsotaStoritev = obsegVrstic.reduce((a, x) => a + x.osnovaZUtezjo, 0);
+    const dodatkiObsega = obsegVrstic.reduce((a, x) => a + x.dodatki, 0);
     const vsotaPostavk = postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
     const mult = izk.mult * vel.mult * trgMult * (1 + fakDod);
-    const delo = zaokrozi((vsotaStoritev + vsotaPostavk) * mult);
+    const delo = zaokrozi((vsotaStoritev + vsotaPostavk) * mult) + dodatkiObsega;
 
     /* Razclemba za CSV/racunovodski uvoz — vsota vrstic = delo (priporoceni paket).
        Vsaka vrstica ponudbe s svojim imenom (Inovis, Itforyou) in kolicino. */
     const vrsticeIzvedbe = [
-      ...linije.map(l => ({ ime: imeVrstice(l), kolicina: Math.max(1, Math.round(l.kolicina)), cena: zaokrozi(osnovaZa(l.s) * mult) })),
+      ...linije.map((l, i) => {
+        const kol = Math.max(1, Math.round(l.kolicina));
+        const o = obsegVrstic[i];
+        /* Cena na enoto mora biti taka, da kolicina x cena = tisto, kar je
+           vrstica prispevala k delu — sicer se ponudba ne sesteje. */
+        return { ime: imeVrstice(l), kolicina: kol,
+                 cena: zaokrozi((o.osnovaZUtezjo * mult + o.dodatki) / kol) };
+      }),
       ...postavke.map(x => ({ ime: x.ime, kolicina: x.kolicina, cena: zaokrozi(x.cena * mult) })),
     ];
 
@@ -3480,8 +3509,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       praviceAvto, licencaAvto, praviceRocne: rocnePravEur > 0, licencaRocna: rocnaLicEur > 0,
       vrsticeIzvedbe, raba, tantiemePct, prenos: prenosPravic, praviceVrstice,
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
+      /* Razclenitev obsega: kaj v ponudbi je ceno premaknilo in za koliko.
+         Vidnost JE varovalka — kdor vidi vzrok, napako najde sam. */
+      obseg: obsegVrstic.filter(x => x.razclenitev.length > 0).map(x => ({
+        uid: x.l.uid, sid: x.l.sid, ime: imeVrstice(x.l),
+        mult: x.mult, dodatki: x.dodatki, razclenitev: x.razclenitev,
+        /* cena BREZ narocnika in trga — samo tako je primerljiva s trznim
+           razponom, ki je narejen iz osnovnih cen. */
+        cenaObsega: x.osnovaZUtezjo + x.dodatki,
+      })),
+      obsegMult: obsegVrstic.reduce((a, x) => Math.max(a, x.mult), 1),
+      obsegDodatki: dodatkiObsega,
     };
-  }, [vrstice, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi, lastnePravice, valuta, pravicePoStoritvi, rocniPaketi, praviceIzkljucene, praviceNacin]);
+  }, [vrstice, odgovori, izkusnje, mojTrg, trgNarocnika, promet, dobicek, dodatki, osnove, popust, postavke, vseStoritve, raba, projPrihodek, projDobicek, prenosPravic, rocnePravice, rocnaLicenca, rocnePraviceStoritvi, lastnePravice, valuta, pravicePoStoritvi, rocniPaketi, praviceIzkljucene, praviceNacin]);
 
   /* Pupa copilot — svetovalni pregled ponudbe (lib/copilot). Vhod izluscimo iz
      `r` + state: referenca = postena AUTO cena priporocenega paketa (redna, brez
@@ -7131,6 +7171,12 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0-opomba { font-size: .76rem; color: var(--accent); margin-top: .45rem; font-weight: 500; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini { font-size: .82rem; color: rgba(17,17,17,.72); margin-top: .35rem; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini + .ponudba0-vsota-vrsta { margin-top: .35rem; }
+        /* Razclenitev obsega ob ceni. */
+        .cw .obseg-naslov { font-size: .72rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: rgba(17,17,17,.7); margin-bottom: .8rem; }
+        .cw .obseg-vrsta + .obseg-vrsta { margin-top: .9rem; padding-top: .9rem; border-top: 1px solid var(--line); }
+        .cw .obseg-ime { font-size: .88rem; font-weight: 600; color: var(--ink); margin-bottom: .35rem; }
+        .cw .obseg-ucinek { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; white-space: nowrap; }
+        .cw .obseg-opozorilo { margin: .5rem 0 0; font-size: .8rem; line-height: 1.55; color: var(--red, #B3261E); }
 
         /* DESKTOP: × skrije panel v črn FAB (kot mobilna kosarica). */
         .cw .ponudba0-zapri { position: absolute; top: 1.5rem; right: 1.25rem; z-index: 4; display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; padding: 0; overflow: visible; border: 1px solid rgba(17,17,17,.12); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); color: rgba(17,17,17,.72); font-size: 1.05rem; line-height: 1; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
@@ -10858,6 +10904,33 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               {r.sez.length === 1 && (
                 <div style={{ marginTop: '.9rem', display: 'flex' }}>
                   <TrzniOkvirZnacka storitev={r.sez[0].id} jeEn={locale === 'en'} />
+                </div>
+              )}
+              {/* KAJ JE PREMAKNILO CENO. Odgovori na podrobnosti zdaj stejejo, zato
+                  mora biti vidno, kateri in za koliko — sicer je cena crna skatla
+                  in napake ni mogoce najti (Tina, 2. 9. 2026). */}
+              {r.obseg.length > 0 && (
+                <div className="kartica obseg-kartica" style={{ marginTop: '1.4rem' }}>
+                  <div className="obseg-naslov">{L('Kaj je premaknilo ceno', 'What moved the price')}</div>
+                  {r.obseg.map(o => {
+                    const opz = utezOpozorilo(o.sid, o.cenaObsega, o.mult, locale === 'en');
+                    return (
+                      <div key={o.uid} className="obseg-vrsta">
+                        <div className="obseg-ime">{o.ime}</div>
+                        {o.razclenitev.map((x, i) => (
+                          <div key={i} className="ponudba0-vsota-vrsta ponudba0-mini">
+                            <span>{x.izbira}</span>
+                            <span className="obseg-ucinek">{x.opis}</span>
+                          </div>
+                        ))}
+                        {opz && <p className="obseg-opozorilo">{opz}</p>}
+                      </div>
+                    );
+                  })}
+                  <p className="hint" style={{ marginTop: '.9rem' }}>
+                    {L('Obseg dela ceno pomnozi, dodatno delo (raziskava, retuse, prelom strani) pa se pristeje. Doplacila se ne mnozijo z velikostjo narocnika.',
+                       'Scope multiplies the price; extra work (research, retouching, page layout) is added on top. Add-ons are not multiplied by client size.')}
+                  </p>
                 </div>
               )}
               <div className="kartica" style={{ marginTop: '1.4rem' }}>
