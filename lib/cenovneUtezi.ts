@@ -272,3 +272,75 @@ if (process.env.NODE_ENV === 'development') {
     .then(m => preveriUtezi(m.VPRASANJA_PO_STORITVI).forEach(t => console.warn(t)))
     .catch(() => {});
 }
+
+/* ── PRORACUN NAROCNIKA ──────────────────────────────────────────────────
+ * Proracun na ceno NE vpliva — ce bi jo znizal, bi kalkulator sidral tvoje
+ * delo na narocnikovo zeljo, kar je natanko tisto, cemur se hoce izogniti.
+ * Mora pa imeti vidno posledico: kadar je delo drazje od proracuna, povemo
+ * razliko in KATERO IZBIRO odvzeti, da se ceni priblizas. Torej predlog za
+ * krcenje obsega, ne popust (Tina, 3. 9. 2026).
+ */
+
+/** Zgornja meja iz odgovora o proracunu; null, kadar meje ni ("Nad 2.000 €",
+ *  "Še ne vem") ali je odgovor neuporaben. */
+export function proracunIzOdgovora(odgovor: string): number | null {
+  const t = (odgovor || '').trim();
+  if (!t) return null;
+  if (/^(nad|over)\b/i.test(t)) return null;         /* proracun je NAD -> ni omejitve */
+  if (/ne vem|not sure/i.test(t)) return null;
+  /* "1.000 € do 2.000 €" in "1000 € do 2000 €" morata dati isto. */
+  const stevilke = t.replace(/[.\u00A0\u202F ](?=\d{3}\b)/g, '').match(/\d+/g);
+  if (!stevilke) return null;
+  const meja = Math.max(...stevilke.map(Number));
+  return Number.isFinite(meja) && meja > 0 ? meja : null;
+}
+
+export type PredlogKrcenja = {
+  meja: number;
+  razlika: number;
+  /** izbire, ki jih je treba opustiti, po vrsti od najdrazje */
+  odvzemi: string[];
+  /** cena, ki ostane, ko jih odvzames */
+  preostane: number;
+  /** ali se s tem sploh spravi pod mejo */
+  zadosca: boolean;
+};
+
+/** Kaj odvzeti, da se delo priblizа proracunu. Ceno vsakic PREracunamo, ne
+ *  odstevamo — mnozitelji se sestevljajo in odstevanje bi lagalo. */
+export function predlogZaProracun(
+  sid: string,
+  osnova: number,
+  odgovori: Record<string, string>,
+  enote?: Record<string, number>,
+): PredlogKrcenja | null {
+  const meja = proracunIzOdgovora(odgovori.budget || '');
+  if (!meja) return null;
+  const polna = utezZaStoritev(sid, osnova, odgovori, enote);
+  if (polna.cena <= meja) return null;
+
+  const odvzemi: string[] = [];
+  let preostali = { ...odgovori };
+  let cena = polna.cena;
+  for (let i = 0; i < 8; i += 1) {
+    const u = utezZaStoritev(sid, osnova, preostali, enote);
+    cena = u.cena;
+    if (cena <= meja) break;
+    const najdrazji = u.razclenitev
+      .filter(x => x.ucinek > 0)
+      .sort((a, b) => b.ucinek - a.ucinek)[0];
+    if (!najdrazji) break;
+    odvzemi.push(najdrazji.izbira);
+    const brez = { ...preostali };
+    delete brez[najdrazji.vprasanje];
+    preostali = brez;
+    cena = utezZaStoritev(sid, osnova, preostali, enote).cena;
+  }
+  return {
+    meja,
+    razlika: polna.cena - meja,
+    odvzemi,
+    preostane: cena,
+    zadosca: cena <= meja,
+  };
+}

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import PreveriPoslovanje from '@/components/PreveriPoslovanje';
 import Dostopnost from '@/components/Dostopnost';
 import { localePath } from '@/i18n/routing';
-import { utezZaStoritev, opozorilo as utezOpozorilo, ENOTE_IZ_IZBIRE, cenaVrstice, BREZ_DOPLACILA } from '@/lib/cenovneUtezi';
+import { utezZaStoritev, opozorilo as utezOpozorilo, ENOTE_IZ_IZBIRE, cenaVrstice, predlogZaProracun, BREZ_DOPLACILA } from '@/lib/cenovneUtezi';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import TrzniOkvirZnacka from '@/components/TrzniOkvirZnacka';
 import PodpriBanner from '@/components/PodpriBanner';
@@ -3310,10 +3310,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       const n = ENOTE_IZ_IZBIRE[String(v)];
       if (n) enote[qid] = n;
     }
-    return utezZaStoritev(sid, osnovaZa(s) * Math.max(1, Math.round(kolicina)), odg, enote);
+    const osn = osnovaZa(s) * Math.max(1, Math.round(kolicina));
+    return { u: utezZaStoritev(sid, osn, odg, enote), odg, enote, osn };
   };
   const osnovaVrstice = (l: { uid: string; sid: string; kolicina: number }, s: Storitev) =>
-    utezVrstice(l.uid, l.sid, s, l.kolicina).cena;
+    utezVrstice(l.uid, l.sid, s, l.kolicina).u.cena;
 
   /* 'avtorsko' = izbrano je oblikovanje (pravice se odprejo same),
      'postavitev' = samo izvedba tujega dizajna (pravic ni),
@@ -3395,9 +3396,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
        trgom — sest retus je enako dela za veliko in za majhno stranko, in tako
        je ceno lazje zagovarjati (dogovor s Tino). */
     const obsegVrstic = linije.map(l => {
-      const u = utezVrstice(l.uid, l.sid, l.s, l.kolicina);
+      const { u, odg, enote, osn } = utezVrstice(l.uid, l.sid, l.s, l.kolicina);
       return { l, osnovaZUtezjo: u.cena - u.dodatki, dodatki: u.dodatki,
-               mult: u.mult, razclenitev: u.razclenitev };
+               mult: u.mult, razclenitev: u.razclenitev,
+               proracun: predlogZaProracun(l.sid, osn, odg, enote) };
     });
     const mult = izk.mult * vel.mult * trgMult * (1 + fakDod);
     const dodatkiObsega = obsegVrstic.reduce((a, x) => a + x.dodatki, 0);
@@ -3522,12 +3524,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
       /* Razclenitev obsega: kaj v ponudbi je ceno premaknilo in za koliko.
          Vidnost JE varovalka — kdor vidi vzrok, napako najde sam. */
-      obseg: obsegVrstic.filter(x => x.razclenitev.length > 0).map(x => ({
+      obseg: obsegVrstic.filter(x => x.razclenitev.length > 0 || x.proracun).map(x => ({
         uid: x.l.uid, sid: x.l.sid, ime: imeVrstice(x.l),
         mult: x.mult, dodatki: x.dodatki, razclenitev: x.razclenitev,
         /* cena BREZ narocnika in trga — samo tako je primerljiva s trznim
            razponom, ki je narejen iz osnovnih cen. */
         cenaObsega: x.osnovaZUtezjo + x.dodatki,
+        proracun: x.proracun,
       })),
       obsegMult: obsegVrstic.reduce((a, x) => Math.max(a, x.mult), 1),
       obsegDodatki: dodatkiObsega,
@@ -7190,6 +7193,10 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         /* Izbira brez ucinka se vidi, a ne kriči — potrdi klik, ne tekmuje s ceno. */
         .cw .obseg-nevtralno { font-weight: 400; color: rgba(17,17,17,.55); }
         .cw .obseg-opozorilo { margin: .5rem 0 0; font-size: .8rem; line-height: 1.55; color: var(--red, #B3261E); }
+        /* Proracun ni napaka, zato ni rdec — je opomba, ki ponudi izhod. */
+        .cw .obseg-proracun { margin: .5rem 0 0; padding: .6rem .7rem; border-radius: .6rem;
+                              background: color-mix(in oklch, var(--ink) 4%, transparent);
+                              font-size: .8rem; line-height: 1.6; color: color-mix(in oklch, var(--ink) 80%, transparent); }
 
         /* DESKTOP: × skrije panel v črn FAB (kot mobilna kosarica). */
         .cw .ponudba0-zapri { position: absolute; top: 1.5rem; right: 1.25rem; z-index: 4; display: inline-flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem; padding: 0; overflow: visible; border: 1px solid rgba(17,17,17,.12); border-radius: 50%; background: rgba(255,255,255,.7); backdrop-filter: blur(10px); color: rgba(17,17,17,.72); font-size: 1.05rem; line-height: 1; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
@@ -10937,6 +10944,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           </div>
                         ))}
                         {opz && <p className="obseg-opozorilo">{opz}</p>}
+                        {/* PRORACUN. Ne nizamo cene — povemo razliko in katero
+                            izbiro odvzeti. Popust bi sidral delo na narocnikovo
+                            zeljo (Tina, 3. 9. 2026). */}
+                        {o.proracun && (
+                          <p className="obseg-proracun">
+                            {L(`Naročnikov proračun je ${val(o.proracun.meja)}, delo je ovrednoteno na ${val(o.cenaObsega)} — razlika ${val(o.proracun.razlika)}.`,
+                               `The client's budget is ${val(o.proracun.meja)}, the work is valued at ${val(o.cenaObsega)} — a gap of ${val(o.proracun.razlika)}.`)}
+                            {' '}
+                            {o.proracun.zadosca
+                              ? L(`Ne nižaj cene — skrči obseg: brez «${o.proracun.odvzemi.join('» in «')}» je delo ${val(o.proracun.preostane)}.`,
+                                  `Don't lower the price — reduce the scope: without “${o.proracun.odvzemi.join('” and “')}” the work is ${val(o.proracun.preostane)}.`)
+                              : L(`Tudi z najmanjšim obsegom je delo ${val(o.proracun.preostane)} — tega naročnika ta storitev preprosto stane več, kot ima namenjeno.`,
+                                  `Even at the smallest scope the work is ${val(o.proracun.preostane)} — this service simply costs this client more than they have set aside.`)}
+                          </p>
+                        )}
                       </div>
                     );
                   })}

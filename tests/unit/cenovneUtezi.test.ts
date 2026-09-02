@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BREZ_DOPLACILA, cenaVrstice, ENOTE_IZ_IZBIRE, opozorilo, preveriUtezi,
-  utezZaStoritev, zaokrozi50,
+  BREZ_DOPLACILA, cenaVrstice, ENOTE_IZ_IZBIRE, opozorilo, predlogZaProracun,
+  preveriUtezi, proracunIzOdgovora, utezZaStoritev, zaokrozi50,
 } from '@/lib/cenovneUtezi';
 import { VPRASANJA_PO_STORITVI } from '@/lib/vprasanjaPoStoritvi';
 
@@ -144,5 +144,52 @@ describe('varovalka opozori, ne reže', () => {
 
   it('pri običajni ceni molči', () => {
     expect(opozorilo('logo', 1063, 1.25)).toBeNull();
+  });
+});
+
+/* Proračun na ceno NE sme vplivati — sicer kalkulator sidra delo na
+   naročnikovo željo. Mora pa povedati razliko in kaj z njo. */
+describe('proračun naročnika', () => {
+  const R = 'Osnovna raziskava (splet, konkurenca, reference)';
+  const polna = { predlogi: '3 predlogi', popravki: '2 kroga', raziskava: R };
+
+  it.each([
+    ['Do 400 €', 400],
+    ['400 € do 1000 €', 1000],
+    ['1.000 € do 2.000 €', 2000],
+    ['Nad 2.000 €', null],
+    ['Še ne vem', null],
+    ['600', 600],
+    ['', null],
+  ])('iz odgovora "%s" razbere mejo %s', (odgovor, meja) => {
+    expect(proracunIzOdgovora(odgovor as string)).toBe(meja);
+  });
+
+  it('proračun ne spremeni cene', () => {
+    const brez = cena('logo', 650, polna);
+    const z = cena('logo', 650, { ...polna, budget: 'Do 400 €' });
+    expect(z.cena).toBe(brez.cena);
+  });
+
+  it('ko delo presega proračun, pove razliko in kaj odvzeti', () => {
+    const p = predlogZaProracun('logo', 650, { ...polna, budget: '400 € do 1000 €' }, {});
+    expect(p).not.toBeNull();
+    expect(p!.meja).toBe(1000);
+    expect(p!.razlika).toBe(63);
+    expect(p!.odvzemi).toEqual([R]);
+    expect(p!.preostane).toBe(813);
+    expect(p!.zadosca).toBe(true);
+  });
+
+  it('pove tudi, kadar krčenje ne zadošča', () => {
+    const p = predlogZaProracun('logo', 650, { ...polna, budget: 'Do 400 €' }, {});
+    expect(p!.zadosca).toBe(false);
+    expect(p!.preostane).toBe(650);
+  });
+
+  it('molči, kadar je delo v okviru proračuna', () => {
+    expect(predlogZaProracun('logo', 650, { ...polna, budget: 'Nad 2.000 €' }, {})).toBeNull();
+    expect(predlogZaProracun('logo', 650, { ...polna, budget: '1.000 € do 2.000 €' }, {})).toBeNull();
+    expect(predlogZaProracun('logo', 650, polna, {})).toBeNull();
   });
 });
