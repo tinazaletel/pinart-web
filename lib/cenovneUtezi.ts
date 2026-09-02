@@ -197,6 +197,18 @@ export function utezZaStoritev(
   return { cena: Math.round(zMultiplikatorjem + dodatki), mult, dodatki, razclenitev };
 }
 
+/* Zaokrozevanje cen v kalkulatorju: na 50 EUR navzgor ali navzdol. */
+export const zaokrozi50 = (n: number) => Math.round(n / 50) * 50;
+
+/* Cena ENE vrstice ponudbe, na enoto in zaokrozena.
+ * Tu zivi zato, ker mora biti pravilo eno samo: cena dela je vsota vrstic
+ * (kolicina x cena), zato mora vsak, ki racuna vrstico, racunati enako.
+ * Prej sta bila dva locena izracuna in ponudba se ni sestela. */
+export function cenaVrstice(osnovaZUtezjo: number, dodatki: number, mult: number, kolicina: number): number {
+  const kol = Math.max(1, Math.round(kolicina));
+  return zaokrozi50((osnovaZUtezjo * mult + dodatki) / kol);
+}
+
 /* VAROVALKA. Ne reže cene — samo pove, da je nekaj nenavadno.
  *   · zmnožek množiteljev čez 3 pomeni, da se je nabralo veliko izbir
  *   · cena nad zgornjim robom trga za to storitev */

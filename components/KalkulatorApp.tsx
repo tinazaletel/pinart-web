@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import PreveriPoslovanje from '@/components/PreveriPoslovanje';
 import Dostopnost from '@/components/Dostopnost';
 import { localePath } from '@/i18n/routing';
-import { utezZaStoritev, opozorilo as utezOpozorilo, ENOTE_IZ_IZBIRE } from '@/lib/cenovneUtezi';
+import { utezZaStoritev, opozorilo as utezOpozorilo, ENOTE_IZ_IZBIRE, cenaVrstice } from '@/lib/cenovneUtezi';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import TrzniOkvirZnacka from '@/components/TrzniOkvirZnacka';
 import PodpriBanner from '@/components/PodpriBanner';
@@ -3388,25 +3388,25 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       return { l, osnovaZUtezjo: u.cena - u.dodatki, dodatki: u.dodatki,
                mult: u.mult, razclenitev: u.razclenitev };
     });
-    const vsotaStoritev = obsegVrstic.reduce((a, x) => a + x.osnovaZUtezjo, 0);
-    const dodatkiObsega = obsegVrstic.reduce((a, x) => a + x.dodatki, 0);
-    const vsotaPostavk = postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
     const mult = izk.mult * vel.mult * trgMult * (1 + fakDod);
-    const delo = zaokrozi((vsotaStoritev + vsotaPostavk) * mult) + dodatkiObsega;
+    const dodatkiObsega = obsegVrstic.reduce((a, x) => a + x.dodatki, 0);
 
-    /* Razclemba za CSV/racunovodski uvoz — vsota vrstic = delo (priporoceni paket).
-       Vsaka vrstica ponudbe s svojim imenom (Inovis, Itforyou) in kolicino. */
+    /* VSOTA VRSTIC JE CENA DELA — ne dva locena izracuna.
+       Prej se je skupna cena zaokrozila posebej od vrstic, zato se ponudba ni
+       sestela: fotografiranje je imelo vrstico 1.700 EUR in skupaj 1.710 EUR.
+       Odslej se zaokrozi vsaka vrstica (na enoto), delo pa je njihova vsota —
+       kar uporabnica sesteje s svincnikom, mora dati isto stevilko.
+       (Codexov pregled, 2. 9. 2026.) */
     const vrsticeIzvedbe = [
       ...linije.map((l, i) => {
         const kol = Math.max(1, Math.round(l.kolicina));
         const o = obsegVrstic[i];
-        /* Cena na enoto mora biti taka, da kolicina x cena = tisto, kar je
-           vrstica prispevala k delu — sicer se ponudba ne sesteje. */
         return { ime: imeVrstice(l), kolicina: kol,
-                 cena: zaokrozi((o.osnovaZUtezjo * mult + o.dodatki) / kol) };
+                 cena: cenaVrstice(o.osnovaZUtezjo, o.dodatki, mult, kol) };
       }),
       ...postavke.map(x => ({ ime: x.ime, kolicina: x.kolicina, cena: zaokrozi(x.cena * mult) })),
     ];
+    const delo = vrsticeIzvedbe.reduce((a, x) => a + x.cena * x.kolicina, 0);
 
     /* pravice: znamka = 1 % letnega dobicka podjetja;
        projekt = 10 % pricakovanega dobicka projekta (ali 2 % prihodka) */
