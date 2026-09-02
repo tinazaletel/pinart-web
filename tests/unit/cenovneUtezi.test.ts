@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  cenaVrstice, ENOTE_IZ_IZBIRE, opozorilo, preveriUtezi, utezZaStoritev, zaokrozi50,
+  BREZ_DOPLACILA, cenaVrstice, ENOTE_IZ_IZBIRE, opozorilo, preveriUtezi,
+  utezZaStoritev, zaokrozi50,
 } from '@/lib/cenovneUtezi';
 import { VPRASANJA_PO_STORITVI } from '@/lib/vprasanjaPoStoritvi';
 
@@ -94,6 +95,35 @@ describe('vrstice se seštejejo v ceno dela', () => {
     for (let k = 1; k <= 6; k += 1) {
       expect(cenaVrstice(913, 137, 1.17, k) % 50).toBe(0);
     }
+  });
+});
+
+/* Klik, ki ne premakne cene, mora biti vseeno viden — sicer ni mogoče ločiti
+   "ta odgovor ne vpliva" od "ta odgovor se ni upošteval". */
+describe('izbira brez učinka se vseeno izpiše', () => {
+  it('dva kroga popravkov: cena enaka, v razčlenitvi pa piše', () => {
+    const brez = cena('logo', 650, { predlogi: '3 predlogi' });
+    const z = cena('logo', 650, { predlogi: '3 predlogi', popravki: '2 kroga' });
+    expect(z.cena).toBe(brez.cena);
+    expect(z.razclenitev).toHaveLength(brez.razclenitev.length + 1);
+    expect(z.razclenitev.find(x => x.vprasanje === 'popravki')?.opis).toBe(BREZ_DOPLACILA);
+  });
+
+  it('publikacija do 8 strani: prelom je v osnovi, a se vidi', () => {
+    const u = cena('publikacija', 700, { strani: 'Do 8' });
+    expect(u.cena).toBe(700);
+    expect(u.razclenitev[0].opis).toBe(BREZ_DOPLACILA);
+  });
+
+  it('neodgovorjeno vprašanje ostane skrito', () => {
+    expect(cena('logo', 650, {}).razclenitev).toEqual([]);
+  });
+
+  it('nevtralna izbira ne pokvari razdelitve učinka med množitelje', () => {
+    const u = cena('logo', 650, { predlogi: '3 predlogi', popravki: '2 kroga' });
+    const mult = u.razclenitev.filter(x => x.opis.startsWith('×'));
+    expect(mult).toHaveLength(1);
+    expect(mult[0].ucinek).toBe(163);
   });
 });
 

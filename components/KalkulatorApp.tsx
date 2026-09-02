@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import PreveriPoslovanje from '@/components/PreveriPoslovanje';
 import Dostopnost from '@/components/Dostopnost';
 import { localePath } from '@/i18n/routing';
-import { utezZaStoritev, opozorilo as utezOpozorilo, ENOTE_IZ_IZBIRE, cenaVrstice } from '@/lib/cenovneUtezi';
+import { utezZaStoritev, opozorilo as utezOpozorilo, ENOTE_IZ_IZBIRE, cenaVrstice, BREZ_DOPLACILA } from '@/lib/cenovneUtezi';
 import { PRICING_SERVICES as STORITVE, PODROCJA } from '@/lib/pricingCatalog';
 import TrzniOkvirZnacka from '@/components/TrzniOkvirZnacka';
 import PodpriBanner from '@/components/PodpriBanner';
@@ -7187,6 +7187,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .obseg-vrsta + .obseg-vrsta { margin-top: .9rem; padding-top: .9rem; border-top: 1px solid var(--line); }
         .cw .obseg-ime { font-size: .88rem; font-weight: 600; color: var(--ink); margin-bottom: .35rem; }
         .cw .obseg-ucinek { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; white-space: nowrap; }
+        /* Izbira brez ucinka se vidi, a ne kriči — potrdi klik, ne tekmuje s ceno. */
+        .cw .obseg-nevtralno { font-weight: 400; color: rgba(17,17,17,.55); }
         .cw .obseg-opozorilo { margin: .5rem 0 0; font-size: .8rem; line-height: 1.55; color: var(--red, #B3261E); }
 
         /* DESKTOP: × skrije panel v črn FAB (kot mobilna kosarica). */
@@ -10931,7 +10933,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         {o.razclenitev.map((x, i) => (
                           <div key={i} className="ponudba0-vsota-vrsta ponudba0-mini">
                             <span>{x.izbira}</span>
-                            <span className="obseg-ucinek">{x.opis}</span>
+                            <span className={x.opis === BREZ_DOPLACILA ? 'obseg-ucinek obseg-nevtralno' : 'obseg-ucinek'}>{x.opis}</span>
                           </div>
                         ))}
                         {opz && <p className="obseg-opozorilo">{opz}</p>}

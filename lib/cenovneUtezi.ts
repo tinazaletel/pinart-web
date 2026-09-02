@@ -134,6 +134,11 @@ export const ENOTE_IZ_IZBIRE: Record<string, number> = {
 
 export type Prispevek = { vprasanje: string; izbira: string; opis: string; ucinek: number };
 
+/* Izbira, ki cene ne premakne, se VSEENO izpise. Brez tega ni mogoce lociti
+   "ta odgovor ne vpliva" od "ta odgovor se ni upostevs" — klik izgleda
+   spregledan (Tina, 3. 9. 2026). */
+export const BREZ_DOPLACILA = 'brez doplačila';
+
 /* Izračuna utež za eno vrstico ponudbe.
  *   osnova   — cena storitve iz cenika
  *   odgovori — kar je uporabnica izbrala (id vprašanja -> izbira)
@@ -161,7 +166,10 @@ export function utezZaStoritev(
     if (!u) continue;
 
     if (u.vrsta === 'mult') {
-      if (u.vrednost === 1) continue;                 /* privzeto ne razlagamo */
+      if (u.vrednost === 1) {
+        razclenitev.push({ vprasanje, izbira: izbrano, opis: BREZ_DOPLACILA, ucinek: 0 });
+        continue;
+      }
       mult *= u.vrednost;
       razclenitev.push({ vprasanje, izbira: izbrano,
         opis: `×${u.vrednost.toString().replace('.', ',')}`, ucinek: 0 });
@@ -171,7 +179,10 @@ export function utezZaStoritev(
         opis: `+${u.vrednost} €`, ucinek: u.vrednost });
     } else {
       const n = Math.max(0, (enote?.[vprasanje] ?? u.vkljuceno) - u.vkljuceno);
-      if (!n) continue;
+      if (!n) {
+        razclenitev.push({ vprasanje, izbira: izbrano, opis: BREZ_DOPLACILA, ucinek: 0 });
+        continue;
+      }
       const znesek = n * u.vrednost;
       naEnoto += znesek;
       razclenitev.push({ vprasanje, izbira: izbrano,
