@@ -43,6 +43,10 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
      lahko kartico, tudi ce je obiskovalec slucajno prijavljen. Brez tega je
      menijska povezava prijavljene metala v Flow zaslon s pogoji (25. 8.). */
   const kalk = localePath(locale, '/kalkulator/orodje') + '?od=flow';
+  /* Med zaprto beto tudi "Ustvari racun" pelje na zaslon za testerje: brez
+     kode uporabnik obstane pred zaklepom, tako kot Luka (Tina, 2. 9. 2026).
+     Ko bo beta odprta, se vrne na registracijo. */
+  const testiranje = localePath(locale, '/kalkulator/testiranje');
   const prijava = localePath(locale, '/kalkulator/prijava');
   const languageHref = localePath(isEn ? 'sl' : 'en', '/flow');
 
@@ -95,7 +99,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
 
       <div className="flnav-actions">
         <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
-        <a className="flnav-signup" href={`${prijava}?nov=1`} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
+        <a className="flnav-signup" href={testiranje} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
         <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'} aria-label={isEn ? 'Preklopi na slovenščino' : 'Switch to English'}>
           <span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'SL' : 'EN'}
         </a>
@@ -195,7 +199,7 @@ export default function FlowNav({ locale = 'sl' }: { locale?: string }) {
       {LINKS.map(l => <a key={l.label} href={l.href} onClick={close}>{l.label}</a>)}
       <a className="flnav-lang" href={languageHref} hrefLang={isEn ? 'sl' : 'en'}><span aria-hidden>{isEn ? '🇸🇮' : '🇬🇧'}</span>{isEn ? 'Slovenščina' : 'English'}</a>
       <a className="flnav-login" href={prijava} onClick={close}>{isEn ? 'Log in' : 'Prijava'}</a>
-      <a className="flnav-signup" href={`${prijava}?nov=1`} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
+      <a className="flnav-signup" href={testiranje} onClick={close}>{isEn ? 'Create account' : 'Ustvari račun'}</a>
     </div>
     </>
   );

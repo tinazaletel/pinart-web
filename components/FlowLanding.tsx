@@ -2004,7 +2004,7 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR', ponudba = '
               <div>
                 <strong>{t('Začni', 'Get started')}</strong>
                 <a href={prijava}>{t('Prijava', 'Log in')}</a>
-                <a href={`${prijava}?nov=1`}>{t('Ustvari račun', 'Create account')}</a>
+                <a href={testiranje}>{t('Ustvari račun', 'Create account')}</a>
                 <a href={kalkulator}>{t('Odpri kalkulator', 'Open calculator')}</a>
               </div>
               <div>

@@ -45,7 +45,7 @@ const KMALU_HTML = `<!doctype html>
    matcher spusti mimo middlewara. */
 /* Zaklenjeni zaslon govori jezik obiskovalca: kdor pride na /en, ne sme
    naleteti na slovenscino (Tina, 25. 8.). */
-const zaklenjenoHtml = (en: boolean, skrijKalkulator = false) => `<!doctype html>
+const zaklenjenoHtml = (en: boolean, skrijKalkulator = false, poKodi = '') => `<!doctype html>
 <html lang="${en ? 'en' : 'sl'}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
@@ -178,7 +178,7 @@ const zaklenjenoHtml = (en: boolean, skrijKalkulator = false) => `<!doctype html
     var g = vf.querySelector('button'); g.disabled = true; vo.textContent = ''; vo.className='sporocilo';
     poslji('/api/beta', {dejanje:'geslo', geslo: vf.geslo.value})
       .then(function(r){
-        if(r.ok){ location.reload(); }
+        if(r.ok){ ${poKodi ? `location.href = '${poKodi}';` : 'location.reload();'} }
         else { vo.className='sporocilo napaka'; vo.textContent='Geslo ni pravilno.'; g.disabled = false; }
       })
       .catch(function(){ vo.className='sporocilo napaka'; vo.textContent='Ni povezave.'; g.disabled = false; });
@@ -204,7 +204,8 @@ export default async function middleware(request: NextRequest) {
      Prej ga je bilo mogoce videti samo, ce si naletel na zaklep, zato gumb
      "Prijavi se za testiranje" lokalno ni peljal nikamor (Tina, 2. 9. 2026). */
   if (/^\/(?:en\/)?kalkulator\/testiranje\/?$/.test(request.nextUrl.pathname)) {
-    return new NextResponse(zaklenjenoHtml(request.nextUrl.pathname.startsWith('/en'), true), {
+    const en = request.nextUrl.pathname.startsWith('/en');
+    return new NextResponse(zaklenjenoHtml(en, true, `${en ? '/en' : ''}/kalkulator/prijava?nov=1&vstop=1`), {
       status: 200,
       headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store, max-age=0' },
     });

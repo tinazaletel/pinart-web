@@ -68,7 +68,7 @@ export async function POST(request: Request) {
      vedno boljsi od nicesar. */
   try {
     const admin = createAdminClient();
-    await admin.from('beta_prijave').upsert(
+    if (admin) await admin.from('beta_prijave').upsert(
       { ime, email, stanje: 'prijavljen', prijavljen: new Date().toISOString() },
       { onConflict: 'email' },
     );
