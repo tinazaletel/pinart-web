@@ -65,7 +65,7 @@ export default function FlowLanding({ locale = 'sl', valuta = 'EUR', ponudba = '
   const t = L;
   const heroTitles = isEn ? HERO_TITLES_EN : HERO_NASLOVI;
   const prijava = localePath(locale, '/kalkulator/prijava');
-  const testiranje = `${prijava}?nov=1`;
+  const testiranje = localePath(locale, '/kalkulator/testiranje');
   const kalkulator = localePath(locale, '/kalkulator/orodje') + '?od=flow';
 
   const [taRubrika, setTaRubrika] = useState('vse');

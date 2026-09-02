@@ -10060,6 +10060,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       const s = vseStoritve.find(x => x.id === l.sid);
                       return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
                     }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
+                    /* ZIVA CENA (Tina, 2. 9. 2026; Lukova pripomba): panel je prej kazal
+                       samo osnovo, ki se ob dopolnjevanju podrobnosti ne premakne — zato
+                       je bilo videti, kot da izpolnjevanje nic ne spremeni. Paketov
+                       "skupaj" ZE vsebuje pravice (redna = delo * mult + pravice), zato
+                       jih ne pristevamo se enkrat. */
+                    const pkZ = r ? (r.paketi.find(x => x.id === 'priporoceni') || r.paketi[1] || r.paketi[0]) : null;
+                    const praviceZ = r?.pravice ?? 0;
+                    const prilagoditev = pkZ ? pkZ.redna - praviceZ - okvirno : 0;
+                    const popustEur = pkZ ? pkZ.redna - pkZ.skupaj : 0;
+                    const koncna = pkZ ? pkZ.skupaj : okvirno + praviceZ;
                     return (
                       <>
                         <div className="ponudba0-vsota-vrsta">
@@ -10069,22 +10079,34 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <span>{L('Osnovno delo', 'Base work')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
                           <b><CenaCountUp value={okvirno} format={val} /></b>
                         </div>
+                        {pkZ && Math.abs(prilagoditev) >= 1 && (
+                          <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                            <span>{L('Prilagoditev (izkušnje, zahtevnost, trg)', 'Adjustment (experience, complexity, market)')}</span>
+                            <span>{val(prilagoditev)}</span>
+                          </div>
+                        )}
                         {r && r.pravice > 0 && (
                           <div className="ponudba0-vsota-vrsta ponudba0-mini">
                             <span>{L('Pravice uporabe', 'Usage rights')} <InfoNamig locale={locale} besedilo={L('Naročnik plača izvedbo (oblikovanje), pravice do uporabe pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna. Vrednost določajo obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži. V Sloveniji in EU popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno; avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP, DSM 2019). Predlogi so priporočilo, ne pravni nasvet.', 'The client pays for production (the design); the usage rights are a separate item, like a licence. Separate because the same work can be used by a small local company or an international brand. The value is set by scope (territory, media, duration), exclusivity and how much the client earns with the work. In Slovenia and the EU a full buyout is not legally possible — only individual economic rights transfer, in writing and limited; the author keeps moral rights and the right to fair remuneration. Suggestions are a recommendation, not legal advice.')} /></span>
                             <span>{val(r.pravice)}</span>
                           </div>
                         )}
-                        {r && r.pravice > 0 && (
+                        {pkZ && popustEur > 0 && (
+                          <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                            <span>{L('Popust', 'Discount')}</span>
+                            <span>−{val(popustEur)}</span>
+                          </div>
+                        )}
+                        {pkZ && (
                           <div className="ponudba0-vsota-vrsta ponudba0-skupaj">
                             <span>{L('Skupaj', 'Total')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
-                            <b>{val(okvirno + r.pravice)}</b>
+                            <b><CenaCountUp value={koncna} format={val} /></b>
                           </div>
                         )}
                         {ddvZavezanec && (
                           <div className="ponudba0-vsota-vrsta ponudba0-mini">
                             <span>+ DDV {ddvSt} %</span>
-                            <span>z DDV {val((okvirno + (r?.pravice ?? 0)) * (1 + ddvSt / 100))}</span>
+                            <span>z DDV {val(koncna * (1 + ddvSt / 100))}</span>
                           </div>
                         )}
                         {/* Pove FORMULO, ne le da se bo cena spremenila. Uporabnik

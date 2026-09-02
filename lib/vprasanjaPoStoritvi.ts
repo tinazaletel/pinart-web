@@ -47,6 +47,13 @@ export const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
   logo: [
     { id: 'cilj', label: 'Kaj mora nov znak sporočati?', placeholder: 'npr. bolj premium, bolj zaupanja vredno, bolj igrivo' },
     { id: 'kompleksnost', label: 'Kako kompleksen naj bo logotip?', izbire: ['Enostaven napis ali znak', 'Znak + tipografija (kombiniran)', 'Družina znakov / več različic'], svoje: SVOJE_SPLOSNO },
+    /* Obseg dela pri logotipu: doslej ga ni bilo nikjer, cena pa je od tega
+       najbolj odvisna — trije predlogi so trikrat vec dela kot en, in
+       oblikovalec, ki pripravi raziskavo in petnajst razlicic, ne dela istega
+       posla (Tina, 2. 9. 2026). */
+    { id: 'predlogi', label: 'Koliko različnih predlogov pričakuješ?', izbire: ['1 jasna smer', '2 predloga', '3 predlogi', 'Več kot 3'], svoje: SVOJE_SPLOSNO },
+    { id: 'popravki', label: 'Koliko krogov popravkov je vključenih?', izbire: ['1 krog', '2 kroga', '3 krogi', 'Neomejeno do potrditve'], svoje: SVOJE_SPLOSNO },
+    { id: 'raziskava', label: 'Ali je vključena raziskava (trg, konkurenca, pozicioniranje)?', izbire: ['Brez raziskave', 'Kratek pregled konkurence', 'Poglobljena raziskava s poročilom'], svoje: SVOJE_SPLOSNO },
     { id: 'uporaba', label: 'Kje se bo najpogosteje uporabljal?', placeholder: 'splet, embalaža, tabla, app ikona, vozila ...' },
     { id: 'omejitve', label: 'Ali obstajajo barve, pisave ali simboli, ki morajo ostati?', izbire: ['Barvna paleta', 'Tipografija (kupljena pisava)', 'Simbol / znak', 'Nič, začnemo sveže'], vec: true, svoje: 'dopiši, če še kaj manjka ...' },
     { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 1.000 €', '1.000 do 2.500 €', 'Nad 2.500 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
