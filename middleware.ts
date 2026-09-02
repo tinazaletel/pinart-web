@@ -45,7 +45,7 @@ const KMALU_HTML = `<!doctype html>
    matcher spusti mimo middlewara. */
 /* Zaklenjeni zaslon govori jezik obiskovalca: kdor pride na /en, ne sme
    naleteti na slovenscino (Tina, 25. 8.). */
-const zaklenjenoHtml = (en: boolean) => `<!doctype html>
+const zaklenjenoHtml = (en: boolean, skrijKalkulator = false, poKodi = '') => `<!doctype html>
 <html lang="${en ? 'en' : 'sl'}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
@@ -79,7 +79,7 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
     display:grid;place-items:center;width:2.2rem;height:2.2rem;margin:0;padding:0;
     border:none;background:none;color:rgba(17,17,17,.55);cursor:pointer}
   .geslo-ovoj button:hover{color:#111}
-  .nazaj{display:inline-block;margin-bottom:1.2rem;font-size:.9rem;font-weight:600;color:rgba(17,17,17,.72);text-decoration:none}
+  .nazaj{display:inline-block;margin-bottom:2.6rem;font-size:.9rem;font-weight:600;color:rgba(17,17,17,.72);text-decoration:none}
   .nazaj:hover{color:#111}
   .se-ne{margin-top:1.1rem;padding-top:1rem;border-top:1px solid rgba(17,17,17,.12);text-align:center}
   .se-ne p{margin:0 0 .6rem;font-size:.9rem;color:rgba(17,17,17,.7)}
@@ -107,7 +107,7 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
   <div class="ey"><span class="pika"></span>Pinart Flow</div>
   <h1>${en ? 'Just <em>final testing</em> left.' : 'Še <em>zadnje teste</em> delamo.'}</h1>
   <p class="uvod">${en ? 'Flow is in final testing and launches in early September. Until then the free calculator is open to everyone, with no account and no sign-in.' : 'Flow je v zaključnem testiranju in pride na trg predvidoma v začetku septembra. Do takrat je brezplačni kalkulator odprt za vse — brez računa in brez prijave.'}</p>
-  <a class="kalk" href="${en ? '/en' : ''}/kalkulator/orodje">${en ? 'Try the free calculator' : 'Preizkusi brezplačni kalkulator'} &rarr;</a>
+  ${skrijKalkulator ? '' : `<a class="kalk" href="${en ? '/en' : ''}/kalkulator/orodje">${en ? 'Try the free calculator' : 'Preizkusi brezplačni kalkulator'} &rarr;</a>`}
 
   <div class="kartica">
     <h2>${en ? 'Tester sign-in' : 'Vstop za testerje'}</h2>
@@ -178,7 +178,7 @@ const zaklenjenoHtml = (en: boolean) => `<!doctype html>
     var g = vf.querySelector('button'); g.disabled = true; vo.textContent = ''; vo.className='sporocilo';
     poslji('/api/beta', {dejanje:'geslo', geslo: vf.geslo.value})
       .then(function(r){
-        if(r.ok){ location.reload(); }
+        if(r.ok){ ${poKodi ? `location.href = '${poKodi}';` : 'location.reload();'} }
         else { vo.className='sporocilo napaka'; vo.textContent='Geslo ni pravilno.'; g.disabled = false; }
       })
       .catch(function(){ vo.className='sporocilo napaka'; vo.textContent='Ni povezave.'; g.disabled = false; });
@@ -198,6 +198,19 @@ function gesloVeljavno(auth: string, geslo: string): boolean {
 }
 
 export default async function middleware(request: NextRequest) {
+  /* PRIJAVA ZA TESTIRANJE ima svojo pot in dela TUDI, ko stran ni zaklenjena
+     (localhost, ali ko bo beta odprta). Isti zaslon kot ob zaklepu — geslo za
+     testerje in obrazec za prijavo — le da se nanj da povezati z landinga.
+     Prej ga je bilo mogoce videti samo, ce si naletel na zaklep, zato gumb
+     "Prijavi se za testiranje" lokalno ni peljal nikamor (Tina, 2. 9. 2026). */
+  if (/^\/(?:en\/)?kalkulator\/testiranje\/?$/.test(request.nextUrl.pathname)) {
+    const en = request.nextUrl.pathname.startsWith('/en');
+    return new NextResponse(zaklenjenoHtml(en, true, `${en ? '/en' : ''}/kalkulator/prijava?nov=1&vstop=1`), {
+      status: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store, max-age=0' },
+    });
+  }
+
   const host = request.headers.get('host') || '';
   const jePinartflow = /(^|\.)pinartflow\.com$/i.test(host);
   const jeFlowPot = /^\/(?:sl\/|en\/)?(?:flow|kalkulator)(?:\/|$)/.test(request.nextUrl.pathname);

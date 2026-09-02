@@ -62,6 +62,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ napaka: 'Prijave trenutno ne moremo sprejeti. Piši nam na tina@pinart.si.' }, { status: 503 });
   }
 
+  /* Prijavo najprej ZAPISEMO, sele nato posljemo mail. Mail se lahko izgubi
+     med neprebranimi, zapis pa ostane — v adminu je seznam, kdo caka
+     (Tina, 2. 9. 2026). Ce zapis ne uspe, prijave ne zavrnemo: mail je se
+     vedno boljsi od nicesar. */
+  try {
+    const admin = createAdminClient();
+    if (admin) await admin.from('beta_prijave').upsert(
+      { ime, email, stanje: 'prijavljen', prijavljen: new Date().toISOString() },
+      { onConflict: 'email' },
+    );
+  } catch (napaka) {
+    console.error('Prijave testerja ni bilo mogoce zapisati:', napaka);
+  }
+
   try {
     const resend = new Resend(kljuc);
     const { error } = await resend.emails.send({

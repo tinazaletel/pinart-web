@@ -30,6 +30,11 @@ export default function AuthForm({ base }: { base: string }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const passwordInput = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<Mode>('signin');
+  /* ?vstop=1 pride z zaslona za testerje, ko je bila koda pravilna. */
+  const [zKodo, setZKodo] = useState(false);
+  useEffect(() => {
+    try { setZKodo(new URLSearchParams(window.location.search).get('vstop') === '1'); } catch { /* brez */ }
+  }, []);
   const [loading, setLoading] = useState(false);
   /* oko: brez njega ne vidis, ali si zadela presledek ali napacno crko */
   const [gesloVidno, setGesloVidno] = useState(false);
@@ -236,6 +241,18 @@ export default function AuthForm({ base }: { base: string }) {
 
       {/* Kaj pomeni testiranje — pove se PRED registracijo. Brez tega clovek ne
           ve, v kaj se spusca, in klik izostane (Tina + ChatGPT, 26. 8. 2026). */}
+      {/* Prisel je z veljavno kodo — pove se mu, kaj naj zdaj naredi. Brez tega
+          obstane pred obrazcem in ne ve, ali je koda sploh delovala
+          (Tina, 2. 9. 2026). */}
+      {mode === 'signup' && zKodo && (
+        <p className={styles.kodaNota}>
+          <b>{L('Koda je sprejeta.', 'Code accepted.')}</b>{' '}
+          {L(
+            'Zdaj si ustvari račun s svojim e-naslovom — z njim se boš odslej prijavljala v Flow. Uporabi naslov, na katerega si dobila povabilo.',
+            'Now create an account with your email — you will use it to sign in to Flow from now on. Use the address your invitation was sent to.',
+          )}
+        </p>
+      )}
       {mode === 'signup' && (
         <p className={styles.betaNota}>
           <b>{L('Flow je v zaprti beti.', 'Flow is in closed beta.')}</b>{' '}

@@ -35,7 +35,7 @@ import {
   House, Buildings, Presentation, Armchair, Layout, DeviceMobile, SquaresFour,
   ShareNetwork, MagnifyingGlass, Newspaper, VideoCamera, FilmSlate, Cube, Lightbulb,
   DotsSixVertical, Gear, User, UserCircle, ClockCounterClockwise, Wallet,
-  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree, Paperclip, X, Microphone, SpeakerHigh, SpeakerSlash, Warning
+  CaretDown, CaretUp, Check, PencilSimple, Eye, SlidersHorizontal, ArrowUp, ArrowDown, ArrowLeft, ArrowCounterClockwise, Trash, Receipt, PaperPlaneTilt, DotsThree, Paperclip, X, Microphone, SpeakerHigh, SpeakerSlash, Warning, LockSimple
 } from '@phosphor-icons/react';
 
 /* Pinartov javni kalkulator cen za kreativce.
@@ -2971,7 +2971,24 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     }
   };
   /* klik na moj (moder) odgovor -> urejanje V MESTU (ostali odgovori ostanejo, ne izginejo) */
-  const uvodUredi = (step: number) => setUrejamKorak(step);
+  /* Podatki podjetja se sami odprejo SAMO v Flowu, ko delas ponudbo in imena
+     se ni — tam gre ime v glavo dokumenta. V brezplacnem kalkulatorju ostanejo
+     zlozeni: tam gre za izracun cene, ne za dokument, in dolg obrazec le
+     zapira pot do rezultata (Tina, 2. 9. 2026). */
+  const podjetjeZeOdloceno = useRef(false);
+  useEffect(() => {
+    if (podjetjeZeOdloceno.current || chatKorak !== 2) return;
+    podjetjeZeOdloceno.current = true;
+    if (vLupini && !ponudnik.ime.trim()) setPodatkiPodjetjaOdprti(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatKorak]);
+
+  const uvodUredi = (step: number) => {
+    /* Podatki podjetja so v zlozenem bloku; kdor jih je preskocil, jih ob
+       popravku ne bi nasel (Tina, 2. 9. 2026). Zato jih odpremo sami. */
+    if (step === 2 && !ponudnik.ime.trim()) setPodatkiPodjetjaOdprti(true);
+    setUrejamKorak(step);
+  };
   const uvodUrejevalnik = (step: number) => {
     const zapri = () => setUrejamKorak(null);
     return (
@@ -3065,6 +3082,34 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     PODROCJA.forEach(p => { if (nov.has(p.id)) p.storitve.forEach(sid => ids.add(sid)); });
     setMojSet([...ids]);
   };
+  /* NA PRIJAVO IN NAZAJ (Tina, 2. 9. 2026: "ko se prijaviš te more vreči tu
+     nazaj brez da ponovno vpisuješ podatke"). Ponudbo pred odhodom shranimo v
+     arhiv — tako je varna, tudi ce se uporabnica ne vrne — prijavi pa povemo,
+     kam naj se vrne. */
+  const naPrijavo = async () => {
+    try { await shraniVArhiv(); } catch { /* tudi ce shranjevanje pade, gremo na prijavo */ }
+    const pot = window.location.pathname + window.location.search;
+    const nazaj = pot + (pot.includes('?') ? '&' : '?') + 'vrni=1';
+    window.location.href = `${locale === 'en' ? '/en' : ''}/kalkulator/prijava?next=${encodeURIComponent(nazaj)}`;
+  };
+
+  /* Vrnitev s prijave: nalozimo zadnjo shranjeno ponudbo nazaj v obrazec. */
+  const vrnitevOpravljena = useRef(false);
+  useEffect(() => {
+    if (vrnitevOpravljena.current || typeof window === 'undefined') return;
+    const p = new URLSearchParams(window.location.search);
+    if (p.get('vrni') !== '1') return;
+    const kljuci = Object.keys(arhiv);
+    if (!kljuci.length) return;                       /* arhiv se ni nalozen */
+    const zadnji = kljuci.sort((a, b) => (arhiv[b].datum || '').localeCompare(arhiv[a].datum || ''))[0];
+    naloziIzArhiva(zadnji);
+    vrnitevOpravljena.current = true;
+    p.delete('vrni');
+    const q = p.toString();
+    window.history.replaceState(null, '', window.location.pathname + (q ? `?${q}` : ''));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arhiv]);
+
   const uvodNovaObstojeca = (nova: boolean) => {
     setChatNova(nova);
     if (nova) { zakljuciUvod(); return; }
@@ -7781,7 +7826,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .prav-ni-manjka .prav-ni-cta,
         .cw .prav-ni-manjka .prav-vklop-znak { color: rgb(150,52,88); }
         .cw .prav-ni-plus.prav-ni-manjka::before { color: rgb(178,84,118); }
-        .cw .noga-manjka { margin: 0 0 .45rem; font: 600 .8rem var(--font-sans), sans-serif; color: rgb(150,52,88); text-align: center; }
+        .cw .noga-manjka { display: block; margin: 0 auto .45rem; padding: 0; border: 0; background: none; font: 600 .8rem var(--font-sans), sans-serif; color: rgb(150,52,88); text-align: center; text-decoration: underline; text-underline-offset: .18em; cursor: pointer; }
+        .cw .noga-manjka:hover { color: rgb(120,38,70); }
+        .cw .noga-manjka:focus-visible { outline: 3px solid var(--purple, #7C3AED); outline-offset: 3px; border-radius: 6px; }
         .cw .prav-vklop-on .prav-vklop-pripis { padding-left: 1.95rem; }
         .cw .prav-vklop-glava .prav-recept { border-color: rgba(17,17,17,.12); background-color: rgba(255,255,255,.9); box-shadow: none; }
         .cw .prav-vklop-cena { margin-left: auto; flex: none; display: inline-flex; align-items: center; justify-content: space-between; gap: .5rem; min-width: 7.5rem; cursor: pointer; font: 700 .95rem var(--font-sans), sans-serif; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink); background: #fff; border: 1px solid rgba(17,17,17,.28); border-radius: .6rem; padding: .38rem .7rem; transition: border-color .15s, box-shadow .15s; }
@@ -8239,7 +8286,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
           .cw .predogled-strani { padding: 6px; gap: 12px; }
           .cw .predogled-stran { max-width: none; }
         }
-        .cw .predogled-nalaga { display: flex; align-items: center; justify-content: center; height: 60vh; min-height: 420px; color: rgba(17,17,17,.72); font-size: .9rem; }
+        .cw .predogled-nalaga { display: flex; flex-direction: column; align-items: center; gap: .8rem; padding: 18px; }
+        /* List je v razmerju A4 (1 : 1,414), enako kot natisnjena stran. */
+        .cw .pred-skelet { width: 100%; max-width: 760px; aspect-ratio: 1 / 1.414; box-sizing: border-box;
+                           display: flex; flex-direction: column; gap: .75rem; padding: 9% 10%;
+                           background: #fff; box-shadow: 0 6px 22px rgba(20,20,20,.14); }
+        .cw .ps-vr { height: .72rem; border-radius: 4px; background: rgba(17,17,17,.07);
+                     background-image: linear-gradient(90deg, rgba(17,17,17,.05) 0%, rgba(17,17,17,.11) 50%, rgba(17,17,17,.05) 100%);
+                     background-size: 220% 100%; animation: ps-utrip 1.5s ease-in-out infinite; }
+        .cw .ps-naslov { height: 1.7rem; width: 54%; margin-bottom: .5rem; }
+        .cw .ps-presledek { margin-top: 1.1rem; }
+        .cw .pred-cakam { margin: 0; color: rgba(17,17,17,.6); font-size: .85rem; }
+        @keyframes ps-utrip { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+        @media (prefers-reduced-motion: reduce) { .cw .ps-vr { animation: none; } }
         .cw .predogled-html { width: 100%; height: 72vh; min-height: 420px; border: 0; background: #fff; display: block; border-radius: 8px; }
         .cw .predogled-osvezi { position: absolute; top: .6rem; right: .6rem; background: rgba(17,17,17,.72); color: #fff; font-size: .72rem; padding: .3rem .6rem; border-radius: 999px; pointer-events: none; z-index: 2; }
         .cw .editor b, .cw .editor strong { font-weight: 900; color: var(--ink); }
@@ -8309,7 +8368,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
            z oživljenimi besedilnimi stanji. Vodoravno centriran. */
         /* skupni ovoj področja pošiljanja: stabilna višina, da gumb med fazami
            (Pošlji → potrditev → Pošiljam → Poslano → nazaj) navpično NE skoči */
-        .cw .posl-akcija { margin-top: -.5rem; }
+        /* Negativen rob je vrstico "Posiljam 1 prejemniku" prilepil na vnosno
+           polje nad njo (Tina, 1. 9. 2026). Prostor za besedilo je rezerviran
+           tudi, ko je skrito (visibility), zato sprememba roba premakne oba
+           polozaja enako in gumb ob potrditvi navpicno ne skoci. */
+        .cw .posl-akcija { margin-top: 1.15rem; }
         .cw .posl-gumb-vrsta { display: flex; justify-content: center; }
         .cw .posl-gumb { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 11rem; min-height: 2.85rem; box-sizing: border-box; font-family: inherit; font-size: .92rem; font-weight: 600; letter-spacing: .01em; cursor: pointer; border-radius: 999px; padding: .8rem 2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .3s ease, background .55s cubic-bezier(.22,1,.36,1), border-color .55s cubic-bezier(.22,1,.36,1), color .55s cubic-bezier(.22,1,.36,1); }
         .cw .posl-gumb:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35,18,45,.2); }
@@ -8340,6 +8403,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-potrdi-txt { display: block; text-align: center; font-size: .88rem; color: var(--ink); line-height: 1.5; margin-bottom: .7rem; }
         .cw .posl-potrdi-txt.je-skrit { visibility: hidden; }
         .cw .posl-potrdi-txt b { font-weight: 700; word-break: break-word; }
+        /* Gumba narazen: PDF levo (kar lahko naredis), zaklenjeno posiljanje
+           desno. Pod njima vijolicno pojasnilo. */
+        .cw .posl-dvojica { width: 100%; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
+        .cw a.posl-gumb { text-decoration: none; }
+        /* Siv gumb: enaka oblika kot crni, samo pridusen — zaklenjeno, ne mrtvo. */
+        .cw .posl-gumb-zaklep { background: color-mix(in oklch, var(--ink) 8%, transparent);
+                                color: color-mix(in oklch, var(--ink) 62%, transparent); border: 0; }
+        .cw .posl-gumb-zaklep:hover { background: color-mix(in oklch, var(--ink) 12%, transparent);
+                                      color: var(--ink); }
+        .cw .posl-vpis { margin: .8rem 0 0; text-align: center; font-size: .82rem;
+                         color: var(--purple, #7C3AED); line-height: 1.55; }
+        .cw .posl-vpis a, .cw .posl-vpis-p { color: inherit; text-decoration: underline; text-underline-offset: .16em; border: 0; background: none; padding: 0; font: inherit; cursor: pointer; }
+        .cw .posl-vpis a { color: var(--purple, #7C3AED); text-decoration: underline; text-underline-offset: .16em; }
         .cw .posl-potrdi-gumbi { display: flex; align-items: center; justify-content: center; gap: 1.1rem; flex-wrap: wrap; }
         .cw .posl-sekundarne { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 1.4rem; max-width: 560px; margin: 1.1rem auto 0; }
         .cw .posl-sheet-glava, .cw .posl-sheet-back { display: none; }
@@ -9445,7 +9521,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <button type="submit" className="gumb">{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button>
                 </form>
               )}
-              {chatKorak > 2 && uvodOdgovorMehur(2, ponudnik.ime.trim() + (custDrzavaMoj.trim() ? ' · ' + custDrzavaMoj.trim() : '') || '—')}
+              {chatKorak > 2 && uvodOdgovorMehur(2, [ponudnik.ime.trim() || L('dodaj podjetje', 'add company'), custDrzavaMoj.trim()].filter(Boolean).join(' · '))}
 
               {chatKorak >= 4 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
@@ -9471,7 +9547,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="chat-vnos"><button type="button" className="gumb" disabled={obIzbor.size === 0} onClick={uvodPotrdiPodrocja}>{L('Naprej', 'Next')} <ArrowDown size={15} weight="bold" aria-hidden /></button></div>
                 </>
               )}
-              {(chatKorak > 4 || podrocjaPotrjena) && obIzbor.size > 0 && uvodOdgovorMehur(4, [...obIzbor].map(id => { const p = PODROCJA.find(x => x.id === id); return p ? podIme(p) : null; }).filter(Boolean).join(', '))}
+              {(chatKorak > 4 || podrocjaPotrjena) && uvodOdgovorMehur(4, obIzbor.size > 0
+                ? [...obIzbor].map(id => { const p = PODROCJA.find(x => x.id === id); return p ? podIme(p) : null; }).filter(Boolean).join(', ')
+                : L('izberi področja', 'pick your fields'))}
 
               {chatKorak >= 5 && (
                 <div className="chat-bot"><span className="chat-obraz" aria-hidden />
@@ -9982,6 +10060,16 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       const s = vseStoritve.find(x => x.id === l.sid);
                       return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
                     }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
+                    /* ZIVA CENA (Tina, 2. 9. 2026; Lukova pripomba): panel je prej kazal
+                       samo osnovo, ki se ob dopolnjevanju podrobnosti ne premakne — zato
+                       je bilo videti, kot da izpolnjevanje nic ne spremeni. Paketov
+                       "skupaj" ZE vsebuje pravice (redna = delo * mult + pravice), zato
+                       jih ne pristevamo se enkrat. */
+                    const pkZ = r ? (r.paketi.find(x => x.id === 'priporoceni') || r.paketi[1] || r.paketi[0]) : null;
+                    const praviceZ = r?.pravice ?? 0;
+                    const prilagoditev = pkZ ? pkZ.redna - praviceZ - okvirno : 0;
+                    const popustEur = pkZ ? pkZ.redna - pkZ.skupaj : 0;
+                    const koncna = pkZ ? pkZ.skupaj : okvirno + praviceZ;
                     return (
                       <>
                         <div className="ponudba0-vsota-vrsta">
@@ -9991,22 +10079,34 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           <span>{L('Osnovno delo', 'Base work')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
                           <b><CenaCountUp value={okvirno} format={val} /></b>
                         </div>
+                        {pkZ && Math.abs(prilagoditev) >= 1 && (
+                          <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                            <span>{L('Prilagoditev (izkušnje, zahtevnost, trg)', 'Adjustment (experience, complexity, market)')}</span>
+                            <span>{val(prilagoditev)}</span>
+                          </div>
+                        )}
                         {r && r.pravice > 0 && (
                           <div className="ponudba0-vsota-vrsta ponudba0-mini">
                             <span>{L('Pravice uporabe', 'Usage rights')} <InfoNamig locale={locale} besedilo={L('Naročnik plača izvedbo (oblikovanje), pravice do uporabe pa so svoja postavka — kot licenca. Ločeno zato, ker isto delo lahko uporablja majhno lokalno podjetje ali mednarodna znamka; vrednost uporabe je različna. Vrednost določajo obseg (teritorij, mediji, doba), izključnost in koliko naročnik z delom zasluži. V Sloveniji in EU popoln »odkup vsega« pravno ni mogoč — prenesejo se le posamezne materialne pravice, pisno in omejeno; avtor ohrani moralne pravice in pravico do poštenega nadomestila (ZASP, DSM 2019). Predlogi so priporočilo, ne pravni nasvet.', 'The client pays for production (the design); the usage rights are a separate item, like a licence. Separate because the same work can be used by a small local company or an international brand. The value is set by scope (territory, media, duration), exclusivity and how much the client earns with the work. In Slovenia and the EU a full buyout is not legally possible — only individual economic rights transfer, in writing and limited; the author keeps moral rights and the right to fair remuneration. Suggestions are a recommendation, not legal advice.')} /></span>
                             <span>{val(r.pravice)}</span>
                           </div>
                         )}
-                        {r && r.pravice > 0 && (
+                        {pkZ && popustEur > 0 && (
+                          <div className="ponudba0-vsota-vrsta ponudba0-mini">
+                            <span>{L('Popust', 'Discount')}</span>
+                            <span>−{val(popustEur)}</span>
+                          </div>
+                        )}
+                        {pkZ && (
                           <div className="ponudba0-vsota-vrsta ponudba0-skupaj">
                             <span>{L('Skupaj', 'Total')}{ddvZavezanec ? L(' (brez DDV)', ' (excl. VAT)') : ''}</span>
-                            <b>{val(okvirno + r.pravice)}</b>
+                            <b><CenaCountUp value={koncna} format={val} /></b>
                           </div>
                         )}
                         {ddvZavezanec && (
                           <div className="ponudba0-vsota-vrsta ponudba0-mini">
                             <span>+ DDV {ddvSt} %</span>
-                            <span>z DDV {val((okvirno + (r?.pravice ?? 0)) * (1 + ddvSt / 100))}</span>
+                            <span>z DDV {val(koncna * (1 + ddvSt / 100))}</span>
                           </div>
                         )}
                         {/* Pove FORMULO, ne le da se bo cena spremenila. Uporabnik
@@ -10905,7 +11005,25 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     ))}
                   </div>
                 ) : predogledNalaganje ? (
-                  <div className="predogled-nalaga">{L('Pripravljam predogled …', 'Preparing preview …')}</div>
+                  /* Med pripravo ne kazemo praznega polja, ampak A4 list z
+                     obrisom dokumenta, ki nastaja — cakanje je videti kot
+                     nalaganje strani, ne kot zamrznjen zaslon (Tina, 1. 9. 2026). */
+                  <div className="predogled-nalaga" role="status" aria-label={L('Pripravljam predogled', 'Preparing preview')}>
+                    <div className="pred-skelet" aria-hidden>
+                      <span className="ps-vr ps-naslov" />
+                      <span className="ps-vr" style={{ width: '38%' }} />
+                      <span className="ps-vr ps-presledek" style={{ width: '92%' }} />
+                      <span className="ps-vr" style={{ width: '86%' }} />
+                      <span className="ps-vr" style={{ width: '94%' }} />
+                      <span className="ps-vr ps-presledek" style={{ width: '46%' }} />
+                      <span className="ps-vr" style={{ width: '90%' }} />
+                      <span className="ps-vr" style={{ width: '78%' }} />
+                      <span className="ps-vr" style={{ width: '88%' }} />
+                      <span className="ps-vr ps-presledek" style={{ width: '32%' }} />
+                      <span className="ps-vr" style={{ width: '70%' }} />
+                    </div>
+                    <p className="pred-cakam">{L('Pripravljam predogled …', 'Preparing preview …')}</p>
+                  </div>
                 ) : (
                   /* GRACEFUL FALLBACK: če strežniški PDF (brezglavi Chrome) ne uspe/timeouta,
                      predogled NI prazen — pokažemo takojšen HTML predogled ponudbe. */
@@ -11107,6 +11225,44 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <input type="text" value={nazivPonudbe} onChange={e => setNazivPonudbe(e.target.value)}
                   placeholder={predlogNaziva()} />
               </label>
+              {/* BREZPLACNI KALKULATOR: glavno dejanje je PDF, ne pošiljanje.
+                  Posiljanje po e-posti gre cez nas streznik in z nase domene,
+                  zato terja racun — brez tega bi bil to odprt postni rele.
+                  Doslej je neprijavljeni videl gumb Poslji in dobil "Prijava je
+                  potekla", ceprav mu ni nic poteklo (Luka, 1. 9. 2026). */}
+              {!vLupini ? (
+                /* Enak obrazec kot pri prijavljeni uporabnici — isto polje "Za"
+                   in isti crn gumb — samo s kljucavnico. Funkcije ne skrivamo:
+                   obiskovalec vidi natanko to, kar dobi, in da se mora prijaviti
+                   (Tina, 2. 9. 2026). */
+                <>
+                  <div className="posl-glava-vrsta">
+                    <span className="posl-glava">{L('Pošiljanje ponudbe', 'Sending the quote')}</span>
+                  </div>
+                  <div className="posl-za">
+                    <span className="posl-za-l">{L('Za', 'To')}</span>
+                    <div className="posl-cipi">
+                      <input type="email" className="posl-vnos" disabled
+                        placeholder={L('dodaj email', 'add email')} aria-label={L('Dodaj prejemnika', 'Add recipient')} />
+                    </div>
+                  </div>
+                  <div className="posl-akcija">
+                    <div className="posl-gumb-vrsta posl-dvojica">
+                      <button type="button" className="posl-gumb" disabled={pdfNalaganje}
+                        onClick={zPogoji(zNazivom(() => { prenesiPdf(); proslaviKonfeti(); }))}>
+                        <FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}
+                      </button>
+                      <button type="button" className="posl-gumb posl-gumb-zaklep" onClick={naPrijavo}>
+                        <LockSimple size={16} weight="bold" aria-hidden /> {L('Pošlji', 'Send')}
+                      </button>
+                    </div>
+                    <p className="posl-vpis">
+                      {L('Za pošiljanje potrebuješ brezplačen račun.', 'Sending requires a free account.')}{' '}
+                      <button type="button" className="posl-vpis-p" onClick={naPrijavo}>{L('Prijavi se', 'Sign in')}</button>
+                    </p>
+                  </div>
+                </>
+              ) : (<>
               <div className="posl-glava-vrsta">
                 <span className="posl-glava">{L('Pošiljanje ponudbe', 'Sending the quote')}</span>
                 {kontaktiNaVoljo.length > 0 && (
@@ -11202,6 +11358,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 )}
               </div>
               {mailStatus && <p className="mail-status" role="status">{mailStatus}</p>}
+              </>)}
             </div>
             {/* SEKUNDARNE akcije: tiho, brez ponovnega pošiljanja. Na mobilu skrite za gumbom "Več možnosti" (slide-up). */}
 
@@ -11211,9 +11368,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               <button type="button" className="povezava" onClick={() => { kopiraj(); proslaviKonfeti(); }}>
                 <CopySimple size={16} /> {kopirano ? L('Skopirano ✓', 'Copied ✓') : L('Kopiraj ponudbo', 'Copy quote')}
               </button>
-              <button type="button" className="povezava posl-glavna" disabled={pdfNalaganje} onClick={zPogoji(zNazivom(() => { prenesiPdf(); proslaviKonfeti(); }))} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
-                <FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}
-              </button>
+              {vLupini && (
+                <button type="button" className="povezava posl-glavna" disabled={pdfNalaganje} onClick={zPogoji(zNazivom(() => { prenesiPdf(); proslaviKonfeti(); }))} title={L('Prenese ponudbo kot PDF datoteko', 'Downloads the quote as a PDF file')}>
+                  <FilePdf size={16} /> {pdfNalaganje ? L('Pripravljam PDF…', 'Preparing PDF…') : L('Prenesi PDF', 'Download PDF')}
+                </button>
+              )}
               <button type="button" className="povezava" onClick={() => { prenesi(); proslaviKonfeti(); }}>
                 <DownloadSimple size={16} /> {L('Prenesi besedilo', 'Download text')}
               </button>
@@ -11328,14 +11487,28 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
               in tega ne opazi (Tina, 30. 8. 2026). */}
           {(() => {
             const { brezVkljucitve, brezSpecifikacije, brezOdgovorov } = praviceNedokoncano;
-            const st = brezVkljucitve.length + brezSpecifikacije.length + brezOdgovorov.length;
+            const manjkaPravic = brezVkljucitve.length + brezSpecifikacije.length + brezOdgovorov.length;
+            const brezNarocnika = !narocnikPonudbe.trim();
+            /* Steje iste tri stvari kot rdece opozorilo na Zakljucku — prej je
+               noga stela samo pravice in je pisalo "Ena postavka", zgoraj pa sta
+               bili nasteti dve (Tina, 1. 9. 2026). */
+            const st = neurejenePostavke.length + manjkaPravic + (brezNarocnika ? 1 : 0);
             if (!st || korak === 0) return null;
+            /* Vrstica je POVEZAVA in pelje na prvo nedokoncano stvar, v istem
+               vrstnem redu kot opozorilo zgoraj: podrobnosti storitve, pravice,
+               narocnik. Prej je bilo golo besedilo brez cilja in je uporabnik
+               iskal, kje je manjkajoca postavka (Luka, 1. 9. 2026). */
+            const pelji = () => {
+              if (neurejenePostavke.length) { setKorak(0); odpriDetajl(neurejenePostavke[0].l.uid); return; }
+              setKorak(0);
+              setPoMeh(manjkaPravic ? 3 : 1);
+            };
             return (
-              <p className="noga-manjka">
+              <button type="button" className="noga-manjka" onClick={pelji}>
                 {st === 1
                   ? L('Ena postavka še ni izpolnjena.', 'One item is not complete yet.')
                   : L(`${st} postavke še niso izpolnjene.`, `${st} items are not complete yet.`)}
-              </p>
+              </button>
             );
           })()}
           <div className="noga-gumbi" style={{ flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>

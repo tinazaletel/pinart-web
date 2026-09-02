@@ -24,12 +24,24 @@ import type { SupabaseClient } from '@supabase/supabase-js';
    kot v samem mailu. */
 type ResendPriponka = { filename: string; content: string };
 
+/* Do te velikosti datoteko pripnemo, cez njo posljemo povezavo. Tri megabajte
+   so meja, pri kateri filtri se ne postanejo pozorni. */
+const PRIPNI_DO_BAJTOV = 3 * 1024 * 1024;
+
+/* Velika datoteka, ki gre kot povezava namesto kot priponka. */
+type PriponkaPovezava = { ime: string; url: string; velikost: number };
+
+/* Clovesko berljiva velikost za vrstico s povezavo. */
+const berljivo = (b: number) => (b >= 1024 * 1024
+  ? `${(b / 1024 / 1024).toFixed(1).replace('.', ',')} MB`
+  : `${Math.max(1, Math.round(b / 1024))} kB`);
+
 async function pripraviPriponke(
   admin: SupabaseClient,
   organizationId: string,
   surove: unknown,
-): Promise<{ napaka?: string; zapisi: Priponka[]; resend: ResendPriponka[] }> {
-  const prazno = { zapisi: [] as Priponka[], resend: [] as ResendPriponka[] };
+): Promise<{ napaka?: string; zapisi: Priponka[]; resend: ResendPriponka[]; povezave: PriponkaPovezava[] }> {
+  const prazno = { zapisi: [] as Priponka[], resend: [] as ResendPriponka[], povezave: [] as PriponkaPovezava[] };
   if (surove === undefined || surove === null) return prazno;
   if (!Array.isArray(surove)) return { ...prazno, napaka: 'Priponke niso veljavne.' };
   if (!surove.length) return prazno;
@@ -75,15 +87,31 @@ async function pripraviPriponke(
   const meje = preveriPriponke(zapisi);
   if (!meje.veljavno) return { ...prazno, napaka: meje.napaka };
 
-  /* 4) prenos iz zasebnega vedra -> base64 za Resend */
+  /* 4) Velike datoteke gredo kot POVEZAVA, ne kot priponka.
+        9,4 MB PDF z mlade domene je Gmail potisnil v vsiljeno posto — prejemnik
+        je trdil, da ni dobil nicesar, Resend pa je porocal "Delivered"
+        (Tina + Luka, 2. 9. 2026). Povezava je majhna, dostava je zanesljivejsa,
+        datoteka pa je tako ali tako ze v Flowu. */
   const resend: ResendPriponka[] = [];
+  const povezave: PriponkaPovezava[] = [];
   for (const zapis of zapisi) {
     const vedro = String(poPoti.get(zapis.pot!)?.bucket || 'business-documents');
+    if (zapis.velikost > PRIPNI_DO_BAJTOV) {
+      /* Podpisana povezava, veljavna 30 dni — dovolj, da jo prejemnik odpre,
+         in ne toliko, da bi vecno visela na spletu. */
+      const { data: podpis } = await admin.storage.from(vedro)
+        .createSignedUrl(zapis.pot!, 60 * 60 * 24 * 30);
+      if (podpis?.signedUrl) {
+        povezave.push({ ime: zapis.ime, url: podpis.signedUrl, velikost: zapis.velikost });
+        continue;
+      }
+      /* Ce podpis ne uspe, raje pripnemo kot da datoteke ne posljemo. */
+    }
     const { data, error: prenosNapaka } = await admin.storage.from(vedro).download(zapis.pot!);
     if (prenosNapaka || !data) return { ...prazno, napaka: `Priponke »${zapis.ime}« ni bilo mogoče prebrati.` };
     resend.push({ filename: zapis.ime, content: Buffer.from(await data.arrayBuffer()).toString('base64') });
   }
-  return { zapisi, resend };
+  return { zapisi, resend, povezave };
 }
 
 /* Strežniško pošiljanje e-pošte prek Resend. Ključ RESEND_API_KEY bere SAMO
@@ -264,7 +292,14 @@ export async function POST(request: Request) {
       from,
       to: prejemniki,
       subject: body.subject,
-      html: body.html,
+      html: priponke.povezave.length
+        ? `${body.html}<div style="margin-top:22px;padding-top:14px;border-top:1px solid #e4e0ec;font:14px/1.6 system-ui,sans-serif;color:#3a3442">`
+          + `<p style="margin:0 0 8px;font-weight:600">Priloge za prenos</p>`
+          + priponke.povezave.map(v =>
+              `<p style="margin:0 0 6px"><a href="${v.url}" style="color:#6D3BEB">${v.ime}</a>`
+              + `<span style="color:#7a7386"> · ${berljivo(v.velikost)}</span></p>`).join('')
+          + `<p style="margin:10px 0 0;font-size:12px;color:#7a7386">Povezave veljajo 30 dni.</p></div>`
+        : body.html,
       ...(replyTo ? { replyTo } : {}),
       ...(priponke.resend.length ? { attachments: priponke.resend } : {}),
     });

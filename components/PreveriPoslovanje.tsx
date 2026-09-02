@@ -117,8 +117,6 @@ export default function PreveriPoslovanje({
      (Tina, 30. 8. 2026). */
   if (samoOgled || trg !== 'si' || vRegistru === false) return null;
 
-  if (!znano) return null;
-
   const zeImamo = typeof shranjen?.cistiPrihodki === 'number' || typeof shranjen?.cistiDobicek === 'number';
   const brezEnot = !!kvota && kvota.ostanek <= 0 && !zeImamo;
 
@@ -139,6 +137,31 @@ export default function PreveriPoslovanje({
     </svg>
   );
 
+  /* DOKLER STANJE NI ZNANO: gumb je siv in neaktiven, NE pa da ga ni.
+     Prej je cela kartica cakala na odgovor streznika in se je gumb pojavil
+     sekundo ali dve prepozno (Tina, 1. 9. 2026). Skrijemo samo ponudbo za
+     nadgradnjo in stanje kvote — to sta edini stvari, ki bi za hip zavedli
+     placnika. Pravilo "v Flowu brez davcne ni gumba" velja tudi tu, da gumb
+     najprej ne utripne in nato izgine. */
+  if (!znano) {
+    if (vLupini && cista.length < 8) return null;
+    return (
+      <div style={{ display: 'grid', gap: '.4rem', margin: '.9rem 0 1rem', justifyItems: 'start' }}>
+        <span aria-hidden style={{
+          ...gumb, opacity: 1, cursor: 'default',
+          background: 'rgba(255,255,255,.55)', color: 'rgba(17,17,17,.42)',
+        }}>
+          {ikonaPrenos}
+          {L('Pridobi podatke', 'Fetch the data')}
+        </span>
+        <p style={drobno}>
+          {L('Promet in dobiček prinese Flow iz zadnjega letnega poročila.',
+             'Flow fetches revenue and profit from the latest annual report.')}
+        </p>
+      </div>
+    );
+  }
+
   /* BREZ PAKETA: gumb je siv in pelje na nadgradnjo, ne izgine. Skrita funkcija
      ne proda nicesar, tu pa je uporabnica ravno na mestu, kjer bi ji koristila —
      isce promet in dobicek, da postavi ceno (Tina, 30. 8. 2026).
@@ -152,7 +175,11 @@ export default function PreveriPoslovanje({
      V Flowu pa brez davcne ni ne gumba ne ponudbe za nadgradnjo. */
   if (!vLupini || !imaPaket) {
     if (vLupini && cista.length < 8) return null;
-    const kam = kvota ? `${base}/kalkulator/paket` : `${base}/flow#cenik`;
+    /* Neprijavljenega peljemo na PRIJAVO in takoj za njo na paket — ne na
+       landing s hero-jem, kjer se mora znova prebijati do cenika
+       (Tina, 2. 9. 2026). Prijavljen gre naravnost na paket. */
+    const paket = `${base}/kalkulator/paket`;
+    const kam = kvota ? paket : `${base}/kalkulator/prijava?next=${encodeURIComponent(paket)}`;
     /* Ne prosojen duh: zaklenjeno je videti kot cela, mirna pilula s kljucavnico,
        poziv pa je vijolicen, da se vidi, da je klikljiv (Tina, 30. 8. 2026). */
     return (

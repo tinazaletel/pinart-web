@@ -115,4 +115,18 @@
   line-height: 1.55;
   color: rgba(17, 17, 17, .78);
 }
+
+/* Potrditev po vpisani kodi — ista oblika kot beta nota, zelen ton. */
+.kodaNota {
+  margin: -.7rem 0 1.4rem;
+  padding: .85rem 1rem;
+  border: 1px dashed rgba(124, 58, 237, .4);
+  border-radius: 12px;
+  background: rgba(124, 58, 237, .05);
+  font-size: .84rem;
+  line-height: 1.55;
+  color: rgba(17, 17, 17, .78);
+}
+.kodaNota b { color: oklch(45% .15 158); }
+
 .betaNota b { color: oklch(46% .19 297); }

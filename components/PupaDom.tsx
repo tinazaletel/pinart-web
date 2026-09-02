@@ -1,6 +1,7 @@
 'use client';
 
 import { getOrganizationContext } from '@/lib/pinartFlowCloud';
+import { NAVODILO_KARTIC, izlusciKartice, uporabiUkaze, type ZivaKartica } from '@/lib/pupaKartice';
 import BriefAgent from '@/components/BriefAgent';
 import PitchAgent from '@/components/PitchAgent';
 import CanvasAgent from '@/components/CanvasAgent';
@@ -68,6 +69,31 @@ function zatemni(hex: string, f: number) {
   const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
   const m = (c: number) => Math.max(0, Math.min(255, Math.round(c * f))).toString(16).padStart(2, '0');
   return `#${m(r)}${m(g)}${m(b)}`;
+}
+
+/* OBROČ okoli pogovora (Tina, 1. 9. 2026: »okoli in okoli«, »naredi od zadaj«).
+   Kartice ne stojijo v kotih, ampak na elipsi okrog sredine: najnovejša je
+   spredaj in največja, starejše krožijo naprej in se manjšajo, dokler ne
+   odplavajo. Sredina elipse je prazna, ker tam je pogovor. */
+const OBROC_RX = 34;   /* vodoravni polmer v odstotkih platna */
+const OBROC_RY = 30;   /* navpicni polmer — nizji, da obroc lezi kot krog v perspektivi */
+
+function mestoVObrocu(i: number, skupaj: number) {
+  /* Kot 0 je SPREDAJ (spodaj sredina), naprej pa krozimo v levo. Najnovejsa
+     kartica (i = skupaj - 1) je spredaj, najstarejsa je zadaj. */
+  const korak = (2 * Math.PI) / Math.max(4, skupaj);
+  const kot = Math.PI / 2 + (skupaj - 1 - i) * korak;
+  const x = 50 + OBROC_RX * Math.cos(kot);
+  const y = 50 + OBROC_RY * Math.sin(kot);
+  /* Kar je zgoraj (sin < 0), je »zadaj«: manjse, bolj prosojno, za pogovorom. */
+  const globina = (Math.sin(kot) + 1) / 2;           /* 0 zadaj, 1 spredaj */
+  return {
+    left: `${x.toFixed(2)}%`,
+    top: `${y.toFixed(2)}%`,
+    transform: `translate(-50%, -50%) scale(${(0.78 + globina * 0.28).toFixed(3)})`,
+    opacity: String(0.55 + globina * 0.45),
+    zIndex: String(2 + Math.round(globina * 6)),
+  } as Record<string, string>;
 }
 
 export default function PupaDom({ base = '' }: { base?: string }) {
@@ -182,6 +208,10 @@ export default function PupaDom({ base = '' }: { base?: string }) {
   const [pogovorId, setPogovorId] = useState<string | null>(null);
   const [zgodovina, setZgodovina] = useState<PupaPogovorPovzetek[]>([]);
   const [zgodovinaOdprta, setZgodovinaOdprta] = useState(false);
+  /* Kar Pupa gradi, se vidi okoli pogovora: kartice prihajajo, se dopisujejo in
+     odplavajo iz njenih odgovorov (Tina, 1. 9. 2026). */
+  const [zive, setZive] = useState<ZivaKartica[]>([]);
+  const [odhajajo, setOdhajajo] = useState<string[]>([]);
   const nalozenaNit = useRef(false);
   /* Vsak vstop = NOVA seja (prazen pogovor, naslov spet vidiš). Prejšnje seje se
      shranjujejo v oblak in jih najdeš v Zgodovini (desni panel). NE nalagamo zadnje samodejno. */
@@ -193,11 +223,11 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
   async function odpriZgodovino() { setZgodovina(await nalozPogovore()); setZgodovinaOdprta(true); }
   async function naloziPogovor(id: string) { const spor = await nalozSporocila(id); setPogovorId(id); setPupaSpor(spor); setZgodovinaOdprta(false); }
-  function novPogovor() { setPupaSpor([]); setPogovorId(null); setZgodovinaOdprta(false); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
+  function novPogovor() { setPupaSpor([]); setPogovorId(null); setZgodovinaOdprta(false); setZive([]); setOdhajajo([]); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
   async function briseZgodovino(id: string) {
     await izbrisiPogovor(id);
     setZgodovina(prev => prev.filter(z => z.id !== id));
-    if (id === pogovorId) { setPupaSpor([]); setPogovorId(null); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
+    if (id === pogovorId) { setPupaSpor([]); setPogovorId(null); setZive([]); try { localStorage.removeItem('pinart-pupa-nit'); } catch { /* ignore */ } }
   }
 
   /* Razvojna zavora za preizkus cakalne vrste: ?pocasi=1 zadrzi Pupin odgovor
@@ -263,13 +293,29 @@ export default function PupaDom({ base = '' }: { base?: string }) {
           vprasanje: zVnosom,
           kontekst: L('Uporabnik je v Pupa domu (vstopni pomočnik za samostojne kreativce). Pomagaj z nasvetom; če želi USTVARITI ponudbo/račun/projekt/nalogo, ga usmeri na ustrezen gumb v domu — ne izmišljaj si, da si to naredila.',
                       'User is in the Pupa home (entry assistant for freelance creatives). Help with advice; if they want to CREATE a quote/invoice/project/task, point them to the matching button in the home — do not pretend you did it.')
-            + (kontekstNalog(stanjeNalog, jeEn) ? `\n${kontekstNalog(stanjeNalog, jeEn)}` : ''),
+            + (kontekstNalog(stanjeNalog, jeEn) ? `\n${kontekstNalog(stanjeNalog, jeEn)}` : '')
+            + `\n\n${NAVODILO_KARTIC}`,
           zgodovina: zgo,
         }),
         signal: krmilnik.signal,
       });
       const data = await res.json();
-      const odg = data.odgovor || data.text || data.napaka || data.error || L('Hmm, nekaj je zaškripalo. Poskusi znova.', 'Hmm, something went wrong. Try again.');
+      const surovOdg = data.odgovor || data.text || data.napaka || data.error || L('Hmm, nekaj je zaškripalo. Poskusi znova.', 'Hmm, something went wrong. Try again.');
+      /* Strojni blok s karticami gre iz besedila ven — uporabnica vidi samo
+         odgovor, kartice okoli pogovora pa se premaknejo. */
+      const { besedilo: odg, ukazi } = izlusciKartice(surovOdg);
+      if (ukazi.length) {
+        setZive(prej => {
+          const novo = uporabiUkaze(prej, ukazi);
+          /* Kartice, ki jih v novem stanju ni vec, najprej odplavajo. */
+          const izginile = prej.filter(k => !novo.some(n => n.id === k.id)).map(k => k.id);
+          if (izginile.length) {
+            setOdhajajo(o => [...o, ...izginile]);
+            window.setTimeout(() => setOdhajajo(o => o.filter(id => !izginile.includes(id))), 900);
+          }
+          return novo;
+        });
+      }
       setPupaSpor(s => [...s, { role: 'assistant', content: odg, predlogi: Array.isArray(data.predlogi) ? data.predlogi : undefined }]);
       if (pid) void dodajSporocilo(pid, 'assistant', odg);
     } catch (e) {
@@ -741,7 +787,21 @@ export default function PupaDom({ base = '' }: { base?: string }) {
 
       {/* PLAVAJOČE podatkovne kartice (desktop) — wrap plava/boba, kartica poveča ob hoveru */}
       <div className={`pd-plava${zbrano ? ' zbrano' : ''}`}>
-        {plava.map((p, i) => (
+        {/* Ko Pupa gradi, njene kartice prevzamejo prostor: statusne odplavajo,
+            zive pridejo na ista mesta (Tina, 1. 9. 2026). */}
+        {zive.map((k, i) => (
+          <div key={k.id} className={'pd-kartica-wrap pd-ziva' + (odhajajo.includes(k.id) ? ' pd-odhaja' : '')}
+               style={{ animationDelay: `${i * .12}s`, ...mestoVObrocu(i, zive.length) }}>
+            <div className="pd-kartica" style={{ ['--h' as string]: String(k.h) }}>
+              <span className="pd-k-pika" />
+              <span className="pd-k-glava"><b>{k.vrednost || k.labela}</b><small>{k.vrednost ? k.labela : ''}</small></span>
+              {k.vrstice && k.vrstice.length > 0 && (
+                <span className="pd-k-vrstice"><span>{k.vrstice.map((v, n) => <em key={n}>{v}</em>)}</span></span>
+              )}
+            </div>
+          </div>
+        ))}
+        {zive.length > 0 ? null : plava.map((p, i) => (
           <div key={i} className="pd-kartica-wrap" style={zbrano ? { animationDelay: `${p.d}s`, animationDuration: `${5.5 + (i % 3) * 1.2}s` } : { animationDelay: `${p.d}s`, animationDuration: `${7 + (i % 3) * 2.2}s`, ...pozStyle(p.poz) }}>
             {p.vrstice && p.vrstice.length > 0 ? (
               /* Kartica z vrsticami ni ena sama povezava: vsaka vrstica pelje tja,
@@ -1118,6 +1178,26 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-razpored:hover { background: #fff; color: var(--ink, #1a1a1a); }
         /* wrap nosi PLAVANJE (position + bob); kartica se POVEČA ob hoveru (brez konflikta transformov) */
         .pd-kartica-wrap { position: absolute; pointer-events: none; animation: pdBob 9s ease-in-out infinite; }
+        /* Ziva kartica pripluje izza pogovora in odplava naprej okoli — gibanje
+           je krozno, ne linearno (Tina, 1. 9. 2026: »okoli in okoli«). */
+        .pd-ziva { animation: pdPripluje .9s cubic-bezier(.22,1,.3,1) both;
+                    transition: left .9s cubic-bezier(.22,1,.3,1), top .9s cubic-bezier(.22,1,.3,1),
+                                transform .9s cubic-bezier(.22,1,.3,1), opacity .6s ease; }
+        .pd-ziva.pd-odhaja { animation: pdOdplava .9s cubic-bezier(.4,0,.6,1) both; }
+        /* Nova kartica pride IZZA pogovora: iz sredine, majhna in zamegljena,
+           nato zaplava na svoje mesto v obrocu. */
+        @keyframes pdPripluje {
+          0%   { opacity: 0; filter: blur(7px); }
+          55%  { opacity: 1; filter: blur(0); }
+          100% { opacity: 1; filter: blur(0); }
+        }
+        @keyframes pdOdplava {
+          0%   { opacity: 1; transform: none; }
+          100% { opacity: 0; transform: translate(16%, -10%) rotate(5deg) scale(.9); filter: blur(5px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pd-ziva, .pd-ziva.pd-odhaja { animation: none; opacity: 1; transform: none; filter: none; }
+        }
         .pd-kartica { position: relative; pointer-events: auto; display: flex; flex-direction: column; gap: .1rem; min-width: 8.5rem; padding: .75rem .95rem; border: 1px solid rgba(255,255,255,.6); border-radius: .95rem; background: color-mix(in oklch, oklch(72% .13 var(--h)) 10%, rgba(255,255,255,.55)); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); box-shadow: 0 12px 34px oklch(50% .1 var(--h) / .14); text-decoration: none; cursor: pointer; transition: transform .22s cubic-bezier(.2,.7,.2,1), box-shadow .22s ease; }
         /* Vrstice opomnikov so DEL kartice in se razprejo ob prehodu z miško.
            Krčiti je treba tudi ŠIRINO, ne le višine: skrito besedilo je sicer
@@ -1130,6 +1210,12 @@ export default function PupaDom({ base = '' }: { base?: string }) {
         .pd-kartica:hover .pd-k-vrstice, .pd-kartica:focus-visible .pd-k-vrstice {
           grid-template-rows: 1fr; width: 15rem; opacity: 1; margin-top: .55rem;
         }
+        /* Pri zivi kartici so vrstice VIDNE, ne skrite do prehoda z misko: to je
+           tisto, kar se dopisuje, in ravno rast kartice pove, da Pupa dela
+           (Tina, 1. 9. 2026). */
+        .pd-ziva .pd-k-vrstice { grid-template-rows: 1fr; width: 13rem; opacity: 1; margin-top: .5rem; }
+        .pd-ziva .pd-k-vrstice em { animation: pdVrsticaPride .5s ease both; }
+        @keyframes pdVrsticaPride { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
         /* Navpična črta ob vrsticah — kot pri navedku; loči seznam od številke. */
         .pd-k-vrstice > span {
           min-height: 0; display: flex; flex-direction: column; gap: .12rem;

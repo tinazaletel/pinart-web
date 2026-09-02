@@ -173,7 +173,7 @@ export default function DokPanel({ odprt, naslov, nadnaslov, podnaslov, dejanja,
         .dp-pod { margin: .5rem 0 0; font: 500 .92rem/1.5 var(--font-sans), sans-serif; color: color-mix(in oklch, var(--ink, #1a1a1a) 58%, transparent); }
         .dp-vsebina { margin-top: 1.8rem; }
 
-        .dp-noga { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .85rem 1rem 1rem; margin: 0 1rem;
+        .dp-noga { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .85rem clamp(1.4rem, 4vw, 3rem) 1rem; margin: 0 1rem;
                    background: #fff; border-top: 1px solid color-mix(in oklch, var(--ink, #1a1a1a) 8%, transparent); border-radius: 0 0 1rem 1rem; }
 
         /* Ob tiskanju ostane samo papir — brez zatemnitve, glave in noge. */
