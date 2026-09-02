@@ -325,20 +325,29 @@ export function predlogZaProracun(
   osnova: number,
   odgovori: Record<string, string>,
   enote?: Record<string, number>,
+  /* Mnozitelj narocnika in trga. Primerjati moramo s ceno, ki jo bo narocnik
+     DEJANSKO videl — ne z osnovo pred prilagoditvijo. Sicer kalkulator molci
+     pri ponudbi 2.750 EUR proti proracunu 2.000 EUR, ker interno primerja
+     2.000 z 2.000 (Tinin primer, 3. 9. 2026). */
+  mult = 1,
 ): PredlogKrcenja | null {
   const meja = proracunIzOdgovora(odgovori.budget || '');
   if (!meja) return null;
-  const polna = utezZaStoritev(sid, osnova, odgovori, enote);
+  const koncna = (odg: Record<string, string>) => {
+    const u = utezZaStoritev(sid, osnova, odg, enote);
+    return { cena: cenaVrstice(u.cena - u.dodatki, u.dodatki, mult, 1), u };
+  };
+  const polna = koncna(odgovori);
   if (polna.cena <= meja) return null;
 
   const odvzemi: string[] = [];
   let preostali = { ...odgovori };
   let cena = polna.cena;
   for (let i = 0; i < 8; i += 1) {
-    const u = utezZaStoritev(sid, osnova, preostali, enote);
-    cena = u.cena;
+    const trenutna = koncna(preostali);
+    cena = trenutna.cena;
     if (cena <= meja) break;
-    const najdrazji = u.razclenitev
+    const najdrazji = trenutna.u.razclenitev
       .filter(x => x.ucinek > 0)
       .sort((a, b) => b.ucinek - a.ucinek)[0];
     if (!najdrazji) break;
@@ -346,7 +355,7 @@ export function predlogZaProracun(
     const brez = { ...preostali };
     delete brez[najdrazji.vprasanje];
     preostali = brez;
-    cena = utezZaStoritev(sid, osnova, preostali, enote).cena;
+    cena = koncna(preostali).cena;
   }
   return {
     meja,

@@ -176,9 +176,11 @@ describe('proračun naročnika', () => {
     const p = predlogZaProracun('logo', 650, { ...polna, budget: '400 € do 1000 €' }, {});
     expect(p).not.toBeNull();
     expect(p!.meja).toBe(1000);
-    expect(p!.razlika).toBe(63);
+    /* Primerjamo ceno, ki jo naročnik VIDI (zaokroženo na 50 €), ne surovega
+       izračuna — zato 1.050 proti 1.000 in ne 1.063 proti 1.000. */
+    expect(p!.razlika).toBe(50);
     expect(p!.odvzemi).toEqual([R]);
-    expect(p!.preostane).toBe(813);
+    expect(p!.preostane).toBe(800);
     expect(p!.zadosca).toBe(true);
   });
 
@@ -223,5 +225,30 @@ describe('tržni razpon prihaja iz raziskave', () => {
     const o = okvirZa('logo')!;
     expect(opozorilo('logo', 4000, 1)).toContain(`${o.od}`);
     expect(opozorilo('logo', 4000, 1)).toContain(`${o.do}`);
+  });
+});
+
+/* Tinin resnicni primer, 3. 9. 2026: CGP za 2.750 €, naročnik s proračunom
+   2.000 € in tržni okvir 550–2.500 €. Obe varovalki sta molčali, ker sta
+   primerjali osnovo PRED prilagoditvijo (2.020 €) namesto cene, ki jo
+   naročnik vidi. */
+describe('varovalki merita ceno, ki jo naročnik vidi', () => {
+  const R = 'Osnovna raziskava (splet, konkurenca, reference)';
+  const odg = { smeri: '3 predlogi', raziskava: R, budget: '800 € do 2000 €' };
+
+  it('proračun opozori, ko končna cena preseže mejo, čeprav osnova ne', () => {
+    expect(predlogZaProracun('cgp', 1350, odg, {}, 1)).toBeNull();      /* 2.000 = meja */
+    const z = predlogZaProracun('cgp', 1350, odg, {}, 1.375);
+    expect(z).not.toBeNull();
+    expect(z!.zadosca).toBe(true);
+    expect(z!.preostane).toBeLessThanOrEqual(2000);
+  });
+
+  it('tržni okvir opozori pri končni ceni nad razponom', () => {
+    const u = utezZaStoritev('cgp', 1350, odg, {});
+    const osnova = cenaVrstice(u.cena - u.dodatki, u.dodatki, 1, 1);
+    const koncna = cenaVrstice(u.cena - u.dodatki, u.dodatki, 1.375, 1);
+    expect(opozorilo('cgp', osnova, u.mult)).toBeNull();
+    expect(opozorilo('cgp', koncna, u.mult)).toContain('trg');
   });
 });

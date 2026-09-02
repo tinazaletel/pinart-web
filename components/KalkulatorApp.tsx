@@ -3397,12 +3397,19 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
        je ceno lazje zagovarjati (dogovor s Tino). */
     const obsegVrstic = linije.map(l => {
       const { u, odg, enote, osn } = utezVrstice(l.uid, l.sid, l.s, l.kolicina);
+      const kol = Math.max(1, Math.round(l.kolicina));
       return { l, osnovaZUtezjo: u.cena - u.dodatki, dodatki: u.dodatki,
-               mult: u.mult, razclenitev: u.razclenitev,
-               proracun: predlogZaProracun(l.sid, osn, odg, enote) };
+               mult: u.mult, razclenitev: u.razclenitev, odg, enote, osn, kol };
     });
     const mult = izk.mult * vel.mult * trgMult * (1 + fakDod);
     const dodatkiObsega = obsegVrstic.reduce((a, x) => a + x.dodatki, 0);
+    /* Sele zdaj, ko poznamo mnozitelj narocnika, lahko primerjamo s proracunom
+       in s trznim okvirom — oboje se meri na ceni, ki jo narocnik vidi. */
+    const obsegSCeno = obsegVrstic.map(x => ({
+      ...x,
+      cenaKoncna: cenaVrstice(x.osnovaZUtezjo, x.dodatki, mult, x.kol) * x.kol,
+      proracun: predlogZaProracun(x.l.sid, x.osn, x.odg, x.enote, mult),
+    }));
 
     /* VSOTA VRSTIC JE CENA DELA — ne dva locena izracuna.
        Prej se je skupna cena zaokrozila posebej od vrstic, zato se ponudba ni
@@ -3524,12 +3531,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
       dobicekPodan: raba === 'projekt' ? pd > 0 : d > 0,
       /* Razclenitev obsega: kaj v ponudbi je ceno premaknilo in za koliko.
          Vidnost JE varovalka — kdor vidi vzrok, napako najde sam. */
-      obseg: obsegVrstic.filter(x => x.razclenitev.length > 0 || x.proracun).map(x => ({
+      obseg: obsegSCeno.filter(x => x.razclenitev.length > 0 || x.proracun).map(x => ({
         uid: x.l.uid, sid: x.l.sid, ime: imeVrstice(x.l),
         mult: x.mult, dodatki: x.dodatki, razclenitev: x.razclenitev,
-        /* cena BREZ narocnika in trga — samo tako je primerljiva s trznim
-           razponom, ki je narejen iz osnovnih cen. */
-        cenaObsega: x.osnovaZUtezjo + x.dodatki,
+        /* Cena, ki jo narocnik VIDI. Trzni okvir v lib/trzniOkvir.ts je narejen
+           iz objavljenih cenikov, torej iz koncnih cen — primerjati osnovo
+           pred prilagoditvijo bi pomenilo prenizko mejo (Tina, 3. 9. 2026). */
+        cenaObsega: x.cenaKoncna,
         proracun: x.proracun,
       })),
       obsegMult: obsegVrstic.reduce((a, x) => Math.max(a, x.mult), 1),
