@@ -13,7 +13,10 @@ import {
   type FursRacun,
 } from '@/lib/furs';
 
-const cas = new Date(2026, 8, 1, 14, 5, 6);
+/* Absoluten trenutek, ne "14:05 po uri tega racunalnika": new Date(2026, 8, 1,
+   14, 5, 6) je odvisen od casovnega pasu izvajalca, zato je test padel na CI
+   (UTC) in tekel doma (CEST). 12:05:06 UTC JE 14:05:06 v Ljubljani. */
+const cas = new Date('2026-09-01T12:05:06Z');
 const racun: FursRacun = {
   davcnaStevilka: '12345678',
   casIzdaje: cas,
