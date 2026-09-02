@@ -18,7 +18,7 @@ export const metadata: Metadata = {
  *
  * Tu vidiš vse pakete, kateri je tvoj, in kaj lahko s tem narediš — nadgradnja,
  * znižanje, odpoved. Ekipa (Sodelavci + Prenos ob odhodu) živi ločeno na strani
- * "Račun in ekipa" (/kalkulator/ekipa), da paket in ljudje nista zmešana skupaj.
+ * "Ekipa in dostopi" (/kalkulator/ekipa), da paket in ljudje nista zmešana skupaj.
  */
 export default async function PaketPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

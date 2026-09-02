@@ -1,30 +1,26 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import SodelavciPanel from '@/components/SodelavciPanel';
+import RacuniDavkiWorkspace from '@/components/RacuniDavkiWorkspace';
 import styles from '../pregled/pregled.module.css';
 
 export const metadata: Metadata = {
-  title: 'Ekipa in dostopi | Pinart Flow',
+  title: 'Računi in davki | Pinart Flow',
   robots: { index: false, follow: false },
 };
 
-/**
- * Ekipa in dostopi: sodelavci, vloge, vabila in prenos ob odhodu.
- */
-export default async function EkipaPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function RacuniDavkiPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const base = locale === 'sl' ? '' : `/${locale}`;
 
   return <main className={styles.shell}>
-    <DashboardSidebar base={base} active="ekipa" />
+    <DashboardSidebar base={base} active="davki" />
     <section className={styles.workspace}>
       <header className={styles.topbar}>
-        <div><p className={styles.eyebrow}>{locale === 'en' ? 'TEAM & ACCESS' : 'EKIPA IN DOSTOPI'}</p><h1>{locale === 'en' ? 'Team and access.' : 'Ekipa in dostopi.'}</h1></div>
+        <div><p className={styles.eyebrow}>{locale === 'en' ? 'INVOICES & TAXES' : 'RAČUNI IN DAVKI'}</p><h1>{locale === 'en' ? 'Invoice settings.' : 'Nastavitve računov.'}</h1></div>
       </header>
-
-      <SodelavciPanel />
+      <RacuniDavkiWorkspace />
     </section>
   </main>;
 }

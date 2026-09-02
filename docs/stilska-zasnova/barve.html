@@ -1,0 +1,171 @@
+<title>Barve Pinart Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+  :root { --stran: #F7F4EE; --stran-ink: #221E19; --stran-tih: #6F6A62; --stran-line: #E6E1D8; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --stran: #14120F; --stran-ink: #F2EFE9; --stran-tih: #A49E94; --stran-line: #2E2A25; }
+  }
+  :root[data-theme="dark"] { --stran: #14120F; --stran-ink: #F2EFE9; --stran-tih: #A49E94; --stran-line: #2E2A25; }
+
+  body { background: var(--stran); color: var(--stran-ink); font: 400 16px/1.6 Archivo, system-ui, sans-serif; }
+  .stran { max-width: 62rem; margin: 0 auto; padding: 3.5rem 1.5rem 6rem; }
+  .oznaka { font: 600 .7rem/1 Archivo, sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #8B5CF6; }
+  h1 { margin: .5rem 0 0; font: 400 clamp(2rem,4.5vw,2.8rem)/1.05 "DM Serif Display", Georgia, serif; }
+  h2 { margin: 0 0 .2rem; font: 400 1.45rem/1.15 "DM Serif Display", Georgia, serif; }
+  .uvod { max-width: 40rem; color: var(--stran-tih); margin: .8rem 0 0; }
+  .sklop { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--stran-line);
+           display: flex; flex-direction: column; gap: 1rem; }
+  .opis { color: var(--stran-tih); font-size: .92rem; max-width: 44rem; margin: 0; }
+
+  /* dve plošči drug ob drugem: svetlo in temno hkrati, ne glede na temo bralca */
+  .par { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 46rem) { .par { grid-template-columns: 1fr; } }
+  .plosca { border-radius: 1rem; padding: 1.3rem; border: 1px solid; }
+  .svetla { background: #F7F4EE; border-color: #E6E1D8; color: #221E19; }
+  .temna  { background: #14120F; border-color: #2E2A25; color: #F2EFE9; }
+  .naslov-plosce { font: 600 .68rem/1 Archivo, sans-serif; letter-spacing: .16em;
+                   text-transform: uppercase; opacity: .55; margin: 0 0 .9rem; }
+
+  .mreza { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: .7rem; }
+  .celica { display: flex; flex-direction: column; gap: .4rem; }
+  .vzorec { height: 3.2rem; border-radius: .6rem; border: 1px solid rgba(128,128,128,.22); }
+  .ime { font: 600 .74rem/1.3 Archivo, sans-serif; }
+  .vred { font: 500 .66rem/1.3 ui-monospace, monospace; opacity: .6; word-break: break-all; }
+
+  .primer { margin-top: 1rem; display: flex; flex-direction: column; gap: .6rem; }
+  .vnos { border-radius: .7rem; padding: .7rem .85rem; font: 500 .88rem Archivo, sans-serif; }
+  .svetla .vnos { background: #FFFFFF; border: 1px solid #E6E1D8; color: #221E19; }
+  .temna  .vnos { background: #1E1B17; border: 1px solid #33302A; color: #F2EFE9; }
+  .gumbi { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .gg { border-radius: 999px; min-height: 2.25rem; padding: 0 1.05rem; display: inline-flex;
+        align-items: center; font: 700 .84rem Archivo, sans-serif; border: 1px solid transparent; }
+  .svetla .crn { background: #221E19; color: #F7F4EE; }
+  .temna  .crn { background: #F2EFE9; color: #14120F; }
+  .vij { background: #8B5CF6; color: #fff; }
+  .svetla .obr { border-color: rgba(34,30,25,.22); color: #221E19; }
+  .temna  .obr { border-color: rgba(242,239,233,.28); color: #F2EFE9; }
+</style>
+
+<div class="stran">
+  <p class="oznaka">Pinart Flow · stilska zasnova</p>
+  <h1>Barve</h1>
+  <p class="uvod">Vse, kar aplikacija sme uporabiti, na svetli in temni podlagi hkrati. Bistvo je razlika med obojim: <b>površine se zamenjajo, poudarki ostanejo.</b> Zato je temni način zamenjava osmih vrednosti, ne prebarvanje aplikacije.</p>
+
+  <section class="sklop">
+    <h2>Površine — te se zamenjajo</h2>
+    <p class="opis">Ozadje strani, ploskev kartice, vnosno polje in črta. To so edine barve, ki jih temni način zamenja. Vse ostalo ostane isto.</p>
+    <div class="par">
+      <div class="plosca svetla">
+        <p class="naslov-plosce">Svetlo</p>
+        <div class="mreza">
+          <div class="celica"><div class="vzorec" style="background:#F7F4EE"></div><span class="ime">ozadje</span><span class="vred">oklch(97% .012 87)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#FFFFFF"></div><span class="ime">ploskev</span><span class="vred">#FFFFFF</span></div>
+          <div class="celica"><div class="vzorec" style="background:#FFFFFF"></div><span class="ime">vnos</span><span class="vred">enak ploskvi</span></div>
+          <div class="celica"><div class="vzorec" style="background:#E6E1D8"></div><span class="ime">črta</span><span class="vred">oklch(93% .007 82)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#221E19"></div><span class="ime">črnina</span><span class="vred">oklch(19% .014 55)</span></div>
+        </div>
+      </div>
+      <div class="plosca temna">
+        <p class="naslov-plosce">Temno</p>
+        <div class="mreza">
+          <div class="celica"><div class="vzorec" style="background:#14120F"></div><span class="ime">ozadje</span><span class="vred">oklch(15% .008 70)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#1E1B17"></div><span class="ime">ploskev</span><span class="vred">oklch(20% .01 70)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#1E1B17"></div><span class="ime">vnos</span><span class="vred">enak ploskvi</span></div>
+          <div class="celica"><div class="vzorec" style="background:#33302A"></div><span class="ime">črta</span><span class="vred">oklch(30% .008 70)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#F2EFE9"></div><span class="ime">črnina</span><span class="vred">oklch(95% .008 80)</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sklop">
+    <h2>Poudarki — ti ostanejo</h2>
+    <p class="opis">Vijola, zelena, oranžna, modra in rdeča. V temnem se ne zamenjajo, le nekoliko posvetlijo, da ostanejo berljive — ista barva, drugačna svetlost. Rdeča je izključno za alarme in brisanje.</p>
+    <div class="par">
+      <div class="plosca svetla">
+        <p class="naslov-plosce">Svetlo</p>
+        <div class="mreza">
+          <div class="celica"><div class="vzorec" style="background:#8B5CF6"></div><span class="ime">vijola</span><span class="vred">oklch(66% .2 297)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#5FD3B0"></div><span class="ime">zelena</span><span class="vred">oklch(79% .13 165)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#F0913C"></div><span class="ime">oranžna</span><span class="vred">oklch(76% .16 52)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#5FB4E8"></div><span class="ime">modra</span><span class="vred">oklch(75% .13 230)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#A63A2A"></div><span class="ime">rdeča</span><span class="vred">oklch(52% .16 25)</span></div>
+        </div>
+      </div>
+      <div class="plosca temna">
+        <p class="naslov-plosce">Temno</p>
+        <div class="mreza">
+          <div class="celica"><div class="vzorec" style="background:#A98CFF"></div><span class="ime">vijola</span><span class="vred">oklch(76% .16 297)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#7FDCBD"></div><span class="ime">zelena</span><span class="vred">oklch(83% .12 165)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#F5A55C"></div><span class="ime">oranžna</span><span class="vred">oklch(80% .14 52)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#7FC4F0"></div><span class="ime">modra</span><span class="vred">oklch(80% .11 230)</span></div>
+          <div class="celica"><div class="vzorec" style="background:#E0705C"></div><span class="ime">rdeča</span><span class="vred">oklch(68% .15 25)</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sklop">
+    <h2>Barve področij — teh se ne dotikamo</h2>
+    <p class="opis">Mehurčki storitev in oznake področij so lasten sistem, ne del vmesnika. V temnem načinu ostanejo natanko takšni, kot so — samo podlaga pod njimi se zamenja.</p>
+    <div class="par">
+      <div class="plosca svetla">
+        <p class="naslov-plosce">Svetlo</p>
+        <div class="mreza">
+          <div class="celica"><div class="vzorec" style="background:#7C3AED"></div><span class="ime">grafika</span><span class="vred">#7C3AED</span></div>
+          <div class="celica"><div class="vzorec" style="background:#0EA5A5"></div><span class="ime">splet</span><span class="vred">#0EA5A5</span></div>
+          <div class="celica"><div class="vzorec" style="background:#DB2777"></div><span class="ime">marketing</span><span class="vred">#DB2777</span></div>
+          <div class="celica"><div class="vzorec" style="background:#2563EB"></div><span class="ime">foto</span><span class="vred">#2563EB</span></div>
+          <div class="celica"><div class="vzorec" style="background:#EA580C"></div><span class="ime">direkcija</span><span class="vred">#EA580C</span></div>
+          <div class="celica"><div class="vzorec" style="background:#5B9E1E"></div><span class="ime">prostor</span><span class="vred">#5B9E1E</span></div>
+          <div class="celica"><div class="vzorec" style="background:#0891B2"></div><span class="ime">PR</span><span class="vred">#0891B2</span></div>
+          <div class="celica"><div class="vzorec" style="background:#6B7280"></div><span class="ime">drugo</span><span class="vred">#6B7280</span></div>
+        </div>
+      </div>
+      <div class="plosca temna">
+        <p class="naslov-plosce">Temno — iste barve</p>
+        <div class="mreza">
+          <div class="celica"><div class="vzorec" style="background:#7C3AED"></div><span class="ime">grafika</span><span class="vred">#7C3AED</span></div>
+          <div class="celica"><div class="vzorec" style="background:#0EA5A5"></div><span class="ime">splet</span><span class="vred">#0EA5A5</span></div>
+          <div class="celica"><div class="vzorec" style="background:#DB2777"></div><span class="ime">marketing</span><span class="vred">#DB2777</span></div>
+          <div class="celica"><div class="vzorec" style="background:#2563EB"></div><span class="ime">foto</span><span class="vred">#2563EB</span></div>
+          <div class="celica"><div class="vzorec" style="background:#EA580C"></div><span class="ime">direkcija</span><span class="vred">#EA580C</span></div>
+          <div class="celica"><div class="vzorec" style="background:#5B9E1E"></div><span class="ime">prostor</span><span class="vred">#5B9E1E</span></div>
+          <div class="celica"><div class="vzorec" style="background:#0891B2"></div><span class="ime">PR</span><span class="vred">#0891B2</span></div>
+          <div class="celica"><div class="vzorec" style="background:#6B7280"></div><span class="ime">drugo</span><span class="vred">#6B7280</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sklop">
+    <h2>Kako to izgleda skupaj</h2>
+    <p class="opis">Isti zaslon v obeh načinih. Zamenjani sta samo ozadje in vnos; gumb, vijola in besedilo ostanejo isti razred.</p>
+    <div class="par">
+      <div class="plosca svetla">
+        <p class="naslov-plosce">Svetlo</p>
+        <div class="primer">
+          <div class="vnos">ime@domena.si</div>
+          <div class="gumbi">
+            <span class="gg crn">Shrani</span>
+            <span class="gg vij">Vprašaj Pupo</span>
+            <span class="gg obr">Prekliči</span>
+          </div>
+        </div>
+      </div>
+      <div class="plosca temna">
+        <p class="naslov-plosce">Temno</p>
+        <div class="primer">
+          <div class="vnos">ime@domena.si</div>
+          <div class="gumbi">
+            <span class="gg crn">Shrani</span>
+            <span class="gg vij">Vprašaj Pupo</span>
+            <span class="gg obr">Prekliči</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

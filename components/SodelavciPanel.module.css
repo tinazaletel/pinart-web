@@ -1,6 +1,6 @@
 /* Slogi za SodelavciPanel — PRENESENI iz SettingsWorkspace.module.css, da
    razdelek »Sodelavci« + »Prenos ob odhodu« ohrani povsem enak videz, ko je
-   preseljen na stran »Račun in ekipa«. Panel se izriše znotraj .shell (glej
+   preseljen na stran »Ekipa in dostopi«. Panel se izriše znotraj .shell (glej
    pregled.module.css), zato so polja/gumbi/selecti eksplicitno stilirani —
    .shell ima agresivna pravila (chevron na selectih, min-height ipd.). */
 

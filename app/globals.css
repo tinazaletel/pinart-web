@@ -2,11 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── PALETA (Tina, 2. 9. 2026) ──────────────────────────────────────────────
+   Pravilo: ce je vijola, je povsod ISTA vijola. Ce je zelena, je povsod ista
+   zelena. Vec barv, kot jih je tu, aplikacija nima.
+
+   Zakaj to pise: v komponentah je bilo 1191 razlicnih barvnih vrednosti, od
+   tega 719 takih, ki se pojavijo natanko enkrat — 125 razlicnih vijolicnih in
+   90 rdecih. Paleta je ze obstajala, a samo v pregled.module.css, zato so si
+   komponente drugod izmisljale svoje. Zdaj je na :root in velja povsod.
+
+   Kdor potrebuje svetlejso ali temnejso razlicico, NE uvaja nove barve, ampak
+   uporabi color-mix(in oklch, var(--purple) 40%, transparent) ali podobno. */
 :root {
-  --paper: #F5F2EA;
-  --paper-deep: #ECE6D5;
-  --ink: #111111;
-  --accent: oklch(66% 0.2 297);
+  --paper: oklch(97% .012 87);      /* bez ozadje */
+  --paper-deep: #ECE6D5;            /* globlji bez (portfolio) */
+  --ink: oklch(19% .014 55);        /* crnina za besedilo */
+  --line: oklch(93% .007 82);       /* crta */
+
+  --purple: oklch(66% .2 297);      /* vijola — edina */
+  --mint: oklch(79% .13 165);       /* zelena — edina */
+  --orange: oklch(76% .16 52);      /* oranzna — edina */
+  --blue: oklch(75% .13 230);       /* modra — edina */
+  --red: oklch(52% .16 25);         /* rdeca — samo za alarme in brisanje */
+
+  --accent: var(--purple);          /* stari alias, da nic ne pade */
 }
 
 * {

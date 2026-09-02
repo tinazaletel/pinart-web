@@ -4,7 +4,7 @@ import { DOGODEK_DOSTOPNOST } from '@/components/Dostopnost';
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { GearSix, Package, UserCircle, UsersThree, ShieldCheck, SignOut, PersonSimple } from '@phosphor-icons/react';
+import { GearSix, Package, UserCircle, UsersThree, ShieldCheck, SignOut, PersonSimple, Receipt } from '@phosphor-icons/react';
 import { createClient } from '@/utils/supabase/client';
 import { getAccessTier, type AccessTier } from '@/lib/pinartFlowEntitlements';
 import JezikPreklop from '@/components/JezikPreklop';
@@ -81,6 +81,8 @@ export default function SidebarUserMenu({ base }: { base: string }) {
               stvari o RACUNU, ne podvojena navigacija. "Paket in narocnina" ter
               "Pomoc in podpora" dodamo, ko strani obstajata (sicer mrtva povezava). */}
           <Link href={`${base}/kalkulator/profil`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UserCircle size={15} weight="bold" /> {L('Moj profil', 'My profile')}</Link>
+          <Link href={`${base}/kalkulator/racuni-davki`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><Receipt size={15} weight="bold" /> {L('Računi in davki', 'Invoices & taxes')}</Link>
+          <Link href={`${base}/kalkulator/ekipa`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UsersThree size={15} weight="bold" /> {L('Ekipa in dostopi', 'Team & access')}</Link>
           {/* Nastavitve imajo dva sklopa (Dokumenti, AI). Namesto dveh vnosov v
               meniju je en s podmenijem — meni ostane kratek, pot pa je ena klik
               krajsa kot iskanje zavihka na strani. */}
@@ -96,7 +98,6 @@ export default function SidebarUserMenu({ base }: { base: string }) {
               <Link href={`${base}/kalkulator/nastavitve?zavihek=ai`} role="menuitem" onClick={() => setOdprt(false)}>{L('AI orodja', 'AI tools')}</Link>
             </span>
           )}
-          <Link href={`${base}/kalkulator/ekipa`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><UsersThree size={15} weight="bold" /> {L('Račun in ekipa', 'Account & team')}</Link>
           <Link href={`${base}/kalkulator/pogoji`} role="menuitem" onClick={() => setOdprt(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem' }}><ShieldCheck size={15} weight="bold" /> {L('Pogoji in zasebnost', 'Terms & privacy')}</Link>
           {/* Dostopnost je sestra jezika: oboje pove, kako je aplikacija
               predstavljena TEBI. Zato je svoja vrstica in ne podmeni — kdor rabi

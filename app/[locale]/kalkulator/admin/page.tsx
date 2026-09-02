@@ -5,6 +5,7 @@ import AdminPregled from './AdminPregled';
 import AdminOdjava from './AdminOdjava';
 import AdminPaketi from './AdminPaketi';
 import AdminDostop from './AdminDostop';
+import AdminPrijave from './AdminPrijave';
 import { pridobiRacune } from './upravljanje';
 import { pridobiAnalitiko, type Obdobje } from './podatki';
 
@@ -57,6 +58,7 @@ export default async function KalkulatorAdminPage(
       {podatki.napaka && <p style={{ color: '#b25476', marginBottom: '1.4rem' }}>{podatki.napaka}</p>}
 
       <AdminPregled podatki={podatki} />
+      <AdminPrijave />
       <AdminDostop />
       <AdminPaketi racuni={racuni} napaka={napakaRacunov} />
     </main>

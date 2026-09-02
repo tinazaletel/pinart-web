@@ -50,12 +50,21 @@ export default function MeniProfil({ base }: { base: string }) {
       </button>
 
       {odprt && <div className={styles.meniSkupinaVsebina}>
+        <Link className={styles.navItem} href={`${base}/kalkulator/paket`}>
+          <span className={styles.navNapis}>{L('Paket', 'Plan')}</span>
+        </Link>
         <Link className={styles.navItem} href={`${base}/kalkulator/profil`}>
           <span className={styles.navNapis}>{L('Moj profil', 'My profile')}</span>
         </Link>
+        <Link className={styles.navItem} href={`${base}/kalkulator/racuni-davki`}>
+          <span className={styles.navNapis}>{L('Računi in davki', 'Invoices & taxes')}</span>
+        </Link>
+        <Link className={styles.navItem} href={`${base}/kalkulator/ekipa`}>
+          <span className={styles.navNapis}>{L('Ekipa in dostopi', 'Team & access')}</span>
+        </Link>
         {/* Podatki podjetja so v "Moj profil" (/profil, sekcija "02 MOJE PODJETJE"),
             zato to NI podvojen vnos za iste podatke: "Nastavitve" vodijo na
-            aplikacijske nastavitve (videz dokumentov, račun/varnost, izbris podatkov). */}
+            aplikacijske nastavitve (videz dokumentov in AI-orodja). */}
         <Link className={styles.navItem} href={`${base}/kalkulator/nastavitve?nazaj=1`}>
           <span className={styles.navNapis}>{L('Nastavitve', 'Settings')}</span>
         </Link>

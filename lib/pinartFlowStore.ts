@@ -81,6 +81,8 @@ export type FlowInvoice = {
   fiscalEor?: string;
   fiscalZoi?: string;
   fiscalProvider?: string;
+  fiscalCode?: string;
+  paymentMethod?: 'bank_transfer' | 'cash' | 'card' | 'other_cash';
   deletedAt?: string;
   deletedBy?: string;
   updatedAt?: string;

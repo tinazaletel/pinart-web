@@ -51,17 +51,28 @@ export const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
        najbolj odvisna — trije predlogi so trikrat vec dela kot en, in
        oblikovalec, ki pripravi raziskavo in petnajst razlicic, ne dela istega
        posla (Tina, 2. 9. 2026). */
-    { id: 'predlogi', label: 'Koliko različnih predlogov pričakuješ?', izbire: ['1 jasna smer', '2 predloga', '3 predlogi', 'Več kot 3'], svoje: SVOJE_SPLOSNO },
+    { id: 'predlogi', label: 'Koliko dokončanih predlogov predstaviš naročniku?', izbire: ['1–2 predloga', '3 predlogi', '6 predlogov', '10 predlogov', '15 predlogov'], svoje: SVOJE_SPLOSNO },
     { id: 'popravki', label: 'Koliko krogov popravkov je vključenih?', izbire: ['1 krog', '2 kroga', '3 krogi', 'Neomejeno do potrditve'], svoje: SVOJE_SPLOSNO },
-    { id: 'raziskava', label: 'Ali je vključena raziskava (trg, konkurenca, pozicioniranje)?', izbire: ['Brez raziskave', 'Kratek pregled konkurence', 'Poglobljena raziskava s poročilom'], svoje: SVOJE_SPLOSNO },
+    /* Raziskava in raziskovanje oblike sta DVE stvari: prvo je razumevanje
+       trga, drugo je izdelava pred izbrano smerjo. Ce sta v istem vprasanju,
+       kalkulator vedno komu laze — spletni pregled in petnajst rocnih skic
+       nista ista postavka z drugo ceno (Tina, 2. 9. 2026). */
+    { id: 'raziskava', label: 'Ali je vključena raziskava (trg, konkurenca, pozicioniranje)?', izbire: ['Naročnik jo prinese', 'Pošljem mu vprašalnik in zberem podatke', 'Osnovna raziskava (splet, konkurenca, reference)', 'Poglobljena raziskava in razvoj smeri'], svoje: SVOJE_SPLOSNO },
+    { id: 'oblikaSkice', label: 'Koliko raziskovanja oblike PRED temi predlogi?', izbire: ['Samo digitalno, brez skic', 'Ročne skice, nekaj smeri', 'Obsežno raziskovanje, deset ali več skic'], svoje: SVOJE_SPLOSNO },
     { id: 'uporaba', label: 'Kje se bo najpogosteje uporabljal?', placeholder: 'splet, embalaža, tabla, app ikona, vozila ...' },
     { id: 'omejitve', label: 'Ali obstajajo barve, pisave ali simboli, ki morajo ostati?', izbire: ['Barvna paleta', 'Tipografija (kupljena pisava)', 'Simbol / znak', 'Nič, začnemo sveže'], vec: true, svoje: 'dopiši, če še kaj manjka ...' },
     { id: 'budget', label: 'Kakšen je okvirni budget naročnika?', izbire: ['Do 1.000 €', '1.000 do 2.500 €', 'Nad 2.500 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
   ],
   cgp: [
+    /* Raziskava in raziskovanje oblike sta DVE stvari: prvo je razumevanje
+       trga, drugo je izdelava pred izbrano smerjo. Ce sta v istem vprasanju,
+       kalkulator vedno komu laze — spletni pregled in petnajst rocnih skic
+       nista ista postavka z drugo ceno (Tina, 2. 9. 2026). */
+    { id: 'raziskava', label: 'Ali je vključena raziskava (trg, konkurenca, pozicioniranje)?', izbire: ['Naročnik jo prinese', 'Pošljem mu vprašalnik in zberem podatke', 'Osnovna raziskava (splet, konkurenca, reference)', 'Poglobljena raziskava in razvoj smeri'], svoje: SVOJE_SPLOSNO },
+    { id: 'oblikaSkice', label: 'Koliko raziskovanja oblike PRED temi predlogi?', izbire: ['Samo digitalno, brez skic', 'Ročne skice, nekaj smeri', 'Obsežno raziskovanje, deset ali več skic'], svoje: SVOJE_SPLOSNO },
     { id: 'stanje', label: 'Ali že obstaja logotip ali predhodni CGP?', izbire: ['Začenjamo iz nič', 'Imamo samo logotip', 'Imamo star CGP'], svoje: 'ali dopiši trenutno stanje ...' },
     { id: 'tip-projekta', label: 'Gre za novo identiteto ali osvežitev obstoječe?', izbire: ['Nova identiteta', 'Osvežitev obstoječe', 'Razširitev sistema'], svoje: 'ali na kratko pojasni ...' },
-    { id: 'smeri', label: 'Koliko različnih kreativnih smeri pričakuješ?', izbire: ['1 jasna smer', '2 predloga', '3 predlogi', '6 širših raziskav'], svoje: SVOJE_SPLOSNO },
+    { id: 'smeri', label: 'Koliko dokončanih predlogov predstaviš naročniku?', izbire: ['1–2 predloga', '3 predlogi', '6 predlogov', '10 predlogov', '15 predlogov'], svoje: SVOJE_SPLOSNO },
     { id: 'stil', label: 'Če že veš, kakšen slog želiš, označi.', izbire: ['Minimalistično', 'Retro', 'Editorial', 'Luksuzno', 'Igrivo', 'Tehnološko', 'Organsko', 'Drzno', 'Še ne vem'], vec: true, svoje: 'ali dopiši slog / reference ...' },
     { id: 'omejitve', label: 'Ali obstajajo barve, tipografije ali ideje, ki jih je treba upoštevati?', izbire: ['Barvna paleta', 'Tipografija (kupljena pisava)', 'Simbol / znak', 'Moodboard ali smernice', 'Nič, začnemo sveže'], vec: true, svoje: 'dopiši, če še kaj manjka ...' },
     { id: 'obseg', label: 'Katere aplikacije naj pripravim?', izbire: ['Vizitke in dopisi', 'Predloge za družbena omrežja', 'Predstavitvena predloga', 'Embalaža', 'Tabla / označevanje', 'Vozila', 'Oblačila / merch'], vec: true, vse: true, svoje: 'dopiši svoje ...' },
@@ -143,8 +154,12 @@ export const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'trajanje', label: 'Koliko fotografiranja?', izbire: ['Pol dneva', '1 dan', '2 ali več dni'], svoje: 'ali opiši ...' },
     { id: 'lokacija', label: 'Kje?', izbire: ['V studiu', 'Pri naročniku', 'Na zunanji lokaciji', 'Več lokacij'], svoje: SVOJE_SPLOSNO },
     { id: 'najem', label: 'Bo treba najeti studio, opremo ali lokacijo?', izbire: ['Ne', 'Da, studio', 'Da, luči / opremo', 'Da, lokacijo', 'Ne vem še'], vec: true, svoje: SVOJE_SPLOSNO },
-    { id: 'post', label: 'Koliko obdelanih fotografij za predajo?', izbire: ['Do 20', '20 do 50', 'Nad 50'], svoje: 'ali vpiši ...' },
-    { id: 'obdelava', label: 'Kakšna obdelava?', izbire: ['Osnovna', 'Napredna retuša'], svoje: SVOJE_SPLOSNO },
+    /* Fotografi ne delajo krogov popravkov kot oblikovalci — dogovorijo se za
+       PAKET: koliko obdelanih fotografij in koliko retus je vkljucenih. Po
+       snemanju narocnik izbere. Popravki so mozni, a redki (Tina, 2. 9. 2026;
+       potrdi Tadej). */
+    { id: 'post', label: 'Koliko obdelanih fotografij je v paketu?', izbire: ['Do 20', '30', '50', 'Nad 50'], svoje: 'ali vpiši število ...' },
+    { id: 'retuse', label: 'Koliko zahtevnih retuš je vključenih?', izbire: ['Brez, samo osnovna obdelava', 'Do 3', 'Do 6', '10 ali več'], svoje: 'ali vpiši število ...' },
     { id: 'raba', label: 'Kje se bodo uporabljale?', izbire: ['Splet / social', 'Tisk', 'Oglaševanje'], vec: true, svoje: SVOJE_SPLOSNO },
     { id: 'budget', label: 'Okvirni budget naročnika?', izbire: ['Do 500 €', '500 do 1.500 €', 'Nad 1.500 €', 'Še ne vem'], svoje: 'ali vpiši svoj znesek ...' },
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
@@ -168,6 +183,11 @@ export const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   arhitektura: [
+    /* Raziskava in raziskovanje oblike sta DVE stvari: prvo je razumevanje
+       trga, drugo je izdelava pred izbrano smerjo. Ce sta v istem vprasanju,
+       kalkulator vedno komu laze — spletni pregled in petnajst rocnih skic
+       nista ista postavka z drugo ceno (Tina, 2. 9. 2026). */
+    { id: 'raziskava', label: 'Ali je vključena raziskava (trg, konkurenca, pozicioniranje)?', izbire: ['Naročnik jo prinese', 'Pošljem mu vprašalnik in zberem podatke', 'Osnovna raziskava (splet, konkurenca, reference)', 'Poglobljena raziskava in razvoj smeri'], svoje: SVOJE_SPLOSNO },
     { id: 'vrsta', label: 'Katera vrsta arhitekture?', izbire: ['Stavbna', 'Notranja', 'Krajinska'], svoje: 'dopiši ...' },
     { id: 'tip', label: 'Kaj oblikujemo?', izbire: ['Stanovanjski objekt', 'Poslovni objekt', 'Prizidek / prenova', 'Zunanja ureditev'], vec: true, svoje: 'dopiši ...' },
     { id: 'faza', label: 'Katere faze vključuje?', izbire: ['Idejna zasnova (IDZ)', 'Dokumentacija (IZP / PGD)', 'Izvedbeni načrti (PZI)', 'Nadzor (ločena ponudba)'], vec: true, svoje: 'dopiši ...' },
@@ -271,6 +291,11 @@ export const VPRASANJA_PO_STORITVI: Record<string, ProjektnoVprasanje[]> = {
     { id: 'opomba', label: 'Opomba (neobvezno)', placeholder: 'karkoli, kar naj upoštevam vnaprej ...' },
   ],
   render3d: [
+    /* Raziskava in raziskovanje oblike sta DVE stvari: prvo je razumevanje
+       trga, drugo je izdelava pred izbrano smerjo. Ce sta v istem vprasanju,
+       kalkulator vedno komu laze — spletni pregled in petnajst rocnih skic
+       nista ista postavka z drugo ceno (Tina, 2. 9. 2026). */
+    { id: 'raziskava', label: 'Ali je vključena raziskava (trg, konkurenca, pozicioniranje)?', izbire: ['Naročnik jo prinese', 'Pošljem mu vprašalnik in zberem podatke', 'Osnovna raziskava (splet, konkurenca, reference)', 'Poglobljena raziskava in razvoj smeri'], svoje: SVOJE_SPLOSNO },
     { id: 'tip', label: 'Kaj vizualiziramo?', izbire: ['Izdelek', 'Interier', 'Arhitektura / eksterier', 'Embalaža', 'Animacija'], vec: true, svoje: 'dopiši ...' },
     { id: 'kolicina', label: 'Koliko pogledov ali slik?', izbire: ['Do 3', '4 do 8', 'Nad 8'], svoje: 'ali vpiši ...' },
     { id: 'gradiva', label: 'Ali obstajajo modeli / načrti?', izbire: ['Da', 'Delno', 'Ne, treba modelirati'], svoje: SVOJE_SPLOSNO },

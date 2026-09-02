@@ -7,6 +7,7 @@ import DatumUra from '@/components/DatumUra';
 import OnboardingKartica from '@/components/OnboardingKartica';
 import PozdravPregled from '@/components/PozdravPregled';
 import styles from './pregled.module.css';
+import NamestiFlow from '@/components/NamestiFlow';
 
 export const metadata: Metadata = {
   title: 'Pregled poslovanja | Pinart',
@@ -40,6 +41,9 @@ export default async function PoslovniPregledPage({
           {/* datum in ura: desno v glavi, poravnana z vrhom (Tina, 26. 8. 2026) */}
           <DatumUra jeEn={locale === 'en'} className={styles.topbarDatum} />
         </header>
+        <div style={{ margin: '0 0 1.2rem' }}>
+          <NamestiFlow jeEn={locale === 'en'} />
+        </div>
 
         {/* nad pregledom, ne pod njim: kdor nastavitve ni koncal, vidi
             privzete stevilke in ne ve, zakaj mu ne ustrezajo */}

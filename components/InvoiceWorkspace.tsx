@@ -8,7 +8,7 @@
 
 import { FormEvent, Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretDown, FloppyDisk, FilePdf, PaperPlaneTilt, PenNib, X, Plus, PencilSimple, ArrowUp, ArrowDown } from '@phosphor-icons/react';
+import { CaretDown, CheckCircle, FloppyDisk, FilePdf, PaperPlaneTilt, PenNib, X, Plus, PencilSimple, ArrowUp, ArrowDown } from '@phosphor-icons/react';
 import GumbPrimarni from '@/components/ui/GumbPrimarni';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowInvoice, type FlowInvoiceItem, type FlowInvoiceSignature } from '@/lib/pinartFlowStore';
@@ -24,6 +24,9 @@ import { posljiMail } from '@/lib/posta';
 import { dodajPostavko, izbrisiPostavko, preberiPostavke, type Postavka, type PostavkaEnota } from '@/lib/postavke';
 import Skeleton from '@/components/Skeleton';
 import { useOblakPripravljen } from '@/lib/oblakStanje';
+import { pushFlowData } from '@/lib/pinartFlowCloud';
+import { fursQrDataUrl } from '@/lib/fursQr';
+import { FURS_OMOGOCEN } from '@/lib/fursVklop';
 
 const K_NAST = 'pinart-kalkulator-v2';
 
@@ -128,6 +131,10 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
   const [datumStoritve, setDatumStoritve] = useState(danesISO());
   const [rokDni, setRokDni] = useState(String(PRIVZETI_ROK_DNI));
   const [placano, setPlacano] = useState(false);
+  const [nacinPlacila, setNacinPlacila] = useState<'bank_transfer' | 'card' | 'cash' | 'other_cash'>('bank_transfer');
+  const [izdajam, setIzdajam] = useState(false);
+  const [izdanRacun, setIzdanRacun] = useState<FlowInvoice | null>(null);
+  const [fursNapaka, setFursNapaka] = useState('');
   /* predracun = poziv k placilu vnaprej (NI knjigovodska listina); privzeto
      false -> obstojeci racuni delujejo enako kot doslej */
   const [predracun, setPredracun] = useState(false);
@@ -464,13 +471,13 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
   };
   const odstraniPodpis = () => setPodpisSlika('');
 
-  const save = async (event?: FormEvent<HTMLFormElement>) => {
+  const save = async (event?: FormEvent<HTMLFormElement>, moznosti?: { izdaj?: boolean; ostani?: boolean }): Promise<FlowInvoice | null> => {
     event?.preventDefault();
     /* prej je v predogledu (demo) TIHO vrnil -> uporabnica je klikala Shrani in se ni zgodilo nič.
        Zdaj pove razlog: v demu ne pišemo v pravo bazo, treba je preklopiti na »Moji podatki«. */
-    if (samoOgled) { setNapaka(L('To je predogled (demo) — račun ni shranjen. Za pravo shranjevanje preklopi na »Moji podatki« (preklopnik zgoraj).', 'This is a preview (demo) — the invoice is not saved. To really save, switch to »My data« (toggle above).')); return; }
+    if (samoOgled) { setNapaka(L('To je predogled (demo) — račun ni shranjen. Za pravo shranjevanje preklopi na »Moji podatki« (preklopnik zgoraj).', 'This is a preview (demo) — the invoice is not saved. To really save, switch to »My data« (toggle above).')); return null; }
     const items = izracun.postavke.filter(p => p.opis || p.cena);
-    if (!items.length) { setNapaka(L('Dodaj vsaj eno postavko z opisom in ceno.', 'Add at least one item with a description and price.')); return; }
+    if (!items.length) { setNapaka(L('Dodaj vsaj eno postavko z opisom in ceno.', 'Add at least one item with a description and price.')); return null; }
     /* ŠTEVILKA: ob IZDAJI dodeli strežnik (atomsko, zaporedno, ločeni seriji račun/predračun) —
        preprečuje podvajanje ob hkratnih izdajah. FAIL-SAFE: če RPC/migracija ni na voljo,
        ostane ročna/provizorna številka, da izdaja NIKOLI ne pade. */
@@ -508,6 +515,9 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
       } : undefined,
       footerOn: nogaOn,
       footerText: nogaOn ? (nogaText.trim() || undefined) : undefined,
+      status: moznosti?.izdaj ? (placano ? 'paid' : 'sent') : 'draft',
+      issuedAt: moznosti?.izdaj ? new Date().toISOString() : undefined,
+      paymentMethod: nacinPlacila,
     };
     const next = [invoice, ...invoices];
     setInvoices(next); saveFlowCollection('invoices', next);
@@ -518,7 +528,41 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
       setClients(nc); saveFlowCollection('clients', nc);
     }
     /* po shranjevanju nazaj na pregled (kot pogodbe) — nov racun je takoj viden v arhivu */
-    setPogled('pregled'); setOfferId('');
+    if (moznosti?.izdaj) await pushFlowData(loadFlowData());
+    if (!moznosti?.ostani) { setPogled('pregled'); setOfferId(''); }
+    return invoice;
+  };
+
+  const davcnoPotrdi = async (invoice: FlowInvoice): Promise<FlowInvoice> => {
+    const preslikava = { card: 'kartica', cash: 'gotovina', other_cash: 'drugo_gotovinsko' } as const;
+    if (invoice.paymentMethod === 'bank_transfer' || !invoice.paymentMethod) return invoice;
+    const odgovor = await fetch('/api/furs/potrdi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ invoiceId: invoice.id, nacinPlacila: preslikava[invoice.paymentMethod], potrjenoGotovinskoPlacilo: true }) });
+    const telo = await odgovor.json().catch(() => ({})) as { napaka?: string; eor?: string; zoi?: string; koda?: string };
+    if (!odgovor.ok) throw new Error(telo.napaka || L('Davčna potrditev ni uspela.', 'Fiscal verification failed.'));
+    return { ...invoice, fiscalConfirmedAt: new Date().toISOString(), fiscalEor: telo.eor, fiscalZoi: telo.zoi, fiscalProvider: 'FURS', fiscalCode: telo.koda };
+  };
+
+  const izdaj = async () => {
+    if (izdajam) return;
+    setNapaka(''); setIzdajam(true);
+    setFursNapaka('');
+    try {
+      const invoice = izdanRacun || await save(undefined, { izdaj: true, ostani: true });
+      if (!invoice) return;
+      setIzdanRacun(invoice);
+      let potrjen = invoice;
+      if (!predracun && invoice.paymentMethod !== 'bank_transfer') {
+        potrjen = await davcnoPotrdi(invoice);
+        const next = [potrjen, ...invoices.filter(v => v.id !== potrjen.id)];
+        setInvoices(next); saveFlowCollection('invoices', next);
+      }
+      setIzdanRacun(potrjen);
+      setPostaObvestilo({ t: nacinPlacila === 'bank_transfer' ? L('Račun je izdan.', 'Invoice issued.') : L('Račun je izdan in davčno potrjen.', 'Invoice issued and fiscally verified.'), ok: true });
+    } catch (napakaIzdaje) {
+      const sporocilo = napakaIzdaje instanceof Error ? napakaIzdaje.message : L('Izdaja ni uspela.', 'Issuing failed.');
+      if (izdanRacun || nacinPlacila !== 'bank_transfer') setFursNapaka(sporocilo);
+      else setNapaka(sporocilo);
+    } finally { setIzdajam(false); }
   };
 
   /* ── DOKUMENT (letterhead + DOC_CSS kot RetainerWorkspace, tabela kot racun v kalkulatorju) ── */
@@ -563,7 +607,9 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
     .rac-podpis-crta{border-bottom:1px solid #111;min-height:34px;display:flex;align-items:flex-end;padding-bottom:4px}
     .podpis-img{display:block;max-height:40px;max-width:200px}
     .rac-podpis-ime{margin-top:5px;font-size:9.5pt;color:#222}
-    .rac-podpis-meta{font-size:8.5pt;color:#625c56}`;
+    .rac-podpis-meta{font-size:8.5pt;color:#625c56}
+    .rac-furs{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-top:22px;padding-top:12px;border-top:1px solid #e7e2d8;color:#444;font-size:7.5pt;line-height:1.55;word-break:break-all}
+    .rac-furs b{color:#111;letter-spacing:.08em}.rac-furs img{width:96px;height:96px;flex:none}`;
   const doc = (body: string) => `<!doctype html><html lang="${jeEn ? 'en' : 'sl'}"><head><meta charset="utf-8">${dokFontLink(dokFont)}<style>${dokCss(`${DOC_CSS}.mut{color:#625c56!important}`)}</style></head><body style="${dokVars(dokBarva, dokFont)}">${glava()}${body}${dokNoga()}</body></html>`;
 
   /* postavke za dokument: novi racuni jih imajo shranjene; za STARE izpeljemo eno
@@ -638,6 +684,7 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
       ${jePredracun ? `<p class="rac-opomba"><b>${jeEn ? 'This pro forma invoice is not an accounting document. An invoice will be issued upon receipt of payment.' : 'Predračun ni knjigovodska listina. Račun bo izdan po prejemu plačila.'}</b></p>` : ''}
       <div class="rac-placilo">${placiloVrstice}</div>
       ${inv.paid ? `<div class="rac-placano">${jeEn ? 'PAID' : 'PLAČANO'}</div>` : ''}
+      ${inv.fiscalEor && inv.fiscalZoi ? `<div class="rac-furs"><div><b>EOR</b><br>${esc(inv.fiscalEor)}<br><b>ZOI</b><br>${esc(inv.fiscalZoi)}</div>${inv.fiscalCode ? `<img src="${fursQrDataUrl(inv.fiscalCode)}" alt="${jeEn ? 'Fiscal verification QR code' : 'QR-koda davčne potrditve'}">` : ''}</div>` : ''}
       ${inv.signature ? `<div class="rac-podpis"><div class="rac-podpis-crta"><img class="podpis-img" src="${inv.signature.image}" alt="${jeEn ? 'Signature' : 'Podpis'}"></div><div class="rac-podpis-ime">${esc(inv.signature.name || ponudnik.ime.trim() || '')}</div>${(inv.signature.place || inv.signature.date) ? `<div class="rac-podpis-meta">${esc([inv.signature.place, inv.signature.date ? docDate(new Date(inv.signature.date)) : ''].filter(Boolean).join(' · '))}</div>` : ''}</div>` : ''}
       <p class="rac-noga-txt">${jeEn ? (jePredracun ? 'This pro forma invoice is an informational request for payment and is not a tax or accounting document.' : 'This invoice is issued in accordance with applicable law. Statutory default interest will be charged on late payments.') : (jePredracun ? 'Predračun je informativen poziv k plačilu in ni davčni/knjigovodski dokument.' : 'Račun je izdan v skladu z veljavno zakonodajo. Ob zamudi plačila zaračunamo zakonske zamudne obresti.')}</p>
       ${(inv.footerOn !== false && (inv.footerText || '').trim()) ? `<div class="rac-noga-brez">${esc(inv.footerText || '').split('\n').join('<br>')}</div>` : ''}`;
@@ -718,6 +765,7 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
     signature: podpisSlika ? { image: podpisSlika, name: podpisIme.trim() || undefined, place: podpisKraj.trim() || undefined, date: podpisDatum || undefined } : undefined,
     footerOn: nogaOn,
     footerText: nogaOn ? (nogaText.trim() || undefined) : undefined,
+    paymentMethod: nacinPlacila,
   });
   /* e-posta stranke iz imenika (po imenu) — privzeti prejemnik posiljanja */
   const strankaEmail = (): string => clients.find(c => c.name.trim().toLowerCase() === stranka.trim().toLowerCase())?.email?.trim() || '';
@@ -1042,10 +1090,33 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
       <h1 className="rc-naslov-z">{L('Zaključek.', 'Finish.')}</h1>
       <p className="rc-uvod-z">{L(`Prenesi ${predracun ? 'predračun' : 'račun'}${stranka.trim() ? ' za ' + stranka.trim() : ''}, ga shrani ali pošlji naročniku.`, `Download the ${predracun ? 'pro forma' : 'invoice'}${stranka.trim() ? ' for ' + stranka.trim() : ''}, save it or send it to the client.`)}</p>
       <label className="rc-placan-z"><input type="checkbox" checked={placano} onChange={event => setPlacano(event.target.checked)} /> {predracun ? L('Predračun je že plačan', 'Pro forma is already paid') : L('Račun je že plačan', 'Invoice is already paid')}</label>
+      {!predracun && <section className="rc-izdaja">
+        <p className={styles.eyebrow}>{L('IZDAJA RAČUNA', 'ISSUE INVOICE')}</p>
+        <h2>{L('Kako bo račun plačan?', 'How will the invoice be paid?')}</h2>
+        <div className="rc-placilo-izbira" role="radiogroup" aria-label={L('Način plačila', 'Payment method')}>
+          {([
+            ['bank_transfer', L('Nakazilo na TRR', 'Bank transfer')],
+            ['card', L('Kartica ali Tap to Pay', 'Card or Tap to Pay')],
+            ['cash', L('Gotovina', 'Cash')],
+            ['other_cash', L('Drugo gotovinsko plačilo', 'Other cash-equivalent payment')],
+          ] as const).map(([vrednost, oznaka]) => <button key={vrednost} type="button" role="radio" aria-checked={nacinPlacila === vrednost} className={nacinPlacila === vrednost ? 'on' : ''} disabled={Boolean(izdanRacun) || (!FURS_OMOGOCEN && vrednost !== 'bank_transfer')} onClick={() => setNacinPlacila(vrednost)}>{oznaka}</button>)}
+        </div>
+        {!izdanRacun ? <>
+          {!FURS_OMOGOCEN && <p className="rc-izdaja-vpripravi">{L(
+            'Davcno potrjevanje racunov je v pripravi — kartica in gotovina se ugasnjeni. Racun z nakazilom na TRR davcne potrditve ne potrebuje.',
+            'Fiscal verification is being prepared — card and cash are switched off. An invoice paid by bank transfer does not require fiscal verification.')}</p>}
+          <p className="rc-izdaja-opomba">{nacinPlacila === 'bank_transfer'
+            ? L('Davčna potrditev ni potrebna. Po izdaji računa ni več mogoče urejati; popravek se naredi s stornom.', 'Fiscal verification is not required. Once issued, the invoice can no longer be edited; corrections require cancellation.')
+            : L('Flow bo račun izdal in ga takoj poslal v davčno potrditev. Po izdaji ga ni več mogoče urejati; popravek se naredi s stornom.', 'Flow will issue the invoice and immediately submit it for fiscal verification. Once issued, it can no longer be edited; corrections require cancellation.')}</p>
+          <button type="button" className="rc-izdaj-gumb" onClick={izdaj} disabled={izdajam}>{izdajam ? L('Izdajam …', 'Issuing …') : nacinPlacila === 'bank_transfer' ? L('Izdaj račun', 'Issue invoice') : L('Izdaj in davčno potrdi', 'Issue and fiscally verify')}</button>
+        </> : izdanRacun.fiscalConfirmedAt || izdanRacun.paymentMethod === 'bank_transfer'
+          ? <p className="rc-izdano"><CheckCircle size={18} weight="fill" /> {izdanRacun.fiscalConfirmedAt ? L('Račun je davčno potrjen.', 'Invoice fiscally verified.') : L('Račun je izdan.', 'Invoice issued.')}</p>
+          : <div className="rc-furs-ponovi"><p>{fursNapaka || L('Račun je izdan, davčna potrditev pa še ni uspela. Ne izdajaj novega računa.', 'The invoice is issued, but fiscal verification has not succeeded yet. Do not issue a new invoice.')}</p><button type="button" onClick={izdaj} disabled={izdajam}>{izdajam ? L('Poskušam znova …', 'Retrying …') : L('Ponovi davčno potrditev', 'Retry fiscal verification')}</button></div>}
+      </section>}
       {napaka && <p className="rc-napaka">{napaka}</p>}
       <PosljiBlok
         subject={(predracun ? 'Predračun' : 'Račun') + (stevilka.trim() ? ' ' + stevilka.trim() : '') + (stranka.trim() ? ' — ' + stranka.trim() : '')}
-        zgradiHtml={() => doc(racunTelo(trenutniRacun()))}
+        zgradiHtml={() => doc(racunTelo(izdanRacun || trenutniRacun()))}
         privzetiPrejemnik={strankaEmail()}
         imeStranke={stranka.trim()}
         replyTo={ponudnik.email.trim() || undefined}
@@ -1053,9 +1124,9 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
         kontakti={strankaKontakti()}
         projektId={offerId || undefined}
         dodatneAkcije={[
-          { label: predracun ? L('Shrani predračun', 'Save pro forma') : L('Shrani račun', 'Save invoice'), onClick: () => save(), ikona: <FloppyDisk size={16} /> },
-          { label: pdfId ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)'), onClick: () => prenesiPdf(trenutniRacun()), disabled: !!pdfId, ikona: <FilePdf size={16} /> },
-          { label: L('Pošlji v plačilo', 'Send for payment'), onClick: () => posljiVPlacilo(trenutniRacun()), ikona: <PaperPlaneTilt size={16} /> },
+          { label: predracun ? L('Shrani predračun', 'Save pro forma') : L('Shrani račun', 'Save invoice'), onClick: () => save(), disabled: Boolean(izdanRacun), ikona: <FloppyDisk size={16} /> },
+          { label: pdfId ? L('Pripravljam …', 'Preparing …') : L('Prenesi (PDF)', 'Download (PDF)'), onClick: () => prenesiPdf(izdanRacun || trenutniRacun()), disabled: !!pdfId, ikona: <FilePdf size={16} /> },
+          { label: L('Pošlji v plačilo', 'Send for payment'), onClick: () => posljiVPlacilo(izdanRacun || trenutniRacun()), disabled: FURS_OMOGOCEN && !predracun && !izdanRacun, ikona: <PaperPlaneTilt size={16} /> },
         ]}
       />
     </section>}
@@ -1102,6 +1173,20 @@ export default function InvoiceWorkspace({ base, initialId }: { base: string; in
       .rc .rc-ddv-namig:hover{background:oklch(42% .13 300);color:#fff;border-color:transparent}
       .rc .rc-poslji{padding:.7rem 1.1rem;border:1px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font:700 .74rem var(--font-sans),sans-serif;cursor:pointer;white-space:nowrap}
       .rc .rc-poslji:hover{background:var(--ink);color:var(--paper)}
+      .rc .rc-izdaja{width:min(100%,42rem);box-sizing:border-box;margin:1rem auto;padding:1rem;border:1px solid color-mix(in oklch,var(--ink) 14%,transparent);border-radius:1rem;background:oklch(100% 0 0/.7)}
+      .rc .rc-izdaja h2{margin:.2rem 0 .75rem;font:700 1.05rem var(--font-serif),serif}
+      .rc .rc-placilo-izbira{display:flex;flex-wrap:wrap;gap:.45rem}
+      .rc .rc-placilo-izbira button{min-height:2.75rem;padding:.55rem .8rem;border:1px solid color-mix(in oklch,var(--ink) 18%,transparent);border-radius:999px;background:#fff;color:var(--ink);font:650 .76rem var(--font-sans),sans-serif;cursor:pointer}
+      .rc .rc-placilo-izbira button.on{border-color:oklch(66% .2 297);box-shadow:0 0 0 1px oklch(66% .2 297);background:oklch(98% .02 297)}
+      .rc .rc-placilo-izbira button:disabled{cursor:default;opacity:.65}
+      .rc .rc-izdaja-opomba{margin:.8rem 0;color:var(--muted);font-size:.78rem;line-height:1.5}
+      .rc .rc-izdaja-vpripravi{margin:.8rem 0 0;padding:.6rem .75rem;border:1px solid color-mix(in oklch,var(--ink) 14%,transparent);border-radius:.7rem;background:color-mix(in oklch,var(--ink) 4%,transparent);color:color-mix(in oklch,var(--ink) 78%,transparent);font-size:.76rem;line-height:1.5}
+      .rc .rc-izdaj-gumb{min-height:2.75rem;padding:.6rem 1.05rem;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:750 .78rem var(--font-sans),sans-serif;cursor:pointer}
+      .rc .rc-izdaj-gumb:disabled{opacity:.45;cursor:not-allowed}
+      .rc .rc-izdano{display:flex;align-items:center;gap:.45rem;margin:.75rem 0 0;color:oklch(43% .13 150);font:700 .82rem var(--font-sans),sans-serif}
+      .rc .rc-furs-ponovi{margin-top:.8rem;padding:.8rem;border:1px solid oklch(76% .13 25/.65);border-radius:.75rem;background:oklch(95.5% .05 25)}
+      .rc .rc-furs-ponovi p{margin:0 0 .6rem;color:var(--ink);font-size:.78rem;line-height:1.45}
+      .rc .rc-furs-ponovi button{min-height:2.75rem;padding:.55rem .85rem;border:1px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);font:700 .76rem var(--font-sans),sans-serif;cursor:pointer}
       .rc .rc-post-gumbi{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
       .rc .rc-dodaj{padding:.45rem .9rem;border:1px dashed color-mix(in oklch,var(--ink) 35%,transparent);border-radius:999px;background:transparent;color:var(--ink);font:700 .6rem var(--font-sans),sans-serif;cursor:pointer;transition:border-color .15s ease,background .15s ease}
       .rc .rc-dodaj:hover{border-color:var(--ink);background:oklch(100% 0 0/.5)}
