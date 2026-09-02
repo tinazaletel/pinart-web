@@ -99,6 +99,15 @@ export default function ProjectDetailModern({
   const { offer, real } = data;
   const [dodajOdprt, setDodajOdprt] = useState(false);
   const [briefOdprt, setBriefOdprt] = useState(false);
+  /* Brief se shrani sam, ko zapustis polje. Ker o tem ni bilo nobenega znaka,
+     je bilo videti, kot da se ni shranilo (Tina, 1. 9. 2026): zato tu stanje,
+     ki za nekaj sekund pokaze "Shranjeno". */
+  const [briefShranjeno, setBriefShranjeno] = useState(false);
+  useEffect(() => {
+    if (!briefShranjeno) return;
+    const t = window.setTimeout(() => setBriefShranjeno(false), 2400);
+    return () => window.clearTimeout(t);
+  }, [briefShranjeno]);
   const [dokumentOdprt, setDokumentOdprt] = useState<ProjektDokumentKljuc | null>(null);
   const [canvasi, setCanvasi] = useState<BusinessCanvasDocument[]>([]);
   const [canvasScope, setCanvasScope] = useState('anonymous');
@@ -595,22 +604,25 @@ export default function ProjectDetailModern({
         jeEn={jeEn}
         dejanja={<>
           {real && <Link href={`${base}/kalkulator/nov-projekt?uredi=${real.id}`} className="pm-dok-odpri">{L('Celoten urejevalnik', 'Full editor')} <Puscica /></Link>}
+          {/* Znak o shranjevanju stoji ob povezavi levo, prazen prostor pa
+              porine Zapri na desni rob. */}
           {onSaveBrief && real && (
-            <button type="button" className="pm-dok-brisi" onClick={() => {
-              if (!window.confirm(L('Izbrišem brief? Vsa polja (želje, stranka, panoga, ciljna publika, dizajn, ton, konkurenca) se izpraznijo. Cilji ostanejo.', 'Delete the brief? All fields (wishes, client, industry, audience, design, tone, competitors) will be cleared. Goals remain.'))) return;
-              onSaveBrief({ zelje: undefined, opisStranke: undefined, panoga: undefined, ciljnaSkupina: undefined, dizajnZelje: undefined, voice: undefined, konkurenca: undefined } as Partial<Projekt>);
-              setBriefOdprt(false);
-            }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" /></svg>
-              {L('Izbriši brief', 'Delete brief')}
-            </button>
+            <span className={'pm-dok-stanje' + (briefShranjeno ? ' je-shranjeno' : '')} role="status">
+              {briefShranjeno ? L('Shranjeno', 'Saved') : ''}
+            </span>
           )}
+          <button type="button" className="pm-dok-zapri" onClick={() => setBriefOdprt(false)}>{L('Zapri', 'Close')}</button>
         </>}
       >
         <div className="pm-dok-vsebina">
           {onSaveBrief && real ? (<>
             {([[L('Cilj / želje', 'Goal / wishes'), 'zelje'], [L('Stranka', 'Client'), 'opisStranke'], [L('Panoga', 'Industry'), 'panoga'], [L('Ciljna publika', 'Target audience'), 'ciljnaSkupina'], [L('Dizajn želje', 'Design wishes'), 'dizajnZelje'], [L('Ton / glas', 'Tone / voice'), 'voice'], [L('Konkurenca', 'Competitors'), 'konkurenca']] as Array<[string, keyof Projekt]>).map(([label, key]) => (
-              <label key={key} className="pm-qa pm-qa-edit"><span className="pm-qa-k">{label}</span><textarea className="pm-inp" rows={2} ref={rastiTextarea} onInput={e => rastiTextarea(e.currentTarget)} defaultValue={(real[key] as string) || ''} placeholder={L('Vpiši …', 'Type …')} onBlur={e => onSaveBrief({ [key]: e.target.value.trim() || undefined } as Partial<Projekt>)} /></label>
+              <label key={key} className="pm-qa pm-qa-edit"><span className="pm-qa-k">{label}</span><textarea className="pm-inp" rows={2} ref={rastiTextarea} onInput={e => rastiTextarea(e.currentTarget)} defaultValue={(real[key] as string) || ''} placeholder={L('Vpiši …', 'Type …')} onBlur={e => {
+                const nova = e.target.value.trim();
+                if (nova === ((real[key] as string) || '')) return;   /* brez spremembe ne pisemo */
+                onSaveBrief({ [key]: nova || undefined } as Partial<Projekt>);
+                setBriefShranjeno(true);
+              }} /></label>
             ))}
             {/* Cilji so del dokumenta tudi med urejanjem -- natisnjen brief brez
                 njih ni cel brief (Tina, 25. 8.). Urejajo se v kartici. */}
@@ -623,6 +635,20 @@ export default function ProjectDetailModern({
               <div key={v.id} className="pm-qa"><span className="pm-qa-k">{v.vprasanje}</span><p className="pm-qa-v">{v.odgovor}</p></div>
             ))}
             <p className="pm-muted pm-brief-namig">{L('Cilje urejaš v kartici »Cilji projekta«.', 'Edit goals in the »Project goals« card.')}</p>
+            {/* Brisanje NE sodi med gumbe ob Zapri (Tina, 1. 9. 2026): stoji na
+                koncu dokumenta, kjer ga ne zadenes med zapiranjem. */}
+            <div className="pm-brief-nevarno">
+              {onSaveBrief && real && (
+                <button type="button" className="pm-dok-brisi" onClick={() => {
+              if (!window.confirm(L('Izbrišem brief? Vsa polja (želje, stranka, panoga, ciljna publika, dizajn, ton, konkurenca) se izpraznijo. Cilji ostanejo.', 'Delete the brief? All fields (wishes, client, industry, audience, design, tone, competitors) will be cleared. Goals remain.'))) return;
+              onSaveBrief({ zelje: undefined, opisStranke: undefined, panoga: undefined, ciljnaSkupina: undefined, dizajnZelje: undefined, voice: undefined, konkurenca: undefined } as Partial<Projekt>);
+              setBriefOdprt(false);
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" /></svg>
+              {L('Izbriši brief', 'Delete brief')}
+            </button>
+          )}
+            </div>
           </>) : (<>
             {briefPolja.map(([k, v]) => (
               <div key={k} className="pm-qa"><span className="pm-qa-k">{k}</span><p className="pm-qa-v">{v}</p></div>
@@ -854,6 +880,12 @@ export default function ProjectDetailModern({
         .pm-qa-cilji b { font-size:.88rem; }
         .pm-qa-cilji small { margin-left:.4rem; color:var(--pm-muted); font-size:.75rem; }
         .pm-modal-edit { display:inline-block; margin-top:1.1rem; text-decoration:none; font-size:.8rem; font-weight:600; color:var(--pm-acc); }
+        /* Tiho, dokler se nic ne dogaja; ob shranjevanju za hip zazeleni. */
+        .pm-brief-nevarno { margin-top:1.6rem; padding-top:1rem; border-top:1px solid color-mix(in oklch,var(--ink) 8%,transparent); }
+        .pm-dok-zapri { padding:.5rem 1.1rem; border:1px solid color-mix(in oklch,var(--ink) 12%,transparent); border-radius:999px; background:#fff; font:700 .8rem var(--font-sans),sans-serif; color:var(--ink); cursor:pointer; }
+        .pm-dok-zapri:hover { border-color:color-mix(in oklch,var(--ink) 26%,transparent); }
+        .pm-dok-stanje { margin-right:auto; font:600 .74rem var(--font-sans),sans-serif; color:color-mix(in oklch,var(--ink) 45%,transparent); transition:color .2s ease; }
+        .pm-dok-stanje.je-shranjeno { color:oklch(52% .13 158); }
         .pm-dok-odpri { display:inline-flex; align-items:center; gap:.35rem; text-decoration:none; font:700 .8rem var(--font-sans),sans-serif; color:var(--pm-acc); }
         .pm-dok-odpri:hover { text-decoration:underline; text-underline-offset:3px; }
         /* seznami zapisa (pogodbe/racuni/stroski) */

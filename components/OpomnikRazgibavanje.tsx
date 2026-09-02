@@ -16,14 +16,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import TimerValovi from './TimerValovi';
-import { pokMehurcka } from '@/lib/zvokMehurcek';
+import { odkleniZvok, pokMehurcka } from '@/lib/zvokMehurcek';
 
 /* PRIHOD OPOMNIKA VEDNO ZACVRKNE (Tina, 30. 8. 2026: »tole je gor prislo, pa sem
    komaj opazila«). Okno se odpre ob strani zaslona, kjer ravno ne gledas — brez
    zvoka je opomnik, ki ga zgresis, isto kot opomnik, ki ga ni. Pok traja tretjino
    sekunde in je tih; stikalo »zvok« ostane za glasbo med vajo, ki je tista, ki
    lahko moti soseda v pisarni. */
-const PRIHOD = 0.34;
+const PRIHOD = 0.6;   /* glasneje: opomnik mora priti skozi, ko delas v drugem oknu */
 import { poveziEkipo, type Povezava } from '@/lib/razgibavanjeSkupaj';
 import { nadaljuj, pavziraj, ustavi as ustaviZvok, zaigraj } from '@/lib/zvokRazgibavanje';
 import {
@@ -189,6 +189,10 @@ export default function OpomnikRazgibavanje({ jeEn = false }: { jeEn?: boolean }
     }, 1000);
     return () => window.clearInterval(ura);
   }, [nastavitve.vklopljeno, nastavitve.interval, odprt, preostanek, objavi]);
+
+  /* Zvok pripravimo takoj ob nalaganju: kontekst se ustvari in se odklene ob
+     prvi gesti kjerkoli v aplikaciji, da opomnik cez uro ni tih. */
+  useEffect(() => { odkleniZvok(); }, []);
 
   /* Odštevanje razgibavanja. */
   useEffect(() => {

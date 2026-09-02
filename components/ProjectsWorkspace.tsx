@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, PaperPlaneRight, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip, Check, List, Eye, EyeSlash } from '@phosphor-icons/react';
+import { Plus, TextB, TextItalic, ListBullets, LinkSimple, Tray, PaperPlaneTilt, PaperPlaneRight, NotePencil, Trash, MagnifyingGlass, ArrowBendUpLeft, ArrowBendUpRight, ChatCircle, FolderSimplePlus, Tag, CheckSquare, Sparkle, Printer, Star, Paperclip, Check, List, Eye, EyeSlash, PencilSimple } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import ArhivFilter from '@/components/ArhivFilter';
 import Paginacija from '@/components/Paginacija';
@@ -249,15 +249,17 @@ const pwStyles = `
 .pw-dok-obrazec{display:flex;flex-direction:column;gap:.7rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line)}
 /* Ime projekta v glavi detajla je uredljivo: pero ob naslovu, vnos podeduje
    pisavo naslova, da je videti kot popravljanje na mestu. */
-.pw-det-orodja{flex:none;display:inline-flex;align-items:flex-start;gap:.5rem}
-.pw-det-brisi{flex:none;display:inline-grid;place-items:center;width:2.1rem;height:2.1rem;padding:0;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:color-mix(in oklch,var(--ink) 50%,transparent);cursor:pointer;transition:color .15s ease,border-color .15s ease}
+/* Urejanje in brisanje sta PAR desno ob statusu, ne razmetana po glavi
+   (Tina, 1. 9. 2026). Ovoj je div namenoma: modul ima pravilo
+   ".projectStory > header span{display:block}", ki bi vrstico razlomilo in
+   koš bi padel pod zeleno pilulo. */
+.pw-det-orodja{flex:none;display:flex;align-items:center;gap:.4rem}
+.pw-det-orodja .pw-det-statusured{margin-top:0}
+.pw-det-ikona{flex:none;display:inline-grid;place-items:center;width:2.1rem;height:2.1rem;padding:0;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:color-mix(in oklch,var(--ink) 50%,transparent);cursor:pointer;transition:color .15s ease,border-color .15s ease}
+.pw-det-ikona:hover{color:var(--purple);border-color:color-mix(in oklch,var(--purple) 40%,transparent)}
+.pw-det-ikona:focus-visible{outline:3px solid var(--purple);outline-offset:2px}
 .pw-det-brisi:hover{color:oklch(58% .19 25);border-color:color-mix(in oklch,oklch(58% .19 25) 40%,transparent)}
-.pw-det-brisi:focus-visible{outline:3px solid var(--purple);outline-offset:2px}
 .pw-det-naslov{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
-.pw-det-pero{flex:none;display:inline-grid;place-items:center;width:1.9rem;height:1.9rem;padding:0;border:1px solid color-mix(in oklch,var(--ink) 10%,transparent);border-radius:50%;background:#fff;color:color-mix(in oklch,var(--ink) 50%,transparent);cursor:pointer;opacity:.6;transition:opacity .15s ease,color .15s ease,border-color .15s ease}
-.pw-det-naslov:hover .pw-det-pero{opacity:1}
-.pw-det-pero:hover{color:var(--purple);border-color:color-mix(in oklch,var(--purple) 40%,transparent)}
-.pw-det-pero:focus-visible{opacity:1;outline:3px solid var(--purple);outline-offset:2px}
 .pw-det-naslov-vnos{font:inherit;color:inherit;width:min(100%,22ch);box-sizing:border-box;border:1px solid color-mix(in oklch,var(--ink) 12%,transparent);border-radius:.6rem;padding:.05rem .5rem;background:#fff}
 .pw-det-naslov-vnos:focus{outline:none;border-color:var(--purple)}
 /* Opomba ob povezavi (geslo, uporabnisko ime …) — oko jo zakrije/odkrije. */
@@ -1865,18 +1867,17 @@ export default function ProjectsWorkspace({ base, zunanjiFilter, iskanje, onIska
             onChange={e => setNaslovOsnutek(e.target.value)}
             onBlur={shraniNaslovProjekta}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); } if (e.key === 'Escape') { setNaslovUredim(false); } }} />
-        ) : (<>{selected.offer.title}{!samoOgled && (
-          <button type="button" className="pw-det-pero" title={L('Preimenuj projekt', 'Rename project')} aria-label={L('Preimenuj projekt', 'Rename project')}
-            onClick={() => { setNaslovOsnutek(selected.offer.title); setNaslovUredim(true); }}><NotePencil size={16} /></button>
-        )}</>)}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><span className="pw-det-orodja"><span className="pw-det-statusured" data-editable="" title={L('Spremeni status', 'Change status')}>
+        ) : selected.offer.title}</h2><span><Link href={`${base}/kalkulator/stranke?stranka=${encodeURIComponent(selected.offer.client)}`} className="pw-narocnik-link">{selected.offer.client}</Link> · {new Date(selected.offer.date).toLocaleDateString('sl-SI')}</span></div><div className="pw-det-orodja"><span className="pw-det-statusured" data-editable="" title={L('Spremeni status', 'Change status')}>
           <button type="button" className="pw-status" data-tone={projectStatusInfo(selected.offer.status).tone} aria-haspopup="listbox" aria-expanded={statusUrejam === 'det-' + selected.offer.id} style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'nowrap', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={e => { e.stopPropagation(); setStatusUrejam(statusUrejam === 'det-' + selected.offer.id ? null : 'det-' + selected.offer.id); }}><i aria-hidden style={pikaStil(projectStatusInfo(selected.offer.status).tone)} />{selected.real ? projektStatusOznaka[selected.real.status] : statusLabel[selected.offer.status]}<svg width="9" height="9" viewBox="0 0 12 8" fill="none" aria-hidden style={{ marginLeft: '.45rem', flex: 'none', opacity: .55 }}><path d="M1 1.5l5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
           {statusUrejam === 'det-' + selected.offer.id && (selected.real
             ? statusMeni('det-' + selected.offer.id, Object.entries(projektStatusOznaka) as Array<[string, string]>, selected.real.status, v => naStatusProjekt(selected.real!, v as ProjektEntitetaStatus))
             : statusMeni('det-' + selected.offer.id, Object.entries(statusLabel) as Array<[string, string]>, selected.offer.status, v => naStatusOffer(selected.offer.id, v as FlowOfferStatus)))}
-        </span>{!samoOgled && (
-          <button type="button" className="pw-det-brisi" onClick={izbrisiIzbrani}
+        </span>{!samoOgled && (<>
+          <button type="button" className="pw-det-ikona" onClick={() => { setNaslovOsnutek(selected.offer.title); setNaslovUredim(true); }}
+            title={L('Preimenuj projekt', 'Rename project')} aria-label={L('Preimenuj projekt', 'Rename project')}><PencilSimple size={16} /></button>
+          <button type="button" className="pw-det-ikona pw-det-brisi" onClick={izbrisiIzbrani}
             title={L('Izbriši projekt', 'Delete project')} aria-label={L('Izbriši projekt', 'Delete project')}><Trash size={16} /></button>
-        )}</span></header>
+        </>)}</div></header>
         {pogledDetajl === 'moderni' ? (
           <ProjectDetailModern
             data={selected}
