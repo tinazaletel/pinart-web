@@ -3294,6 +3294,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const osnovaZa = (s: Storitev) =>
     osnove[s.id] > 0 ? osnove[s.id] : zaokrozi(s.osnova * trg(mojTrg).lvl);
 
+  /* UTEZENA OSNOVA VRSTICE — osnovna cena, pomnozena z obsegom dela in
+     povecana za dodatno delo iz podrobnosti. Zivi tu, ker jo rabijo STIRI
+     mesta: izracun paketov, mobilna kosarica, cena ob vrstici in panel
+     "Osnovno delo". Prej je vsako racunalo po svoje, zato je panel kazal
+     surovih 650 EUR, ucinek izbir pa se je skril v "Prilagoditev", kot da
+     bi ga povzrocil narocnik (Tina, 3. 9. 2026). */
+  const utezVrstice = (uid: string, sid: string, s: Storitev, kolicina: number) => {
+    const odg: Record<string, string> = {};
+    const enote: Record<string, number> = {};
+    for (const [k, v] of Object.entries(odgovori)) {
+      if (!k.startsWith(`${uid}:`) || !v) continue;
+      const qid = k.slice(uid.length + 1);
+      odg[qid] = String(v);
+      const n = ENOTE_IZ_IZBIRE[String(v)];
+      if (n) enote[qid] = n;
+    }
+    return utezZaStoritev(sid, osnovaZa(s) * Math.max(1, Math.round(kolicina)), odg, enote);
+  };
+  const osnovaVrstice = (l: { uid: string; sid: string; kolicina: number }, s: Storitev) =>
+    utezVrstice(l.uid, l.sid, s, l.kolicina).cena;
+
   /* 'avtorsko' = izbrano je oblikovanje (pravice se odprejo same),
      'postavitev' = samo izvedba tujega dizajna (pravic ni),
      'neznano' = vprasanje se ni izpolnjeno (crtkana vrstica caka). */
@@ -3374,17 +3395,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
        trgom — sest retus je enako dela za veliko in za majhno stranko, in tako
        je ceno lazje zagovarjati (dogovor s Tino). */
     const obsegVrstic = linije.map(l => {
-      const osn = osnovaZa(l.s) * Math.max(1, Math.round(l.kolicina));
-      const odg: Record<string, string> = {};
-      const enote: Record<string, number> = {};
-      for (const [k, v] of Object.entries(odgovori)) {
-        if (!k.startsWith(`${l.uid}:`) || !v) continue;
-        const qid = k.slice(l.uid.length + 1);
-        odg[qid] = String(v);
-        const n = ENOTE_IZ_IZBIRE[String(v)];
-        if (n) enote[qid] = n;
-      }
-      const u = utezZaStoritev(l.sid, osn, odg, enote);
+      const u = utezVrstice(l.uid, l.sid, l.s, l.kolicina);
       return { l, osnovaZUtezjo: u.cena - u.dodatki, dodatki: u.dodatki,
                mult: u.mult, razclenitev: u.razclenitev };
     });
@@ -6102,7 +6113,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const stPostavk = vrstice.length + postavke.length;
   const skupajOkvirno = vrstice.reduce((a, l) => {
     const s = vseStoritve.find(x => x.id === l.sid);
-    return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
+    return s ? a + osnovaVrstice(l, s) : a;
   }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
   /* DDV stopnja za prikaz v panelu/specifikaciji */
   const ddvSt = clamp(Number(ddvStopnja) || 22, 0, 30);
@@ -9936,7 +9947,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                             <button type="button" aria-label={L('Ena več, ista cena: ', 'One more, same price: ') + storIme(s)} title={L('Še ena po isti ceni (količina). Za drugačno ceno klikni mehurček še enkrat.', 'One more at the same price (quantity). For a different price click the bubble again.')}
                               onClick={() => spremeniKolicino(l.uid, 1)}>+</button>
                           </span>
-                          <span className="vrst0-cena">{val(osnovaZa(s) * q)}</span>
+                          <span className="vrst0-cena">{val(osnovaVrstice(l, s))}</span>
                           <button type="button" className="vrst0-x" aria-label={'Odstrani: ' + prikazVrstice(l, s)}
                             onClick={() => odstraniVrstico(l.uid)}>×</button>
                           {(() => {
@@ -10042,7 +10053,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                            postena vrstica je boljsa od dveh izmisljenih. */
                         const osnove = vrstice.reduce((a, l) => {
                           const s = vseStoritve.find(x => x.id === l.sid);
-                          return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
+                          return s ? a + osnovaVrstice(l, s) : a;
                         }, 0);
                         const prilagoditev = (r.paketi[1].redna - r.pravice) - osnove;
                         /* Ce je cena paketa ROCNO prepisana, razclenitev ne velja —
@@ -10104,7 +10115,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   ) : (() => {
                     const okvirno = vrstice.reduce((a, l) => {
                       const s = vseStoritve.find(x => x.id === l.sid);
-                      return s ? a + osnovaZa(s) * Math.max(1, Math.round(l.kolicina)) : a;
+                      return s ? a + osnovaVrstice(l, s) : a;
                     }, 0) + postavke.reduce((a, x) => a + x.cena * x.kolicina, 0);
                     /* ZIVA CENA (Tina, 2. 9. 2026; Lukova pripomba): panel je prej kazal
                        samo osnovo, ki se ob dopolnjevanju podrobnosti ne premakne — zato
