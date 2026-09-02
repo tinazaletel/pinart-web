@@ -7191,6 +7191,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .ponudba0-vsota-vrsta { display: flex; justify-content: space-between; align-items: baseline; font-size: .92rem; color: rgba(17,17,17,.62); }
         .cw .ponudba0-vsota-vrsta b { font-family: var(--font-sans), system-ui, sans-serif; color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; font-size: 1.12rem; }
         .cw .ponudba0-opomba { font-size: .76rem; color: var(--accent); margin-top: .45rem; font-weight: 500; }
+        /* Svarilo ob ceni v panelu. Ni rdece — ni napaka, je podatek s predlogom. */
+        .cw .ponudba0-svarilo { margin-top: .7rem; padding: .6rem .7rem; border-radius: .6rem;
+                                background: color-mix(in oklch, var(--ink) 5%, transparent);
+                                color: color-mix(in oklch, var(--ink) 80%, transparent); }
+        .cw .ponudba0-svarilo b { display: block; margin-bottom: .2rem; font-size: .74rem; }
+        .cw .ponudba0-svarilo p { margin: 0; font-size: .76rem; line-height: 1.5; }
+        .cw .ponudba0-svarilo p + p { margin-top: .4rem; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini { font-size: .82rem; color: rgba(17,17,17,.72); margin-top: .35rem; }
         .cw .ponudba0-vsota-vrsta.ponudba0-mini + .ponudba0-vsota-vrsta { margin-top: .35rem; }
         /* Razclenitev obsega ob ceni. */
@@ -10190,6 +10197,27 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                       </>
                     );
                   })()}
+                  {/* OPOZORILA OB CENI, NE NA DRUGEM ZASLONU. Vprasanje o proracunu
+                      je v carovniku, opomba pa je bila samo v povzetku — uporabnik
+                      je odgovoril in ni videl nicesar. Tu stoji ob stevilki, ki jo
+                      gleda (Tina, 3. 9. 2026). */}
+                  {r && r.obseg.map(o => {
+                    const opz = utezOpozorilo(o.sid, o.cenaObsega, o.mult, locale === 'en');
+                    if (!opz && !o.proracun) return null;
+                    return (
+                      <div key={o.uid} className="ponudba0-svarilo">
+                        {r.obseg.length > 1 && <b>{o.ime}</b>}
+                        {opz && <p>{opz}</p>}
+                        {o.proracun && (
+                          <p>{o.proracun.zadosca
+                            ? L(`Proračun naročnika je ${val(o.proracun.meja)}, cena je ${val(o.cenaObsega)}. Ne nižaj cene — brez «${o.proracun.odvzemi.join('» in «')}» je ${val(o.proracun.preostane)}.`,
+                                `The client's budget is ${val(o.proracun.meja)}, the price is ${val(o.cenaObsega)}. Don't lower the price — without “${o.proracun.odvzemi.join('” and “')}” it is ${val(o.proracun.preostane)}.`)
+                            : L(`Proračun naročnika je ${val(o.proracun.meja)}, cena je ${val(o.cenaObsega)}. Tudi z najmanjšim obsegom je ${val(o.proracun.preostane)}.`,
+                                `The client's budget is ${val(o.proracun.meja)}, the price is ${val(o.cenaObsega)}. Even at the smallest scope it is ${val(o.proracun.preostane)}.`)}</p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </aside>
 
