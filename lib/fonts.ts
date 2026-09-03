@@ -1,16 +1,32 @@
 import { Bodoni_Moda, DM_Serif_Display, Archivo, Archivo_Narrow, Caveat } from 'next/font/google';
 
 /* Bodoni Moda = pisava naslovov za PORTFOLIO (pinart.si) — privzeti --font-serif.
-   Ker je tanka, je rahlo odebeljena prek -webkit-text-stroke v globals.css (outline). */
+   Ker je tanka, je rahlo odebeljena prek -webkit-text-stroke v globals.css (outline).
+
+   NADOMESTNA PISAVA (Tina, 3. 9. 2026 — dva obiskovalca, dva dneva, oba z
+   napacno pisavo v posnetkih sej). Nextov samodejni mehanizem, ki nadomestni
+   pisavi prilagodi sirine crk, za Bodoni Moda ODPOVE: v njegovi tabeli metrik
+   je zapisan pod kljucem "bodoniModa11pt", iskanje pa sestavi "bodoniModa" in
+   ne najde nicesar. Zato je bil adjustFontFallback izklopljen — a to je
+   pomenilo, da se je do prihoda Bodonija risal Times z drugacnimi sirinami,
+   in naslovi, ki se animirajo po posameznih crkah, so se stisnili drug v
+   drugega ("Withtrantoyes").
+
+   Resitev: metrike iz iste tabele (bodoniModa11pt) so prepisane v rocno
+   nadomestno pisavo "Bodoni Moda Fallback" v globals.css (size-adjust,
+   ascent/descent-override), tocno tako, kot bi jih izracunal Next. Ta face
+   je tu v fallback stacku, da jo brskalnik uporabi, dokler Bodoni ne prispe. */
 export const bodoni = Bodoni_Moda({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-serif',
   axes: ['opsz'],
   style: ['normal', 'italic'],
   display: 'swap',
-  /* utiša »Failed to find font override values« (next/font ne najde fallback
-     metrik za variabilni Bodoni); font se še naloži, brez sintetične prilagoditve. */
+  /* Samodejno ne dela (kljuc "bodoniModa" vs "bodoniModa11pt" — glej zgoraj);
+     brez tega bi ob vsaki gradnji javljal napako in vseeno nic naredil. */
   adjustFontFallback: false,
+  /* Rocno umerjena nadomestna pisava, deklarirana v globals.css. */
+  fallback: ['Bodoni Moda Fallback', 'Times New Roman', 'serif'],
 });
 
 /* DM Serif Display = pisava naslovov za FLOW (pinartflow / /flow / /kalkulator) —

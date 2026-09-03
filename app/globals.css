@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── NADOMESTNA PISAVA ZA BODONI (Tina, 3. 9. 2026) ───────────────────────
+   Dokler se Bodoni Moda ne nalozi, brskalnik rise tole. Times New Roman ima
+   drugacne sirine crk, zato so se naslovi, animirani po posameznih crkah,
+   stisnili drug v drugega ("Withtrantoyes" na posnetku seje). Vrednosti so
+   izracunane iz Nextove tabele metrik (kljuc bodoniModa11pt) natanko tako, kot
+   bi jih izracunal adjustFontFallback, ki pa za to pisavo odpove (glej
+   lib/fonts.ts). Rezultat: nadomestna pisava zavzame enako sirino kot Bodoni,
+   tako da menjava pisave crk ne premakne. */
+@font-face {
+  font-family: 'Bodoni Moda Fallback';
+  src: local('Times New Roman'), local('TimesNewRoman'), local('Times New Roman Regular');
+  font-style: normal;
+  size-adjust: 114.22%;
+  ascent-override: 98.50%;
+  descent-override: 35.02%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Bodoni Moda Fallback';
+  src: local('Times New Roman Italic'), local('TimesNewRoman-Italic'), local('Times New Roman');
+  font-style: italic;
+  size-adjust: 114.22%;
+  ascent-override: 98.50%;
+  descent-override: 35.02%;
+  line-gap-override: 0%;
+}
+
 /* ── PALETA (Tina, 2. 9. 2026) ──────────────────────────────────────────────
    Pravilo: ce je vijola, je povsod ISTA vijola. Ce je zelena, je povsod ista
    zelena. Vec barv, kot jih je tu, aplikacija nima.
