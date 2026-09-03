@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
+import PupaObraz from '@/components/PupaObraz';
 import type { Panoga, VprasalnikVprasanje } from '@/lib/vprasalnikPanoge';
 
 const KLJUC = (panoga: string) => `pinart-vprasalnik-${panoga}`;
@@ -82,7 +82,7 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
   if (poslano) {
     return <div className="vpr">
       <div className="vpr-konec">
-        <Image src="/flow-pupa-stoji-2.png" alt="" width={96} height={96} priority />
+        <PupaObraz px={72} />
         <h1>{L('Hvala.', 'Thank you.')}</h1>
         <p>{L('Tvoje številke so prišle. Iz njih izpeljem razmerja med izbirami — tvojih zneskov ne objavim, ne pokažem posamično in jih ne delim naprej.',
               'Your figures have arrived. I derive the ratios between choices from them — I will not publish your amounts, show them individually or share them further.')}</p>
@@ -93,7 +93,7 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
 
   return <div className="vpr">
     <header className="vpr-glava">
-      <Image src="/flow-pupa-stoji-2.png" alt="" width={64} height={64} priority />
+      <PupaObraz px={56} />
       <div>
         <p className="vpr-kdo">{L('Pupa · Pinart Flow', 'Pupa · Pinart Flow')}</p>
         <h1>{jeEn ? panoga.imeEn : panoga.ime}</h1>
@@ -221,7 +221,7 @@ function Vprasanje({ v, vrednost, dopolnilo, naVrednost, naDopolnilo, jeEn }: {
 const slog = `
   .vpr { max-width: 46rem; margin: 0 auto; padding: 2rem 1.2rem 7rem; color: var(--ink, #1c1518); }
   .vpr-glava { display: flex; align-items: center; gap: .9rem; margin-bottom: 1.6rem; }
-  .vpr-glava :global(img) { flex: none; width: 64px; height: auto; }
+  .vpr-glava :global(span) { flex: none; }
   .vpr-kdo { margin: 0 0 .15rem; font-size: .72rem; font-weight: 600; letter-spacing: .16em;
              text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1c1518) 60%, transparent); }
   .vpr-glava h1 { margin: 0; font-family: var(--font-serif-flow), Georgia, serif;
@@ -293,7 +293,7 @@ const slog = `
   .vpr-naprej:disabled { opacity: .5; cursor: default; }
 
   .vpr-konec { text-align: center; padding: 3rem 0; }
-  .vpr-konec :global(img) { width: 96px; height: auto; }
+  .vpr-konec :global(span) { margin: 0 auto; }
   .vpr-konec h1 { margin: 1rem 0 .6rem; font-family: var(--font-serif-flow), Georgia, serif;
                   font-size: 2rem; font-weight: 500; }
   .vpr-konec p { max-width: 34rem; margin: 0 auto; font-size: .95rem; line-height: 1.65;
