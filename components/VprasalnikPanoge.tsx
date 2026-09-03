@@ -12,6 +12,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import PupaObraz from '@/components/PupaObraz';
+import { localePath } from '@/i18n/routing';
 import type { Panoga, VprasalnikVprasanje } from '@/lib/vprasalnikPanoge';
 
 const KLJUC = (panoga: string) => `pinart-vprasalnik-${panoga}`;
@@ -20,6 +21,7 @@ type Odgovori = Record<string, string>;
 
 export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeEn: boolean }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
+  const locale = jeEn ? 'en' : 'sl';
   const [korak, setKorak] = useState(0);
   const [odg, setOdg] = useState<Odgovori>({});
   const [ime, setIme] = useState('');
@@ -27,6 +29,12 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
   const [posiljam, setPosiljam] = useState(false);
   const [poslano, setPoslano] = useState(false);
   const [napaka, setNapaka] = useState('');
+  /* Kljukica se pokaze SAMO, ce je ime ali e-posta izpolnjena — brez njiju
+     vrstica ne vsebuje osebnih podatkov in soglasja ni cemu vprasati.
+     Privzeto NEOBKLJUKANA: vnaprej obkljukano soglasje po GDPR ne velja kot
+     veljavno (Tina, 3. 9. 2026). */
+  const [soglasje, setSoglasje] = useState(false);
+  const rabiSoglasje = Boolean(ime.trim() || email.trim());
 
   /* Osnutek prezivi osvezitev strani. Brez tega bi clovek, ki se ustavi pri
      tridesetem vprasanju in zapre zavihek, zacel znova — in ne bi. */
@@ -62,7 +70,7 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
   const nastavi = (id: string, v: string) => setOdg(prej => ({ ...prej, [id]: v }));
 
   const posljí = async () => {
-    if (posiljam) return;
+    if (posiljam || (rabiSoglasje && !soglasje)) return;
     setPosiljam(true); setNapaka('');
     try {
       const odgovor = await fetch('/api/vprasalnik', {
@@ -86,6 +94,9 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
         <h1>{L('Hvala.', 'Thank you.')}</h1>
         <p>{L('Tvoje številke so prišle. Iz njih izpeljem razmerja med izbirami — tvojih zneskov ne objavim, ne pokažem posamično in jih ne delim naprej.',
               'Your figures have arrived. I derive the ratios between choices from them — I will not publish your amounts, show them individually or share them further.')}</p>
+        <p className="vpr-zasebnost">
+          <a href={localePath(locale, '/zasebnost')} target="_blank" rel="noopener noreferrer">{L('politika zasebnosti', 'privacy policy')}</a>
+        </p>
       </div>
       <style jsx>{slog}</style>
     </div>;
@@ -140,8 +151,24 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
           <label htmlFor="vpr-email">{L('E-pošta', 'Email')}</label>
           <input id="vpr-email" type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
         </div>
+        {rabiSoglasje && (
+          <label className="vpr-soglasje">
+            <input type="checkbox" checked={soglasje} onChange={e => setSoglasje(e.target.checked)} />
+            <span>{L('Strinjam se, da ime in e-pošto uporabite za zahvalo in pošiljanje rezultatov, v skladu s ', 'I agree that you use my name and email to say thanks and send me the results, as described in the ')}
+              <a href={localePath(locale, '/zasebnost')} target="_blank" rel="noopener noreferrer">{L('politiko zasebnosti', 'privacy policy')}</a>.</span>
+          </label>
+        )}
         {napaka && <p className="vpr-napaka">{napaka}</p>}
       </section>
+    )}
+
+    {/* Na zadnjem koraku ze stoji ista povezava ob kljukici soglasja — dvojna
+        povezava tik druga pod drugo bi bila odvecna (Tina, 3. 9. 2026). */}
+    {sklop && (
+      <p className="vpr-zasebnost">
+        {L('Kako ravnamo s tvojimi odgovori piše v', 'How we handle your answers is explained in our')}{' '}
+        <a href={localePath(locale, '/zasebnost')} target="_blank" rel="noopener noreferrer">{L('politiki zasebnosti', 'privacy policy')}</a>.
+      </p>
     )}
 
     <footer className="vpr-noga">
@@ -155,7 +182,7 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
           {L('Naprej', 'Next')}
         </button>
       ) : (
-        <button type="button" className="vpr-naprej" onClick={posljí} disabled={posiljam}>
+        <button type="button" className="vpr-naprej" onClick={posljí} disabled={posiljam || (rabiSoglasje && !soglasje)}>
           {posiljam ? L('Pošiljam …', 'Sending …') : L('Pošlji', 'Send')}
         </button>
       )}
@@ -276,6 +303,13 @@ const slog = `
   .vpr-izbire button.on i { background: var(--purple, #7C3AED); color: #fff; }
 
   .vpr-napaka { margin: .8rem 0 0; font-size: .85rem; color: var(--red, #B3261E); }
+  .vpr-zasebnost { max-width: 46rem; margin: 0 auto 1rem; text-align: center; font-size: .76rem;
+                   color: color-mix(in oklch, var(--ink, #1c1518) 55%, transparent); }
+  .vpr-zasebnost a { color: inherit; text-decoration: underline; text-underline-offset: .15em; }
+  .vpr-soglasje { display: flex; align-items: flex-start; gap: .55rem; margin-top: .3rem;
+                  font-size: .84rem; line-height: 1.5; cursor: pointer; }
+  .vpr-soglasje input { margin-top: .2rem; flex: none; width: 1.05rem; height: 1.05rem; accent-color: var(--purple, #7C3AED); }
+  .vpr-soglasje a { color: var(--purple, #7C3AED); }
 
   .vpr-noga { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
               display: flex; align-items: center; justify-content: space-between; gap: 1rem;

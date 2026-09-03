@@ -46,17 +46,34 @@ export async function GET(request: Request) {
 /* Besedilo, ki ga dobi tester. Kratko namenoma: kdor dobi tri odstavke, ne
    naredi nicesar. Geslo je v sporocilu, ker brez njega ne pride niti do
    registracije. */
-function navodila(ime: string, geslo: string, naslov: string) {
+function navodila(ime: string, geslo: string, naslov: string, jezik: string) {
+  const gol = naslov.replace(/^https?:\/\//, '');
+  if (jezik === 'en') {
+    const prvo = ime.split(/\s+/)[0] || 'Hi';
+    return `<div style="font:15px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;color:#221E19">
+<p>Hi ${prvo},</p>
+<p>your access to Pinart Flow is open. Three steps:</p>
+<ol style="padding-left:1.1rem">
+  <li>Open <a href="${naslov}/en/kalkulator/testiranje" style="color:#6D3BEB">${gol}/en/kalkulator/testiranje</a></li>
+  <li>Enter the password <b>${geslo}</b></li>
+  <li>Create an account <b>with this email address</b> — the system won't let you in with another one.</li>
+</ol>
+<p><b>One favour before you start.</b> Fill in a short questionnaire about your prices: <a href="${naslov}/en/vprasalnik" style="color:#6D3BEB">${gol}/en/vprasalnik</a><br>
+Fifteen minutes. I'm asking you <b>first</b> because once you've seen the calculator's prices, your answers anchor to them and stop telling me anything new. I won't publish your prices, show them individually, or share them further.</p>
+<p>If anything gets stuck, just reply to this email and tell me what's on the screen.</p>
+<p>Thanks for testing.<br>Tina</p>
+</div>`;
+  }
   const prvo = ime.split(/\s+/)[0] || 'Živjo';
   return `<div style="font:15px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;color:#221E19">
 <p>Živjo ${prvo},</p>
 <p>dostop do Pinart Flowa je odprt. Trije koraki:</p>
 <ol style="padding-left:1.1rem">
-  <li>Odpri <a href="${naslov}/kalkulator/testiranje" style="color:#6D3BEB">${naslov.replace(/^https?:\/\//, '')}/kalkulator/testiranje</a></li>
+  <li>Odpri <a href="${naslov}/kalkulator/testiranje" style="color:#6D3BEB">${gol}/kalkulator/testiranje</a></li>
   <li>Vpiši geslo <b>${geslo}</b></li>
   <li>Ustvari račun <b>s tem e-naslovom</b> — na drugega te sistem ne bo spustil.</li>
 </ol>
-<p><b>Prošnja, preden začneš.</b> Izpolni kratek vprašalnik o svojih cenah: <a href="${naslov}/vprasalnik" style="color:#6D3BEB">${naslov.replace(/^https?:\/\//, '')}/vprasalnik</a><br>
+<p><b>Prošnja, preden začneš.</b> Izpolni kratek vprašalnik o svojih cenah: <a href="${naslov}/vprasalnik" style="color:#6D3BEB">${gol}/vprasalnik</a><br>
 Petnajst minut. Vprašam te <b>prej</b> zato, ker so odgovori po tem, ko vidiš cene kalkulatorja, zasidrani nanje — in mi ne povedo več ničesar. Tvojih cen ne objavim, ne pokažem posamično in jih ne delim naprej.</p>
 <p>Če se kje zatakne, mi kar odgovori na to sporočilo in napiši, kaj piše na zaslonu.</p>
 <p>Hvala, ker preizkušaš.<br>Tina</p>
@@ -98,14 +115,15 @@ export async function POST(request: Request) {
   const naslov = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pinartflow.com';
   let poslano = false;
   if (kljuc && geslo) {
-    const { data: vrstica } = await baza.from('beta_prijave').select('ime').eq('email', email).maybeSingle();
+    const { data: vrstica } = await baza.from('beta_prijave').select('ime, jezik').eq('email', email).maybeSingle();
+    const jezik = String(vrstica?.jezik || '') === 'en' ? 'en' : 'sl';
     try {
       const { error } = await new Resend(kljuc).emails.send({
         from: posiljatelj(),
         to: email,
         replyTo: 'tina@pinart.si',
-        subject: 'Dostop do Pinart Flowa je odprt',
-        html: navodila(String(vrstica?.ime || ''), geslo, naslov),
+        subject: jezik === 'en' ? 'Your access to Pinart Flow is open' : 'Dostop do Pinart Flowa je odprt',
+        html: navodila(String(vrstica?.ime || ''), geslo, naslov, jezik),
       });
       poslano = !error;
       if (error) console.error('Navodila testerju niso odsla:', error.message || error);

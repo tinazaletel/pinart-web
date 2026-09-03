@@ -156,7 +156,7 @@ const zaklenjenoHtml = (en: boolean, skrijKalkulator = false, poKodi = '') => `<
   pf.addEventListener('submit', function(e){
     e.preventDefault();
     var g = pf.querySelector('button'); g.disabled = true; po.textContent = ''; po.className = 'sporocilo';
-    poslji('/api/beta', {dejanje:'prijava', ime: pf.ime.value, email: pf.email.value})
+    poslji('/api/beta', {dejanje:'prijava', ime: pf.ime.value, email: pf.email.value, jezik:'${en ? 'en' : 'sl'}'})
       .then(function(r){
         if(r.ok){ pf.reset(); po.className='sporocilo ok'; po.textContent=${en ? "'Thank you! We will be in touch at this address.'" : "'Hvala! Javimo se ti na ta naslov.'"}; }
         else { po.className='sporocilo napaka'; po.textContent = (r.d && r.d.napaka) || ${en ? "'Sign-up failed.'" : "'Prijava ni uspela.'"}; }

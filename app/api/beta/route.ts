@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   const omejitev = await omejiApi(request, 'beta-vstop', 20);
   if (omejitev) return omejitev;
 
-  let telo: { dejanje?: unknown; geslo?: unknown; ime?: unknown; email?: unknown };
+  let telo: { dejanje?: unknown; geslo?: unknown; ime?: unknown; email?: unknown; jezik?: unknown };
   try { telo = await preberiJson(request, 4_000); }
   catch (error) { return NextResponse.json({ napaka: sporociloValidacije(error) }, { status: 400 }); }
 
@@ -55,6 +55,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ napaka: 'Vpiši ime in veljaven e-naslov.' }, { status: 400 });
   }
 
+  /* Jezik strani, s katere se je prijavil (/en/... => 'en'). Brez tega bi
+     navodila ob sprejemu vedno prisla v slovenscini, tudi tujejezicnemu
+     obiskovalcu (Tina, 3. 9. 2026). Vrednost, ki je ne prepoznamo, pade na 'sl'. */
+  const jezik = telo.jezik === 'en' ? 'en' : 'sl';
+
   const kljuc = process.env.RESEND_API_KEY;
   if (!kljuc) {
     /* Brez posiljanja prijave ne izgubimo tiho — povemo, kam naj pisejo. */
@@ -69,7 +74,7 @@ export async function POST(request: Request) {
   try {
     const admin = createAdminClient();
     if (admin) await admin.from('beta_prijave').upsert(
-      { ime, email, stanje: 'prijavljen', prijavljen: new Date().toISOString() },
+      { ime, email, stanje: 'prijavljen', prijavljen: new Date().toISOString(), jezik },
       { onConflict: 'email' },
     );
   } catch (napaka) {
