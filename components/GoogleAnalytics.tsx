@@ -1,11 +1,13 @@
 'use client';
 
 import Script from 'next/script';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? '';
 
 export default function GoogleAnalytics() {
+  const pot = usePathname() || '';
   const [hasConsent, setHasConsent] = useState(false);
 
   useEffect(() => {
@@ -19,7 +21,11 @@ export default function GoogleAnalytics() {
     return () => window.removeEventListener('pinart-cookie-consent', onConsent);
   }, []);
 
-  if (!hasConsent || !GA_ID) return null;
+  /* Zasebne povezave in vprašalnik so izvzeti. GA ne snema vsebine, zapiše pa
+     NASLOV — pri /p/ in /v/ je žeton v naslovu sam ključ do dokumenta stranke,
+     zato bi ga s tem izročili tretjemu (Tina, 3. 9. 2026). */
+  const jeZasebno = /(^|\/)(p|v)\//.test(pot) || /(^|\/)vprasalnik(\/|$)/.test(pot);
+  if (!hasConsent || !GA_ID || jeZasebno) return null;
 
   return (
     <>
