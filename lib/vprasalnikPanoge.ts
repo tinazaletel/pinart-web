@@ -348,6 +348,107 @@ export const PANOGE: Panoga[] = [
       ] },
     ],
   },
+  {
+    id: "marketing", ime: "Marketing", imeEn: "Marketing",
+    uvod: "Zanimajo me tvoje prave cene za vodenje marketinga — od družbenih omrežij do oglaševanja.",
+    sklopi: [
+      { sklop: "Kdo si", vprasanja: [
+        {"id": "kdo-si-koliko-let-se-ukvarjas-z-marketingom-1", "q": "Koliko let se ukvarjaš z marketingom?", "vrsta": "stevilo", "namig": "let"},
+        {"id": "kdo-si-kaj-delas-najvec-2", "q": "Kaj delaš največ?", "vrsta": "kratko", "namig": "social media, oglaševanje, SEO, email, vsebina, celostni marketing …"},
+        {"id": "kdo-si-kje-vecinoma-delas-3", "q": "Kje večinoma delaš?", "vrsta": "izbira", "izbire": ["Slovenija", "tujina", "oboje"]},
+        {"id": "kdo-si-koliko-strank-vodis-hkrati-4", "q": "Koliko strank vodiš hkrati?", "vrsta": "stevilo", "namig": "število"},
+      ] },
+      { sklop: "Družbena omrežja", vprasanja: [
+        {"id": "druzbena-omrezja-koliko-zaracunas-za-vodenj-5", "q": "Koliko zaračunaš za vodenje enega družbenega omrežja na mesec?", "vrsta": "znesek", "namig": "EUR/mesec"},
+        {"id": "druzbena-omrezja-koliko-za-vsako-dodatno-om-6", "q": "Koliko za vsako dodatno omrežje?", "vrsta": "znesek", "namig": "EUR/mesec"},
+        {"id": "druzbena-omrezja-koliko-objav-je-vkljuceni-7", "q": "Koliko objav je vključenih na mesec?", "vrsta": "stevilo", "namig": "število"},
+        {"id": "druzbena-omrezja-koliko-doda-priprava-lastn-8", "q": "Koliko doda priprava lastnih vizualov (ne samo predloge)?", "vrsta": "znesek", "namig": "EUR/mesec ali % pribitka"},
+      ] },
+      { sklop: "Oglaševanje", vprasanja: [
+        {"id": "oglasevanje-koliko-zaracunas-za-postavitev-9", "q": "Koliko zaračunaš za postavitev ene kampanje?", "vrsta": "znesek", "namig": "EUR"},
+        {"id": "oglasevanje-koliko-za-mesecno-vodenje-kampa-10", "q": "Koliko za mesečno vodenje kampanj?", "vrsta": "znesek", "namig": "EUR/mesec ali % proračuna"},
+        {"id": "oglasevanje-kaksna-je-tvoja-provizija-od-og-11", "q": "Kakšna je tvoja provizija od oglaševalskega proračuna?", "vrsta": "znesek", "namig": "%"},
+        {"id": "oglasevanje-je-spodnja-meja-honorarja-pod-k-12", "q": "Je spodnja meja honorarja, pod katero ne greš?", "vrsta": "znesek", "namig": "EUR/mesec"},
+      ] },
+      { sklop: "SEO in email", vprasanja: [
+        {"id": "seo-in-email-koliko-zaracunas-za-enkratno-s-13", "q": "Koliko zaračunaš za enkratno SEO revizijo?", "vrsta": "znesek", "namig": "EUR"},
+        {"id": "seo-in-email-koliko-za-mesecno-seo-vodenje-14", "q": "Koliko za mesečno SEO vodenje?", "vrsta": "znesek", "namig": "EUR/mesec"},
+        {"id": "seo-in-email-koliko-zaracunas-za-postavite-15", "q": "Koliko zaračunaš za postavitev avtomatiziranega email niza?", "vrsta": "znesek", "namig": "EUR"},
+        {"id": "seo-in-email-koliko-za-mesecno-posiljanje-r-16", "q": "Koliko za mesečno pošiljanje rednih novic?", "vrsta": "znesek", "namig": "EUR/mesec"},
+      ] },
+      { sklop: "Vsebina", vprasanja: [
+        {"id": "vsebina-koliko-zaracunas-za-en-kos-vsebine-17", "q": "Koliko zaračunaš za en kos vsebine (objava, kratek video, grafika)?", "vrsta": "znesek", "namig": "EUR/kos"},
+        {"id": "vsebina-koliko-za-mesecni-paket-vsebine-18", "q": "Koliko za mesečni paket vsebine?", "vrsta": "znesek", "namig": "EUR/mesec"},
+      ] },
+      { sklop: "Pogodba in pravice", vprasanja: [
+        {"id": "pogodba-in-pravice-je-uporaba-objava-oglas-19", "q": "Je uporaba (objava oglasov, licenca vsebine) ločena postavka od izdelave?", "vrsta": "daNe", "dopolnilo": "Kako"},
+        {"id": "pogodba-in-pravice-kaksen-je-minimalni-cas-20", "q": "Kakšen je minimalni čas trajanja sodelovanja?", "vrsta": "kratko", "namig": "meseci"},
+        {"id": "pogodba-in-pravice-zaracunas-vec-ce-je-str-21", "q": "Zaračunaš več, če je stranka veliko ali mednarodno podjetje?", "vrsta": "daNe", "dopolnilo": "Koliko"},
+      ] },
+      { sklop: "Rok in odpoved", vprasanja: [
+        {"id": "rok-in-odpoved-zahtevas-predujem-koliko-22", "q": "Zahtevaš predujem? Koliko?", "vrsta": "kratko", "namig": "% ali EUR"},
+        {"id": "rok-in-odpoved-kaksen-je-odpovedni-rok-23", "q": "Kakšen je odpovedni rok?", "vrsta": "kratko", "namig": "dni/mesecev"},
+        {"id": "rok-in-odpoved-kaj-velja-ce-stranka-odpove-24", "q": "Kaj velja, če stranka odpove sredi meseca?", "vrsta": "kratko", "namig": "% cene"},
+      ] },
+      { sklop: "Za konec", vprasanja: [
+        {"id": "za-konec-kje-se-ti-zdi-da-te-trg-najbolj-po-25", "q": "Kje se ti zdi, da te trg najbolj podcenjuje?", "vrsta": "besedilo", "namig": "prosto"},
+        {"id": "za-konec-katero-postavko-stranke-najpogost-26", "q": "Katero postavko stranke najpogosteje spregledajo?", "vrsta": "besedilo", "namig": "prosto"},
+        {"id": "za-konec-kaj-bi-moral-kalkulator-vprasati-p-27", "q": "Kaj bi moral kalkulator vprašati, pa ga tu ni?", "vrsta": "besedilo", "namig": "prosto"},
+      ] },
+    ],
+  },
+  {
+    id: "it", ime: "Razvoj in IT", imeEn: "Development & IT",
+    uvod: "Zanimajo me tvoje prave cene za razvoj — od spletnih strani do aplikacij.",
+    sklopi: [
+      { sklop: "Kdo si", vprasanja: [
+        {"id": "kdo-si-koliko-let-se-ukvarjas-z-razvojem-1", "q": "Koliko let se ukvarjaš z razvojem?", "vrsta": "stevilo", "namig": "let"},
+        {"id": "kdo-si-kaj-delas-najvec-2", "q": "Kaj delaš največ?", "vrsta": "kratko", "namig": "spletne strani, spletne aplikacije, mobilne aplikacije, vzdrževanje …"},
+        {"id": "kdo-si-kje-vecinoma-delas-3", "q": "Kje večinoma delaš?", "vrsta": "izbira", "izbire": ["Slovenija", "tujina", "oboje"]},
+        {"id": "kdo-si-koliko-projektov-na-leto-4", "q": "Koliko projektov na leto?", "vrsta": "stevilo", "namig": "število"},
+      ] },
+      { sklop: "Spletna stran", vprasanja: [
+        {"id": "spletna-stran-koliko-zaracunas-za-preproste-5", "q": "Koliko zaračunaš za preprosto predstavitveno stran (do 5 podstrani)?", "vrsta": "znesek", "namig": "EUR"},
+        {"id": "spletna-stran-koliko-za-spletno-trgovino-6", "q": "Koliko za spletno trgovino?", "vrsta": "znesek", "namig": "EUR"},
+        {"id": "spletna-stran-koliko-doda-vsaka-dodatna-po-7", "q": "Koliko doda vsaka dodatna podstran?", "vrsta": "znesek", "namig": "EUR"},
+        {"id": "spletna-stran-uporabljas-predloge-cms-ali-8", "q": "Uporabljaš predloge/CMS ali kodiraš po meri?", "vrsta": "kratko", "namig": "npr. WordPress, Webflow, po meri …"},
+      ] },
+      { sklop: "Spletna aplikacija", vprasanja: [
+        {"id": "spletna-aplikacija-koliko-zaracunas-za-manj-9", "q": "Koliko zaračunaš za manjšo spletno aplikacijo (en uporabniški tok)?", "vrsta": "znesek", "namig": "EUR"},
+        {"id": "spletna-aplikacija-koliko-za-srednje-veliko-10", "q": "Koliko za srednje veliko aplikacijo (prijava, baza, več pogledov)?", "vrsta": "znesek", "namig": "EUR"},
+        {"id": "spletna-aplikacija-koliko-doda-povezava-na-11", "q": "Koliko doda povezava na zunanji sistem (plačila, e-pošta, API)?", "vrsta": "znesek", "namig": "EUR / povezava"},
+      ] },
+      { sklop: "Mobilna aplikacija", vprasanja: [
+        {"id": "mobilna-aplikacija-delas-mobilne-aplikacije-12", "q": "Delaš mobilne aplikacije?", "vrsta": "daNe", "dopolnilo": "Katere (iOS/Android/oboje)?"},
+        {"id": "mobilna-aplikacija-koliko-zaracunas-za-prep-13", "q": "Koliko zaračunaš za preprosto mobilno aplikacijo?", "vrsta": "znesek", "namig": "EUR"},
+      ] },
+      { sklop: "Cena dela", vprasanja: [
+        {"id": "cena-dela-kaksna-je-tvoja-urna-postavka-14", "q": "Kakšna je tvoja urna postavka?", "vrsta": "znesek", "namig": "EUR/uro"},
+        {"id": "cena-dela-delas-raje-po-projektu-ali-po-ur-15", "q": "Delaš raje po projektu ali po urah?", "vrsta": "izbira", "izbire": ["Po projektu", "Po urah", "Oboje"]},
+        {"id": "cena-dela-koliko-krogov-popravkov-je-vklju-16", "q": "Koliko krogov popravkov je vključenih v ceno projekta?", "vrsta": "stevilo", "namig": "število"},
+        {"id": "cena-dela-koliko-zaracunas-za-dodatni-krog-17", "q": "Koliko zaračunaš za dodatni krog popravkov?", "vrsta": "znesek", "namig": "EUR"},
+      ] },
+      { sklop: "Vzdrževanje in gostovanje", vprasanja: [
+        {"id": "vzdrzevanje-in-gostovanje-koliko-zaracunas-18", "q": "Koliko zaračunaš za mesečno vzdrževanje?", "vrsta": "znesek", "namig": "EUR/mesec"},
+        {"id": "vzdrzevanje-in-gostovanje-kaj-je-v-vzdrzeva-19", "q": "Kaj je v vzdrževanju vključeno?", "vrsta": "kratko", "namig": "posodobitve, varnostne kopije, manjši popravki …"},
+        {"id": "vzdrzevanje-in-gostovanje-zaracunas-gostov-20", "q": "Zaračunaš gostovanje posebej?", "vrsta": "daNe", "dopolnilo": "Koliko"},
+      ] },
+      { sklop: "Pravice in izročitev", vprasanja: [
+        {"id": "pravice-in-izrocitev-narocnik-ob-koncu-dob-21", "q": "Naročnik ob koncu dobi izvorno kodo?", "vrsta": "daNe", "dopolnilo": "Vedno ali samo na zahtevo?"},
+        {"id": "pravice-in-izrocitev-je-licenca-za-uporabl-22", "q": "Je licenca za uporabljene knjižnice/predloge ločena postavka?", "vrsta": "daNe", "dopolnilo": "Kako"},
+      ] },
+      { sklop: "Rok in odpoved", vprasanja: [
+        {"id": "rok-in-odpoved-zaracunas-pribitek-za-nujno-23", "q": "Zaračunaš pribitek za nujno izvedbo?", "vrsta": "daNe", "dopolnilo": "Koliko %"},
+        {"id": "rok-in-odpoved-zahtevas-predujem-koliko-24", "q": "Zahtevaš predujem? Koliko?", "vrsta": "kratko", "namig": "% ali EUR"},
+        {"id": "rok-in-odpoved-kaj-velja-ce-narocnik-proje-25", "q": "Kaj velja, če naročnik projekt ustavi na pol?", "vrsta": "kratko", "namig": "% cene"},
+      ] },
+      { sklop: "Za konec", vprasanja: [
+        {"id": "za-konec-kje-se-ti-zdi-da-te-trg-najbolj-po-26", "q": "Kje se ti zdi, da te trg najbolj podcenjuje?", "vrsta": "besedilo", "namig": "prosto"},
+        {"id": "za-konec-katero-postavko-stranke-najpogost-27", "q": "Katero postavko stranke najpogosteje spregledajo?", "vrsta": "besedilo", "namig": "prosto"},
+        {"id": "za-konec-kaj-bi-moral-kalkulator-vprasati-p-28", "q": "Kaj bi moral kalkulator vprašati, pa ga tu ni?", "vrsta": "besedilo", "namig": "prosto"},
+      ] },
+    ],
+  },
 ];
 
 export const panogaZa = (id: string): Panoga | null => PANOGE.find(p => p.id === id) || null;

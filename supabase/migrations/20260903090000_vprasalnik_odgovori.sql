@@ -22,16 +22,14 @@ alter table public.vprasalnik_odgovori
   add column if not exists skupaj integer not null default 0,
   add column if not exists created_at timestamptz not null default now();
 
-do $$
-begin
-  if not exists (
-    select 1 from pg_constraint where conname = 'vprasalnik_odgovori_panoga_check'
-  ) then
-    alter table public.vprasalnik_odgovori
-      add constraint vprasalnik_odgovori_panoga_check
-      check (panoga in ('grafika', 'fotografija', '3d', 'interier', 'arhitektura'));
-  end if;
-end $$;
+-- Odstrani-pa-dodaj namesto "samo ce ne obstaja": ce se ta datoteka kdaj
+-- popravi (kot zdaj, ko sta dodana marketing in it), mora nov seznam panog
+-- res obveljati tudi na bazi, kjer je bila prejsnja razlicica ze pognana
+-- (Tina, 3. 9. 2026).
+alter table public.vprasalnik_odgovori drop constraint if exists vprasalnik_odgovori_panoga_check;
+alter table public.vprasalnik_odgovori
+  add constraint vprasalnik_odgovori_panoga_check
+  check (panoga in ('grafika', 'fotografija', '3d', 'interier', 'arhitektura', 'marketing', 'it'));
 
 create index if not exists vprasalnik_odgovori_panoga_idx
   on public.vprasalnik_odgovori (panoga, created_at desc);
