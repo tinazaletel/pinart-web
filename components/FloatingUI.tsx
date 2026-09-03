@@ -25,7 +25,10 @@ export default function FloatingUI() {
   /* Velja za CELO orodje, ne le za /orodje: na nadzorni plosci in podstraneh
      je bil prej se vedno prodajni nagovor za moje storitve. */
   const isKalkulator = pathname.includes('/kalkulator');
-  const isFlow = pathname.includes('/flow');
+  /* /obvescanje je Flowova stran (izid prijave na Flow novice), zato mora
+     dobiti Flowovo besedilo — ne ponudbe pinart.si. Skriti ga ni prav:
+     povratna informacija je tu na mestu (Tina, 3. 9. 2026). */
+  const isFlow = pathname.includes('/flow') || /(^|\/)obvescanje(\/|$)/.test(pathname);
 
 
   const kalkulatorCopy = {
@@ -46,6 +49,13 @@ export default function FloatingUI() {
     fields: { name: 'Ime', company: '', email: 'E-pošta', brief: 'Opiši predlog, napako ali mnenje', budget: '', timing: '' },
     close: 'Zapri',
   };
+
+  /* Napis ob robu mora povedati, kaj se odpre. Na Flowu in v kalkulatorju se
+     odpre povratna informacija, ne ponudba storitev — "Let's talk" je tam
+     napacen, povrhu pa angleski na slovenski strani (Tina, 3. 9. 2026). */
+  const talkLabel = (isKalkulator || isFlow)
+    ? (isSl ? 'Povej mi' : 'Feedback')
+    : (isSl ? 'Pi\u0161i mi' : 'Let\u2019s talk');
 
   const talkCopy = (isKalkulator || isFlow) ? kalkulatorCopy : isSl ? {
     eyebrow: 'Začniva pogovor',
@@ -193,7 +203,7 @@ export default function FloatingUI() {
       <button
         type="button"
         onClick={() => setTalkOpen(true)}
-        aria-label="Let's talk"
+        aria-label={talkLabel}
         data-app={isKalkulator || undefined}
         className="edge-right-ui"
         style={{
@@ -231,7 +241,7 @@ export default function FloatingUI() {
             transition:    'color 0.2s ease',
           }}
         >
-          Let&rsquo;s talk
+          {talkLabel}
         </span>
         <Image
           src="/chat 1.svg"

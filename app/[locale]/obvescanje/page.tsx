@@ -1,6 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import FlowNav from '@/components/FlowNav';
 import { routing, type Locale } from '@/i18n/routing';
 import { Link } from '@/i18n/routing';
 
@@ -46,6 +47,8 @@ export default async function Obvescanje({
      kartica zacne pod njo. Zato ima kartica dodaten zgornji odmik, slika pa
      negativni zamik navzgor (Tina, 3. 9. 2026). */
   return (
+    <>
+    <FlowNav locale={locale} />
     <main className="obv-stran">
       <div className="obv-karta">
         <div className="obv-pupa" aria-hidden>
@@ -56,5 +59,6 @@ export default async function Obvescanje({
         <Link href="/">{locale === 'en' ? 'Back to Pinart Flow' : 'Nazaj na Pinart Flow'}</Link>
       </div>
     </main>
+    </>
   );
 }

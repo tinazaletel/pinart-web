@@ -108,7 +108,10 @@ export default function Nav() {
     || /(^|\/)(p|v)\//.test(pathname || '')
     /* Vprasalnik o cenah posljemo tujcu, ki Pinarta ne pozna. Portfolio meni
        in gumb "Let's talk" ga samo odvrneta od izpolnjevanja (Tina, 3. 9. 2026). */
-    || /(^|\/)vprasalnik(\/|$)/.test(pathname || '')) return null;
+    || /(^|\/)vprasalnik(\/|$)/.test(pathname || '')
+    /* Izid prijave na Flow novice je Flowova stran, ne portfolio — tam mora
+       stati glava Pinart Flow, ne meni pinart.si (Tina, 3. 9. 2026). */
+    || /(^|\/)obvescanje(\/|$)/.test(pathname || '')) return null;
 
   return (
     <>
