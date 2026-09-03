@@ -16,6 +16,7 @@ import { localePath } from '@/i18n/routing';
 import { PRIMERJAVA_FLAGSHIP, stevilkaIzOdgovora } from '@/lib/vprasalnikPrimerjava';
 import { okvirZa, imaRazpon, zapisRazpona } from '@/lib/trzniOkvir';
 import type { Panoga, VprasalnikVprasanje } from '@/lib/vprasalnikPanoge';
+import { SKLOPI_EN, UVOD_EN, prevodVprasanja, type PrevodVprasanja } from '@/lib/vprasalnikPanogeEn';
 
 const KLJUC = (panoga: string) => `pinart-vprasalnik-${panoga}`;
 
@@ -123,7 +124,7 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
 
         {pokaziPrimerjavo && razmerje && flagshipOkvir && flagshipVprasanje && (
           <div className="vpr-primerjava">
-            <p className="vpr-primerjava-vp">{flagshipVprasanje.q}</p>
+            <p className="vpr-primerjava-vp">{(jeEn && prevodVprasanja(panoga.id, flagshipVprasanje.id)?.q) || flagshipVprasanje.q}</p>
             <p className="vpr-primerjava-tvoja">{L('Tvoj odgovor', 'Your answer')}: <b>{Math.round(flagshipStevilka!)} €</b></p>
             <p className="vpr-primerjava-izid">
               {razmerje === 'pod'
@@ -154,11 +155,20 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
         <p className="vpr-kdo">{L('Pupa · Pinart Flow', 'Pupa · Pinart Flow')}</p>
         <h1>{jeEn ? panoga.imeEn : panoga.ime}</h1>
       </div>
+      {/* Jezik doloca povezava (/en ali brez). Stikalo je tu, ker glava strani
+          na vprasalniku ni prikazana in bi bil clovek sicer ujet v jeziku, v
+          katerem je dobil povezavo. Osnutek je vezan na panogo, ne na jezik,
+          zato ob preklopu nic ne izgubi (Tina, 3. 9. 2026). */}
+      <nav className="vpr-jezik" aria-label={L('Jezik', 'Language')}>
+        <a href={localePath('sl', `/vprasalnik/${panoga.id}`)} aria-current={jeEn ? undefined : 'page'}>SL</a>
+        <span>·</span>
+        <a href={localePath('en', `/vprasalnik/${panoga.id}`)} aria-current={jeEn ? 'page' : undefined}>EN</a>
+      </nav>
     </header>
 
     {korak === 0 && (
       <section className="vpr-uvod">
-        <p>{panoga.uvod}</p>
+        <p>{(jeEn && UVOD_EN[panoga.id]) || panoga.uvod}</p>
         <p><b>{L('Zakaj sprašujem.', 'Why I am asking.')}</b> {L('Delam orodje, ki kreativcu pomaga postaviti pošteno ceno. Upoštevati zna izkušnje, trg in velikost naročnika, ne pa še obsega dela. Brez tvojih pravih številk izračun delo podcenjuje.',
               'I am building a tool that helps creatives set a fair price. It already accounts for experience, market and client size, but not yet the scope of work. Without your real figures the calculation undervalues the work.')}</p>
         <p><b>{L('Kaj obljubim.', 'What I promise.')}</b> {L('Tvojih cen ne objavim, ne pokažem posamično in jih ne delim naprej. V orodje gredo samo razmerja med izbirami, ne tvoji zneski.',
@@ -177,9 +187,10 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
 
     {sklop ? (
       <section className="vpr-sklop">
-        <h2>{sklop.sklop}</h2>
+        <h2>{(jeEn && SKLOPI_EN[sklop.sklop]) || sklop.sklop}</h2>
         {sklop.vprasanja.map(v => (
-          <Vprasanje key={v.id} v={v} vrednost={odg[v.id] || ''} dopolnilo={odg[`${v.id}::dop`] || ''}
+          <Vprasanje key={v.id} v={v} p={jeEn ? prevodVprasanja(panoga.id, v.id) : undefined}
+            vrednost={odg[v.id] || ''} dopolnilo={odg[`${v.id}::dop`] || ''}
             naVrednost={x => nastavi(v.id, x)} naDopolnilo={x => nastavi(`${v.id}::dop`, x)} jeEn={jeEn} />
         ))}
       </section>
@@ -239,38 +250,41 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
 
 /* Ena kartica. Videz je isti kot v kalkulatorju: crka, bel list, vijolicen rob
    ob izbiri — da clovek, ki pride iz Flowa, ne sreca druge aplikacije. */
-function Vprasanje({ v, vrednost, dopolnilo, naVrednost, naDopolnilo, jeEn }: {
-  v: VprasalnikVprasanje; vrednost: string; dopolnilo: string;
+function Vprasanje({ v, p, vrednost, dopolnilo, naVrednost, naDopolnilo, jeEn }: {
+  v: VprasalnikVprasanje; p?: PrevodVprasanja; vrednost: string; dopolnilo: string;
   naVrednost: (x: string) => void; naDopolnilo: (x: string) => void; jeEn: boolean;
 }) {
   const L = (sl: string, en: string) => (jeEn ? en : sl);
   const crka = (i: number) => String.fromCharCode(65 + i);
+  /* Prevod (p) je samo za prikaz: shrani se vedno slovenska vrednost izbire
+     in »da«/»ne«, da so odgovori v bazi primerljivi ne glede na jezik. */
+  const namig = p?.namig ?? v.namig;
 
   return <div className="vpr-vp">
-    <label htmlFor={`vpr-${v.id}`}>{v.q}</label>
+    <label htmlFor={`vpr-${v.id}`}>{p?.q ?? v.q}</label>
 
     {v.vrsta === 'izbira' && v.izbire ? (
       <div className="vpr-izbire">
         {v.izbire.map((x, i) => (
           <button key={x} type="button" className={vrednost === x ? 'on' : ''}
             onClick={() => naVrednost(vrednost === x ? '' : x)}>
-            <i>{crka(i)}</i><span>{x}</span>
+            <i>{crka(i)}</i><span>{p?.izbire?.[i] ?? x}</span>
           </button>
         ))}
       </div>
     ) : v.vrsta === 'daNe' ? (
       <>
         <div className="vpr-izbire">
-          {[L('da', 'yes'), L('ne', 'no')].map((x, i) => (
+          {(['da', 'ne'] as const).map((x, i) => (
             <button key={x} type="button" className={vrednost === x ? 'on' : ''}
               onClick={() => naVrednost(vrednost === x ? '' : x)}>
-              <i>{crka(i)}</i><span>{x}</span>
+              <i>{crka(i)}</i><span>{x === 'da' ? L('da', 'yes') : L('ne', 'no')}</span>
             </button>
           ))}
         </div>
-        {vrednost === L('da', 'yes') && (
+        {vrednost === 'da' && (
           <input className="vpr-dopolnilo" value={dopolnilo} onChange={e => naDopolnilo(e.target.value)}
-            placeholder={v.dopolnilo || L('Koliko?', 'How much?')} />
+            placeholder={(p?.dopolnilo ?? v.dopolnilo) || L('Koliko?', 'How much?')} />
         )}
       </>
     ) : v.vrsta === 'besedilo' ? (
@@ -278,11 +292,13 @@ function Vprasanje({ v, vrednost, dopolnilo, naVrednost, naDopolnilo, jeEn }: {
     ) : (
       <input id={`vpr-${v.id}`} value={vrednost} onChange={e => naVrednost(e.target.value)}
         inputMode={v.vrsta === 'znesek' || v.vrsta === 'stevilo' ? 'decimal' : undefined}
-        placeholder={v.namig || ''} />
+        placeholder={v.vrsta === 'znesek' || v.vrsta === 'stevilo' ? namig || '' : ''} />
     )}
 
-    {v.namig && v.vrsta !== 'znesek' && v.vrsta !== 'stevilo' && v.vrsta !== 'izbira' && v.vrsta !== 'daNe' && (
-      <small>{v.namig}</small>
+    {/* Kratke enote (EUR, let) so v polju; daljsi namigi pod poljem, da ostanejo
+        vidni tudi med tipkanjem in se ne prikazejo dvakrat (Tina, 3. 9. 2026). */}
+    {namig && (v.vrsta === 'kratko' || v.vrsta === 'besedilo') && (
+      <small>{namig}</small>
     )}
   </div>;
 }
@@ -298,6 +314,11 @@ const slog = `
              text-transform: uppercase; color: color-mix(in oklch, var(--ink, #1c1518) 60%, transparent); }
   .vpr-glava h1 { margin: 0; font-family: var(--font-serif-flow), Georgia, serif;
                   font-size: clamp(1.5rem, 4.5vw, 2.1rem); line-height: 1.15; font-weight: 500; }
+  .vpr-jezik { margin-left: auto; align-self: flex-start; display: flex; gap: .4rem;
+               font-size: .72rem; font-weight: 600; letter-spacing: .12em;
+               color: color-mix(in oklch, var(--ink, #1c1518) 45%, transparent); }
+  .vpr-jezik a { color: inherit; text-decoration: none; padding: .2rem .1rem; }
+  .vpr-jezik a[aria-current] { color: var(--ink, #1c1518); border-bottom: 2px solid var(--purple, #7C3AED); }
 
   .vpr-uvod { margin-bottom: 1.8rem; padding: 1.1rem 1.2rem; border-radius: 1rem;
               background: color-mix(in oklch, var(--ink, #1c1518) 4%, transparent); }

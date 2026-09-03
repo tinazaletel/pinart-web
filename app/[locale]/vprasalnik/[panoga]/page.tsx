@@ -17,7 +17,7 @@ export async function generateMetadata(
   const p = panogaZa(panoga);
   const ime = p ? (locale === 'en' ? p.imeEn : p.ime) : '';
   return {
-    title: `${ime} — vprašalnik o cenah | Pinart Flow`,
+    title: locale === 'en' ? `${ime} — pricing questionnaire | Pinart Flow` : `${ime} — vprašalnik o cenah | Pinart Flow`,
     /* Vprasalnik je namenjen ljudem, ki jim Tina poslje povezavo, ne iskalnikom.
        Odgovori so obcutljivi (prave cene), zato strani ne indeksiramo. */
     robots: { index: false, follow: false },

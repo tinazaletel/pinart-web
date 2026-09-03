@@ -38,7 +38,14 @@ export const dmSerif = DM_Serif_Display({
   variable: '--font-serif-flow',
   weight: '400',
   style: ['normal', 'italic'],
-  display: 'swap'
+  display: 'swap',
+  /* NE vnaprej. Na pinart.si (portfolio) se ta pisava nikoli ne izrise, a je
+     bila vseeno med desetimi datotekami, ki se prenasajo ze pred prvim
+     izrisom - stiri zahteve (48 kB) v napoto Bodoniju, ki ga hero rabi takoj
+     (Tina, 3. 9. 2026; izmerjeno na zivi strani). Na Flowu se nalozi ob prvi
+     rabi; zanjo Nextova prilagoditev nadomestne pisave deluje, zato menjava
+     tam crk ne premakne. */
+  preload: false,
 });
 
 /**
