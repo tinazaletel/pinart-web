@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import VprasalnikPanoge from '@/components/VprasalnikPanoge';
 import { PANOGE, panogaZa } from '@/lib/vprasalnikPanoge';
+import { karticaVprasalnika } from '@/lib/vprasalnikKartica';
 
 export const dynamic = 'force-static';
 
@@ -15,13 +16,13 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { locale, panoga } = await params;
   const p = panogaZa(panoga);
-  const ime = p ? (locale === 'en' ? p.imeEn : p.ime) : '';
-  return {
-    title: locale === 'en' ? `${ime} — pricing questionnaire | Pinart Flow` : `${ime} — vprašalnik o cenah | Pinart Flow`,
-    /* Vprasalnik je namenjen ljudem, ki jim Tina poslje povezavo, ne iskalnikom.
-       Odgovori so obcutljivi (prave cene), zato strani ne indeksiramo. */
-    robots: { index: false, follow: false },
-  };
+  const jeEn = locale === 'en';
+  const ime = p ? (jeEn ? p.imeEn : p.ime) : '';
+  return karticaVprasalnika(
+    jeEn,
+    jeEn ? `${ime} — pricing questionnaire · Pinart Flow` : `${ime} — vprašalnik o cenah · Pinart Flow`,
+    `/vprasalnik/${panoga}`,
+  );
 }
 
 export default async function VprasalnikStran(

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import PupaObraz from '@/components/PupaObraz';
 import { setRequestLocale } from 'next-intl/server';
 import { PANOGE } from '@/lib/vprasalnikPanoge';
+import { karticaVprasalnika } from '@/lib/vprasalnikKartica';
 
 export const dynamic = 'force-static';
 
@@ -14,10 +15,8 @@ export async function generateMetadata(
   { params }: { params: Promise<{ locale: string }> },
 ): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: locale === 'en' ? 'Pricing questionnaire | Pinart Flow' : 'Vprašalnik o cenah | Pinart Flow',
-    robots: { index: false, follow: false },
-  };
+  const jeEn = locale === 'en';
+  return karticaVprasalnika(jeEn, jeEn ? 'Pricing questionnaire · Pinart Flow' : 'Vprašalnik o cenah · Pinart Flow', '/vprasalnik');
 }
 
 /* Razdelilnik. Testerju v vabilu ne moremo vedeti panoge, zato dobi to pot in
