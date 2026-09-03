@@ -46,6 +46,18 @@ export async function POST(request: Request) {
   if (omejitev) return omejitev;
 
   let telo: Record<string, unknown>;
+  /* ENOKLIKNA ODJAVA (RFC 8058). Yahoo in Gmail poslejeta POST brez nasega
+     telesa, e-naslov pa je v naslovu — brez tega bi glava List-Unsubscribe
+     vodila v napako, kar je slabse kot da je ni (Tina, 3. 9. 2026). */
+  const izNaslova = new URL(request.url).searchParams.get('email') || '';
+  if (jeEmail(izNaslova)) {
+    const admin = createAdminClient();
+    if (admin) {
+      await admin.from('obvescanje_prijave').delete().eq('email', normalizirajEmail(izNaslova));
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   try { telo = await preberiJson(request, 2_000); }
   catch { return NextResponse.json({ ok: true }); }
   if (!jeEmail(telo.email)) return NextResponse.json({ ok: true });

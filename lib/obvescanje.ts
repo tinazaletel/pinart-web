@@ -29,20 +29,56 @@ export function potIzida(jezik: string, stanje: 'potrjeno' | 'odjavljeno' | 'pot
   return `${predpona}/obvescanje?stanje=${stanje}`;
 }
 
-/** Vsebina potrditvenega pisemca. Brez okrasja: en stavek in ena povezava. */
-export function potrditvenoPisemce(povezava: string, jezik: string): { zadeva: string; html: string } {
+/** Vsebina potrditvenega pisemca.
+ *
+ * Yahoo ga je poslal v spam in v njem onemogocil povezave (Tina, 3. 9. 2026).
+ * Trije razlogi so bili v samem pisemcu in so tu odpravljeni:
+ *   - samo HTML brez besedilne razlicice je za filtre znak masovne poste,
+ *   - manjkal je naslov posiljatelja in razlog, zakaj clovek to prejema,
+ *   - besedilo je bilo brez sumnikov ("obvescanje", "posljemo"), kar je
+ *     izgledalo kot strojno generirana posta.
+ * Cetrti razlog je glava List-Unsubscribe, ki jo doda posiljatelj.
+ */
+export function potrditvenoPisemce(povezava: string, jezik: string): { zadeva: string; html: string; text: string } {
+  const noga = jezik === 'en'
+    ? 'Pinart d.o.o., Mladinska ulica 63, 1000 Ljubljana, Slovenia'
+    : 'Pinart d.o.o., Mladinska ulica 63, 1000 Ljubljana';
+
   if (jezik === 'en') {
+    const vrstice = [
+      'You asked to hear from Pinart Flow about the tool and tips for creatives.',
+      '',
+      `Confirm your subscription: ${povezava}`,
+      '',
+      `If this wasn't you, ignore this message — without a confirmation we send nothing and your address is deleted within ${POTRDITEV_VELJA_DNI} days.`,
+      '',
+      noga,
+    ];
     return {
       zadeva: 'Confirm your subscription',
+      text: vrstice.join('\n'),
       html: `<p>You asked to hear from Pinart Flow about the tool and tips for creatives.</p>
 <p><a href="${povezava}">Confirm subscription</a></p>
-<p>If this wasn't you, ignore this message — without a confirmation we send nothing and your address is deleted within ${POTRDITEV_VELJA_DNI} days.</p>`,
+<p>If this wasn't you, ignore this message — without a confirmation we send nothing and your address is deleted within ${POTRDITEV_VELJA_DNI} days.</p>
+<p style="color:#666;font-size:12px">${noga}</p>`,
     };
   }
+
+  const vrstice = [
+    'Prijavil/-a si se na obveščanje Pinart Flow o orodju in nasvetih za kreativce.',
+    '',
+    `Potrdi prijavo: ${povezava}`,
+    '',
+    `Če to nisi bil/-a ti, tega pisemca ni treba odpirati — brez potrditve ne pošljemo ničesar, tvoj naslov pa se izbriše v ${POTRDITEV_VELJA_DNI} dneh.`,
+    '',
+    noga,
+  ];
   return {
-    zadeva: 'Potrdi prijavo na obvescanje',
-    html: `<p>Prijavil/-a si se na obvescanje Pinart Flow o orodju in nasvetih za kreativce.</p>
+    zadeva: 'Potrdi prijavo na obveščanje',
+    text: vrstice.join('\n'),
+    html: `<p>Prijavil/-a si se na obveščanje Pinart Flow o orodju in nasvetih za kreativce.</p>
 <p><a href="${povezava}">Potrdi prijavo</a></p>
-<p>Ce to nisi bil/-a ti, tega pisemca ne rabis odpirati — brez potrditve ne posljemo nicesar, tvoj naslov pa se izbrise v ${POTRDITEV_VELJA_DNI} dneh.</p>`,
+<p>Če to nisi bil/-a ti, tega pisemca ni treba odpirati — brez potrditve ne pošljemo ničesar, tvoj naslov pa se izbriše v ${POTRDITEV_VELJA_DNI} dneh.</p>
+<p style="color:#666;font-size:12px">${noga}</p>`,
   };
 }

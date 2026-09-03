@@ -2161,7 +2161,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [potrdiOdjavo, setPotrdiOdjavo] = useState(false);
   /* Prijava na novice mora biti DEJANJE, ne tiho stanje: gumb je dokazilo o
      privolitvi, prizgano stikalo ni (Tina, 3. 9. 2026). */
-  const [prijavaPoslana, setPrijavaPoslana] = useState(false);
+  const [prijavaIzid, setPrijavaIzid] = useState<'' | 'poslljem' | 'poslano' | 'brezPisemca' | 'ze' | 'napaka'>('');
   /* Ali je bila iz TEGA brskalnika ze oddana prijava. Prej se je "Odjavi me"
      pokazal ze, ce je bilo v polju kaj besedila — torej tudi tistemu, ki se ni
      prijavil (Tina, 3. 9. 2026). Streznika o tem ne sprasujemo: odgovor "ta
@@ -4550,21 +4550,29 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
   const imamKontakt = leadIme.trim().length > 1 && /\S+@\S+\.\S+/.test(leadEmail);
 
-  const posljiKontakt = (namen: string) => {
+  /* Vrne, kaj se je RES zgodilo, da vmesnik ne obljublja pisemca, ki ga ni
+     bilo. Klicalci, ki izida ne rabijo (prijava ob vstopu), promise preprosto
+     ignorirajo (Tina, 3. 9. 2026). */
+  const posljiKontakt = async (namen: string): Promise<'poslano' | 'brezPisemca' | 'ze' | 'napaka'> => {
     /* Prijava na obvescanje NI povprasevanje. Prej je padla v isti Google
        Sheet in odjave od tam nihce ni znal izvesti. Zdaj gre v svojo tabelo,
        kot NEPOTRJENA — seznam nastane sele, ko clovek klikne v pisemcu. */
+    try { localStorage.setItem(K_LEAD, JSON.stringify({ ime: leadIme, email: leadEmail })); }
+    catch { /* zasebni nacin */ }
     try {
-      localStorage.setItem(K_LEAD, JSON.stringify({ ime: leadIme, email: leadEmail }));
-      fetch('/api/obvescanje', {
+      const odgovor = await fetch('/api/obvescanje', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ime: leadIme, email: leadEmail, jezik: locale === 'en' ? 'en' : 'sl',
           vir: namen.slice(0, 40), pogojiRazlicica: POGOJI_RAZLICICA,
         }),
-      }).catch(() => {});
-    } catch { /* ignoriraj */ }
+      });
+      const telo = await odgovor.json().catch(() => ({})) as { ok?: boolean; ze?: boolean; poslano?: boolean };
+      if (!odgovor.ok || !telo.ok) return 'napaka';
+      if (telo.ze) return 'ze';
+      return telo.poslano ? 'poslano' : 'brezPisemca';
+    } catch { return 'napaka'; }
   };
 
   /* letterhead glava: ime podjetja (serif) + podatki levo, stevilka/naziv/datum desno */
@@ -9393,7 +9401,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           }).catch(() => {});
                         }
                         setLeadIme(''); setLeadEmail('');
-                        setJePrijavljenNaNovice(false); setPrijavaPoslana(false);
+                        setJePrijavljenNaNovice(false); setPrijavaIzid('');
                         try { localStorage.removeItem(K_LEAD); localStorage.removeItem(K_NOVICE); } catch { /* prazno */ }
                         setPotrdiOdjavo(false);
                       }}>{L('Da, odjavi me', 'Yes, unsubscribe me')}</button>
@@ -9430,9 +9438,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <div className="onboarding-noga" style={{ marginTop: '1.3rem' }}>
                       <button type="button" className="gumb"
                         disabled={!/\S+@\S+\.\S+/.test(leadEmail)}
-                        onClick={() => {
-                          posljiKontakt('profil-obvestila');
-                          setPrijavaPoslana(true);
+                        onClick={async () => {
+                          setPrijavaIzid('poslljem');
+                          const izid = await posljiKontakt('profil-obvestila');
+                          setPrijavaIzid(izid);
+                          if (izid === 'napaka') return;
                           setJePrijavljenNaNovice(true);
                           try { localStorage.setItem(K_NOVICE, '1'); } catch { /* zasebni nacin */ }
                         }}>
@@ -9444,12 +9454,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         </button>
                       )}
                     </div>
-                    {prijavaPoslana ? (
-                      /* Dvojna privolitev: prijava velja sele po kliku v pisemcu,
-                         zato tega ne smemo prikazati kot opravljeno. */
-                      <p className="ob-sub" style={{ margin: '.9rem 0 0', fontSize: '.85rem', color: 'var(--purple, #7C3AED)' }}>
-                        {L('Poslala sem ti pisemce. Klikni povezavo v njem in prijava bo potrjena — brez tega te na seznam ne dodam.',
-                           'I have sent you an email. Click the link in it to confirm — without that I will not add you to the list.')}
+                    {prijavaIzid ? (
+                      /* Vsak izid pove svojo resnico. Dvojna privolitev: prijava
+                         velja sele po kliku v pisemcu, zato je NE prikazujemo
+                         kot opravljeno — in ce pisemca ni bilo, tega ne
+                         zamolcimo (Tina, 3. 9. 2026). */
+                      <p className="ob-sub" style={{ margin: '.9rem 0 0', fontSize: '.85rem',
+                        color: prijavaIzid === 'napaka' ? 'var(--red, #B3261E)' : 'var(--purple, #7C3AED)' }}>
+                        {prijavaIzid === 'poslljem' ? L('Pošiljam …', 'Sending …')
+                          : prijavaIzid === 'poslano' ? L('Poslala sem ti pisemce. Klikni povezavo v njem in prijava bo potrjena — brez tega te na seznam ne dodam.',
+                              'I have sent you an email. Click the link in it to confirm — without that I will not add you to the list.')
+                          : prijavaIzid === 'ze' ? L('Ta naslov je že na seznamu — pisemca zato nisem poslala znova.',
+                              'This address is already on the list, so I did not send the email again.')
+                          : prijavaIzid === 'brezPisemca' ? L('Prijava je zapisana, potrditvenega pisemca pa ni bilo mogoče poslati. Piši mi in te dodam ročno.',
+                              'Your sign-up is recorded, but the confirmation email could not be sent. Write to me and I will add you manually.')
+                          : L('Prijava ni uspela. Poskusi znova čez trenutek.', 'Sign-up failed. Please try again in a moment.')}
                       </p>
                     ) : (
                       !/\S+@\S+\.\S+/.test(leadEmail) ? (
