@@ -4,16 +4,34 @@
 -- obljubi, da jih ne objavimo, ne pokažemo posamično in ne delimo naprej.
 -- Zato tabela ni dostopna ne anonimnim ne prijavljenim uporabnikom — piše in
 -- bere jo samo strežnik s service-role ključem prek /api/vprasalnik in admina.
+--
+-- Zapisano po delih in ne kot en create: prvi zagon je padel na pol, tabela je
+-- ostala brez stolpcev, drugi zagon pa jo je zaradi "if not exists" preskočil
+-- in indeks ni našel stolpca "panoga" (Tina, 3. 9. 2026). Tako se popravi tudi
+-- polovična baza.
 create table if not exists public.vprasalnik_odgovori (
-  id uuid primary key default gen_random_uuid(),
-  panoga text not null check (panoga in ('grafika', 'fotografija', '3d', 'interier', 'arhitektura')),
-  odgovori jsonb not null,
-  ime text,
-  email text,
-  izpolnjenih integer not null default 0 check (izpolnjenih >= 0),
-  skupaj integer not null default 0 check (skupaj >= 0),
-  created_at timestamptz not null default now()
+  id uuid primary key default gen_random_uuid()
 );
+
+alter table public.vprasalnik_odgovori
+  add column if not exists panoga text,
+  add column if not exists odgovori jsonb,
+  add column if not exists ime text,
+  add column if not exists email text,
+  add column if not exists izpolnjenih integer not null default 0,
+  add column if not exists skupaj integer not null default 0,
+  add column if not exists created_at timestamptz not null default now();
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'vprasalnik_odgovori_panoga_check'
+  ) then
+    alter table public.vprasalnik_odgovori
+      add constraint vprasalnik_odgovori_panoga_check
+      check (panoga in ('grafika', 'fotografija', '3d', 'interier', 'arhitektura'));
+  end if;
+end $$;
 
 create index if not exists vprasalnik_odgovori_panoga_idx
   on public.vprasalnik_odgovori (panoga, created_at desc);
