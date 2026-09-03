@@ -13,6 +13,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import PupaObraz from '@/components/PupaObraz';
 import { localePath } from '@/i18n/routing';
+import { PRIMERJAVA_FLAGSHIP, stevilkaIzOdgovora } from '@/lib/vprasalnikPrimerjava';
+import { okvirZa, imaRazpon, zapisRazpona } from '@/lib/trzniOkvir';
 import type { Panoga, VprasalnikVprasanje } from '@/lib/vprasalnikPanoge';
 
 const KLJUC = (panoga: string) => `pinart-vprasalnik-${panoga}`;
@@ -29,6 +31,12 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
   const [posiljam, setPosiljam] = useState(false);
   const [poslano, setPoslano] = useState(false);
   const [napaka, setNapaka] = useState('');
+  /* Ali je branje osnutka ze konceno. Brez te straze sta ucinka "preberi
+     osnutek" in "shrani ob vsaki spremembi" tekmovala: drugi je pisal PRAZNO
+     zacetno stanje nazaj v localStorage, preden je prvi sploh prisel do
+     setOdg — v razvoju (React StrictMode podvoji ucinke) je to zanesljivo
+     povozilo vsak osnutek takoj ob nalaganju strani (Tina, 3. 9. 2026). */
+  const [obnovljeno, setObnovljeno] = useState(false);
   /* Kljukica se pokaze SAMO, ce je ime ali e-posta izpolnjena — brez njiju
      vrstica ne vsebuje osebnih podatkov in soglasja ni cemu vprasati.
      Privzeto NEOBKLJUKANA: vnaprej obkljukano soglasje po GDPR ne velja kot
@@ -48,13 +56,14 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
         if (p.email) setEmail(p.email);
       }
     } catch { /* prazen ali pokvarjen osnutek ni napaka */ }
+    finally { setObnovljeno(true); }
   }, [panoga.id]);
 
   useEffect(() => {
-    if (poslano) return;
+    if (poslano || !obnovljeno) return;
     try { localStorage.setItem(KLJUC(panoga.id), JSON.stringify({ odg, ime, email })); }
     catch { /* poln ali zaklenjen localStorage ne sme ustaviti izpolnjevanja */ }
-  }, [odg, ime, email, panoga.id, poslano]);
+  }, [odg, ime, email, panoga.id, poslano, obnovljeno]);
 
   const zadnji = panoga.sklopi.length;          /* zadnji korak je oddaja */
   const sklop = korak < zadnji ? panoga.sklopi[korak] : null;
@@ -87,13 +96,49 @@ export default function VprasalnikPanoge({ panoga, jeEn }: { panoga: Panoga; jeE
     } finally { setPosiljam(false); }
   };
 
+  /* PRIMERJAVA S TRZNIM POVPRECJEM — nagrada za izpolnjevanje, ki jo je Tina
+     predlagala 3. 9. 2026. Nikoli ne primerja z drugim testerjem, samo z
+     Tinino ze javno raziskavo (glej lib/vprasalnikPrimerjava.ts za zakaj). */
+  const flagship = PRIMERJAVA_FLAGSHIP[panoga.id];
+  const flagshipOdgovor = flagship ? odg[flagship.vprasanjeId] : undefined;
+  const flagshipStevilka = flagshipOdgovor ? stevilkaIzOdgovora(flagshipOdgovor) : null;
+  const flagshipOkvir = flagship ? okvirZa(flagship.storitev) : null;
+  const flagshipVprasanje = flagship
+    ? panoga.sklopi.flatMap(s => s.vprasanja).find(v => v.id === flagship.vprasanjeId)
+    : null;
+  const pokaziPrimerjavo = Boolean(
+    flagshipStevilka && flagshipOkvir && imaRazpon(flagshipOkvir) && flagshipVprasanje,
+  );
+
   if (poslano) {
+    const razmerje = pokaziPrimerjavo && flagshipStevilka && flagshipOkvir && imaRazpon(flagshipOkvir)
+      ? (flagshipStevilka < flagshipOkvir.od ? 'pod' : flagshipStevilka > flagshipOkvir.do ? 'nad' : 'znotraj')
+      : null;
     return <div className="vpr">
       <div className="vpr-konec">
         <PupaObraz px={72} />
         <h1>{L('Hvala.', 'Thank you.')}</h1>
         <p>{L('Tvoje številke so prišle. Iz njih izpeljem razmerja med izbirami — tvojih zneskov ne objavim, ne pokažem posamično in jih ne delim naprej.',
               'Your figures have arrived. I derive the ratios between choices from them — I will not publish your amounts, show them individually or share them further.')}</p>
+
+        {pokaziPrimerjavo && razmerje && flagshipOkvir && flagshipVprasanje && (
+          <div className="vpr-primerjava">
+            <p className="vpr-primerjava-vp">{flagshipVprasanje.q}</p>
+            <p className="vpr-primerjava-tvoja">{L('Tvoj odgovor', 'Your answer')}: <b>{Math.round(flagshipStevilka!)} €</b></p>
+            <p className="vpr-primerjava-izid">
+              {razmerje === 'pod'
+                ? L('To je pod tem, kar drugi po objavljenih cenikih v Sloveniji za to običajno zaračunajo.',
+                    'This is below what others in Slovenia typically charge for this, per published price lists.')
+                : razmerje === 'nad'
+                  ? L('To je nad tem, kar drugi po objavljenih cenikih v Sloveniji za to običajno zaračunajo.',
+                      'This is above what others in Slovenia typically charge for this, per published price lists.')
+                  : L('To je znotraj tega, kar drugi po objavljenih cenikih v Sloveniji za to običajno zaračunajo.',
+                      'This is within what others in Slovenia typically charge for this, per published price lists.')}
+            </p>
+            <p className="vpr-primerjava-trg">{L('Trg', 'Market')}: {zapisRazpona(flagshipOkvir, jeEn)}</p>
+          </div>
+        )}
+
         <p className="vpr-zasebnost">
           <a href={localePath(locale, '/zasebnost')} target="_blank" rel="noopener noreferrer">{L('politika zasebnosti', 'privacy policy')}</a>
         </p>
@@ -332,4 +377,16 @@ const slog = `
                   font-size: 2rem; font-weight: 500; }
   .vpr-konec p { max-width: 34rem; margin: 0 auto; font-size: .95rem; line-height: 1.65;
                  color: color-mix(in oklch, var(--ink, #1c1518) 75%, transparent); }
+  .vpr-primerjava { max-width: 26rem; margin: 1.6rem auto 0; padding: 1.1rem 1.3rem;
+                    border-radius: 1rem; text-align: left;
+                    background: color-mix(in oklch, var(--purple, #7C3AED) 6%, var(--paper, #faf7f2));
+                    border: 1px solid color-mix(in oklch, var(--purple, #7C3AED) 20%, transparent); }
+  .vpr-primerjava-vp { margin: 0 0 .5rem; font-size: .78rem; font-weight: 600;
+                       color: color-mix(in oklch, var(--ink, #1c1518) 65%, transparent); }
+  .vpr-primerjava-tvoja { margin: 0 0 .4rem; font-size: .95rem; }
+  .vpr-primerjava-tvoja b { font-variant-numeric: tabular-nums; }
+  .vpr-primerjava-izid { margin: 0 0 .6rem; font-size: .88rem; line-height: 1.55; }
+  .vpr-primerjava-trg { margin: 0; padding-top: .6rem; font-size: .8rem;
+                        border-top: 1px solid color-mix(in oklch, var(--purple, #7C3AED) 15%, transparent);
+                        color: color-mix(in oklch, var(--ink, #1c1518) 65%, transparent); }
 `;
