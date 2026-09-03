@@ -6,6 +6,7 @@ import AdminOdjava from './AdminOdjava';
 import AdminPaketi from './AdminPaketi';
 import AdminDostop from './AdminDostop';
 import AdminPrijave from './AdminPrijave';
+import AdminVprasalniki from './AdminVprasalniki';
 import { pridobiRacune } from './upravljanje';
 import { pridobiAnalitiko, type Obdobje } from './podatki';
 
@@ -59,6 +60,7 @@ export default async function KalkulatorAdminPage(
 
       <AdminPregled podatki={podatki} />
       <AdminPrijave />
+      <AdminVprasalniki />
       <AdminDostop />
       <AdminPaketi racuni={racuni} napaka={napakaRacunov} />
     </main>

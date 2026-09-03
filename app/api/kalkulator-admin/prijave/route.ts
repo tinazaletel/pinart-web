@@ -56,6 +56,8 @@ function navodila(ime: string, geslo: string, naslov: string) {
   <li>Vpiši geslo <b>${geslo}</b></li>
   <li>Ustvari račun <b>s tem e-naslovom</b> — na drugega te sistem ne bo spustil.</li>
 </ol>
+<p><b>Prošnja, preden začneš.</b> Izpolni kratek vprašalnik o svojih cenah: <a href="${naslov}/vprasalnik" style="color:#6D3BEB">${naslov.replace(/^https?:\/\//, '')}/vprasalnik</a><br>
+Petnajst minut. Vprašam te <b>prej</b> zato, ker so odgovori po tem, ko vidiš cene kalkulatorja, zasidrani nanje — in mi ne povedo več ničesar. Tvojih cen ne objavim, ne pokažem posamično in jih ne delim naprej.</p>
 <p>Če se kje zatakne, mi kar odgovori na to sporočilo in napiši, kaj piše na zaslonu.</p>
 <p>Hvala, ker preizkušaš.<br>Tina</p>
 </div>`;

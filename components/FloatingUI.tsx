@@ -181,7 +181,9 @@ export default function FloatingUI() {
   /* V orodju "Let's talk" odpade: prekriva vsebino, povratna informacija pa je
      v meniju in na strani Pomoc. Guard je TU, ne pred hooki — predcasni return
      bi spremenil stevilo klicanih kljukic in React bi javil napako. */
-  if (isKalkulator) return null;
+  /* Vprasalnik posljemo tujcu; plavajoci "Let's talk" ga vabi stran z edine
+     strani, na kateri ga hocemo imeti (Tina, 3. 9. 2026). */
+  if (isKalkulator || /(^|\/)vprasalnik(\/|$)/.test(pathname)) return null;
 
   return (
     <>

@@ -247,6 +247,10 @@ export default async function middleware(request: NextRequest) {
     /* Vprasalnik, ki ga izpolni stranka: javna pot z zetonom, enako kot portal.
        Brez tega bi obrazec pristal za predzagonskim geslom (Tina, 31. 8. 2026). */
     || /^\/v\//.test(pot)
+    /* Vprasalnik o cenah po panogah: Tina posilja povezavo oblikovalcem,
+       fotografom in arhitektom, ki Flowa ne poznajo. Ce bi jih prestregel
+       predzagonski zaklep, ne bi izpolnil nihce (Tina, 3. 9. 2026). */
+    || /^\/vprasalnik(?:\/|$)/.test(pot)
     || pot === '/obvescanje';
 
   /* Pred-launch geslo-zid — skrijemo VES Flow do launcha:

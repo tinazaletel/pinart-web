@@ -1,92 +1,104 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
-import { createAdminClient } from '@/utils/supabase/admin';
+import { Resend } from 'resend';
 import { omejiApi } from '@/lib/rate-limit';
 import { preberiJson, sporociloValidacije } from '@/lib/validacija';
-import { ustvariZeton } from '@/lib/vprasalnikZeton';
-import { ocistiVprasanja, privzetaVprasanja } from '@/lib/vprasalnik';
+import { posiljatelj } from '@/lib/posiljatelj';
+import { createAdminClient } from '@/utils/supabase/admin';
+import { panogaZa, steviloVprasanj } from '@/lib/vprasalnikPanoge';
 
-/* IZDAJA POVEZAVE ZA VPRAŠALNIK — samo za prijavljeno lastnico/skrbnico.
+/* SPREJEM IZPOLNJENEGA VPRAŠALNIKA O CENAH.
  *
- * Vse ostalo (seznam, urejanje vprašanj, branje odgovorov) teče neposredno
- * prek Supabase pod RLS; strežnik je potreben samo tam, kjer se dela ŽETON:
- * ta se zgosti in v bazo gre samo zgostitev, uporabnici pa se pokaže enkrat.
+ * Odgovori so tuje poslovne skrivnosti — prave cene ljudi, ki jih Tina pozna.
+ * Zato NIKOLI javnega vpisa v tabelo: zapiše ga strežnik s service-role
+ * ključem, po omejitvi pogostosti in po preverjanju, da so ključi odgovorov
+ * res iz tega vprašalnika. Brez tega bi lahko kdorkoli napolnil tabelo s
+ * čimerkoli.
+ *
+ * Obljuba na strani ("cen ne objavim, ne pokažem posamično, ne delim naprej")
+ * je razlog, da kdo sploh odgovori. Vse tu mora biti skladno z njo.
  */
 
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const MAX_ODGOVOR = 600;
+const MAX_POLJE = 200;
 
-async function kontekst(request: Request, izbrano?: string) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { napaka: NextResponse.json({ napaka: 'Prijava je potekla.' }, { status: 401 }) };
+type Telo = { panoga?: unknown; odgovori?: unknown; ime?: unknown; email?: unknown };
 
-  const omejitev = await omejiApi(request, 'vprasalnik-upravljanje', 40, user.id);
-  if (omejitev) return { napaka: omejitev };
+const niz = (v: unknown, meja: number) =>
+  (typeof v === 'string' ? v.trim().slice(0, meja) : '');
+
+export async function POST(request: Request) {
+  /* Po IP — prijavljenega uporabnika tu ni in ga tudi ne zahtevamo. */
+  const omejitev = await omejiApi(request, 'vprasalnik', 10);
+  if (omejitev) return omejitev;
+
+  let telo: Telo;
+  try { telo = await preberiJson(request, 120_000); }
+  catch (error) { return NextResponse.json({ napaka: sporociloValidacije(error) }, { status: 400 }); }
+
+  const panoga = panogaZa(niz(telo.panoga, 40));
+  if (!panoga) return NextResponse.json({ napaka: 'Neznan vprašalnik.' }, { status: 400 });
+
+  if (!telo.odgovori || typeof telo.odgovori !== 'object' || Array.isArray(telo.odgovori)) {
+    return NextResponse.json({ napaka: 'Odgovori manjkajo.' }, { status: 400 });
+  }
+
+  /* Sprejmemo SAMO kljuce, ki obstajajo v tem vprasalniku (in njihova
+     dopolnila), da tabela ostane primerljiva med ljudmi. */
+  const dovoljeni = new Set<string>();
+  for (const s of panoga.sklopi) {
+    for (const v of s.vprasanja) { dovoljeni.add(v.id); dovoljeni.add(`${v.id}::dop`); }
+  }
+
+  const odgovori: Record<string, string> = {};
+  for (const [k, v] of Object.entries(telo.odgovori as Record<string, unknown>)) {
+    if (!dovoljeni.has(k)) continue;
+    const besedilo = niz(v, MAX_ODGOVOR);
+    if (besedilo) odgovori[k] = besedilo;
+  }
+  if (!Object.keys(odgovori).length) {
+    return NextResponse.json({ napaka: 'Vprašalnik je prazen.' }, { status: 400 });
+  }
+
+  const ime = niz(telo.ime, MAX_POLJE);
+  const email = niz(telo.email, MAX_POLJE);
+  const skupaj = steviloVprasanj(panoga);
+  const izpolnjenih = Object.keys(odgovori).filter(k => !k.endsWith('::dop')).length;
 
   const admin = createAdminClient();
-  if (!admin) return { napaka: NextResponse.json({ napaka: 'Vprašalniki niso nastavljeni.' }, { status: 503 }) };
+  if (!admin) return NextResponse.json({ napaka: 'Shramba ni na voljo.' }, { status: 503 });
 
-  /* IZBRANO podjetje, ne prvo po vrsti: kdor dela za dve podjetji, bi sicer
-     vprašalnik ustvaril v enem, seznam pa bi bral drugega — nastal bi in
-     izginil (Tina, 31. 8. 2026). Članstvo za izbrano podjetje vseeno
-     preverimo; odjemalcu ne verjamemo na besedo. */
-  let poizvedba = admin.from('organization_members')
-    .select('organization_id, role').eq('user_id', user.id);
-  if (izbrano && UUID.test(izbrano)) poizvedba = poizvedba.eq('organization_id', izbrano);
-  const { data: clanstvo } = await poizvedba.limit(1).maybeSingle();
-  if (!clanstvo) return { napaka: NextResponse.json({ napaka: 'Podjetje ni povezano.' }, { status: 403 }) };
-  /* Povezava navzven je odločitev lastnika ali skrbnika, ne vsakega člana. */
-  if (!['owner', 'admin'].includes(String(clanstvo.role))) {
-    return { napaka: NextResponse.json({ napaka: 'Za to dejanje nimaš dovoljenja.' }, { status: 403 }) };
+  const { error } = await admin.from('vprasalnik_odgovori').insert({
+    panoga: panoga.id,
+    odgovori,
+    ime: ime || null,
+    email: email || null,
+    izpolnjenih,
+    skupaj,
+  });
+  if (error) return NextResponse.json({ napaka: 'Odgovorov ni bilo mogoče shraniti.' }, { status: 500 });
+
+  /* Obvestilo Tini. Ce mail ne odide, vprasalnik JE shranjen — zato napake
+     tu ne vracamo kot neuspeh oddaje. */
+  const kljuc = process.env.RESEND_API_KEY;
+  if (kljuc) {
+    try {
+      await new Resend(kljuc).emails.send({
+        from: posiljatelj(),
+        to: 'tina@pinart.si',
+        subject: `Vprašalnik ${panoga.ime}${ime ? ` — ${ime}` : ''}`,
+        text: [
+          `Panoga: ${panoga.ime}`,
+          `Odgovoril: ${ime || '(brez imena)'}${email ? ` <${email}>` : ''}`,
+          `Izpolnjenih: ${izpolnjenih} od ${skupaj}`,
+          '',
+          'Odgovore vidiš v adminu.',
+        ].join('\n'),
+      });
+    } catch { /* shranjeno je; mail je postranski */ }
   }
-  return { admin, organizationId: String(clanstvo.organization_id) };
-}
 
-/* POST { naslov?, uvod?, vprasanja?, jeEn? } -> nov vprašalnik; žeton vrne ENKRAT */
-export async function POST(request: Request) {
-  let telo: { naslov?: unknown; uvod?: unknown; vprasanja?: unknown; jeEn?: unknown; organizationId?: unknown };
-  try { telo = await preberiJson(request, 40_000); }
-  catch (napaka) { return NextResponse.json({ napaka: sporociloValidacije(napaka) }, { status: 400 }); }
-
-  const ctx = await kontekst(request, typeof telo.organizationId === 'string' ? telo.organizationId : undefined);
-  if ('napaka' in ctx) return ctx.napaka;
-
-  const jeEn = telo.jeEn === true;
-  const naslov = String(telo.naslov || '').trim().slice(0, 200)
-    || (jeEn ? 'Project inquiry' : 'Povpraševanje za projekt');
-  const uvod = String(telo.uvod || '').trim().slice(0, 2000) || null;
-  const vprasanja = telo.vprasanja ? ocistiVprasanja(telo.vprasanja) : privzetaVprasanja(jeEn);
-  if (!vprasanja.length) return NextResponse.json({ napaka: 'Vprašalnik brez vprašanj.' }, { status: 400 });
-
-  const { zeton, zgostitev } = ustvariZeton();
-  const { data, error } = await ctx.admin.from('vprasalniki').insert({
-    organization_id: ctx.organizationId,
-    naslov, uvod, vprasanja, zeton_zgostitev: zgostitev,
-  }).select('id').single();
-
-  if (error) return NextResponse.json({ napaka: error.message }, { status: 500 });
-  return NextResponse.json({ id: data.id, zeton });
-}
-
-/* PATCH { id } -> izda NOV žeton (stara povezava neha delati) */
-export async function PATCH(request: Request) {
-  const ctx = await kontekst(request);
-  if ('napaka' in ctx) return ctx.napaka;
-
-  let telo: { id?: unknown };
-  try { telo = await preberiJson(request, 2_000); }
-  catch (napaka) { return NextResponse.json({ napaka: sporociloValidacije(napaka) }, { status: 400 }); }
-
-  const id = String(telo.id || '');
-  if (!UUID.test(id)) return NextResponse.json({ napaka: 'Neveljaven vprašalnik.' }, { status: 400 });
-
-  const { zeton, zgostitev } = ustvariZeton();
-  const { error } = await ctx.admin.from('vprasalniki')
-    .update({ zeton_zgostitev: zgostitev, updated_at: new Date().toISOString() })
-    .eq('id', id).eq('organization_id', ctx.organizationId);
-
-  if (error) return NextResponse.json({ napaka: error.message }, { status: 500 });
-  return NextResponse.json({ zeton });
+  return NextResponse.json({ ok: true });
 }
