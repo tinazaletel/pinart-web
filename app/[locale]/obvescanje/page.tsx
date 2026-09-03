@@ -1,5 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
+import Image from 'next/image';
+import FlowNav from '@/components/FlowNav';
 import { routing, type Locale } from '@/i18n/routing';
 import { Link } from '@/i18n/routing';
 
@@ -17,9 +19,9 @@ type Stanje = 'potrjeno' | 'odjavljeno' | 'poteklo' | 'napaka';
 const BESEDILA: Record<Locale extends string ? string : never, Record<Stanje, { naslov: string; pod: string }>> = {
   sl: {
     potrjeno:   { naslov: 'Prijava je potrjena.', pod: 'Pisali ti bomo poredko — o orodju in nasvetih za kreativce. V vsakem pisemcu je povezava za odjavo.' },
-    odjavljeno: { naslov: 'Odjavljen/-a si.',      pod: 'Tvoj e-naslov smo izbrisali. Ne hranimo ga naprej in ti ne bomo vec pisali.' },
-    poteklo:    { naslov: 'Povezava je potekla.',  pod: 'Prijave nismo potrdili v roku, zato smo tvoj naslov izbrisali. Ce se se zelis prijaviti, to lahko storis znova.' },
-    napaka:     { naslov: 'Povezava ne velja.',    pod: 'Morda je bila ze uporabljena ali pa je nepopolna. Poskusi znova iz zadnjega pisemca.' },
+    odjavljeno: { naslov: 'Odjavljen/-a si.',      pod: 'Tvoj e-naslov smo izbrisali. Ne hranimo ga naprej in ti ne bomo več pisali.' },
+    poteklo:    { naslov: 'Povezava je potekla.',  pod: 'Prijave nismo potrdili v roku, zato smo tvoj naslov izbrisali. Če se še želiš prijaviti, to lahko storiš znova.' },
+    napaka:     { naslov: 'Povezava ne velja.',    pod: 'Morda je bila že uporabljena ali pa je nepopolna. Poskusi znova iz zadnjega pisemca.' },
   },
   en: {
     potrjeno:   { naslov: 'Subscription confirmed.', pod: 'We write rarely — about the tool and tips for creatives. Every message carries an unsubscribe link.' },
@@ -41,13 +43,22 @@ export default async function Obvescanje({
   const kljuc: Stanje = stanje === 'potrjeno' || stanje === 'odjavljeno' || stanje === 'poteklo' ? stanje : 'napaka';
   const t = BESEDILA[locale === 'en' ? 'en' : 'sl'][kljuc];
 
+  /* Pupa stoji NA ROBU kartice, ne v njej: napol cez zgornjo crto, tako da
+     kartica zacne pod njo. Zato ima kartica dodaten zgornji odmik, slika pa
+     negativni zamik navzgor (Tina, 3. 9. 2026). */
   return (
+    <>
+    <FlowNav locale={locale} />
     <main className="obv-stran">
       <div className="obv-karta">
+        <div className="obv-pupa" aria-hidden>
+          <Image src="/flow-pupa-pismo.png" alt="" width={280} height={280} priority />
+        </div>
         <h1>{t.naslov}</h1>
         <p>{t.pod}</p>
         <Link href="/">{locale === 'en' ? 'Back to Pinart Flow' : 'Nazaj na Pinart Flow'}</Link>
       </div>
     </main>
+    </>
   );
 }

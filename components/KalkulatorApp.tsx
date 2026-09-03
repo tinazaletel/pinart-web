@@ -1680,6 +1680,9 @@ function zaznajTrg(): string {
 const K_NAST = 'pinart-kalkulator-v2';
 const K_PROFILI = 'pinart-kalkulator-profili';
 const K_LEAD = 'pinart-kalkulator-kontakt';
+/* Zapomni si, da je bila iz tega brskalnika oddana prijava na novice — sicer
+   ne moremo lociti "vpisal je e-naslov" od "narocil se je". */
+const K_NOVICE = 'pinart-obvescanje-prijavljen';
 
 type Profil = {
   osnove: Record<string, number>;
@@ -2156,6 +2159,18 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     return () => document.body.classList.remove('pw-sheet-open');
   }, [ponSheet]);
   const [potrdiOdjavo, setPotrdiOdjavo] = useState(false);
+  /* Prijava na novice mora biti DEJANJE, ne tiho stanje: gumb je dokazilo o
+     privolitvi, prizgano stikalo ni (Tina, 3. 9. 2026). */
+  const [prijavaIzid, setPrijavaIzid] = useState<'' | 'poslljem' | 'poslano' | 'brezPisemca' | 'ze' | 'napaka'>('');
+  /* Ali je bila iz TEGA brskalnika ze oddana prijava. Prej se je "Odjavi me"
+     pokazal ze, ce je bilo v polju kaj besedila — torej tudi tistemu, ki se ni
+     prijavil (Tina, 3. 9. 2026). Streznika o tem ne sprasujemo: odgovor "ta
+     naslov je narocen" bi vsakomur omogocil preverjanje tujih e-naslovov. */
+  const [jePrijavljenNaNovice, setJePrijavljenNaNovice] = useState(false);
+  useEffect(() => {
+    try { setJePrijavljenNaNovice(localStorage.getItem(K_NOVICE) === '1'); }
+    catch { /* zasebni nacin */ }
+  }, []);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
      ospredje. null = se ni onboardan; [] = onboardan brez izbire (pokazi vse). */
@@ -2285,6 +2300,9 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   const [pogojiPotrjeni, setPogojiPotrjeni] = useState(false);
   /* pogojiPrebrani: kljukica se odklene sele, ko uporabnik preleti pogoje do dna. */
   const [pogojiPrebrani, setPogojiPrebrani] = useState(false);
+  /* Ko uporabnik klikne zaklenjeno kljukico, namig utripne — sicer klik pozre
+     tiho in okno deluje pokvarjeno (Tina, 3. 9. 2026). */
+  const [pogojiOpomni, setPogojiOpomni] = useState(false);
   /* Flow kartica ima DVA koraka na ISTEM zaslonu (Tina, 25. 8.):
      1 = "Samo troje" po flowovsko, 2 = pogoji + kljukica + gremo. */
   const [pogojiKorak, setPogojiKorak] = useState<1 | 2>(1);
@@ -4532,21 +4550,29 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
 
   const imamKontakt = leadIme.trim().length > 1 && /\S+@\S+\.\S+/.test(leadEmail);
 
-  const posljiKontakt = (namen: string) => {
+  /* Vrne, kaj se je RES zgodilo, da vmesnik ne obljublja pisemca, ki ga ni
+     bilo. Klicalci, ki izida ne rabijo (prijava ob vstopu), promise preprosto
+     ignorirajo (Tina, 3. 9. 2026). */
+  const posljiKontakt = async (namen: string): Promise<'poslano' | 'brezPisemca' | 'ze' | 'napaka'> => {
     /* Prijava na obvescanje NI povprasevanje. Prej je padla v isti Google
        Sheet in odjave od tam nihce ni znal izvesti. Zdaj gre v svojo tabelo,
        kot NEPOTRJENA — seznam nastane sele, ko clovek klikne v pisemcu. */
+    try { localStorage.setItem(K_LEAD, JSON.stringify({ ime: leadIme, email: leadEmail })); }
+    catch { /* zasebni nacin */ }
     try {
-      localStorage.setItem(K_LEAD, JSON.stringify({ ime: leadIme, email: leadEmail }));
-      fetch('/api/obvescanje', {
+      const odgovor = await fetch('/api/obvescanje', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ime: leadIme, email: leadEmail, jezik: locale === 'en' ? 'en' : 'sl',
           vir: namen.slice(0, 40), pogojiRazlicica: POGOJI_RAZLICICA,
         }),
-      }).catch(() => {});
-    } catch { /* ignoriraj */ }
+      });
+      const telo = await odgovor.json().catch(() => ({})) as { ok?: boolean; ze?: boolean; poslano?: boolean };
+      if (!odgovor.ok || !telo.ok) return 'napaka';
+      if (telo.ze) return 'ze';
+      return telo.poslano ? 'poslano' : 'brezPisemca';
+    } catch { return 'napaka'; }
   };
 
   /* letterhead glava: ime podjetja (serif) + podatki levo, stevilka/naziv/datum desno */
@@ -7326,9 +7352,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .se-ikona { flex: none; color: var(--ink); opacity: .7; }
         .cw .se-toggle { position: relative; flex: none; width: 2.6rem; height: 1.5rem; }
         .cw .se-toggle input { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 2.75rem; height: 2.75rem; margin: 0; opacity: 0; cursor: pointer; }
-        .cw .se-slider { position: absolute; inset: 0; background: rgba(17,17,17,.24); border-radius: 999px; transition: background .2s ease; pointer-events: none; }
+        /* Izklopljeno stikalo pri .24 je bilo komaj vidno, vklopljeno pa crno —
+           edino mesto v Flowu, kjer izbrano stanje ni vijolicno (Tina, 3. 9. 2026). */
+        .cw .se-slider { position: absolute; inset: 0; background: color-mix(in oklch, var(--ink) 16%, transparent); border: 1px solid color-mix(in oklch, var(--ink) 22%, transparent); box-sizing: border-box; border-radius: 999px; transition: background .2s ease, border-color .2s ease; pointer-events: none; }
         .cw .se-slider::before { content: ''; position: absolute; top: 2px; left: 2px; width: calc(1.5rem - 4px); height: calc(1.5rem - 4px); background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.22); transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
-        .cw .se-toggle input:checked + .se-slider { background: var(--ink); }
+        .cw .se-toggle input:checked + .se-slider { background: var(--purple, #7C3AED); border-color: var(--purple, #7C3AED); }
         .cw .se-toggle input:checked + .se-slider::before { transform: translateX(calc(2.6rem - 1.5rem)); }
         .cw .se-preklop em { font-style: normal; color: rgba(17,17,17,.72); font-weight: 400; }
         .cw .se-note { margin: .8rem 0 0; font-size: .82rem; line-height: 1.5; color: rgba(17,17,17,.62); }
@@ -8489,6 +8517,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         .cw .posl-dvojica { width: 100%; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
         .cw a.posl-gumb { text-decoration: none; }
         /* Siv gumb: enaka oblika kot crni, samo pridusen — zaklenjeno, ne mrtvo. */
+        .cw .sg-potrdi-zaklenjen { cursor: pointer; }
+        .cw .sg-opomni { display: inline-block; color: var(--purple, #7C3AED); font-weight: 600;
+                         animation: sgOpomni .5s ease 2; }
+        @keyframes sgOpomni { 0%, 100% { transform: translateX(0) } 25% { transform: translateX(-3px) } 75% { transform: translateX(3px) } }
+        .cw .posl-vnos-zaklep { cursor: pointer; }
         .cw .posl-gumb-zaklep { background: color-mix(in oklch, var(--ink) 8%, transparent);
                                 color: color-mix(in oklch, var(--ink) 62%, transparent); border: 0; }
         .cw .posl-gumb-zaklep:hover { background: color-mix(in oklch, var(--ink) 12%, transparent);
@@ -8864,15 +8897,21 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                 <iframe className="sg-pogoji-okvir" title={L('Pogoji poslovanja', 'Terms of business')}
                   src={localePath(locale, `/kalkulator/pogoji`)} onLoad={naloziPogoje} />
                 <p className="sg-pogoji-namig">
+                  {/* Namig utripne, ko kdo poskusi potrditi, preden je prebral. */}
                   {pogojiPrebrani
                     ? L('Hvala — zdaj lahko potrdiš spodaj.', 'Thank you — you can confirm below.')
-                    : L('Preberi pogoje do konca, da jih lahko potrdiš.', 'Read the terms to the end to confirm them.')}
+                    : <span className={pogojiOpomni ? 'sg-opomni' : undefined}>{L('Preberi pogoje do konca, da jih lahko potrdiš.', 'Read the terms to the end to confirm them.')}</span>}
                 </p>
               </div>
             )}
             <div className="soglasje-gumbi">
               {vLupini && pogojiKorak === 2 && (
-                <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}>
+                <label className={'sg-potrdi' + (pogojiPrebrani ? '' : ' sg-potrdi-zaklenjen')}
+                  onMouseDown={() => {
+                    if (pogojiPrebrani) return;
+                    setPogojiOpomni(true);
+                    window.setTimeout(() => setPogojiOpomni(false), 1200);
+                  }}>
                   <input type="checkbox" checked={pogojiPotrjeni} disabled={!pogojiPrebrani} onChange={e => setPogojiPotrjeni(e.target.checked)} />
                   <span>{L('Prebral/-a sem in sprejemam ', 'I have read and accept the ')}<a href={localePath(locale, `/kalkulator/pogoji`)} target="_blank" rel="noopener noreferrer">{L('pogoje poslovanja', 'terms of business')}</a>.</span>
                 </label>
@@ -9362,7 +9401,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           }).catch(() => {});
                         }
                         setLeadIme(''); setLeadEmail('');
-                        try { localStorage.removeItem(K_LEAD); } catch { /* prazno */ }
+                        setJePrijavljenNaNovice(false); setPrijavaIzid('');
+                        try { localStorage.removeItem(K_LEAD); localStorage.removeItem(K_NOVICE); } catch { /* prazno */ }
                         setPotrdiOdjavo(false);
                       }}>{L('Da, odjavi me', 'Yes, unsubscribe me')}</button>
                       <button type="button" className="povezava" onClick={() => setPotrdiOdjavo(false)}>{L('Prekliči', 'Cancel')}</button>
@@ -9370,14 +9410,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   </div>
                 ) : (
                   <>
-                    <label className="se-preklop" style={{ marginBottom: '1.3rem' }}>
-                      <span>{L('Obveščaj me o orodju in nasvetih za kreativce', 'Keep me posted about the tool and tips for creatives')} <em>{L('(neobvezno)', '(optional)')}</em></span>
-                      <span className="se-toggle">
-                        <input type="checkbox" checked={Boolean(leadEmail.trim())}
-                          onChange={() => { if (leadEmail.trim()) setPotrdiOdjavo(true); }} />
-                        <span className="se-slider" aria-hidden />
-                      </span>
-                    </label>
+                    {/* Prej je tu stalo stikalo, ki se je prizgalo ze ob vpisu
+                        e-naslova, poti /api/obvescanje pa NI nikoli poklicalo —
+                        zaslon je trdil "shrani se samodejno" in se ni nic
+                        shranilo. Kdor se je prijavljal tu, se ni prijavil.
+                        Zdaj sta dve dejanji: Prijavi me in Odjavi me. */}
+                    <p className="ob-sub" style={{ margin: '0 0 1.2rem', fontSize: '.95rem', lineHeight: 1.6 }}>
+                      {L('Občasno pišem o orodju in o tem, kako kreativci postavljajo cene. Odjaviš se lahko kadarkoli, z enim klikom.',
+                         'I occasionally write about the tool and how creatives set their prices. You can unsubscribe at any time, with one click.')}
+                    </p>
                     <div className="numgrid" style={{ marginTop: 0 }}>
                       <div className="polje">
                         <label htmlFor="cw-profime">{L('Ime', 'Name')}</label>
@@ -9394,8 +9435,47 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                         }} />
                       </div>
                     </div>
-                    {!leadEmail.trim() && (
-                      <p className="ob-sub" style={{ margin: '.8rem 0 0', fontSize: '.85rem' }}>{L('Vpiši ime in email, da se prijaviš — shrani se samodejno.', 'Enter your name and email to sign up — it is saved automatically.')}</p>
+                    <div className="onboarding-noga" style={{ marginTop: '1.3rem' }}>
+                      <button type="button" className="gumb"
+                        disabled={!/\S+@\S+\.\S+/.test(leadEmail)}
+                        onClick={async () => {
+                          setPrijavaIzid('poslljem');
+                          const izid = await posljiKontakt('profil-obvestila');
+                          setPrijavaIzid(izid);
+                          if (izid === 'napaka') return;
+                          setJePrijavljenNaNovice(true);
+                          try { localStorage.setItem(K_NOVICE, '1'); } catch { /* zasebni nacin */ }
+                        }}>
+                        {L('Prijavi me', 'Subscribe me')}
+                      </button>
+                      {jePrijavljenNaNovice && (
+                        <button type="button" className="povezava" onClick={() => setPotrdiOdjavo(true)}>
+                          {L('Odjavi me', 'Unsubscribe me')}
+                        </button>
+                      )}
+                    </div>
+                    {prijavaIzid ? (
+                      /* Vsak izid pove svojo resnico. Dvojna privolitev: prijava
+                         velja sele po kliku v pisemcu, zato je NE prikazujemo
+                         kot opravljeno — in ce pisemca ni bilo, tega ne
+                         zamolcimo (Tina, 3. 9. 2026). */
+                      <p className="ob-sub" style={{ margin: '.9rem 0 0', fontSize: '.85rem',
+                        color: prijavaIzid === 'napaka' ? 'var(--red, #B3261E)' : 'var(--purple, #7C3AED)' }}>
+                        {prijavaIzid === 'poslljem' ? L('Pošiljam …', 'Sending …')
+                          : prijavaIzid === 'poslano' ? L('Poslala sem ti pisemce. Klikni povezavo v njem in prijava bo potrjena — brez tega te na seznam ne dodam.',
+                              'I have sent you an email. Click the link in it to confirm — without that I will not add you to the list.')
+                          : prijavaIzid === 'ze' ? L('Ta naslov je že na seznamu — pisemca zato nisem poslala znova.',
+                              'This address is already on the list, so I did not send the email again.')
+                          : prijavaIzid === 'brezPisemca' ? L('Prijava je zapisana, potrditvenega pisemca pa ni bilo mogoče poslati. Piši mi in te dodam ročno.',
+                              'Your sign-up is recorded, but the confirmation email could not be sent. Write to me and I will add you manually.')
+                          : L('Prijava ni uspela. Poskusi znova čez trenutek.', 'Sign-up failed. Please try again in a moment.')}
+                      </p>
+                    ) : (
+                      !/\S+@\S+\.\S+/.test(leadEmail) ? (
+                        <p className="ob-sub" style={{ margin: '.9rem 0 0', fontSize: '.85rem' }}>
+                          {L('Vpiši ime in e-pošto ter pritisni »Prijavi me«.', 'Enter your name and email, then press “Subscribe me”.')}
+                        </p>
+                      ) : null
                     )}
                   </>
                 )}
@@ -11386,8 +11466,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                   <div className="posl-za">
                     <span className="posl-za-l">{L('Za', 'To')}</span>
                     <div className="posl-cipi">
-                      <input type="email" className="posl-vnos" disabled
-                        placeholder={L('dodaj email', 'add email')} aria-label={L('Dodaj prejemnika', 'Add recipient')} />
+                      {/* readOnly namesto disabled: onemogoceno polje klik POZRE —
+                          ni kazalke, ni fokusa, ni sporocila, in deluje kot
+                          pokvarjeno. Zdaj klik pelje tja, kamor ga ustavlja
+                          ključavnica (Tina, 3. 9. 2026). */}
+                      <input type="email" className="posl-vnos posl-vnos-zaklep" readOnly
+                        onMouseDown={e => { e.preventDefault(); naPrijavo(); }}
+                        onFocus={naPrijavo}
+                        title={L('Za pošiljanje potrebuješ brezplačen račun', 'Sending requires a free account')}
+                        placeholder={L('dodaj email', 'add email')} aria-label={L('Dodaj prejemnika — potrebuješ račun', 'Add recipient — account required')} />
                     </div>
                   </div>
                   <div className="posl-akcija">

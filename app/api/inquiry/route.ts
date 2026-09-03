@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { jeEmail, omejenNiz, preberiJson, sporociloValidacije } from '@/lib/validacija';
 import { omejiApi } from '@/lib/rate-limit';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 export async function POST(request: Request) {
   const omejitev = await omejiApi(request, 'inquiry', 10);
@@ -18,7 +19,35 @@ export async function POST(request: Request) {
   /* Neobvezna polja obrazca: podjetje, proracun, termin. Ce niso poslana ali so
      predolga, gredo naprej kot prazen niz — obrazec zaradi njih ne pade. */
   const neobvezno = (v: unknown, meja = 160) => (omejenNiz(v, meja) ? String(v) : '');
+  /* NAJPREJ K NAM, sele nato naprej. Doslej je povprasevanje obstajalo samo,
+     dokler je delal Googlov skript; ce je padel, je stranka izginila brez
+     sledu in tega ni videl nihce (Tina, 3. 9. 2026). Zapis se zgodi tudi,
+     kadar webhook ni nastavljen — takrat je to edina kopija. */
+  const admin = createAdminClient();
+  let zapisId: string | null = null;
+  if (admin) {
+    const { data } = await admin.from('povprasevanja').insert({
+      ime: String(body.name), email: String(body.email), brief: String(body.brief),
+      podjetje: neobvezno(body.company) || null,
+      proracun: neobvezno(body.budget) || null,
+      termin: neobvezno(body.timing) || null,
+      vrsta: neobvezno(body.type, 60) || null,
+      jezik: neobvezno(body.locale, 10) || null,
+      vir: neobvezno(body.source, 60) || null,
+    }).select('id').maybeSingle();
+    zapisId = data?.id ? String(data.id) : null;
+  }
+
+  const oznaci = async (posredovano: boolean, napaka?: string) => {
+    if (!admin || !zapisId) return;
+    await admin.from('povprasevanja')
+      .update({ posredovano, napaka: napaka || null }).eq('id', zapisId);
+  };
+
   if (!endpoint) {
+    await oznaci(false, 'GOOGLE_SHEETS_WEBHOOK_URL ni nastavljen');
+    /* Povprasevanje JE shranjeno, zato obiskovalcu ne lazemo, da je padlo. */
+    if (zapisId) return NextResponse.json({ ok: true });
     return NextResponse.json({ error: 'Google Sheets webhook is not configured' }, { status: 503 });
   }
 
@@ -43,6 +72,12 @@ export async function POST(request: Request) {
     redirect: 'follow',
   });
 
-  if (!response.ok) return NextResponse.json({ error: 'Submission failed' }, { status: 502 });
+  if (!response.ok) {
+    await oznaci(false, `Webhook je vrnil ${response.status}`);
+    /* Ce imamo kopijo, je povprasevanje pri nas in ni izgubljeno. */
+    if (zapisId) return NextResponse.json({ ok: true });
+    return NextResponse.json({ error: 'Submission failed' }, { status: 502 });
+  }
+  await oznaci(true);
   return NextResponse.json({ ok: true });
 }

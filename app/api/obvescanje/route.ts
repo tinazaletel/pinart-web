@@ -50,7 +50,9 @@ export async function POST(request: Request) {
   const { data: obstojeci } = await admin
     .from('obvescanje_prijave').select('zeton, potrjeno_ob').eq('email', email).maybeSingle();
 
-  if (obstojeci?.potrjeno_ob) return NextResponse.json({ ok: true });
+  /* Ze potrjen naslov: pisemca NE posiljamo. Vmesniku to POVEMO, sicer bi
+     uporabniku rekel "poglej v posto", pisemca pa ne bi bilo (Tina, 3. 9. 2026). */
+  if (obstojeci?.potrjeno_ob) return NextResponse.json({ ok: true, ze: true });
 
   const { error } = await admin.from('obvescanje_prijave').upsert({
     email,
@@ -65,18 +67,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ napaka: 'Prijava trenutno ni mogoca.' }, { status: 503 });
   }
 
+  /* Ali je pisemce RES odslo. Brez tega vmesnik ne more lociti "poglej v
+     posto" od "prijava je zapisana, pisemca pa ni bilo" — na razvojnem
+     racunalniku brez kljuca se je zgodilo prav to. */
+  let poslano = false;
   const kljuc = process.env.RESEND_API_KEY;
   if (kljuc) {
     const osnova = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
     const pisemce = potrditvenoPisemce(`${osnova}/api/obvescanje/potrdi?zeton=${zeton}`, jezik);
     try {
       await new Resend(kljuc).emails.send({
-        from: posiljatelj(), to: email, replyTo: odgovorNaslov(), subject: pisemce.zadeva, html: pisemce.html,
+        from: posiljatelj(), to: email, replyTo: odgovorNaslov(),
+        subject: pisemce.zadeva, html: pisemce.html, text: pisemce.text,
+        /* Brez te glave nas Yahoo in Gmail stejeta za masovnega posiljatelja
+           brez izhoda. Odjava mora delovati tudi iz pisemca, ki ga clovek
+           nikoli ne potrdi (Tina, 3. 9. 2026). */
+        headers: {
+          'List-Unsubscribe': `<${osnova}/api/obvescanje/odjava?email=${encodeURIComponent(email)}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       });
+      poslano = true;
     } catch (napaka) {
       console.error('Potrditveno pisemce ni odslo:', napaka instanceof Error ? napaka.message : napaka);
     }
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, poslano });
 }

@@ -18,6 +18,13 @@
  *    velja tudi za brezplačni kalkulator, kjer obiskovalec prav tako vpisuje
  *    podatke svoje stranke.
  *
+ * 3. NIKOLI na zasebnih povezavah in vprašalnikih (Tina, 3. 9. 2026, ko je v
+ *    posnetkih PostHoga našla katalog svoje stranke). Pri /p/ in /v/ je žeton
+ *    v naslovu SAM ključ — če naslov konča v analitiki, je zasebna povezava
+ *    zasebna samo še po imenu, posnetek pa vsebuje dokument stranke. Na
+ *    /vprasalnik ljudje vpisujejo svoje prave cene ob izrecni obljubi, da jih
+ *    ne delimo naprej; posnetek te obljube ne bi držal.
+ *
  * Vpisovanje je pri obeh dodatno maskirano, ker se pravilo 2 lahko kdaj po
  * nesreči obide, poteza uporabnika pa je nepovratna.
  */
@@ -46,9 +53,10 @@ export default function Sledenje() {
     return () => window.removeEventListener('pinart-cookie-consent', naSoglasje);
   }, []);
 
-  /* Aplikacija in kalkulator sta izvzeta — glej pravilo 2 zgoraj. */
+  /* Izvzeto — glej pravili 2 in 3 zgoraj. */
   const vOrodju = /(^|\/)kalkulator(\/|$)/.test(pot);
-  if (!soglasje || vOrodju) return null;
+  const jeZasebno = /(^|\/)(p|v)\//.test(pot) || /(^|\/)vprasalnik(\/|$)/.test(pot);
+  if (!soglasje || vOrodju || jeZasebno) return null;
 
   return (
     <>
