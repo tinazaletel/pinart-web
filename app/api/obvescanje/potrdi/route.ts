@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
+import { posiljatelj } from '@/lib/posiljatelj';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { jePotekla, potIzida } from '@/lib/obvescanje';
 
@@ -22,7 +24,7 @@ export async function GET(request: Request) {
   if (!admin) return naStran('napaka');
 
   const { data: prijava } = await admin
-    .from('obvescanje_prijave').select('id, jezik, ustvarjeno, potrjeno_ob').eq('zeton', zeton).maybeSingle();
+    .from('obvescanje_prijave').select('id, email, ime, jezik, ustvarjeno, potrjeno_ob').eq('zeton', zeton).maybeSingle();
   if (!prijava) return naStran('napaka');
 
   const jezik = prijava.jezik === 'en' ? 'en' : 'sl';
@@ -41,5 +43,28 @@ export async function GET(request: Request) {
     console.error('Potrditev obvescanja ni uspela:', error.message);
     return naStran('napaka', jezik);
   }
+
+  /* OBVESTILO TINI. Doslej ga ni bilo: clovek je prijavo potrdil, na seznam je
+     prisel, Tina pa tega ni izvedela nikoli (Tina, 3. 9. 2026). Napaka pri
+     posiljanju ne sme razveljaviti potrjene prijave — ta je ze zapisana. */
+  const kljuc = process.env.RESEND_API_KEY;
+  if (kljuc) {
+    try {
+      const naslov = String((prijava as { email?: string }).email || '');
+      const imePrijave = String((prijava as { ime?: string }).ime || '').trim();
+      await new Resend(kljuc).emails.send({
+        from: posiljatelj(),
+        to: 'tina@pinart.si',
+        subject: `Nov naročnik na novice${imePrijave ? ` — ${imePrijave}` : ''}`,
+        text: [
+          `${imePrijave || '(brez imena)'} <${naslov}>`,
+          `Jezik: ${jezik}`,
+          '',
+          'Prijava je POTRJENA (klik v pisemcu).',
+        ].join('\n'),
+      });
+    } catch { /* prijava je potrjena; obvestilo je postransko */ }
+  }
+
   return naStran('potrjeno', jezik);
 }
