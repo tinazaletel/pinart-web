@@ -1680,6 +1680,9 @@ function zaznajTrg(): string {
 const K_NAST = 'pinart-kalkulator-v2';
 const K_PROFILI = 'pinart-kalkulator-profili';
 const K_LEAD = 'pinart-kalkulator-kontakt';
+/* Zapomni si, da je bila iz tega brskalnika oddana prijava na novice — sicer
+   ne moremo lociti "vpisal je e-naslov" od "narocil se je". */
+const K_NOVICE = 'pinart-obvescanje-prijavljen';
 
 type Profil = {
   osnove: Record<string, number>;
@@ -2159,6 +2162,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
   /* Prijava na novice mora biti DEJANJE, ne tiho stanje: gumb je dokazilo o
      privolitvi, prizgano stikalo ni (Tina, 3. 9. 2026). */
   const [prijavaPoslana, setPrijavaPoslana] = useState(false);
+  /* Ali je bila iz TEGA brskalnika ze oddana prijava. Prej se je "Odjavi me"
+     pokazal ze, ce je bilo v polju kaj besedila — torej tudi tistemu, ki se ni
+     prijavil (Tina, 3. 9. 2026). Streznika o tem ne sprasujemo: odgovor "ta
+     naslov je narocen" bi vsakomur omogocil preverjanje tujih e-naslovov. */
+  const [jePrijavljenNaNovice, setJePrijavljenNaNovice] = useState(false);
+  useEffect(() => {
+    try { setJePrijavljenNaNovice(localStorage.getItem(K_NOVICE) === '1'); }
+    catch { /* zasebni nacin */ }
+  }, []);
   const [mojeStoritve, setMojeStoritve] = useState<Storitev[]>([]);
   /* Onboarding / osebni set storitev: kaj uporabnik ponuja, postavljeno v
      ospredje. null = se ni onboardan; [] = onboardan brez izbire (pokazi vse). */
@@ -9381,7 +9393,8 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                           }).catch(() => {});
                         }
                         setLeadIme(''); setLeadEmail('');
-                        try { localStorage.removeItem(K_LEAD); } catch { /* prazno */ }
+                        setJePrijavljenNaNovice(false); setPrijavaPoslana(false);
+                        try { localStorage.removeItem(K_LEAD); localStorage.removeItem(K_NOVICE); } catch { /* prazno */ }
                         setPotrdiOdjavo(false);
                       }}>{L('Da, odjavi me', 'Yes, unsubscribe me')}</button>
                       <button type="button" className="povezava" onClick={() => setPotrdiOdjavo(false)}>{L('Prekliči', 'Cancel')}</button>
@@ -9417,10 +9430,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                     <div className="onboarding-noga" style={{ marginTop: '1.3rem' }}>
                       <button type="button" className="gumb"
                         disabled={!/\S+@\S+\.\S+/.test(leadEmail)}
-                        onClick={() => { posljiKontakt('profil-obvestila'); setPrijavaPoslana(true); }}>
+                        onClick={() => {
+                          posljiKontakt('profil-obvestila');
+                          setPrijavaPoslana(true);
+                          setJePrijavljenNaNovice(true);
+                          try { localStorage.setItem(K_NOVICE, '1'); } catch { /* zasebni nacin */ }
+                        }}>
                         {L('Prijavi me', 'Subscribe me')}
                       </button>
-                      {Boolean(leadEmail.trim()) && (
+                      {jePrijavljenNaNovice && (
                         <button type="button" className="povezava" onClick={() => setPotrdiOdjavo(true)}>
                           {L('Odjavi me', 'Unsubscribe me')}
                         </button>
@@ -9434,9 +9452,11 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
                            'I have sent you an email. Click the link in it to confirm — without that I will not add you to the list.')}
                       </p>
                     ) : (
-                      <p className="ob-sub" style={{ margin: '.9rem 0 0', fontSize: '.85rem' }}>
-                        {L('Vpiši ime in e-pošto ter pritisni »Prijavi me«.', 'Enter your name and email, then press “Subscribe me”.')}
-                      </p>
+                      !/\S+@\S+\.\S+/.test(leadEmail) ? (
+                        <p className="ob-sub" style={{ margin: '.9rem 0 0', fontSize: '.85rem' }}>
+                          {L('Vpiši ime in e-pošto ter pritisni »Prijavi me«.', 'Enter your name and email, then press “Subscribe me”.')}
+                        </p>
+                      ) : null
                     )}
                   </>
                 )}
