@@ -42,14 +42,14 @@ export default async function Obvescanje({
   const kljuc: Stanje = stanje === 'potrjeno' || stanje === 'odjavljeno' || stanje === 'poteklo' ? stanje : 'napaka';
   const t = BESEDILA[locale === 'en' ? 'en' : 'sl'][kljuc];
 
-  /* Pupa je obrezana na doprsje: v celi sliki drzi papirje IN denar s kovanci,
-     kar pri potrditvi novic ni pravo sporocilo. Zgornji del pusti obraz in
-     dvignjeno roko s papirji (Tina, 3. 9. 2026). */
+  /* Pupa stoji NA ROBU kartice, ne v njej: napol cez zgornjo crto, tako da
+     kartica zacne pod njo. Zato ima kartica dodaten zgornji odmik, slika pa
+     negativni zamik navzgor (Tina, 3. 9. 2026). */
   return (
     <main className="obv-stran">
       <div className="obv-karta">
         <div className="obv-pupa" aria-hidden>
-          <Image src="/flow-pupa-racuni.png" alt="" width={320} height={336} priority />
+          <Image src="/flow-pupa-pismo.png" alt="" width={280} height={280} priority />
         </div>
         <h1>{t.naslov}</h1>
         <p>{t.pod}</p>

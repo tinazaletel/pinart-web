@@ -1328,12 +1328,18 @@ textarea:user-invalid::placeholder {
    zato serif prek --font-serif-flow — sicer pade nazaj na Bodoni. */
 .obv-stran { min-height: 100dvh; display: grid; place-items: center; padding: 2rem 1.2rem; }
 .obv-karta { width: min(34rem, 100%); text-align: center; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: clamp(1.6rem, 5vw, 2.8rem); }
-/* Doprsna Pupa nad izidom. Cela slika drzi tudi denar in kovance, kar pri
-   potrditvi novic ni pravo sporocilo — zato jo obrezemo na zgornji del, kjer
-   ostaneta obraz in dvignjena roka s papirji (Tina, 3. 9. 2026). */
-.obv-pupa { width: 160px; height: 128px; margin: 0 auto .9rem; overflow: hidden; }
-.obv-pupa img { display: block; width: 160px; height: auto; margin-top: -6px; }
-@media (min-width: 640px) { .obv-pupa { width: 190px; height: 152px; } .obv-pupa img { width: 190px; } }
+/* Pupa s pismom stoji NA ROBU kartice — napol cez zgornjo crto, ne v njej.
+   Kartica zato dobi zgornji odmik, slika pa negativni zamik navzgor; brez
+   overflow: visible bi jo kartica odrezala (Tina, 3. 9. 2026). */
+.obv-karta { overflow: visible; padding-top: 4.6rem; }
+.obv-pupa { width: 140px; margin: -8.2rem auto .2rem; pointer-events: none; }
+.obv-pupa img { display: block; width: 140px; height: auto;
+                filter: drop-shadow(0 10px 18px rgba(40, 25, 40, .12)); }
+@media (min-width: 640px) {
+  .obv-karta { padding-top: 5.4rem; }
+  .obv-pupa { width: 168px; margin: -9.6rem auto .3rem; }
+  .obv-pupa img { width: 168px; }
+}
 
 .obv-karta h1 { margin: 0 0 .7rem; font-family: var(--font-serif-flow), Georgia, serif; font-size: clamp(1.5rem, 4vw, 2rem); line-height: 1.15; }
 .obv-karta p { margin: 0 0 1.4rem; color: var(--ink); font-size: 1rem; line-height: 1.55; }
