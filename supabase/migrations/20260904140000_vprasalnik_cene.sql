@@ -47,3 +47,8 @@ alter table public.vprasalnik_odgovori
   drop column if exists email,
   drop column if exists izpolnjenih,
   drop column if exists skupaj;
+
+-- V tem projektu se pravice novi tabeli ne dodelijo samodejno (4. 9. 2026:
+-- »permission denied for table vprasalnik_cene« za service_role). Samo
+-- strežniška vloga; anon in authenticated namenoma NE.
+grant select, insert, update, delete on public.vprasalnik_cene to service_role;
