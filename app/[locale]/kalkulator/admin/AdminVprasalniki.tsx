@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { PANOGE, panogaZa } from '@/lib/vprasalnikPanoge';
 
 /**
- * IZPOLNJENI VPRAŠALNIKI O CENAH (tabela vprasalnik_odgovori).
+ * IZPOLNJENI VPRAŠALNIKI O CENAH (tabela vprasalnik_cene).
  *
  * Prej so hodili kot Excel priponke in se izgubljali v pošti. Tu so vsi na
  * enem mestu, odprti po vrsticah, z vprašanjem ob odgovoru — brez tega je

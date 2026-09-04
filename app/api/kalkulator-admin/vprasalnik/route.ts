@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   if (!baza) return NextResponse.json({ error: 'Baza ni nastavljena' }, { status: 500 });
 
   const { data, error } = await baza
-    .from('vprasalnik_odgovori')
+    .from('vprasalnik_cene')
     .select('id,panoga,odgovori,ime,email,izpolnjenih,skupaj,created_at')
     .order('created_at', { ascending: false })
     .limit(200);
