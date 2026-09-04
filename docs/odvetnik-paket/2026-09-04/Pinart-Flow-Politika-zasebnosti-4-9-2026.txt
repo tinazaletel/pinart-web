@@ -2,7 +2,7 @@ Pinart Flow — Politika zasebnosti (za pravni pregled, 2. pošiljanje)
 ====================================================================
 
 Za pravni pregled — drugo pošiljanje, 4. 9. 2026. Tina Zaletel, Pinart d.o.o., tina@pinart.si.
-Rdeče in ležeče označeni odstavki so PREDLOGI DOPOLNITEV, ki še niso objavljeni — pisani vnaprej za funkcije, ki so zgrajene ali načrtovane (davčno potrjevanje, plačila na prodajnem mestu, novi podatki v politiki); prosim, da jih pregledate skupaj z živim besedilom. Vprašanja so v komentarjih ob robu, vsako pri točki, na katero se nanaša. Oštevilčena so od 1 do 38: 1 do 18 kot v prvem pošiljanju (25. 8.), 19 do 28 pravice uporabe v kalkulatorju (26. 8.; prej pomotoma dvakrat številka 18), 29 do 38 novo. Vprašanja o osebnih podatkih so v politiki zasebnosti, vsa druga v pogojih uporabe; nobeno ni v obeh.
+Rdeče in ležeče označeni odstavki so PREDLOGI DOPOLNITEV, ki še niso objavljeni — pisani vnaprej za funkcije, ki so zgrajene ali načrtovane (davčno potrjevanje, plačila na prodajnem mestu, novi podatki v politiki); prosim, da jih pregledate skupaj z živim besedilom. Dve prazni mesti izpolnim pred objavo: [FIRMA IZVAJALCA] (zunanji izvajalec davčnega potrjevanja) in [PONUDNIK GOSTOVANJA] (kjer bo njegova ločena podatkovna baza). Vprašanja so v komentarjih ob robu, vsako pri točki, na katero se nanaša. Oštevilčena so od 1 do 38: 1 do 18 kot v prvem pošiljanju (25. 8.), 19 do 28 pravice uporabe v kalkulatorju (26. 8.; prej pomotoma dvakrat številka 18), 29 do 38 novo. Vprašanja o osebnih podatkih so v politiki zasebnosti, vsa druga v pogojih uporabe; nobeno ni v obeh.
 Stanje 4. 9. 2026: orodje je v zaprti beti (povabljeni testerji). Javno in brez prijave delujejo brezplačni kalkulator, predstavitvene strani in vprašalnik o cenah. Plačljive naročnine tečejo prek Stripa. Najbolj me zanima, kaj moram popraviti pred odprtjem za vse in kaj lahko počaka.
 
 Kaj je drugače od različice, ki ste jo prejeli 25. 8.: v točki 2 je med podatki o uporabi tudi skupen čas, ko je aplikacija odprta in dejavna; v 5a so novi podobdelovalci AJPES, PostHog (EU oblak, Frankfurt) in Stripe; točki 6 in 8 omenjata PostHog ob Google Analytics in da se brez privolitve analitika in snemanje sej ne naložita. Vse drugo je nespremenjeno. Živa različica: 2026-08-31.
@@ -42,7 +42,7 @@ PREDLOG DOPOLNITVE (še ni objavljeno): – Profil vašega podjetja: naziv, nasl
 – Evidenca delovnega časa: prihodi, odmori, odhodi in seštevki, ki jih vpišete zase ali jih člani vaše ekipe vpišejo zase. Za evidenco zaposlenih je upravljavec delodajalec (vi); mi smo obdelovalec.
 – Preverjanje strank: matična številka podjetja, o katerem poizvedujete, in podatki, ki jih o njem prejmemo iz AJPES ter začasno hranimo, da iste poizvedbe ne plačate dvakrat.
 – Vprašalnik o cenah (javna stran): odgovori o cenah po panogah; ime in e-naslov samo z vašo privolitvijo, za zahvalo in pošiljanje rezultatov.
-– Davčno potrjevanje računov (ko je funkcija omogočena in jo vklopite): vaše namensko digitalno potrdilo FURS (šifrirano), oznake poslovnih prostorov in elektronskih naprav ter podatki računov, ki jih pošljemo FURS (znesek, DDV, ZOI, EOR, oznaka blagajne in operaterja).
+– Davčno potrjevanje računov (ko je funkcija omogočena in jo vklopite): vaše namensko digitalno potrdilo FURS (šifrirano), oznake poslovnih prostorov in elektronskih naprav ter podatki računov, ki jih pošljemo FURS (znesek, DDV, ZOI, EOR, oznaka blagajne in operaterja). Te podatke obdeluje zunanji izvajalec v ločeni podatkovni bazi (točki 5 in 5a).
 – Plačila na prodajnem mestu (ko je funkcija omogočena): znesek, čas, način plačila, zadnje štiri številke kartice in identifikator plačila, ki jih vrne Stripe; celotne številke kartice ne prejmemo.
 [konec predloga]
 
@@ -64,13 +64,18 @@ Odgovore na vprašalnike, ki jih svojim strankam pošljete iz Flowa, hranimo v v
 Podatke hranimo le toliko časa, kot je potrebno za namen obdelave, oz. dokler traja vaš račun. Po izbrisu računa ali na vašo zahtevo podatke izbrišemo, razen kadar jih moramo hraniti po zakonu (npr. računovodski predpisi za izdane račune).
 
 [PREDLOG DOPOLNITVE (še ni objavljeno):]
-PREDLOG DOPOLNITVE (še ni objavljeno): Namensko digitalno potrdilo FURS izbrišemo ob izklopu funkcije ali izbrisu računa. Podatke iz AJPES o preverjenih podjetjih hranimo [30] dni. Nesprejeta vabila v ekipo izbrišemo po [30] dneh. Ime in e-naslov iz vprašalnika o cenah izbrišemo 12 mesecev po odgovoru; odgovori ostanejo anonimni. Povpraševanja hranimo 24 mesecev od zadnjega stika.
+PREDLOG DOPOLNITVE (še ni objavljeno): Namensko digitalno potrdilo FURS in podatke za davčno potrjevanje pri zunanjem izvajalcu izbrišemo ob izklopu funkcije ali izbrisu računa; računi sami ostanejo v vašem računu, dokler jih ne izvozite ali izbrišete, v skladu z zakonskimi roki hrambe, za katere odgovarjate vi. Podatke iz AJPES o preverjenih podjetjih hranimo [30] dni. Nesprejeta vabila v ekipo izbrišemo po [30] dneh. Ime in e-naslov iz vprašalnika o cenah izbrišemo 12 mesecev po odgovoru; odgovori ostanejo anonimni. Povpraševanja hranimo 24 mesecev od zadnjega stika.
 [konec predloga]
 
 
 5. KJE SE PODATKI HRANIJO
 
 Poslovni podatki prijavljenih uporabnikov se hranijo v oblačni bazi in shrambi (Supabase, strežniki v Evropski uniji). Podatki so vezani na vaš račun in zaščiteni s pravili dostopa na ravni baze, tako da do njih dostopate le vi in osebe, s katerimi vsebino izrecno delite.
+
+[PREDLOG DOPOLNITVE (še ni objavljeno):]
+PREDLOG DOPOLNITVE (še ni objavljeno): Podatki za davčno potrjevanje računov (ko je funkcija omogočena) se ne hranijo v naši glavni bazi, ampak v ločeni podatkovni bazi zunanjega izvajalca [FIRMA IZVAJALCA] na strežnikih ponudnika gostovanja [PONUDNIK GOSTOVANJA] v Sloveniji oziroma EU.
+[konec predloga]
+
 
 5A. PODOBDELOVALCI
 
@@ -101,7 +106,8 @@ Podatke posredujemo tretjim tudi, kadar to zahteva zakon. Aktualni seznam podobd
 [PREDLOG DOPOLNITVE (še ni objavljeno):]
 PREDLOG DOPOLNITVE (še ni objavljeno): – Stripe — tudi plačila na prodajnem mestu, ko je funkcija omogočena (prek vašega računa pri Stripu)
 – FURS (Finančna uprava RS) — prejemnik podatkov računov pri davčnem potrjevanju, ko je funkcija omogočena; javni organ na podlagi ZDavPR, ne podobdelovalec
-– zunanji izvajalec davčnega potrjevanja (ko je funkcija omogočena) — [ime in sedež], strežniki v EU, pogodba o obdelavi
+– [FIRMA IZVAJALCA], [naslov] — zunanji izvajalec davčnega potrjevanja (ko je funkcija omogočena): prejme podatke računov za potrditev pri FURS in hrani vaše namensko potrdilo (šifrirano) v ločeni podatkovni bazi; pogodba o obdelavi po členu 28 GDPR
+– [PONUDNIK GOSTOVANJA], [naslov] — gostovanje strežnika in podatkovne baze zunanjega izvajalca davčnega potrjevanja (Slovenija/EU)
 – Supabase (EU) — tudi odgovori vprašalnika o cenah in povpraševanja s kontaktnega obrazca (glejte točko 2)
 [konec predloga]
 
