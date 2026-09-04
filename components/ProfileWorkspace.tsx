@@ -83,6 +83,32 @@ export default function ProfileWorkspace({ base }: { base: string }) {
     } catch { /* ignoriraj */ }
     window.location.reload();
   };
+  /* IZVOZ VSEH PODATKOV — pravica do prenosljivosti. Zaledje je obstajalo od
+     11. 8., gumba pa ni bilo: edina pot je bila mail Tini, kar je za tak
+     korak nenavaden UX (Tina, 4. 9. 2026). Prenos kot datoteka JSON. */
+  const [izvozTece, setIzvozTece] = useState(false);
+  const izvoziPodatke = async () => {
+    setIzvozTece(true);
+    try {
+      const odgovor = await fetch('/api/uporabnik/izvoz', { cache: 'no-store' });
+      if (!odgovor.ok) {
+        const j = await odgovor.json().catch(() => null);
+        setNotice(j?.error || L('Izvoz ni uspel.', 'Export failed.'));
+        return;
+      }
+      const blob = await odgovor.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `pinart-flow-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      setNotice(L('Izvoz je prenesen (datoteka JSON).', 'Your export has been downloaded (JSON file).'));
+    } catch {
+      setNotice(L('Ni povezave.', 'No connection.'));
+    } finally {
+      setIzvozTece(false);
+    }
+  };
   return <div className={styles.page}>{notice && <div className={styles.notice} role="status">{notice}</div>}<form onSubmit={save}>
     <section className={styles.card}><header><p>{L('01 · MOJI PODATKI', '01 · MY DETAILS')}</p><h2>{L('Kdo ustvarja?', 'Who is creating?')}</h2><span>{L('Izkušnje in trg vplivajo na predlagane cene v kalkulatorju.', 'Your experience and market affect the prices suggested by the calculator.')}</span></header><div className={styles.grid}><label>{L('Ime ali vzdevek', 'Name or nickname')}<input value={form.fullName} onChange={e => field('fullName', e.target.value)} /></label><label>{L('Izkušnje', 'Experience')}<select value={form.experience} onChange={e => field('experience', e.target.value)}><option value="student">{L('Študent', 'Student')}</option><option value="zacetnik">{L('Začetnik · do 3 leta', 'Beginner · up to 3 years')}</option><option value="samostojen">{L('Samostojen · 3–8 let', 'Independent · 3–8 years')}</option><option value="strokovnjak">{L('Strokovnjak · 8+ let', 'Professional · 8+ years')}</option><option value="ekspert">{L('Ekspert · prepoznano ime', 'Expert · recognised name')}</option></select></label><label>{L('Država oziroma trg', 'Country or market')}<input value={form.country} onChange={e => field('country', e.target.value)} placeholder={L('npr. Slovenija', 'e.g. United Kingdom')} /></label></div><div className={styles.areas}><strong>{L('Področja dela', 'Areas of work')}</strong><div>{AREAS.map(([id, sl, en]) => <button type="button" key={id} data-active={form.areas.includes(id)} onClick={() => toggleArea(id)}>{form.areas.includes(id) ? '✓ ' : '+ '}{L(sl, en)}</button>)}</div></div></section>
     <section className={styles.card}><header><p>{L('02 · MOJE PODJETJE', '02 · MY BUSINESS')}</p><h2>{L('Podatki na dokumentih.', 'Details shown on documents.')}</h2><span>{L('Uporabijo se v ponudbah, pogodbah in računih.', 'These details are used in proposals, contracts and invoices.')}</span></header><div className={styles.grid}><label>{L('Ime podjetja', 'Business name')}<input value={form.company} onChange={e => field('company', e.target.value)} /></label><label>{L('Davčna številka', 'Tax number')}<input value={form.tax} onChange={e => field('tax', e.target.value)} /></label><label>{L('E-pošta', 'Email')}<input type="email" value={form.email} onChange={e => field('email', e.target.value)} /></label><label>{L('Telefon', 'Phone')}<input value={form.phone} onChange={e => field('phone', e.target.value)} /></label><label>{L('Naslov', 'Address')}<input value={form.address} onChange={e => field('address', e.target.value)} /></label><label>{L('TRR', 'Bank account')}<input value={form.bankAccount} onChange={e => field('bankAccount', e.target.value)} /></label></div></section>
@@ -99,6 +125,9 @@ export default function ProfileWorkspace({ base }: { base: string }) {
         bili le kazalec nanju. Dve poti do iste strani nista dve moznosti,
         ampak dvojna pot — profil naj pove, kdo si in kaksno je tvoje podjetje
         (Tina, 30. 8. 2026). */}
+    <section className={styles.card}><header><p>{L('03 · MOJI PODATKI', '03 · MY DATA')}</p><h2>{L('Vzemi jih s sabo.', 'Take them with you.')}</h2><span>{L('Vse, kar je vezano na tvoj račun — ponudbe, pogodbe, računi, stranke, projekti, evidenca — v eni datoteki JSON.', 'Everything tied to your account — proposals, contracts, invoices, clients, projects, records — in one JSON file.')}</span></header>
+      <button type="button" className={styles.gumbMiren} disabled={izvozTece} onClick={() => void izvoziPodatke()}>{izvozTece ? L('Pripravljam …', 'Preparing …') : L('Izvozi vse podatke', 'Export all data')}</button>
+    </section>
     {/* Nevarno obmocje — preneseno iz Nastavitev (Dizajn). Na dnu profila. */}
     <section className={`${styles.card} ${styles.nevarno}`}>
       <h2>{L('Izbriši vse podatke', 'Delete all data')}</h2>
@@ -113,6 +142,13 @@ export default function ProfileWorkspace({ base }: { base: string }) {
         <button type="button" className={styles.gumbNevaren} onClick={() => setUkinjam(true)}>{L('Ukini račun', 'Close account')}</button>
       ) : (
         <div style={{ display: 'grid', gap: '.6rem', maxWidth: '26rem' }}>
+          {/* Pred ukinitvijo najprej ponudimo prenos: po ukinitvi podatkov ni vec
+             (Tina, 4. 9. 2026). */}
+          <div className={styles.opozorilo} role="note">
+            <strong>{L('Preden ukineš račun, si prenesi kopijo svojih podatkov.', 'Before closing your account, download a copy of your data.')}</strong>
+            <span>{L('Po ukinitvi jih ne moremo obnoviti.', 'After closing, they cannot be recovered.')}</span>
+            <button type="button" className={styles.gumbMiren} disabled={izvozTece} onClick={() => void izvoziPodatke()}>{izvozTece ? L('Pripravljam …', 'Preparing …') : L('Izvozi vse podatke', 'Export all data')}</button>
+          </div>
           <label style={{ display: 'grid', gap: '.3rem', fontSize: '.84rem', fontWeight: 700 }}>
             {L('Za potrditev prepiši svoj e-naslov', 'Type your email to confirm')}
             <input type="email" autoComplete="off" value={ukinPotrditev} onChange={e => setUkinPotrditev(e.target.value)} />

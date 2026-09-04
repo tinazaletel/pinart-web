@@ -15,6 +15,12 @@ const OSEBNE_TABELE = [
   'private_time_entries', 'presence_entries', 'ai_usage', 'user_data_requests',
 ] as const;
 
+/* Tabela, ki je ni ali do katere strežniška vloga nima pravic (4. 9. 2026: šest
+   tabel brez GRANT za service_role), ne sme podreti celotnega izvoza — uporabnik
+   dobi vse, kar obstaja, in seznam, česa ni bilo mogoče prebrati. */
+const PRESKOCLJIVA = new Set(['42501', '42P01', 'PGRST205']);
+const preskocljiva = (error: { code?: string } | null) => !!error && PRESKOCLJIVA.has(error.code || '');
+
 export async function GET(request: Request) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -48,12 +54,14 @@ export async function GET(request: Request) {
   }
 
   const podatki: Record<string, unknown[]> = {};
+  const opozorila: string[] = [];
   for (const tabela of ORGANIZACIJSKE_TABELE) {
     if (!organizationIds.length) {
       podatki[tabela] = [];
       continue;
     }
     const { data, error } = await admin.from(tabela).select('*').in('organization_id', organizationIds);
+    if (error && preskocljiva(error)) { podatki[tabela] = []; opozorila.push(tabela); continue; }
     if (error) {
       return NextResponse.json({ error: `Izvoz tabele ${tabela} ni uspel.` }, { status: 500 });
     }
@@ -62,6 +70,7 @@ export async function GET(request: Request) {
 
   for (const tabela of OSEBNE_TABELE) {
     const { data, error } = await admin.from(tabela).select('*').eq('user_id', user.id);
+    if (error && preskocljiva(error)) { podatki[tabela] = []; opozorila.push(tabela); continue; }
     if (error) {
       return NextResponse.json({ error: `Izvoz tabele ${tabela} ni uspel.` }, { status: 500 });
     }
@@ -86,9 +95,10 @@ export async function GET(request: Request) {
   const { data: chatParticipants, error: chatParticipantsError } = userEmail
     ? await admin.from('chat_participant').select('*').ilike('email', userEmail)
     : { data: [], error: null };
-  if (chatParticipantsError) {
+  if (chatParticipantsError && !preskocljiva(chatParticipantsError)) {
     return NextResponse.json({ error: 'Izvoz udeležb v klepetih ni uspel.' }, { status: 500 });
   }
+  if (chatParticipantsError) opozorila.push('chat_participant');
   const threadIds = [...new Set((chatParticipants || []).map(row => String(row.thread_id)))];
   const { data: chatThreads, error: chatThreadsError } = threadIds.length
     ? await admin.from('chat_thread').select('*').in('id', threadIds)
@@ -96,9 +106,10 @@ export async function GET(request: Request) {
   const { data: chatMessages, error: chatMessagesError } = threadIds.length
     ? await admin.from('chat_message').select('*').in('thread_id', threadIds)
     : { data: [], error: null };
-  if (chatThreadsError || chatMessagesError) {
+  if ((chatThreadsError && !preskocljiva(chatThreadsError)) || (chatMessagesError && !preskocljiva(chatMessagesError))) {
     return NextResponse.json({ error: 'Izvoz klepetov ni uspel.' }, { status: 500 });
   }
+  if (chatThreadsError || chatMessagesError) opozorila.push('chat');
   podatki.chat_participant = chatParticipants || [];
   podatki.chat_thread = chatThreads || [];
   podatki.chat_message = chatMessages || [];
@@ -110,14 +121,16 @@ export async function GET(request: Request) {
     completed_at: new Date().toISOString(),
     metadata: { organization_count: organizationIds.length },
   });
-  if (auditError) {
-    return NextResponse.json({ error: 'Izvoza ni bilo mogoče zabeležiti.' }, { status: 500 });
-  }
+  /* Revizijski zapis je za nas, ne za uporabnika: če ga ni mogoče zapisati,
+     uporabnik vseeno dobi svoje podatke (pravica do prenosljivosti). */
+  if (auditError) { console.error('[izvoz] revizija ni zapisana:', auditError.code, auditError.message); opozorila.push('user_data_requests'); }
 
   return NextResponse.json({
     format: 'pinart-flow-export',
     version: 1,
     exportedAt: new Date().toISOString(),
+    /* tabele, ki jih izvoz ni mogel prebrati (ni jih ali ni pravic) */
+    opozorila,
     user: { id: user.id, email: user.email, profile },
     organizations: organizations || [],
     memberships: memberships || [],

@@ -65,7 +65,7 @@ const sl = {
     },
     {
       heading: '7. Vaše pravice',
-      text: `V skladu z GDPR imate pravico do:\n– dostopa do svojih podatkov\n– popravka netočnih podatkov\n– izbrisa podatkov\n– omejitve obdelave\n– prenosljivosti podatkov\n– ugovora obdelavi\n\nZahtevo pošljite na tina@pinart.si. Pravico imate tudi do pritožbe pri Informacijskem pooblaščencu RS (ip-rs.si).`,
+      text: `V skladu z GDPR imate pravico do:\n– dostopa do svojih podatkov\n– popravka netočnih podatkov\n– izbrisa podatkov\n– omejitve obdelave\n– prenosljivosti podatkov\n– ugovora obdelavi\n\nIzvoz vseh podatkov (prenosljivost) in ukinitev računa (izbris) sta na voljo v Mojem profilu v aplikaciji; druge zahteve pošljite na tina@pinart.si. Pravico imate tudi do pritožbe pri Informacijskem pooblaščencu RS (ip-rs.si).`,
     },
     {
       heading: '8. Piškotki',
@@ -132,7 +132,7 @@ const en = {
     },
     {
       heading: '7. Your Rights',
-      text: `Under GDPR you have the right to:\n– access your personal data\n– rectify inaccurate data\n– erasure of your data\n– restriction of processing\n– data portability\n– object to processing\n\nSend your request to tina@pinart.si. You also have the right to lodge a complaint with the Slovenian Information Commissioner (ip-rs.si).`,
+      text: `Under GDPR you have the right to:\n– access your personal data\n– rectify inaccurate data\n– erasure of your data\n– restriction of processing\n– data portability\n– object to processing\n\nExporting all your data (portability) and closing your account (erasure) are available in My profile in the app; send other requests to tina@pinart.si. You also have the right to lodge a complaint with the Slovenian Information Commissioner (ip-rs.si).`,
     },
     {
       heading: '8. Cookies',

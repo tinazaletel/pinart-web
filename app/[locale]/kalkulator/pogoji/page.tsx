@@ -386,7 +386,7 @@ export default async function KalkulatorPogojiPage({
                 cloud database (Supabase, servers in the EU). The data is tied to your account and private —
                 access is restricted by database-level rules. The provider does not sell it and does not
                 disclose it to third parties, except to subprocessors necessary for operating the service (section 8a), or where
-                required by law. You may request deletion of your account or data at any time at tina@pinart.si.
+                required by law. You can export all your data and close your account at any time in My profile; you may also request this at tina@pinart.si.
               </>
             ) : (
               <>
@@ -395,7 +395,7 @@ export default async function KalkulatorPogojiPage({
                 ponudnika (Supabase, strežniki v EU). Podatki so vezani na tvoj račun in zasebni —
                 dostop je omejen s pravili na ravni baze. Ponudnik jih ne prodaja in ne razkriva
                 tretjim, razen podobdelovalcem, potrebnim za delovanje storitve (točka 8a), ali kadar
-                to zahteva zakon. Izbris računa ali podatkov lahko kadarkoli zahtevaš na tina@pinart.si.
+                to zahteva zakon. Vse svoje podatke lahko kadarkoli izvoziš in račun ukineš v Mojem profilu; isto lahko zahtevaš tudi na tina@pinart.si.
               </>
             )}
           </p>

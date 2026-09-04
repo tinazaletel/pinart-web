@@ -22,5 +22,10 @@
 .gumbNevaren { justify-self: start; min-height: 2.75rem; padding: .6rem 1.1rem; border: 0; border-radius: 999px; background: oklch(50% .17 25); color: oklch(98% .01 25); font: 700 .9rem var(--font-sans), sans-serif; cursor: pointer; }
 .gumbNevaren:hover { background: oklch(44% .18 25); }
 .gumbNevaren:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 3px; }
+.gumbMiren { justify-self: start; min-height: 2.75rem; padding: .6rem 1.1rem; border: 1px solid oklch(20% .02 270 / .25); border-radius: 999px; background: transparent; color: var(--ink, #1c1518); font: 700 .9rem var(--font-sans), sans-serif; cursor: pointer; }
+.gumbMiren:hover { border-color: var(--ink, #1c1518); }
+.gumbMiren:disabled { opacity: .55; cursor: default; }
+.gumbMiren:focus-visible { outline: 3px solid oklch(60% .2 270); outline-offset: 3px; }
+.opozorilo { display: grid; gap: .45rem; justify-items: start; padding: .9rem 1rem; border-radius: .9rem; background: oklch(96% .03 85); border: 1px solid oklch(80% .1 85); font-size: .88rem; line-height: 1.45; }
 @media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 620px) { .page, .card { min-width: 0; }.card { padding: 1.1rem; }.grid { grid-template-columns: 1fr; }.actions { align-items: stretch; flex-direction: column; }.actions > * { width: 100%; margin-left: 0; }.areas button { min-height: 2.75rem; } }
