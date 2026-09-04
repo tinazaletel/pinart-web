@@ -1,142 +1,296 @@
-PINART FLOW — POGOJI UPORABE (OSNUTEK ZA PRAVNI PREGLED, 2. POŠILJANJE)
-========================================================================
+Pinart Flow — Pogoji uporabe (za pravni pregled, 2. pošiljanje)
+===============================================================
 
-Različica besedila: 2026-08-31 · Živo besedilo: https://www.pinartflow.com/kalkulator/pogoji
-Prvič poslano 25. 8. 2026 (različica 2026-08-23); ta datoteka je posodobljena 4. 9. 2026.
-Stanje: objavljeno in v uporabi; pisano brez pravne pomoči. Dvojezično (SL/EN);
-točka 12 določa, da v primeru razhajanja prevlada slovenščina — spodaj je slovenski izvirnik.
-Kako brati: najprej celotno besedilo, kot ga vidi obiskovalec; na koncu so komentarji:
-kaj je drugače od prejšnjega pošiljanja in kazalo na oštevilčena vprašanja v datoteki 3.
+Za pravni pregled — drugo pošiljanje, 4. 9. 2026. Tina Zaletel, Pinart d.o.o., tina@pinart.si.
+Rdeče in ležeče označeni odstavki so PREDLOGI DOPOLNITEV, ki še niso objavljeni — pisani vnaprej za funkcije, ki so zgrajene ali načrtovane (davčno potrjevanje, plačila na prodajnem mestu, novi podatki v politiki); prosim, da jih pregledate skupaj z živim besedilom. Vprašanja so v komentarjih ob robu, vsako pri točki, na katero se nanaša. Oštevilčena so od 1 do 38: 1 do 18 kot v prvem pošiljanju (25. 8.), 19 do 28 pravice uporabe v kalkulatorju (26. 8.; prej pomotoma dvakrat številka 18), 29 do 38 novo. Vprašanja o osebnih podatkih so v politiki zasebnosti, vsa druga v pogojih uporabe; nobeno ni v obeh.
+Stanje 4. 9. 2026: orodje je v zaprti beti (povabljeni testerji). Javno in brez prijave delujejo brezplačni kalkulator, predstavitvene strani in vprašalnik o cenah. Plačljive naročnine tečejo prek Stripa. Najbolj me zanima, kaj moram popraviti pred odprtjem za vse in kaj lahko počaka.
 
-──────────────────────────────────────────────────────────────
+Kaj je drugače od različice 2026-08-23, ki ste jo prejeli 25. 8.: točka 1a se imenuje »Od kod tržni okvir« (prej »Od kod priporočene cene«; orodje ne izreka priporočene cene, ampak pokaže razpon iz javno objavljenih cenikov); v 2a je Stripe poimenovan kot pooblaščeni ponudnik plačil (naročnine žive od 28. 8.); v 8a so novi podobdelovalci PostHog (EU), Stripe in AJPES. Vse drugo je nespremenjeno. Živa različica: 2026-08-31 (v nogi strani še piše 23. 8. — popravimo).
+
 
 Pinart Flow je platforma družbe Pinart d.o.o., Mladinska ulica 63, 1000 Ljubljana (v nadaljevanju: ponudnik), namenjena kreativcem za izračun poštenih cen, pripravo ponudb, pogodb in računov ter vodenje strank in projektov. Brezplačni kalkulator cen je del platforme in deluje tudi brez prijave. Z uporabo platforme ali orodij se strinjaš s temi pogoji.
+
 POJMI
+
 V teh pogojih: ponudnik (ali »mi«) pomeni Pinart d.o.o.; platforma (ali »Pinart Flow«) pomeni aplikacijo Pinart Flow skupaj z brezplačnim kalkulatorjem cen in orodji; ti (ali »uporabnik«) pomeni osebo, ki uporablja platformo; Pupa pomeni našo AI pomočnico (umetno inteligenco), vgrajeno v platformo; izhod AI pomeni vsebino, ki jo ustvari Pupa; sef pomeni funkcijo Sef avtorstva; podobdelovalec pomeni tretjo osebo, ki obdeluje podatke po navodilih ponudnika.
+
 1. INFORMATIVNA NARAVA IZRAČUNOV
+
 Vsi izračuni, cene, razponi in besedila ponudb so zgolj informativni in orientacijski. Ne jamčimo, da orodje izračuna pravo ceno za tvoj primer. Izračuni ne predstavljajo cenovnega, davčnega, računovodskega ali pravnega svetovanja. Za cene v svojih ponudbah se odločaš sam in zanje odgovarjaš izključno sam.
+
 1A. OD KOD TRŽNI OKVIR
+
 Privzete cene in množitelji so nastali na podlagi AI raziskave trga — javno dostopnih cenikov, priporočil stanovskih združenj in primerjav objavljenih cen.Niso izmerjena tržna statistika: to bazo šele gradimo iz anonimnih izračunov (točka 5). Vse zneske lahko in naj prilagodiš svojim razmeram; končna cena v tvojih ponudbah je vedno tvoja odločitev in tvoja odgovornost.
+
 2. DAVKI
+
 Prikazi DDV (vključno s sklicem na 94. člen ZDDV-1) so splošni in morda ne ustrezajo tvoji davčni situaciji. Pred izstavitvijo ponudb in računov preveri svoje obveznosti pri računovodji ali FURS.
+
 2A. NAROČNINA IN PLAČILO
+
 Kalkulator poštenih cen je in ostane brezplačen. Za dostop do plačljivih paketov (Premium, Pro) velja naročnina po cenah, objavljenih na strani ob nakupu. Naročnina se obračunava vnaprej za izbrano obdobje (mesečno ali letno) in se samodejno podaljšuje, dokler je ne odpoveš.
+
 Plačila obdeluje Stripe kot zunanji pooblaščeni ponudnik plačil (Merchant of Record), ki v svojem imenu izda račun ter obračuna in poravna morebitni DDV glede na tvojo državo. Ponudnik plačil je za ta namen samostojni upravljavec plačilnih podatkov; ponudnik (Pinart d.o.o.) ne prejme in ne hrani celotne številke plačilne kartice.
+
 Cene naročnine lahko kadarkoli spremenimo, tudi zvišamo. Spremembo objavimo vnaprej; začne veljati ob naslednjem obračunskem obdobju. Že plačano obdobje ostane po ceni ob nakupu. Naročnino lahko kadarkoli odpoveš in velja do konca plačanega obdobja; sorazmerno vračilo za že začeto obdobje ni zagotovljeno, razen če to zahteva prisilni predpis.
+
 2B. VRAČILA
+
 Naročnina se obračuna vnaprej za izbrano obdobje in za že začeto obdobje praviloma ni vračljiva, razen če prisilni predpis določa drugače. Če si potrošnik v EU, lahko velja zakonska 14-dnevna pravica do odstopa; pri digitalnih storitvah, ki se začnejo na tvojo zahtevo, ta pravica preneha, ko se izvajanje s tvojim soglasjem začne. Če je bilo plačilo očitno obračunano pomotoma, nas kontaktiraj na tina@pinart.si.
+
+[PREDLOG DOPOLNITVE (še ni objavljeno):]
+PREDLOG DOPOLNITVE (še ni objavljeno): 2C. IZDAJA RAČUNOV IN DAVČNO POTRJEVANJE (ZDavPR)
+(1) Dokler funkcija davčnega potrjevanja v tvojem računu ni vklopljena, Pinart Flow ni davčna blagajna in računov ne potrjuje pri FURS. Računi, izdani v Flowu, so namenjeni plačilu z nakazilom na transakcijski račun. Če plačila prejemaš v gotovini, s plačilno kartico na prodajnem mestu ali na drug način, ki se šteje za gotovinsko poslovanje, moraš za izdajo takih računov uporabiti ustrezno davčno blagajno. Za skladnost s predpisi o davčnem potrjevanju računov odgovarjaš sam.
+(2) Ko ponudnik funkcijo davčnega potrjevanja omogoči in jo v nastavitvah vklopiš, Flow deluje kot programska oprema za izdajo in davčno potrjevanje računov: račune, plačane z gotovino ali kartico, pošlje v potrditev FURS v tvojem imenu in za tvoj račun, s tvojim namenskim digitalnim potrdilom, ter na račun zapiše ZOI, EOR in QR-kodo. Ti ostajaš zavezanec po ZDavPR in odgovarjaš za pravilnost in popolnost podatkov na računu, prijavo poslovnih prostorov, sprejem internega akta o številčenju, izročitev računa kupcu v elektronski ali papirni obliki ter za hrambo računov in potrdila. Ponudnik zagotavlja, da programska oprema ustreza tehničnim zahtevam FURS, in izda z zakonom predpisano izjavo o skladnosti.
+(3) Če FURS ni dosegljiv, se račun izda z ZOI brez EOR, Flow pa ga pošlje v naknadno potrditev v zakonskem roku. Popravki izdanih računov so mogoči le s stornom po pravilih ZDavPR.
+(4) Tvoje namensko digitalno potrdilo hranimo šifrirano in ga uporabljamo izključno za podpisovanje sporočil FURS v tvojem imenu; ob izklopu funkcije ali izbrisu računa ga izbrišemo. Del obdelave lahko izvaja podobdelovalec iz točke 8a na strežnikih v EU.
+2D. PLAČILA NA PRODAJNEM MESTU
+Ko ponudnik funkcijo omogoči, lahko plačila s kartico na prodajnem mestu (čitalnik ali plačilo na telefon) sprejemaš prek plačilnih storitev Stripe. Plačilo poteka po pogojih Stripa in prek tvojega računa pri Stripu, povezanega s Flowom; ponudnik ne prejema, ne hrani in ne posreduje sredstev ter ni plačilna institucija. Provizije Stripa nosiš ti. Ponudnik ne odgovarja za zavrnjena plačila, vračila in ugovore (chargeback) med tabo, tvojo stranko in Stripom. Za vsako tako plačilo moraš izdati račun po točki 2c. Podatkov o kartici ponudnik ne prejme; Flow prejme le znesek, čas, način plačila, zadnje štiri številke kartice in identifikator plačila.
+[konec predloga]
+
+
 3. BREZ JAMSTEV
+
 Orodje je na voljo »takšno, kot je«. Ponudnik ne jamči za točnost, popolnost ali primernost izračunov za določen namen in ne odgovarja za morebitno škodo, ki bi nastala z uporabo orodja ali zanašanjem na njegove rezultate.
+
 3A. BETA / ZGODNJI DOSTOP
+
 V času zaprte bete (zgodnji dostop) je platforma na voljo »takšna, kot je« in v aktivnem razvoju. Funkcije se lahko spremenijo, dodajo ali odstranijo, beta podatki pa se lahko občasno ponastavijo ali migrirajo. Priporočamo, da pomembne dokumente hraniš v lastni varnostni kopiji. Dostop do bete lahko kadarkoli omejimo ali ukinemo.
+
 3B. RAZPOLOŽLJIVOST IN STORITVE TRETJIH
+
 Platforma je odvisna od storitev tretjih (npr. gostovanje in baza pri Vercel in Supabase, e-pošta pri Resend ter AI asistentka Pupa prek Anthropic). Ponudnik ne jamči neprekinjenega, pravočasnega, varnega ali brezhibnega delovanja — občasne napake v prikazu, postavitvi ali delovanju so mogoče — ter lahko izvaja vzdrževanje ali doživi izpade, tudi Pupe ali druge funkcije; take funkcije so lahko začasno ali trajno nedostopne. V največjem obsegu, ki ga dopušča pravo, ponudnik ne odgovarja za izpade, prekinitve ali morebitno posledično škodo (glejte tudi točki 9 in 9c). Priporočamo, da pomembne podatke hraniš v lastni varnostni kopiji.
+
 3C. PODPORA
+
 Podporo nudimo po e-pošti na tina@pinart.si. Pomagamo, kakor hitro razumno zmoremo, a v času bete ne jamčimo določenega odzivnega časa ali neprekinjene razpoložljivosti. Podpora zajema uporabo platforme; ni pravni, davčni ali poslovni nasvet.
+
 4. UPORABNIŠKI RAČUN IN DOSTOP
+
 Za shranjevanje dokumentov in dostop do platforme ustvariš račun (npr. s prijavo prek Googla). Za prijavo prejmemo tvoj e-naslov in ime iz izbranega ponudnika prijave. Odgovarjaš za dejavnost na svojem računu in za varovanje dostopa. V času zaprte bete je dostop mogoč na podlagi povabila; ponudnik lahko dostop, pakete ali posamezne funkcije kadarkoli spremeni, omeji ali ukine.
+
 4A. KJE SE HRANIJO TVOJI PODATKI
+
 Brez prijave (npr. brezplačni kalkulator) se tvoje nastavitve, cene in osnutki shranjujejo izključno lokalno v tvojem brskalniku (localStorage) in se ne pošiljajo ponudniku; izbrišeš jih z brisanjem podatkov brskalnika.
+
 Ko si prijavljen, se tvoji poslovni podatki (ponudbe, pogodbe, računi, stranke, projekti, stroški, naloge in podobno) shranjujejo v oblačni bazi ponudnika (Supabase, strežniki v EU). Podatki so vezani na tvoj račun in zasebni — dostop je omejen s pravili na ravni baze. Ponudnik jih ne prodaja in ne razkriva tretjim, razen podobdelovalcem, potrebnim za delovanje storitve (točka 8a), ali kadar to zahteva zakon. Izbris računa ali podatkov lahko kadarkoli zahtevaš na tina@pinart.si.
+
 4B. KOMUNIKACIJE
+
 Če uporabljaš funkcije komunikacije (projektni klepet, projektna pošta), se vsebina sporočil shranjuje v oblačni bazi ponudnika, da je dostopna tebi in osebam, s katerimi deliš projekt. Odhodna e-pošta se pošilja prek zunanjega ponudnika e-pošte (Resend). Za vsebino svojih sporočil odgovarjaš sam.
+
 4C. SEF AVTORSTVA
+
 Sef avtorstva izračuna kriptografski odtis (SHA-256) tvoje datoteke in ga skupaj z datumom ter podatki o delu zabeleži kot dokaz o obstoju in prioriteti dela. Odtis je enolični »prstni odtis« datoteke; iz njega ni mogoče rekonstruirati vsebine. Za neodvisen časovni žig uporabljamo overitelja po standardu RFC 3161 (trenutno FreeTSA), ki prejme samo odtis, nikoli datoteke. Če se odločiš za oblačni trezor (plačljivo), se izvirna datoteka shrani v zasebno oblačno shrambo ponudnika (EU).
+
 Iskrena meja: Sef dokazuje, da je določena datoteka obstajala na določen dan (obstoj in prioriteta), ne pa absolutnega avtorstva ali vizualne izvirnosti sloga. Ne nadomešča uradne registracije pravic (npr. pri pristojnem uradu), ampak jo dopolnjuje. Ponudnik ne jamči pravne veljave dokaza v posameznem sporu.
+
 Original obdrži pri sebi. Sef je varnostna kopija in dokazilo, ne edini izvod. Vedno ohrani izvirno datoteko na svoji napravi. Oblačni trezor zmanjša tveganje izgube, a noben sistem ni brez napak: ponudnik ne jamči neprekinjenega delovanja, razpoložljivosti ali trajne hrambe in ne odgovarja za izgubo, poškodbo ali nedostopnost naloženih datotek (glejte tudi točko 9). Priporočamo, da pomembna dela dodatno hraniš na lastni varnostni kopiji.
+
 4D. SPREJEMLJIVA RABA
+
 Zavezuješ se, da boš platformo uporabljal zakonito in pošteno. Ne smeš: (a) kršiti zakonov ali pravic drugih; (b) vnašati zlonamerne programske opreme, virusov ali škodljive kode ali na kakršenkoli način poškodovati, motiti ali ogroziti platforme, njene kode, varnosti, razpoložljivosti ali vsebine; (c) poskušati dostopati do podatkov drugih uporabnikov ali obiti nadzora dostopa; (d) kopirati, razmnoževati, strojno pobirati ali ponovno uporabljati katere koli vsebine platforme — besedila, vizualne zasnove ali kode — ali kako drugače kršiti avtorskih in drugih pravic intelektualne lastnine ponudnika ali tretjih; (e) preprodajati, podeljevati podlicenc ali obratno inženiriti platforme; (f) prek funkcij komunikacije pošiljati neželenih, nezakonitih, zavajajočih ali žaljivih vsebin. Račun, ki krši ta pravila, lahko omejimo ali začasno onemogočimo in uveljavljamo morebitno povzročeno škodo.
+
 4E. UPRAVIČENOST IN STAROST
+
 Platforma je namenjena poslovni uporabi polnoletnih oseb (18 let ali več) s poslovno sposobnostjo za sklenitev pogodbe. Z uporabo potrjuješ, da izpolnjuješ te pogoje. Platforma ni namenjena otrokom. V ZDA ni namenjena otrokom in zavestno ne zbiramo podatkov oseb, mlajših od 13 let (COPPA); v EGP osebe, mlajše od 16 let, potrebujejo privolitev staršev ali skrbnika.
+
 4F. IZVOZNI NADZOR IN SANKCIJE
+
 Zavezuješ se k spoštovanju veljavnih predpisov o izvoznem nadzoru in sankcijah, vključno s predpisi Združenih držav (Export Administration Regulations in sankcije, ki jih izvaja OFAC) ter ukrepi Evropske unije. Z uporabo platforme jamčiš, da nisi v ozemlju pod embargom, nisi na nobenem seznamu omejenih oseb ali sankcij in platforme ne boš uporabljal za noben prepovedan namen.
+
 4G. OBDELAVA OSEBNIH PODATKOV V TVOJEM IMENU (POGODBA O OBDELAVI)
+
 Kadar v platformo vneseš osebne podatke drugih ljudi — svojih strank, njihovih kontaktnih oseb, prejemnikov tvoje pošte ali sodelavcev — si glede teh podatkov upravljavec ti, ponudnik pa je obdelovalec. Ta točka je pogodba o obdelavi osebnih podatkov, ki jo zahteva 28. člen GDPR, in je sestavni del teh pogojev.
+
 Predmet in trajanje. Ponudnik te podatke obdeluje izključno za delovanje platforme zate, dokler obstaja tvoj račun. Narava in namen: shranjevanje, urejanje, prikaz, izvoz in pošiljanje dokumentov ter sporočil, ki jih ustvariš. Kategorije posameznikov: tvoje stranke, njihove kontaktne osebe in tvoji sodelavci. Kategorije podatkov: imena, e-naslovi, telefonske številke, naslovi, davčne številke in vsebina, ki jo vneseš sam.
+
 Ponudnik se zavezuje, da bo: podatke obdeloval le po tvojih dokumentiranih navodilih (tvoja uporaba platforme šteje za takšna navodila) in nikoli za lastne namene; k zaupnosti zavezal vsakogar, ki ima do podatkov dostop; izvajal ustrezne tehnične in organizacijske ukrepe (varnost na ravni vrstice v bazi, šifriranje med prenosom in v mirovanju, nadzor dostopa); ti pomagal pri odzivu na zahteve posameznikov ter pri tvojih obveznostih glede varnosti, obveščanja o kršitvah in ocen učinka; po prenehanju pogodbe podatke po tvoji izbiri izbrisal ali vrnil; in ti dal na voljo podatke, potrebne za dokaz skladnosti s to točko.
+
 Podobdelovalci. Ponudniku daješ splošno pooblastilo, da vključi podobdelovalce, naštete v politiki zasebnosti. O nameravani vključitvi novega ali zamenjavi obstoječega podobdelovalca te ponudnik obvesti najmanj 30 dni vnaprej, ti pa lahko ugovarjaš; če ugovarjaš, lahko naročnino prekineš in dobiš vrnjeno plačilo za neizrabljeno obdobje. Podobdelovalce zavezujejo enake obveznosti, kot po tej točki veljajo za ponudnika.
+
 Prenosi izven EU. Nekateri podobdelovalci imajo sedež v Združenih državah. Takšni prenosi potekajo na podlagi standardnih pogodbenih klavzul Evropske komisije ali drugega veljavnega jamstva. Tvoja odgovornost: jamčiš, da imaš zakonito podlago za vnos podatkov drugih ljudi v platformo, da si te ljudi ustrezno obvestil in da tvoja navodila niso v nasprotju s predpisi o varstvu osebnih podatkov.
+
 5. ANONIMNA STATISTIKA CEN
+
 Ob prvem prikazu izračuna v seji orodje anonimno zabeleži natanko tole: izbrane storitve, raven izkušenj, tvoj trg, trg naročnika, vrsto rabe (znamka ali projekt), izračunan znesek izvedbe in avtorskih pravic ter valuto. Zapis ne vsebuje imena, e-naslova, IP-naslova ali drugih osebnih podatkov in ga ni mogoče povezati s teboj. Podatki se shranijo v ponudnikovo bazo in se uporabijo izključno za skupno statistiko cen na trgu za kreativce. Ko bo baza dovolj velika, bodo zbirni podatki (npr. mediane cen po storitvah in izkušnjah) na voljo uporabnikom orodja — vsak izračun torej prispeva k pregledu trga, ki ga kreativci danes nimajo.
+
 6. IME IN E-NASLOV OB PRENOSU ALI PROFILU
+
 Če pri prenosu ponudbe ali shranjevanju profila vpišeš ime in e-naslov, ju ponudnik hrani za namen obveščanja o orodju in svojih storitvah (pravna podlaga: privolitev). Privolitev lahko kadarkoli prekličeš s sporočilom na tina@pinart.si; več v politiki zasebnosti.
+
 7. UMETNA INTELIGENCA (PUPA) IN VARNOST PODATKOV
+
 Pupa je naša izbirna AI pomočnica (umetna inteligenca), ki deluje strežniško prek Anthropic Claude API, zato API ključ ni izpostavljen v brskalniku. Anthropic prejme samo vsebino, ki jo vneseš v Pupo, in minimalen kontekst odprtega orodja ali ponudbe, potreben za odgovor; nič drugega. Anthropic nima dostopa do baze Pinart Flow — vidi le besedilo posamezne zahteve in baze ne more brati ali izvoziti.
+
 V Pupo ne vnašaj zaupnih podatkov, poslovnih skrivnosti ali osebnih podatkov svojih strank. Če Pupe ne uporabljaš, se podatki ne pošiljajo družbi Anthropic ali kateremu koli drugemu zunanjemu ponudniku AI. Orodja Pinart Flow delujejo brez AI, cene pa se izračunajo s formulami in pravili lokalno oziroma na zaledju Pinart Flow.
+
 Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje modelov, hramba pa sledi njegovim aktualnim pogojem. Morebitni prenos v ZDA mora biti urejen z DPA z družbo Anthropic in ustreznimi standardnimi pogodbenimi klavzulami (SCC). Seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.
+
 8. INTELEKTUALNA LASTNINA
+
 Orodje, njegova zasnova in vsebine so last ponudnika. Besedila ponudb, pogodb in računov, ki jih ustvariš z orodjem, lahko prosto uporabljaš za svoje poslovanje. Avtorske pravice na delih, ki jih naložiš v Sef ali ustvariš sam, ostanejo tvoje.
+
 8A. PODOBDELOVALCI
+
 Za delovanje platforme uporabljamo zaupanja vredne podobdelovalce, ki podatke obdelujejo izključno po naših navodilih:
+
 — Supabase — oblačna baza in shramba (strežniki v EU)
+
 — Vercel — gostovanje in dostava spletne aplikacije
+
 — Resend — pošiljanje e-pošte
+
 — Google — prijava z Google računom (OAuth) in preglednica Google Sheets za povpraševanja s kontaktnega obrazca
+
 — Cloudflare — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com
+
 — Anthropic — AI asistentka Pupa (samo ob uporabi)
+
 — FreeTSA (RFC 3161) — neodvisni časovni žig sefa (prejme samo odtis)
+
 — PostHog (EU) — merjenje uporabe predstavitvenih strani (po privolitvi) — Stripe — obdelava plačil naročnine (Merchant of Record) — AJPES — poizvedbe v Poslovni register in letna poročila
+
 Aktualni seznam je na voljo na zahtevo na tina@pinart.si.
+
+[PREDLOG DOPOLNITVE (še ni objavljeno):]
+PREDLOG DOPOLNITVE (še ni objavljeno): Podobdelovalci in prejemniki, ki veljajo, ko so funkcije iz točk 2c in 2d omogočene: Stripe — plačila na prodajnem mestu; FURS (Finančna uprava RS) — prejemnik podatkov računov pri davčnem potrjevanju (javni organ na podlagi ZDavPR, ne podobdelovalec); zunanji izvajalec davčnega potrjevanja — [ime in sedež], strežniki v EU, pogodba o obdelavi.
+[konec predloga]
+
+
 8B. PODATKI TVOJIH STRANK (OBDELAVA)
+
 Če kot poslovni uporabnik v platformo shraniš osebne podatke svojih strank ali tretjih (npr. v stranke, projekte ali komunikacije), si upravljavec teh podatkov, ponudnik pa je tvoj obdelovalec, ki jih obdeluje le za zagotavljanje storitve in po tvojih navodilih. Za tako obdelavo je na zahtevo na tina@pinart.si na voljo pogodba o obdelavi podatkov (DPA). Sam odgovarjaš, da imaš zakonito podlago za vnos teh podatkov in da o tem obvestiš svoje posameznike.
+
 8C. PRIJAVA SPORNE VSEBINE IN JAMSTVO
+
 Jamčiš, da je vsebina, ki jo naložiš ali ustvariš v platformi (dela, datoteke, besedila, podatki strank), tvoja ali imaš pravico do njene uporabe ter da ne krši pravic drugih in ni v nasprotju z zakonom. Če meniš, da vsebina v platformi krši tvoje avtorske ali druge pravice oziroma je nezakonita ali žaljiva, jo prijavi na tina@pinart.si z opisom in po potrebi dokazilom o svojih pravicah. Take prijave pregledamo v dobri veri in lahko vsebino odstranimo ali omejimo zadevni račun.
+
 8D. PRIJAVA KRŠITEV AVTORSKIH PRAVIC (ZDA / DMCA)
+
 Za uporabnike in vsebine, povezane z Združenimi državami, velja postopek prijave in odstranitve po DMCA (17 U.S.C. §512). Če si imetnik pravic in meniš, da vsebina na platformi krši tvojo avtorsko pravico, pošlji obvestilo našemu pooblaščenemu naslovu tina@pinart.si, ki naj vsebuje: (a) tvoj fizični ali elektronski podpis; (b) opredelitev avtorskega dela; (c) opredelitev domnevno sporne vsebine in kje se nahaja; (d) tvoje kontaktne podatke; (e) izjavo, da v dobri veri meniš, da raba ni dovoljena; in (f) izjavo pod kazensko odgovornostjo, da so podatki točni in da si pooblaščen za ravnanje. Vsebino bomo odstranili ali onemogočili dostop do nje in lahko ukinemo račune ponavljajočih se kršiteljev. Zadevni uporabnik lahko vloži nasprotno obvestilo z ustreznimi sestavinami po §512(g).
+
 9. OMEJITEV ODGOVORNOSTI
+
 Ponudnik odgovarja le za škodo, povzročeno naklepno ali iz hude malomarnosti. V največjem obsegu, ki ga dopušča pravo, ponudnik ne odgovarja za posredno, posledično ali nepremoženjsko škodo (npr. izgubljen dobiček, izguba podatkov ali posla). Skupna odgovornost ponudnika v zvezi s plačljivo storitvijo je omejena na znesek, ki si ga zanjo plačal v zadnjih 12 mesecih. Nič v teh pogojih ne izključuje odgovornosti, ki je po prisilnih predpisih ni mogoče izključiti (npr. za telesne poškodbe ali pravice potrošnikov).
+
 9A. ODLOČITVE NA PODLAGI ORODJA IN AI
+
 Platformo in njena AI orodja (Pupa) uporabljaš na lastno poslovno odgovornost. Izračuni, predlogi in izhodi AI so informativni in niso strokovni, pravni, finančni, računovodski ali poslovni nasvet. V največjem obsegu, ki ga dopušča pravo, ponudnik ne odgovarja za poslovno škodo, izgubljeni dobiček ali druge posledice odločitev, ki jih sprejmeš na podlagi platforme ali njenih AI orodij — vključno s katerimkoli izhodom AI. Pomembne odločitve preveri pri ustreznem strokovnjaku.
+
 9B. ODŠKODNINSKA ZAŠČITA
+
 Ponudnika boš zavaroval pred zahtevki tretjih in vso škodo, ki izhaja iz tvoje nezakonite uporabe platforme, tvoje kršitve teh pogojev ali vsebine, ki jo prek platforme naložiš, pošlješ ali objaviš.
+
 9C. VIŠJA SILA
+
 Ponudnik ne odgovarja za zamudo ali neizpolnitev zaradi okoliščin izven njegovega razumnega nadzora (npr. izpadi gostovanja, interneta ali tretjih ponudnikov, kibernetski napadi, naravni dogodki, stavke ali dejanja oblasti).
+
 10. ODPOVED IN PRENEHANJE
+
 Uporabo lahko kadarkoli prenehaš in svoj račun izbrišeš. Ponudnik lahko dostop ali račun začasno omeji ali ukine ob kršitvi teh pogojev, zlorabi ali zakonski zahtevi; kadar je to razumno mogoče, te o tem predhodno obvesti. Ob prenehanju preneha pravica do uporabe storitve; svoje podatke lahko pred izbrisom izvoziš. Določbe o odgovornosti, intelektualni lastnini in reševanju sporov veljajo tudi po prenehanju.
+
 10A. PRENOS POGODBE
+
 Ponudnik lahko te pogoje in izvajanje storitve prenese na drugo družbo (npr. ob statusni spremembi ali prevzemu), pri čemer ohrani tvoje pravice po teh pogojih; o takem prenosu te obvestimo. Svojega računa ne smeš prenesti na drugo osebo brez našega soglasja.
+
 10B. PRENEHANJE STORITVE IN IZVOZ PODATKOV
+
 Če se ponudnik odloči platformo v celoti ukiniti, te o tem obvestimo vnaprej (praviloma vsaj 30 dni) po e-pošti in v aplikaciji. V tem obdobju lahko izvoziš vse svoje podatke (ponudbe, pogodbe, račune, stranke, projekte in podobno); po izteku se podatki izbrišejo skladno s politiko zasebnosti. Izvoz podatkov je na voljo kadarkoli, ne le ob ukinitvi.
+
 11. VELJAVNO PRAVO IN PRISTOJNOST
+
 Za te pogoje in uporabo storitve velja pravo Republike Slovenije, brez pravil o koliziji zakonov. Za spore je pristojno stvarno pristojno sodišče v Ljubljani, razen če prisilni predpisi (npr. varstvo potrošnikov) določajo drugače. Morebitne spore skušamo najprej rešiti sporazumno; kot potrošnik se lahko obrneš tudi na platformo EU za spletno reševanje sporov (ec.europa.eu/consumers/odr).
+
 11A. OBVEŠČANJE
+
 Obvestila v zvezi s tvojim računom in temi pogoji pošiljamo na e-naslov, vezan na tvoj račun, ali kot sporočilo v aplikaciji; za ažurnost tega naslova odgovarjaš sam. Ponudnika dosežeš na tina@pinart.si.
+
 11B. DELNA NEVELJAVNOST
+
 Če se katera določba teh pogojev izkaže za neveljavno ali neizvršljivo, ostanejo preostale določbe v celoti veljavne, neveljavna določba pa se nadomesti z veljavno, ki je najbliže njenemu namenu.
+
 11C. CELOVIT DOGOVOR IN ODPOVED UVELJAVLJANJA
+
 Ti pogoji skupaj s politiko zasebnosti predstavljajo celoten dogovor med teboj in ponudnikom glede uporabe platforme. Če ponudnik ob določeni priložnosti neke pravice ne uveljavi, se ji s tem ne odpove.
+
 11D. REŠEVANJE SPOROV ZA UPORABNIKE V ZDA (ARBITRAŽA)
+
 Za uporabnike v Združenih državah in ne glede na 11. točko se vsak spor v zvezi s temi pogoji ali platformo rešuje z zavezujočo arbitražo na individualni podlagi. V obsegu, ki ga dovoljuje pravo, se ti in ponudnik odpovesta pravici do sojenja pred poroto ter do vložitve ali sodelovanja v skupinski ali reprezentativni tožbi. To točko lahko zavrneš z e-pošto na tina@pinart.si v 30 dneh od prvega sprejema teh pogojev. Nič v tej točki ne preprečuje nobeni stranki, da zahteva sodno prepoved zaradi zlorabe intelektualne lastnine ali vloži individualni zahtevek pri sodišču za spore majhne vrednosti.
+
 12. JEZIK
+
 Ti pogoji so izvorno v slovenščini. Morebitni prevodi so zgolj v pomoč; v primeru razhajanja prevlada slovenska različica.
+
 13. SPREMEMBE
+
 Ponudnik lahko orodje in te pogoje kadarkoli spremeni, omeji ali ukine. Velja različica pogojev, objavljena na tej strani. O bistvenih spremembah te obvestimo vnaprej.
+
 Različica 2026-08-31 · Zadnja sprememba: 23. 8. 2026 · Kontakt: tina@pinart.si
 
 ──────────────────────────────────────────────────────────────
 
-KOMENTARJI ZA PREGLED TEGA DOKUMENTA
+VPRAŠANJA (v Wordu so komentarji ob robu; tu po vrsti):
 
-Kaj je drugače od različice 2026-08-23, ki ste jo prejeli 25. 8. 2026:
-   1a — naslov »Od kod tržni okvir« (prej »Od kod priporočene cene«); orodje ne izreka
-        »priporočene cene«, ampak pokaže razpon iz javno objavljenih cenikov; vsebina točke enaka
-   2a — Stripe je poimenovan kot pooblaščeni ponudnik plačil (merchant of record); naročnine so žive od 28. 8.
-   8a — novi podobdelovalci: PostHog (EU), Stripe, AJPES
-   Vse drugo je nespremenjeno. (V nogi strani še piše »Zadnja sprememba: 23. 8. 2026« — popravimo na 31. 8.)
+16. Brezplačni kalkulator. Ker deluje brez računa in se pri meni ne shrani nič razen anonimne cenovne vrstice, obiskovalcu ob vstopu pokažem kratko kartico s tremi bistvenimi točkami in povezavama na pogoje in zasebnost, celotne pogoje s potrditvijo pa šele ob prvem izvozu ali pošiljanju. Je tak dvostopenjski pristop v redu ali potrebujem ločene, krajše pogoje samo za kalkulator?
 
-Oštevilčena vprašanja so v datoteki 3 (Vprašanja in komentarji, različica 3):
+12. Predloge pogodb. V orodju so predloge pogodb med kreativcem in njegovo stranko, s privzetimi vrednostmi (obseg pravic, rok, avans). Kakšna je moja odgovornost za vsebino teh predlog?
 
-   Točka pogojev   ·   Vprašanje v datoteki 3
-   1, 1a — informativna narava, tržni okvir   ·   4, 28, 29 (d)
-   2a, 2b — naročnina, vračila, cene z DDV   ·   7, 11, 38
-   3a — beta   ·   8
-   4c — Sef avtorstva   ·   6
-   4g, 8b — pogodba o obdelavi   ·   2, 30, 35
-   7 — Pupa   ·   3
-   8a — podobdelovalci   ·   14, 31, 32, 37
-   8d — DMCA   ·   13
-   9a — odločitve na podlagi orodja in AI   ·   4, 32 (d)
-   11d — arbitraža ZDA   ·   13
-   celotni dokument   ·   1 in 33 (davčna blagajna — NAJBOLJ PEREČE), 12 (predloge pogodb),
-                           17 (odstavki za funkcije, ki še ne delujejo), 34 (pravice v dokumentih),
-                           35 (ekipe — manjka točka 4h), 36 (evidenca delovnega časa)
+4. Cene, ki jih orodje priporoči. Privzete cene in množitelji so nastali iz AI raziskave trga: iz javnih cenikov, priporočil stanovskih združenj in primerjav objavljenih cen. Niso izmerjena statistika; to bazo šele gradim iz anonimnih izračunov. V pogojih pišem, da so informativni in da je končna cena odločitev uporabnika. Je to dovolj, da me ne doleti odgovornost, če nekdo po mojem predlogu zaračuna preveč ali premalo?
+
+1. Računi in FURS. Flow izdaja račune, ni pa davčna blagajna in računov ne potrjuje pri FURS. Namenjeni so plačilu na transakcijski račun. Bojim se primera, ko uporabnik izda račun pri meni, plačilo prejme v gotovini in misli, da je davčno vse urejeno. Kako naj to omejitev zapišem, da je odgovornost jasno na uporabniku? Tako sem ga zaenkrat zapisala sama, prosim, popravite ga po svoje:
+Pinart Flow ni davčna blagajna in ne izvaja davčnega potrjevanja računov pri FURS. Računi, izdani v Flowu, so namenjeni plačilu z nakazilom na transakcijski račun. Če uporabnik prejema plačila v gotovini, s plačilno kartico na prodajnem mestu ali na drug način, ki se šteje za gotovinsko poslovanje, mora za izdajo računov uporabiti ustrezno davčno blagajno. Za skladnost s predpisi o davčnem potrjevanju računov odgovarja uporabnik.
+(Dopolnitev 4. 9.: to velja še naprej, dokler je modul iz vprašanja 33 izklopljen.)
+
+33. Davčna blagajna: zgrajena, izklopljena (2. 9.). Modul za izdajo računov z gotovino ali kartico, davčno potrjevanje pri FURS (ZOI, EOR, QR-koda), storno in nastavitve poslovnih prostorov je v orodju zgrajen, a izklopljen (uporabnik ga vidi, ne more ga uporabiti). Vklop načrtujem po zagonu z zunanjim izvajalcem, ki bo del za FURS poganjal na ločenem strežniku. Uporabnikovo namensko digitalno potrdilo FURS se hrani šifrirano; ključ ni v bazi. Vprašanja: (a) dokler je izklopljen, ostane besedilo iz vprašanja 1 — kako naj se glasi, ko se vklopi (uporabnik ostane zavezanec, Flow je programska oprema; katere obveznosti ima proizvajalec programske opreme po ZDavPR, na primer izjava o skladnosti); (b) hramba uporabnikovega potrdila v mojem sistemu in pri zunanjem izvajalcu (32. člen GDPR, pogodba o obdelavi z izvajalcem); (c) račun bi kupcu privzeto izročili elektronsko (QR-koda na zaslonu, SMS ali e-pošta), tiskanje kot možnost — prosim za potrditev, da to ustreza ZDavPR-B (»v elektronski ali papirni obliki«).
+
+11. Ustanovna cena. Razmišljam o ponudbi »ustanovna cena ostane enaka, dokler naročnina neprekinjeno traja«. Ali me taka obljuba zavezuje za vedno in kako naj jo zapišem, da jo lahko izpolnim? (Odločitev je padla 30. 8. — glej vprašanje 38.)
+
+38. Cene: tri lestvice (odločeno 30. 8.). Ustanovna cena za prvih 50 (9 € na mesec), uvodna do 31. 10. 2026 (15 € oziroma 29 €) in redna (23 € oziroma 48 €; ob letnem plačilu 18 € oziroma 35 € na mesec). Vse cene so končne, z DDV, ker Stripe kot pooblaščeni ponudnik plačil obračuna DDV po državi kupca. Obljuba: kdor je naročen, obdrži svojo ceno, dokler naročnina neprekinjeno traja. Vprašanja: kako to zapisati v točko 2a, da je zaveza izpolnljiva (vprašanje 11); ali je sklic »končna cena z DDV« pravilen, ko kupec ni potrošnik in DDV odbija.
+
+7. Potrošniki proti podjetjem. Orodje je namenjeno poslovni rabi, a samostojni kreativci so pogosto tudi potrošniki. Katere določbe moram prilagoditi, da so pravice potrošnikov spoštovane (odstop od pogodbe, vračila)?
+
+8. Zaprta beta. Dostop je po vabilu, funkcije se še spreminjajo, podatki se lahko ponastavijo. Kako to zapisati, da je pošteno in hkrati varno?
+
+6. Sef avtorstva. Shrani kriptografski odtis datoteke in datum, časovni žig pa naredi neodvisen overitelj po standardu RFC 3161. Pišem, da to dokazuje obstoj dela na določen dan, ne pa avtorstva. Je taka formulacija dovolj previdna?
+
+2. Podatki strank mojih uporabnikov. V Flow vnašajo imena, naslove, davčne številke in vsebino komunikacije svojih strank. Razumem, da sem pri tem obdelovalec, uporabnik pa upravljavec, in sem pogodbo o obdelavi napisala kar v pogoje (točka 4g). Ali to zadošča po 28. členu GDPR ali potrebujem ločen dokument, ki ga vsak podpiše posebej?
+
+35. Ekipe (zgrajeno, v zaprti beti). Uporabnik ustvari organizacijo, povabi sodelavce po e-pošti, določa vloge (lastnik, član), lahko prenese lastništvo; brezplačni paket ima 3 sedeže, Pro 25. Povabljeni sodelavec vidi podatke organizacije (stranke, projekte, dokumente) in vanje vnaša svoje. Vprašanja: kdo je upravljavec za podatke, ki jih vnese sodelavec (organizacija kot podjetje uporabnika?); kaj mora v pogoje (nova točka 4h); kaj se zgodi z vnosi člana, ko ga lastnik odstrani; vabilo vsebuje e-naslov vabljene osebe pred njenim sprejemom — koliko časa ga smem hraniti, če vabila ne sprejme.
+
+19. Postavitev proti oblikovanju. V orodju trdim, da postavitev spletne strani po kupljeni predlogi ni avtorsko delo in da zato zanjo ni prenosa pravic; avtorsko delo je oblikovanje, ki ga izvajalka ustvari sama. Ali to drži? Zanima me predvsem, kje je meja: koliko prilagoditve tuje predloge (barve, tipografija, postavitev sekcij, lastne komponente) že ustvari novo avtorsko delo, in kako naj to zapišem, da ne obljubljam nečesa, kar ni moje.
+
+20. Pravice, vključene v ceno izvedbe. Izvajalka lahko izbere, da so pravice uporabe zajete v ceni oblikovanja in se ne zaračunajo posebej. Ali mora biti obseg (teritorij, mediji, doba, izključnost) tudi v tem primeru izrecno zapisan, da je prenos veljaven? Bojim se položaja, ko se izvajalka odloči za »vključeno v ceno«, misli pa, da je s tem obseg samoumevno neomejen.
+
+21. Kaj pomeni molk. Privzeto pravilo v orodju je, da neodgovorjeno vprašanje ne pomeni dovoljenja: če obseg ni dogovorjen, se ne šteje za dovoljeno uporabo, ampak za nedogovorjeno. Vsako vprašanje ima izrecno izbiro »Še ni dogovorjeno«. Ali je taka razlaga skladna z zakonom in kako naj bo zapisana v ponudbi, da drži tudi ob sporu?
+
+22. Ali ponudba zadošča pisni obliki. Prenos materialnih avtorskih pravic mora biti pisen. V praksi izvajalka pošlje PDF ponudbo, v kateri so pogoji uporabe izpisani pri vsaki storitvi, naročnik pa jo potrdi po elektronski pošti ali s klikom. Ali to zadošča, ali je za veljaven prenos nujna ločena podpisana pogodba? Če zadošča, kaj mora ponudba nujno vsebovati?
+
+23. Tuja gradiva v izdelku. V delo pogosto vstopijo predloge, pisave, fotografije in vtičniki drugih avtorjev. V orodju jih ločujem od avtorskih pravic izvajalke in jih imenujem licence. Kaj mora ponudba povedati, da odgovornost za njihove licence nosi naročnik in ne izvajalka, in kaj se zgodi, če izvajalka licenco kupi na svoje ime, izdelek pa uporablja naročnik?
+
+24. Logotip in znamka. Prenos avtorskih pravic na logotipu ni registracija znamke. Ali naj pogodba to izrecno loči, kdo nosi stroške registracije in ali mora izvajalka naročnika na to opozoriti? Zanima me tudi, ali je za oblikovalko kakšno tveganje, če naročnik logotip registrira kot znamko, izvajalka pa podobno rešitev pozneje uporabi pri drugem naročniku.
+
+25. Časovno omejene licence. Pri kampanjah in oglasnih materialih orodje privzeto predlaga licenco za obdobje (na primer tri mesece). Kaj se zgodi, če naročnik gradivo uporablja po izteku: je to kršitev pogodbe ali avtorske pravice, in katero določbo naj vključim, da je posledica jasna vnaprej?
+
+26. Tantieme pri prodajnih produktih. Pri izdelkih za prodajo orodje namesto enkratnega odkupa predlaga honorar in tantieme od prodaje, s predujmom kot minimalno garancijo, vračilom pravic ob prekinitvi in letnim poročanjem o prodaji. Ali so take določbe v Sloveniji uveljavljive in kaj mora pogodba vsebovati, da je poročanje izvršljivo?
+
+27. Poimenovanje v orodju. V vmesniku uporabljam izraz »pravice uporabe (avtorske pravice)« za delo izvajalke in »licenca« za tuja gradiva, ker je uporabnicam razumljivejši; v pogodbi pa piše »materialne avtorske pravice«. Ali je tako dvojno poimenovanje sprejemljivo, dokler je pogodbeno besedilo pravno pravilno?
+
+34. Pravice v ponudbi in pogodbi: konkretni stavki (4. 9.). Navezuje se na vprašanja 20 do 22. Pri vsaki storitvi ima izvajalka tri možnosti in dokument zdaj pri vsaki izpiše svoj stavek:
+– ločena postavka: »pravice uporabe za [obseg] ([vrsta prenosa], [trajanje]) so ločena postavka: [znesek]«;
+– vključeno v ceno: »pravice uporabe za [obseg] ([vrsta], [trajanje]) so vključene v ceno storitve«;
+– neoznačeno: »naročnik pridobi pravico uporabe dela za dogovorjeni namen brez ločenega doplačila; širša ali izključna uporaba se dogovori posebej«.
+Člen o avtorskih pravicah v pogodbi dobi dodatek: »Kjer ponudba pravic ne navaja posebej, naročnik pridobi pravico uporabe dela za dogovorjeni namen brez ločenega doplačila; širša ali izključna uporaba se dogovori posebej. Moralne avtorske pravice ostanejo avtorju.« Prosim za pregled formulacij: so pravno zadostne, in je tretja (neoznačeno) v skladu s pravilom iz vprašanja 21, da molk ni neomejeno dovoljenje?
+
+10. Priponke. Uporabniki lahko k projektom in pošti pripenjajo datoteke (slike, PDF, tudi SVG). Shranjene so v zasebni shrambi v EU. Moram za naložene vsebine dodati kaj več, kot imam v točki 8c (prijava sporne vsebine)?
+
+28. Predlagani zneski. Orodje predlaga ceno pravic na podlagi obsega uporabe in podatkov o naročniku, izvajalka pa jo lahko kadar koli spremeni. Ob predlogu piše, da gre za priporočilo in ne za pravni nasvet. Je tak zapis dovolj, ali naj bo opozorilo tudi v sami ponudbi, ki jo prejme naročnik?
+
+36. Evidenca delovnega časa (od 30. 8.). Uporabnik (in člani njegove ekipe) beležijo prihod, malico in odhod s štoparico; nastane mesečna tabela s seštevki in izvoz CSV. Namen je evidenca po ZEPDSV. Vprašanja: kaj mora orodje zagotoviti, da se evidenca šteje za ustrezno (nespremenljivost oziroma revizijska sled popravkov, seznanitev delavca, hramba); ali moram izrecno zapisati, da je za pravilnost in hrambo odgovoren delodajalec; kako dolgo morajo biti podatki dosegljivi po prenehanju naročnine.
+
+9. Izbris in izvoz. Uporabnik lahko podatke kadarkoli izvozi, izbris zahteva po e-pošti. Moram izbris ponuditi kot gumb v aplikaciji?
+
+13. Arbitraža za ZDA. V pogojih (točka 11d) imam določbo o zavezujoči arbitraži in odpovedi skupinski tožbi. Prevzela sem jo po zgledu ameriških storitev. Naj jo obdržim ali umaknem, dokler ZDA niso moj trg?
+
+17. Odstavki za funkcije, ki še ne delujejo. Nekaj določb (plačljivi trezor, naročnina, arbitraža) je pisanih vnaprej. Je bolje imeti jih zapisane in neuporabljene ali jih dodati šele, ko funkcija zaživi?
+
