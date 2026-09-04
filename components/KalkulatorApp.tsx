@@ -14,6 +14,7 @@ import { getBusinessDocumentUrl, loadOrganizationProfile, saveCloudSettings, sav
 import { dokCss, dokFontLink, dokVars, DOK_BARVA_PRIVZETA, DOK_FONT_PRIVZETI, aktivnaPredloga, nastaviLogoAktivne, DOK_PODLOGE_A4, podlogaJeTemna, migrirajStariFont } from '@/lib/dokVidez';
 import { predlagajDdv } from '@/lib/ddvSvet';
 import { osnovnaVprasanja, dodatnaVprasanja, PRAV_STALNE, povzetekUporabe, rabaIzOdgovorov, nedogovorjena, type PravVprasanje } from '@/lib/praviceVprasanja';
+import { stavekPravicVPonudbi, stavekBrezDoplacila } from '@/lib/praviceBesedila';
 import { preberiPredogled, usePredogled } from '@/lib/predogled';
 import { posljiMail } from '@/lib/posta';
 import { nastaviNapredek } from '@/lib/flowNapredek';
@@ -4070,8 +4071,15 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
     /* AVTORSKE PRAVICE — po storitvah (razsirjena) + regijski pravni okvir */
     v.push('');
     v.push(L('AVTORSKE PRAVICE', 'COPYRIGHT'));
+    /* Vsaka storitev dobi stavek za svoje stanje kljukice: locena postavka /
+       vkljuceno v ceno / brez doplacila (NE brez pravic). Storitve brez lastnih
+       pravic (postavitev, del CGP) se ne izpisejo — prej so se z 0 EUR
+       (Tina, 4. 9. 2026). */
+    let izpisanihPravic = 0;
     if (obsegPonudbe === 'razsirjena' && r.praviceVrstice.length > 0) {
       r.praviceVrstice.forEach(pv => {
+        if (pv.izkljucena) return;
+        izpisanihPravic += 1;
         const pvNaziv = storNaziv((pv as { sid?: string }).sid ?? '', pv.ime);
         if (pv.tantiema) {
           v.push(`· ${pvNaziv} — ${L(`prodajni produkt: predujem / minimalna garancija ${val(pv.znesek)} + tantieme ${pv.tantiema} % od neto veleprodaje`, `retail product: advance / minimum guarantee ${val(pv.znesek)} + royalties ${pv.tantiema} % of net wholesale`)}`);
@@ -4079,7 +4087,7 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         } else {
           const vrsta = pv.prenos === 'licenca' ? L('licenca za rabo', 'usage licence') : pv.prenos === 'neizkljucni' ? L('neizključni prenos', 'non-exclusive transfer') : L('izključni prenos', 'exclusive transfer');
           const zn = pv.prenos === 'licenca' ? L('prek letne licence', 'via annual licence') : val(pv.znesek);
-          v.push(`· ${pvNaziv} — ${vrsta}, ${pv.trajanjeIme}, ${pv.obsegOpis} (${zn})`);
+          v.push(`· ${pvNaziv} — ${stavekPravicVPonudbi({ nacin: pv.nacin, obseg: pv.obsegOpis, vrsta, trajanje: pv.trajanjeIme, znesek: zn }, locale === 'en')}`);
         }
         {
           /* dogovorjeni obseg iz odgovorov (lib/praviceVprasanja) — besedilo, ne cena */
@@ -4107,7 +4115,13 @@ export default function KalkulatorApp({ locale = 'sl', vLupini = false }: { loca
         if (l.opomba && l.opomba.trim()) v.push(`  · ${L('opomba', 'note')}: ${l.opomba.trim()}`);
       });
     }
-    v.push(`· ${L('Skupaj vrednost pravic', 'Total value of rights')}: ${val(r.pravice)}${r.raba === 'projekt' ? L(`; alternativa: tantieme ${r.tantiemePct} % od prodaje, obračunano letno`, `; alternative: royalties ${r.tantiemePct} % of sales, settled annually`) : ''}`);
+    if (r.pravice > 0) {
+      v.push(`· ${L('Skupaj vrednost pravic', 'Total value of rights')}: ${val(r.pravice)}${r.raba === 'projekt' ? L(`; alternativa: tantieme ${r.tantiemePct} % od prodaje, obračunano letno`, `; alternative: royalties ${r.tantiemePct} % of sales, settled annually`) : ''}`);
+    } else if (izpisanihPravic === 0) {
+      /* Nic ni locena postavka in nobena storitev ni izpisana (osnovna ponudba):
+         namesto »Skupaj vrednost pravic: 0 €« pove, kaj narocnik dobi. */
+      v.push(`· ${stavekBrezDoplacila(locale === 'en')}`);
+    }
     v.push('');   /* prazna vrstica -> pravni okvir je LOCEN odstavek, ne zlije se v zadnjo pikico */
     const rezimEU = ['si', 'west', 'east'].includes(trgNarocnika);
     if (rezimEU) {

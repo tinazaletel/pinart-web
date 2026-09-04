@@ -13,6 +13,7 @@ import { CaretDown, CaretUp, Eye, Paperclip, PencilSimple, PenNib, TextAa, TextB
 import GumbNazaj from '@/components/ui/GumbNazaj';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, type FlowClient, type FlowContract } from '@/lib/pinartFlowStore';
+import { POGODBA_PRAVICE_DODATEK } from '@/lib/praviceBesedila';
 import { pdfZahteva } from '@/lib/pdfZahteva';
 import { deleteBusinessDocument, getBusinessDocumentUrl, uploadBusinessDocument } from '@/lib/pinartFlowCloud';
 import { podatkiZaPredogled, usePredogled } from '@/lib/predogled';
@@ -544,7 +545,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
           { id: 'gradiva-narocnika', naslov: 'Gradiva naročnika', opcijski: true, telo: opcIzv.gradiva },
           { id: 'sod-obvez-izv', naslov: 'Obveznosti izvajalca', telo: '<p>Izvajalec pogodbena dela izvede strokovno, naročnika obvešča o okoliščinah, ki vplivajo na izvedbo, ter omogoči pregled dogovorjenih faz projekta.</p>' },
           { id: 'sod-varovanje', naslov: 'Varovanje podatkov', opcijski: true, telo: '<p>Pogodbeni stranki varujeta poslovne, osebne in druge zaupne podatke, s katerimi se seznanita pri sodelovanju, tudi po prenehanju pogodbe.</p>' },
-          { id: 'sod-avtorske', naslov: 'Avtorske pravice', opcijski: true, telo: '<p>Obseg prenosa oziroma licence avtorskih pravic velja, kot je določen v potrjeni ponudbi. Dogovorjene pravice se na naročnika prenesejo po celotnem plačilu. Delovne datoteke, neizbrane rešitve in sredstva tretjih oseb niso vključeni, če ni pisno dogovorjeno drugače.</p>' },
+          { id: 'sod-avtorske', naslov: 'Avtorske pravice', opcijski: true, telo: '<p>Obseg prenosa oziroma licence avtorskih pravic velja, kot je določen v potrjeni ponudbi. Dogovorjene pravice se na naročnika prenesejo po celotnem plačilu. Delovne datoteke, neizbrane rešitve in sredstva tretjih oseb niso vključeni, če ni pisno dogovorjeno drugače. ' + POGODBA_PRAVICE_DODATEK.sl + '</p>' },
           { id: 'pridrzane-pravice', naslov: 'Pridržane pravice', opcijski: true, telo: opcIzv.pridrzane },
           { id: 'prepoved-registracije', naslov: 'Prepoved registracije', opcijski: true, telo: opcIzv.registracija },
           { id: 'navedba-avtorstva', naslov: 'Navedba avtorstva', opcijski: true, telo: opcIzv.avtorstvo },
@@ -567,7 +568,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
           { id: 'pod-prevzem', naslov: 'Prevzem in reklamacije', telo: '<p>Naročnik po dokončanju delo pregleda in o morebitnih očitnih napakah izvajalca pisno obvesti brez nepotrebnega odlašanja, sicer se šteje, da je delo prevzeto brez pripomb. Izvajalec za stvarne napake jamči po pravilih obligacijskega prava in jih v primernem roku brezplačno odpravi.</p>' },
           { id: 'pod-obvez', naslov: 'Obveznosti naročnika', telo: '<p>Naročnik izvajalcu pravočasno zagotovi vsa potrebna gradiva, informacije, dostope in soglasja, sproti potrjuje posamezne faze ter poravna račune v dogovorjenih rokih.</p>' },
           { id: 'gradiva-narocnika', naslov: 'Gradiva naročnika', opcijski: true, telo: opcIzv.gradiva },
-          { id: 'pod-avtorske', naslov: 'Avtorske pravice', opcijski: true, telo: '<p>Materialne avtorske pravice na avtorskih delih, nastalih pri izvedbi, se v dogovorjenem obsegu prenesejo na naročnika po celotnem plačilu podjemnine. Delovne datoteke, neizbrane rešitve in gradiva tretjih oseb v prenos niso vključeni, če ni pisno dogovorjeno drugače.</p>' },
+          { id: 'pod-avtorske', naslov: 'Avtorske pravice', opcijski: true, telo: '<p>Materialne avtorske pravice na avtorskih delih, nastalih pri izvedbi, se v dogovorjenem obsegu prenesejo na naročnika po celotnem plačilu podjemnine. Delovne datoteke, neizbrane rešitve in gradiva tretjih oseb v prenos niso vključeni, če ni pisno dogovorjeno drugače. ' + POGODBA_PRAVICE_DODATEK.sl + '</p>' },
           { id: 'pridrzane-pravice', naslov: 'Pridržane pravice', opcijski: true, telo: opcIzv.pridrzane },
           { id: 'prepoved-registracije', naslov: 'Prepoved registracije', opcijski: true, telo: opcIzv.registracija },
           { id: 'navedba-avtorstva', naslov: 'Navedba avtorstva', opcijski: true, telo: opcIzv.avtorstvo },

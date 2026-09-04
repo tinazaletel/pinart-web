@@ -1,0 +1,195 @@
+Pinart Flow — Politika zasebnosti (za pravni pregled, 2. pošiljanje)
+====================================================================
+
+Za pravni pregled — drugo pošiljanje, 4. 9. 2026. Tina Zaletel, Pinart d.o.o., tina@pinart.si.
+Rdeče in ležeče označeni odstavki so PREDLOGI DOPOLNITEV, ki še niso objavljeni — pisani vnaprej za funkcije, ki so zgrajene ali načrtovane (davčno potrjevanje, plačila na prodajnem mestu, novi podatki v politiki); prosim, da jih pregledate skupaj z živim besedilom. Dve prazni mesti izpolnim pred objavo: [FIRMA IZVAJALCA] (zunanji izvajalec davčnega potrjevanja) in [PONUDNIK GOSTOVANJA] (kjer bo njegova ločena podatkovna baza). Vprašanja so v komentarjih ob robu, vsako pri točki, na katero se nanaša. Oštevilčena so od 1 do 38: 1 do 18 kot v prvem pošiljanju (25. 8.), 19 do 28 pravice uporabe v kalkulatorju (26. 8.; prej pomotoma dvakrat številka 18), 29 do 38 novo. Vprašanja o osebnih podatkih so v politiki zasebnosti, vsa druga v pogojih uporabe; nobeno ni v obeh.
+Stanje 4. 9. 2026: orodje je v zaprti beti (povabljeni testerji). Javno in brez prijave delujejo brezplačni kalkulator, predstavitvene strani in vprašalnik o cenah. Plačljive naročnine tečejo prek Stripa. Najbolj me zanima, kaj moram popraviti pred odprtjem za vse in kaj lahko počaka.
+
+Kaj je drugače od različice, ki ste jo prejeli 25. 8.: v točki 2 je med podatki o uporabi tudi skupen čas, ko je aplikacija odprta in dejavna; v 5a so novi podobdelovalci AJPES, PostHog (EU oblak, Frankfurt) in Stripe; točki 6 in 8 omenjata PostHog ob Google Analytics in da se brez privolitve analitika in snemanje sej ne naložita. Vse drugo je nespremenjeno. Živa različica: 2026-08-31.
+Zgrajeno, a v politiki še ne opisano — rdeči odstavki v točkah 2, 3, 4 in 5a: profil podjetja, naročnina, ekipa, evidenca delovnega časa, preverjanje strank, vprašalnik o cenah, davčno potrjevanje in plačila na prodajnem mestu.
+
+
+Različica 2026-08-31 · Zadnja posodobitev: 31. avgust 2026
+
+1. UPRAVLJAVEC OSEBNIH PODATKOV
+
+Pinart d.o.o., Mladinska ulica 63, 1000 Ljubljana, Slovenija
+
+E-pošta: tina@pinart.si
+
+2. KATERI PODATKI SE ZBIRAJO
+
+Glede na to, kako uporabljate storitev, obdelujemo:
+
+– Kontaktni obrazec: ime in priimek, e-naslov, vsebino sporočila (na vašo pobudo).
+
+– Uporabniški račun: e-naslov in ime, ki ju prejmemo od ponudnika prijave (npr. Google) ob prijavi.
+
+– Poslovni podatki v aplikaciji: ponudbe, pogodbe, računi, stranke, projekti, stroški in naloge, ki jih vnesete med uporabo (shranjeni na vaš račun).
+
+– Komunikacije: vsebina projektnega klepeta in projektne pošte, če te funkcije uporabljate.
+
+– Sef avtorstva: ime datoteke, kriptografski odtis (SHA-256), datum in podatki o delu; ob plačljivem trezorju tudi sama datoteka.
+
+– Podatki o uporabi (prijavljeni): število obiskov in dni aktivnosti vašega računa, čas zadnjega vpisa in skupen čas, ko je aplikacija odprta in dejavna (merimo le, kadar je zavihek viden, in po petih minutah mirovanja nehamo šteti) — za spremljanje in izboljševanje storitve. To ni anonimno (vezano na vaš račun); ni v povezavi z anonimno cenovno statistiko.
+
+– Anonimna statistika cen: brez osebnih podatkov in je ni mogoče povezati z vami (glejte spodaj).
+
+[PREDLOG DOPOLNITVE (še ni objavljeno):]
+PREDLOG DOPOLNITVE (še ni objavljeno): – Profil vašega podjetja: naziv, naslov, davčna in matična številka, status zavezanca za DDV, številka transakcijskega računa (IBAN), logotip in kontaktni podatki, ki jih vpišete za pripravo ponudb, pogodb in računov. Pri samostojnih podjetnikih in drugih fizičnih osebah so to osebni podatki.
+– Naročnina: identifikator stranke pri Stripu, paket, stanje in zgodovina naročnine ter računi za naročnino, ki jih izda Stripe; podatkov o plačilni kartici ne prejmemo in ne hranimo.
+– Ekipa: e-naslovi povabljenih sodelavcev, njihove vloge in čas sprejema vabila; nesprejeta vabila izbrišemo po [30] dneh.
+– Evidenca delovnega časa: prihodi, odmori, odhodi in seštevki, ki jih vpišete zase ali jih člani vaše ekipe vpišejo zase. Za evidenco zaposlenih je upravljavec delodajalec (vi); mi smo obdelovalec.
+– Preverjanje strank: matična številka podjetja, o katerem poizvedujete, in podatki, ki jih o njem prejmemo iz AJPES ter začasno hranimo, da iste poizvedbe ne plačate dvakrat.
+– Vprašalnik o cenah (javna stran): odgovori o cenah po panogah; ime in e-naslov samo z vašo privolitvijo, za zahvalo in pošiljanje rezultatov.
+– Davčno potrjevanje računov (ko je funkcija omogočena in jo vklopite): vaše namensko digitalno potrdilo FURS (šifrirano), oznake poslovnih prostorov in elektronskih naprav ter podatki računov, ki jih pošljemo FURS (znesek, DDV, ZOI, EOR, oznaka blagajne in operaterja). Te podatke obdeluje zunanji izvajalec v ločeni podatkovni bazi (točki 5 in 5a).
+– Plačila na prodajnem mestu (ko je funkcija omogočena): znesek, čas, način plačila, zadnje štiri številke kartice in identifikator plačila, ki jih vrne Stripe; celotne številke kartice ne prejmemo.
+[konec predloga]
+
+
+3. NAMEN IN PRAVNA PODLAGA OBDELAVE
+
+Podatke obdelujemo za: (a) odgovor na povpraševanje in poslovno komunikacijo; (b) zagotavljanje in delovanje platforme (račun, shranjevanje dokumentov, komunikacije, sef); (c) obračun naročnine; (d) izboljševanje storitve.
+
+Pravne podlage: izvajanje pogodbe oz. ukrepi pred sklenitvijo (člen 6(1)(b) GDPR) za delovanje platforme in naročnino; vaše soglasje (člen 6(1)(a) GDPR) npr. za obveščanje; zakoniti interes (člen 6(1)(f) GDPR) za varnost in izboljšave.
+
+[PREDLOG DOPOLNITVE (še ni objavljeno):]
+PREDLOG DOPOLNITVE (še ni objavljeno): Kadar uporabljate davčno potrjevanje računov ali evidenco delovnega časa, podatke obdelujemo tudi za izpolnjevanje vaših zakonskih obveznosti (člen 6(1)(c) GDPR v povezavi z ZDavPR oziroma ZEPDSV), v vašem imenu in po vaših navodilih.
+Odgovore na vprašalnike, ki jih svojim strankam pošljete iz Flowa, hranimo v vašem imenu: upravljavec teh podatkov ste vi, mi smo obdelovalec (pogoji uporabe, točka 4g). Vi določite namen in hrambo; anketiranec se s vprašanji o svojih podatkih obrne na vas.
+[konec predloga]
+
+
+4. HRAMBA PODATKOV
+
+Podatke hranimo le toliko časa, kot je potrebno za namen obdelave, oz. dokler traja vaš račun. Po izbrisu računa ali na vašo zahtevo podatke izbrišemo, razen kadar jih moramo hraniti po zakonu (npr. računovodski predpisi za izdane račune).
+
+[PREDLOG DOPOLNITVE (še ni objavljeno):]
+PREDLOG DOPOLNITVE (še ni objavljeno): Namensko digitalno potrdilo FURS in podatke za davčno potrjevanje pri zunanjem izvajalcu izbrišemo ob izklopu funkcije ali izbrisu računa; računi sami ostanejo v vašem računu, dokler jih ne izvozite ali izbrišete, v skladu z zakonskimi roki hrambe, za katere odgovarjate vi. Podatke iz AJPES o preverjenih podjetjih hranimo [30] dni. Nesprejeta vabila v ekipo izbrišemo po [30] dneh. Ime in e-naslov iz vprašalnika o cenah izbrišemo 12 mesecev po odgovoru; odgovori ostanejo anonimni. Povpraševanja hranimo 24 mesecev od zadnjega stika.
+[konec predloga]
+
+
+5. KJE SE PODATKI HRANIJO
+
+Poslovni podatki prijavljenih uporabnikov se hranijo v oblačni bazi in shrambi (Supabase, strežniki v Evropski uniji). Podatki so vezani na vaš račun in zaščiteni s pravili dostopa na ravni baze, tako da do njih dostopate le vi in osebe, s katerimi vsebino izrecno delite.
+
+[PREDLOG DOPOLNITVE (še ni objavljeno):]
+PREDLOG DOPOLNITVE (še ni objavljeno): Podatki za davčno potrjevanje računov (ko je funkcija omogočena) se ne hranijo v naši glavni bazi, ampak v ločeni podatkovni bazi zunanjega izvajalca [FIRMA IZVAJALCA] na strežnikih ponudnika gostovanja [PONUDNIK GOSTOVANJA] v Sloveniji oziroma EU.
+[konec predloga]
+
+
+5A. PODOBDELOVALCI
+
+Vaših podatkov ne prodajamo in ne dajemo v najem. Za delovanje storitve jih obdelujejo naslednji podobdelovalci, izključno po naših navodilih:
+
+– Supabase — oblačna baza in shramba (EU)
+
+– Vercel — gostovanje in dostava aplikacije
+
+– Resend — pošiljanje e-pošte
+
+– Google — prijava z Google računom (OAuth) in preglednica Google Sheets, v katero se zapišejo povpraševanja s kontaktnega obrazca in prijave iz kalkulatorja (ime, e-naslov, sporočilo)
+
+– Cloudflare — sprejem in posredovanje dohodne e-pošte na naslovih @pinartflow.com
+
+– Anthropic — AI asistentka Pupa (samo ob uporabi; glejte točko 9)
+
+– FreeTSA (freetsa.org) — neodvisni overitelj časovnega žiga sefa po standardu RFC 3161 (prejme samo 32-bajtni odtis, nikoli datoteke, njenega imena ali opisa dela)
+
+– Stripe — obdelava plačil naročnine kot pooblaščeni ponudnik plačil (Merchant of Record); podatkov o kartici ne vidimo in ne hranimo
+
+– PostHog (EU oblak, Frankfurt) — merjenje uporabe predstavitvenih strani: toplotne karte, posnetki sej in lijaki. Teče SAMO po vaši privolitvi in samo na predstavitvenih straneh, nikoli v aplikaciji ali kalkulatorju; vsebina vpisnih polj je v posnetkih zakrita
+
+– AJPES — poizvedba v Poslovni register in v javno objavljena letna poročila; posredujemo matično številko PODJETJA, o katerem poizvedujete, ne vaših osebnih podatkov
+
+Podatke posredujemo tretjim tudi, kadar to zahteva zakon. Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si.
+
+[PREDLOG DOPOLNITVE (še ni objavljeno):]
+PREDLOG DOPOLNITVE (še ni objavljeno): – Stripe — tudi plačila na prodajnem mestu, ko je funkcija omogočena (prek vašega računa pri Stripu)
+– FURS (Finančna uprava RS) — prejemnik podatkov računov pri davčnem potrjevanju, ko je funkcija omogočena; javni organ na podlagi ZDavPR, ne podobdelovalec
+– [FIRMA IZVAJALCA], [naslov] — zunanji izvajalec davčnega potrjevanja (ko je funkcija omogočena): prejme podatke računov za potrditev pri FURS in hrani vaše namensko potrdilo (šifrirano) v ločeni podatkovni bazi; pogodba o obdelavi po členu 28 GDPR
+– [PONUDNIK GOSTOVANJA], [naslov] — gostovanje strežnika in podatkovne baze zunanjega izvajalca davčnega potrjevanja (Slovenija/EU)
+– Supabase (EU) — tudi odgovori vprašalnika o cenah in povpraševanja s kontaktnega obrazca (glejte točko 2)
+[konec predloga]
+
+
+5B. SEF AVTORSTVA
+
+Sef avtorstva shrani kriptografski odtis (SHA-256) vašega dela, datum in podatke o delu (npr. ime datoteke, orodje). Odtis je enolični »prstni odtis«; iz njega ni mogoče rekonstruirati vsebine. Za neodvisen časovni žig uporabljamo storitev FreeTSA (freetsa.org) po standardu RFC 3161: overitelju se pošlje izključno 32-bajtni odtis, ta pa vrne časovni žeton, podpisan s svojim certifikatom. Vaša datoteka, njeno ime in opis dela overitelja nikoli ne dosežejo — ta ne izve, kaj ste žigosali, potrdi le, da je bil ta odtis znan ob določenem času. Žeton lahko preveri kdorkoli, tudi brez Pinart Flowa. Overitelja lahko zamenjamo (na primer za kvalificirano storitev po uredbi eIDAS); aktualnega sporočimo na zahtevo.
+
+Če izberete plačljivi oblačni trezor, se izvirna datoteka (in morebitne izvorne datoteke) shrani v zasebni oblačni shrambi (Supabase, EU), dostopni le vam. Sef dokazuje obstoj in prioriteto dela na določen dan, ne pa absolutnega avtorstva, in ni nadomestilo za uradno registracijo pravic.
+
+5C. VARNOST
+
+Podatke varujemo s tehničnimi in organizacijskimi ukrepi: šifriran prenos (TLS), šifrirana hramba pri ponudniku baze, dostop na ravni baze (vsak uporabnik vidi le svoje podatke), prijava prek zaupanja vrednega ponudnika (Google OAuth) in samodejne dnevne varnostne kopije baze, ki omogočajo povrnitev podatkov ob incidentu (člen 32(1)(c) GDPR). Noben sistem ni popolnoma neprebojen; za varovanje dostopa do svojega računa (npr. naprave in prijave) odgovarjate tudi sami.
+
+6. GOOGLE ANALYTICS
+
+Spletna stran uporablja Google Analytics za analizo obiskanosti. Google Analytics zbira anonimne podatke o obisku (tip naprave, država, strani). Podatki se ne povežejo z vašo osebno identiteto. Zbiranje podatkov lahko onemogočite z namestitvijo Google Analytics Opt-out Browser Add-on ali s prilagoditev nastavitev piškotkov v vašem brskalniku.
+
+Na PREDSTAVITVENIH straneh uporabljamo tudi PostHog (EU oblak, Frankfurt) za razumevanje uporabe: toplotne karte klikov, posnetke sej in lijake. Posnetek seje je zapis vaših klikov, pomikanja in poti po strani; vsebina vpisnih polj je v njem zakrita. Oboje teče IZKLJUČNO po vaši privolitvi za piškotke in NIKOLI v aplikaciji ali kalkulatorju — tam vpisujete podatke svojih strank in teh ne pošiljamo nikamor. Privolitev lahko kadar koli prekličete v nastavitvah piškotkov; takrat se snemanje ustavi.
+
+7. VAŠE PRAVICE
+
+V skladu z GDPR imate pravico do:
+
+– dostopa do svojih podatkov
+
+– popravka netočnih podatkov
+
+– izbrisa podatkov
+
+– omejitve obdelave
+
+– prenosljivosti podatkov
+
+– ugovora obdelavi
+
+Zahtevo pošljite na tina@pinart.si. Pravico imate tudi do pritožbe pri Informacijskem pooblaščencu RS (ip-rs.si).
+
+8. PIŠKOTKI
+
+Spletna stran uporablja funkcionalne piškotke za delovanje in analitične piškotke (Google Analytics in PostHog). Ob prvem obisku imate možnost upravljanja s piškotki; brez vaše privolitve se analitični piškotki in snemanje sej ne naložijo.
+
+9. UMETNA INTELIGENCA (PUPA) IN VARNOST PODATKOV
+
+Pupa je izbirna pomočnica, ki deluje prek Anthropic Claude API. Obdelava poteka strežniško, zato API ključ ni izpostavljen v uporabnikovem brskalniku. Anthropic prejme samo vsebino, ki jo uporabnik vnese v Pupo, in minimalen kontekst odprtega orodja ali ponudbe, potreben za odgovor; nič drugega. Anthropic nima dostopa do baze Pinart Flow — vidi le besedilo posamezne zahteve in baze ne more brati ali izvoziti.
+
+V Pupo ne vnašajte zaupnih podatkov, poslovnih skrivnosti ali osebnih podatkov strank. Če Pupe ne uporabljate, se podatki ne pošiljajo družbi Anthropic ali kateremu koli drugemu zunanjemu ponudniku AI. Orodja Pinart Flow delujejo brez AI, cene pa se izračunajo s formulami in pravili lokalno oziroma na zaledju Pinart Flow.
+
+Anthropic je predviden kot podobdelovalec. Po njegovih aktualnih pogojih se vhodi in izhodi komercialnega API privzeto ne uporabljajo za učenje modelov. Obdobje hrambe velja po aktualnih pogojih Anthropic. Ker se podatki lahko obdelujejo v ZDA, mora biti prenos urejen z DPA z družbo Anthropic in ustreznimi standardnimi pogodbenimi klavzulami (SCC).
+
+Aktualni seznam podobdelovalcev je na voljo na zahtevo na tina@pinart.si. Več: https://privacy.anthropic.com/en/collections/10663361-commercial-customers.
+
+10. SPREMEMBE POLITIKE
+
+Politiko zasebnosti lahko kadar koli posodobimo. Datum zadnje posodobitve je naveden na vrhu te strani.
+
+──────────────────────────────────────────────────────────────
+
+VPRAŠANJA (v Wordu so komentarji ob robu; tu po vrsti):
+
+29. Vprašalnik o cenah (javna stran, od 3. 9.). Na www.pinartflow.com/vprasalnik kreativci iz sedmih panog odgovarjajo na do 42 vprašanj o svojih dejanskih cenah (kolikšen je honorar za logotip, dan fotografiranja, mesečno vodenje omrežja ipd.). Odgovarjati je mogoče anonimno; ime in e-naslov sta neobvezna in se shranita samo, če oseba označi kljukico soglasja (vnaprej ni označena) z besedilom: »Strinjam se, da ime in e-pošto uporabite za zahvalo in pošiljanje rezultatov, v skladu s politiko zasebnosti.« Odgovori se shranijo v mojo bazo (Supabase, EU), o vsakem novem odgovoru dobim e-pošto. Anketiranec ob koncu vidi, ali je njegova ključna cena nad, pod ali znotraj razpona iz javno objavljenih cenikov v Sloveniji (imen virov ne objavljam). Iz odgovorov izpeljem razmerja med izbirami (uteži v kalkulatorju); zneskov ne objavim in jih ne posredujem. Strani iskalniki ne indeksirajo. Vprašanja:
+– (a) Cene samostojnega podjetnika so, kadar je oseba določljiva, osebni podatek. Je za anonimne odgovore sploh potrebna podlaga, za podpisane pa privolitev — ali zadošča zakoniti interes (razvoj orodja)?
+– (b) Hramba: predlagam, da se ime in e-naslov izbrišeta 12 mesecev po odgovoru, odgovori pa ostanejo anonimni. Je to razumno?
+– (c) Je besedilo soglasja zgoraj ustrezno?
+– (d) Je primerjava »nad/pod tem, kar drugi običajno zaračunajo« tvegana trditev, čeprav temelji na javnih cenikih in ne imenuje nikogar?
+– (e) Politika zasebnosti vprašalnika še ne omenja. Predlagam nov odstavek v točki 2 in 5a; prosim za popravek.
+
+31. Povpraševanja se hranijo tudi pri meni (od 3. 9.). Kontaktni obrazec na predstavitvenih straneh (ime, e-naslov, podjetje, sporočilo, okvirni proračun in termin) se od 3. 9. najprej zapiše v mojo bazo (Supabase, EU) in šele nato posreduje v Google Sheets, ker se je prej ob napaki povezave povpraševanje izgubilo. Politika (5a) omenja samo Google Sheets. Predlagam hrambo 24 mesecev od zadnjega stika. Prosim za ustrezen zapis.
+
+15. Prijava na obveščanje. Uporabljam dvojno privolitev: prijava se zapiše kot nepotrjena, potrditveno pisemce gre po e-pošti, seznam nastane šele ob kliku, nepotrjene prijave se po 14 dneh izbrišejo, odjava zapis izbriše. Zapišem čas, vir in različico pogojev; IP-naslova ne hranim. Zadošča kot dokaz privolitve po členu 7(1)? (Od 3. 9. ima vsako pisemce tudi povezavo za odjavo z enim klikom po RFC 8058.)
+
+30. Vprašalniki uporabnikov za njihove stranke (od 31. 8.). Uporabnik v Flowu sestavi vprašalnik (na primer brief za novo spletno stran), pošlje povezavo svoji stranki, ta odgovori na javni strani brez prijave, odgovori se shranijo pri projektu, uporabnik dobi obvestilo. Javna stran nosi ime in znamko uporabnika. Po mojem razumevanju je uporabnik upravljavec, jaz obdelovalec (točka 4g). Vprašanja: ali mora javna stran kazati obvestilo o zasebnosti in v čigavem imenu; kaj mora vsebovati; ali 4g potrebuje dodatek o podatkih, ki jih vnesejo tretje osebe (stranke uporabnika), in ne uporabnik sam.
+
+5. Podatki iz javnih registrov. V orodju je iskalnik podjetij, ki iz javnih virov (AJPES, FURS) predizpolni naziv, naslov in davčno številko stranke. Ali smem te podatke uporabljati na tak način in ali moram kaj posebej navesti? (Glej tudi vprašanje 32 — od 28. 8. so zraven še bonitetni podatki.)
+
+14. Podobdelovalca, dodana 25. 8. 2026. Politika in pogoji zdaj navajata Google Sheets (vanj se zapišejo povpraševanja s kontaktnega obrazca: ime, e-naslov in sporočilo) in Cloudflare (dohodna pošta na @pinartflow.com). Prej ju nista. Je opis zadosten in ali moram obvestiti tiste, ki so obrazec izpolnili prej? (Glej tudi vprašanje 31.)
+
+32. Preverjanje stranke: bonitetni podatki iz AJPES (od 28. 8.). Poleg iskalnika (vprašanje 5) plačljivi paketi ponujajo vpogled v letno poročilo podjetja, ki ga uporabnik preverja: prihodki, dobiček ali izguba in ali ima podjetje blokiran račun. Podatke pridobim iz AJPES (storitev proFi/Po, z mojimi portalnimi poverilnicami, plačilo na poizvedbo) in jih uporabniku prikažem ob ceni, z mesečno kvoto poizvedb na naročnika. Vprašanja: (a) kaj mi pogoji AJPES dovolijo pri prikazu teh podatkov uporabnikom in ali moram navesti vir; (b) pri samostojnih podjetnikih so to osebni podatki — zadošča zakoniti interes uporabnika (preverjanje plačilne sposobnosti stranke) in kaj moram zapisati; (c) smem pridobljene podatke predpomniti in koliko časa, da ne plačam iste poizvedbe dvakrat; (d) kako zapisati, da prikaz ni bonitetna ocena ali nasvet.
+
+18. Zaklenjene opombe (načrtujem). Uporabniki mi po e-pošti pošiljajo tudi gesla in dostope svojih strank. Namesto navadnega besedilnega polja načrtujem opombe, šifrirane v brskalniku z geslom, ki ga pozna samo uporabnik: v mojo bazo pride le šifrat, jaz vsebine ne morem prebrati niti obnoviti, pozabljeno geslo pomeni trajno izgubo. Vprašanja: ali tako šifriranje spremeni moje obveznosti po 32. členu in ob morebitni kršitvi; ali za hrambo poverilnic tretjih oseb potrebujem še kaj v pogojih; in ali smem zapisati, da vsebine "niti mi ne moremo prebrati"?
+
+37. PostHog in snemanje sej (od 31. 8.). Na predstavitvenih straneh (ne v aplikaciji in ne v kalkulatorju) po privolitvi tečejo toplotne karte, posnetki sej in lijaki (PostHog, EU oblak, Frankfurt); vsebina vpisnih polj je v posnetkih zakrita. Privolitveni pas ponuja funkcionalne in analitične piškotke; PostHog spada med analitične skupaj z Google Analytics. Vprašanja: ali snemanje sej sme teči pod isto privolitvijo kot analitika ali potrebuje svojo kategorijo; ali je opis v politiki (5a, 6, 8) zadosten.
+
+3. Pupa (AI pomočnica). Deluje prek Anthropic Claude API. Uporabniku povem, naj vanjo ne vnaša zaupnih podatkov, in da brez uporabe Pupe podatki ne gredo nikamor. Vprašanji: katera pravna podlaga je prava, privolitev ali zakoniti interes, in kaj moram urediti za prenos v ZDA (DPA, standardne pogodbene klavzule)? Enako me zanima za vse ponudnike zunaj EU, ki jih naštevam med podobdelovalci.
+

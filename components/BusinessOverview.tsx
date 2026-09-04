@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Handshake, Receipt, Wallet, Tag, Clock, FileText, CheckCircle, TrendUp, Stack, Scroll, Suitcase, EnvelopeSimple, PaperPlaneRight } from '@phosphor-icons/react';
 import styles from '@/app/[locale]/kalkulator/pregled/pregled.module.css';
 import { loadFlowData, saveFlowCollection, saveOfferAmount, saveOfferStatus } from '@/lib/pinartFlowStore';
+import { POGODBA_PRAVICE_DODATEK } from '@/lib/praviceBesedila';
 import { recordAccountingExport, saveBusinessGoal, saveCloudSettings } from '@/lib/pinartFlowCloud';
 import { demoPodatki, usePredogled } from '@/lib/predogled';
 import { preberiNaloge } from '@/lib/naloge';
@@ -258,7 +259,7 @@ export default function BusinessOverview({ base, imaPupo = true }: { base: strin
   const generateContract = () => {
     const offer = offers.find(item => item.id === contractOfferId);
     if (!offer) return;
-    setContractBody(`POGODBA O IZVEDBI STORITEV\n\nNaročnik: ${offer.client}\nProjekt: ${offer.title}\n\n1. PREDMET POGODBE\nIzvajalec bo za naročnika izvedel projekt »${offer.title}« skladno s potrjeno ponudbo, ki je sestavni del te pogodbe.\n\n2. OBSEG, CENA IN ROKI\nObseg storitev, cena, roki in plačilni pogoji veljajo, kot so določeni v potrjeni ponudbi. Vsaka dodatna storitev se pred izvedbo pisno potrdi.\n\n3. AVTORSKE PRAVICE\nPravice uporabe končnih rešitev se na naročnika prenesejo po celotnem plačilu, v obsegu, navedenem v ponudbi.\n\n4. POTRDITEV\nPogodba začne veljati, ko jo potrdita obe stranki.\n\nOsnutek pred podpisom pravno preglejte.`);
+    setContractBody(`POGODBA O IZVEDBI STORITEV\n\nNaročnik: ${offer.client}\nProjekt: ${offer.title}\n\n1. PREDMET POGODBE\nIzvajalec bo za naročnika izvedel projekt »${offer.title}« skladno s potrjeno ponudbo, ki je sestavni del te pogodbe.\n\n2. OBSEG, CENA IN ROKI\nObseg storitev, cena, roki in plačilni pogoji veljajo, kot so določeni v potrjeni ponudbi. Vsaka dodatna storitev se pred izvedbo pisno potrdi.\n\n3. AVTORSKE PRAVICE\nPravice uporabe končnih rešitev se na naročnika prenesejo po celotnem plačilu, v obsegu, navedenem v ponudbi. ${POGODBA_PRAVICE_DODATEK.sl}\n\n4. POTRDITEV\nPogodba začne veljati, ko jo potrdita obe stranki.\n\nOsnutek pred podpisom pravno preglejte.`);
   };
 
   const storeContractFile = (id: string, file: File) => new Promise<void>((resolve, reject) => {

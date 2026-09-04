@@ -70,7 +70,10 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   if (!admin) return NextResponse.json({ napaka: 'Shramba ni na voljo.' }, { status: 503 });
 
-  const { error } = await admin.from('vprasalnik_odgovori').insert({
+  /* Lastna tabela: vprasalnik_odgovori je Codexova tabela vprasalnikov za
+     stranke (obvezen vprasalnik_id) in je 3. 9. pozrla nas zapis — prvi pravi
+     odgovor je padel z »ni bilo mogoce shraniti« (Tina, 4. 9. 2026). */
+  const { error } = await admin.from('vprasalnik_cene').insert({
     panoga: panoga.id,
     odgovori,
     ime: ime || null,
@@ -78,7 +81,12 @@ export async function POST(request: Request) {
     izpolnjenih,
     skupaj,
   });
-  if (error) return NextResponse.json({ napaka: 'Odgovorov ni bilo mogoče shraniti.' }, { status: 500 });
+  if (error) {
+    /* Brez tega dnevnika smo 4. 9. napako iskali na slepo. Vsebine odgovorov ne
+       zapisujemo, samo vzrok. */
+    console.error('[vprasalnik] zapis ni uspel:', error.code, error.message);
+    return NextResponse.json({ napaka: 'Odgovorov ni bilo mogoče shraniti.' }, { status: 500 });
+  }
 
   /* Obvestilo Tini. Ce mail ne odide, vprasalnik JE shranjen — zato napake
      tu ne vracamo kot neuspeh oddaje. */
