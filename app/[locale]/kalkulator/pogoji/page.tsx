@@ -368,13 +368,13 @@ export default async function KalkulatorPogojiPage({
               <>
                 <strong>Without signing in</strong> (e.g. the free calculator) your settings, prices
                 and drafts are stored solely locally in your browser (localStorage) and are not
-                sent to the provider; you delete them by clearing your browser data.
+                sent to the provider; you delete them by clearing your browser data or with the Delete all data button in My profile.
               </>
             ) : (
               <>
                 <strong>Brez prijave</strong> (npr. brezplačni kalkulator) se tvoje nastavitve, cene
                 in osnutki shranjujejo izključno lokalno v tvojem brskalniku (localStorage) in se ne
-                pošiljajo ponudniku; izbrišeš jih z brisanjem podatkov brskalnika.
+                pošiljajo ponudniku; izbrišeš jih z brisanjem podatkov brskalnika ali z gumbom Izbriši vse podatke v Mojem profilu.
               </>
             )}
           </p>
