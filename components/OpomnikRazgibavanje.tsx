@@ -317,7 +317,11 @@ export default function OpomnikRazgibavanje({ jeEn = false }: { jeEn?: boolean }
         type="button"
         className="raz-zvok"
         aria-pressed={nastavitve.zvok}
-        onClick={() => { const n = { ...nastavitve, zvok: !nastavitve.zvok }; setNastavitve(n); shraniNastavitve(n); if (n.zvok) pokMehurcka(); }}
+        /* Pok mehurčka je za PRIHOD opomnika; stikalo tu je za glasbo. Vklop med
+           vajo glasbo zažene (učinek spodaj jo ob naslednjem izrisu nadaljuje ali
+           začne), izklop jo ustavi. Prej je klik le poknil, glasbe pa ni bilo,
+           ker se je začela samo ob »Začni« (Tina, 5. 9. 2026). */
+        onClick={() => { const n = { ...nastavitve, zvok: !nastavitve.zvok }; setNastavitve(n); shraniNastavitve(n); if (n.zvok && tece && !pavza) nadaljuj(); }}
         aria-label={nastavitve.zvok ? L('Izklopi zvok', 'Turn sound off') : L('Vklopi zvok', 'Turn sound on')}
         title={nastavitve.zvok ? L('Zvok je vklopljen', 'Sound is on') : L('Zvok je izklopljen', 'Sound is off')}
       >

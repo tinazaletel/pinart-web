@@ -29,7 +29,9 @@ export const PRIVZETE: RazgibavanjeNastavitve = {
   vklopljeno: true,
   interval: 60,
   trajanje: 3,
-  zvok: false,
+  /* Vklopljen: kdor prvič vidi vajo, pričakuje glasbo — ugasne jo z ikono
+     na kartici (Tina, 5. 9. 2026: »zakaj Pupa nima muske«). */
+  zvok: true,
 };
 
 export const INTERVALI = [30, 45, 60, 90] as const;

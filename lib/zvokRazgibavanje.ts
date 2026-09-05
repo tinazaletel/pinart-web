@@ -73,12 +73,15 @@ export function pavziraj(): void {
   s?.podlaga?.pause();
 }
 
-/** Nadaljuje natanko tistega, ki je bil na vrsti. */
+/** Nadaljuje natanko tistega, ki je bil na vrsti; če ni bil nihče (zvok
+    vklopljen sredi vaje ali po osvežitvi), začne od začetka — prej je
+    »nadaljevanje« brez igralca pomenilo tišino brez razloga (Tina, 5. 9. 2026). */
 export function nadaljuj(): void {
   const s = shramba();
   if (!s) return;
   if (s.naVrsti === 'uvod') void s.uvod?.play().catch(() => {});
   else if (s.naVrsti === 'podlaga') void s.podlaga?.play().catch(() => {});
+  else zaigraj();
 }
 
 export function ustavi(): void {
