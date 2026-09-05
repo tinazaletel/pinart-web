@@ -568,11 +568,11 @@ export default function NovProjektWorkspace({ base }: { base: string }) {
           {prikazan(11) && !vprasanjaOdprta && !obrazec.dodatnaVprasanja.length && (
             <button type="button" className="np-okvir-vec" onClick={() => setVprasanjaOdprta(true)}>
               <span className="np-okvir-vec-glava"><span aria-hidden>+</span>{L('Dodaj svoja vprašanja', 'Add your own questions')}<CaretDown size={14} weight="bold" className="np-okvir-caret" aria-hidden /></span>
-              <small>{L('Npr. »Ima stranka že CGP?« — vprašanje in odgovor si zapišeš sama.', 'E.g. “Does the client already have a brand book?” — you write both the question and the answer.')}</small>
+              <small>{L('Npr. »Ima stranka že CGP?« — vprašanje in odgovor zapišeš po svoje.', 'E.g. “Does the client already have a brand book?” — you write both the question and the answer.')}</small>
             </button>
           )}
           {prikazan(11) && (vprasanjaOdprta || obrazec.dodatnaVprasanja.length > 0) && <>
-          {chatBot(L('Tvoja vprašanja.', 'Your questions.'), L('Vprašanje in odgovor si zapišeš sama.', 'You write both the question and the answer.'))}
+          {chatBot(L('Tvoja vprašanja.', 'Your questions.'), L('Vprašanje in odgovor zapišeš po svoje.', 'You write both the question and the answer.'))}
           <div className="np-chat-vnos">
             {obrazec.dodatnaVprasanja.map(v => (
               <div key={v.id} className="np-vprasanje-vrstica">

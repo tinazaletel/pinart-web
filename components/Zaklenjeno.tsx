@@ -67,7 +67,7 @@ const VSEBINA: Record<ZaklenjenaFunkcija, { naslov: string; naslovEn: string; uv
   accountingExport: {
     naslov: 'Izvoz za računovodstvo',
     naslovEn: 'Export for accounting',
-    uvod: 'Enkrat na mesec ali četrtletje gre vse računovodkinji samo, brez tvojega brskanja po mapah.',
+    uvod: 'Enkrat na mesec ali četrtletje gre vse računovodstvu samo, brez tvojega brskanja po mapah.',
     uvodEn: 'Once a month or quarter everything goes to your accountant on its own, without you digging through folders.',
     tocke: [
       'Računi in stroški v enem paketu',

@@ -125,7 +125,7 @@ export default function PaketiSeznam({ trenutni, locale = 'sl', valuta = 'EUR', 
       )}
 
       <p className={styles.paketOpomba}>
-        {L('Plačilo teče prek Stripa, ki je tudi prodajalec na računu — davek se doda na blagajni glede na tvojo državo. Naročnino odpoveš, spremeniš ali prekličeš sama prek gumba »Uredi naročnino«; tam so tudi vsi računi.',
+        {L('Plačilo teče prek Stripa, ki je tudi prodajalec na računu — davek se doda na blagajni glede na tvojo državo. Naročnino odpoveš, spremeniš ali prekličeš prek gumba »Uredi naročnino«; tam so tudi vsi računi.',
            'Payments run through Stripe, which is also the merchant of record — tax is added at checkout based on your country. You can change or cancel the subscription yourself via »Manage subscription«, where your invoices live too.')}
       </p>
     </>

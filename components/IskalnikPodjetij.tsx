@@ -173,7 +173,7 @@ export default function IskalnikPodjetij({
       )}
       {napaka && <p className="ip-sporocilo ip-napaka" role="alert">{napaka}</p>}
       {pokazi && !iscem && !napaka && !karKoli && vrednost.trim().length >= 3 && (
-        <p className="ip-sporocilo">{L('Ni zadetka — ime kar vpiši sama.', 'No match — just type the name.')}</p>
+        <p className="ip-sporocilo">{L('Ni zadetka — ime kar vpiši.', 'No match — just type the name.')}</p>
       )}
 
       <style jsx>{`

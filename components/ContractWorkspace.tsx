@@ -1213,7 +1213,7 @@ export default function ContractWorkspace({ base }: { base: string }) {
           <button type="button" className={'pg-pot' + (vir === 'rocno' ? ' on' : '')}
             onClick={() => { setOdStranke(false); setOfferId(''); }}>
             <strong>{L('Ustvari brez ponudbe', 'Create without an offer')}</strong>
-            <small>{L('Samostojna pogodba, vse vpišeš sama.', 'A standalone contract you fill in yourself.')}</small>
+            <small>{L('Samostojna pogodba, vse vpišeš po svoje.', 'A standalone contract you fill in yourself.')}</small>
           </button>
           <button type="button" className={'pg-pot' + (vir === 'stranka' ? ' on' : '')}
             onClick={() => setOdStranke(true)}>

@@ -53,7 +53,7 @@ export default function RazisciStrankoAgent({ base = '' }: { base?: string }) {
   };
 
   return <div className="rsa">
-    <p className="rsa-nad">{L('RAZIŠČI STRANKO', 'RESEARCH A CLIENT')}</p><h1>{L('Na sestanek pripravljena.', 'Ready for the meeting.')}</h1>
+    <p className="rsa-nad">{L('RAZIŠČI STRANKO', 'RESEARCH A CLIENT')}</p><h1>{L('Pripravljeno za sestanek.', 'Ready for the meeting.')}</h1>
     {!projekti.length ? <p>{L('Najprej potrebuješ projekt.', 'You need a project first.')} <a href={`${base}/kalkulator/nov-projekt`}>{L('Ustvari projekt', 'Create project')}</a></p> : <>
       <label>{L('Projekt', 'Project')}<select value={projektId} onChange={e => { const id = e.target.value; setProjektId(id); setPodjetje(projekti.find(p => p.id === id)?.strankaIme || ''); }}><option value="">{L('Izberi projekt', 'Choose project')}</option>{projekti.map(p => <option key={p.id} value={p.id}>{p.naslov}{p.strankaIme ? ` · ${p.strankaIme}` : ''}</option>)}</select></label>
       <label>{L('Podjetje', 'Company')}<IskalnikPodjetij vrednost={podjetje} naVrednost={setPodjetje} naIzbiro={p => setPodjetje(p.ime)} lastne={projekti.filter(p => p.strankaIme).map(p => ({ ime: p.strankaIme! }))} jeEn={jeEn} /></label>

@@ -220,7 +220,7 @@ export default function AccountingWorkspace() {
       }
       await recordAccountingExport({ periodStart: period.start, periodEnd: period.end, recipientEmail: sent ? email : undefined, archivePath, invoiceCount: racSel.length, expenseCount: strSel.length, bankStatementCount: statements.length, sent });
       setHistory(await listAccountingExports());
-      setNotice(sent ? L('Paket je bil poslan računovodkinji in zabeležen.', 'The package was sent to your accountant and logged.') : nacin === 'poslji' ? L('ZIP prenesen (za samodejno pošiljanje dodaj e-pošto računovodstva).', 'ZIP downloaded (add the accountant’s e-mail to send it automatically).') : L('ZIP paket je prenesen in zabeležen.', 'The ZIP package was downloaded and logged.'));
+      setNotice(sent ? L('Paket je bil poslan računovodstvu in zabeležen.', 'The package was sent to your accountant and logged.') : nacin === 'poslji' ? L('ZIP prenesen (za samodejno pošiljanje dodaj e-pošto računovodstva).', 'ZIP downloaded (add the accountant’s e-mail to send it automatically).') : L('ZIP paket je prenesen in zabeležen.', 'The ZIP package was downloaded and logged.'));
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') setNotice(L('Priprava je bila preklicana.', 'Preparation was cancelled.'));
       else setNotice(L('Paketa ni bilo mogoče pripraviti. Poskusi znova.', 'The package could not be prepared. Try again.'));
@@ -257,7 +257,7 @@ export default function AccountingWorkspace() {
   return <div className={styles.accountingPage}>
     {notice && <div className={styles.goalSaved} role="status">{notice}</div>}
     <section className={styles.accountingSetup}>
-      <div><p className={styles.eyebrow}>{L('OBDOBJE', 'PERIOD')}</p><h2>{L('Za računovodkinjo.', 'For your accountant.')}</h2><p>{L('Izberi obdobje — Flow sam pobere račune, stroške in priloge. Vidiš, kaj pošiljaš, in odkljukaš, kar nočeš. Vsak paket ostane v evidenci spodaj.', 'Pick a period — Flow gathers the invoices, expenses and attachments itself. You see what you are sending and untick anything you don’t want. Every package stays in the log below.')}</p>
+      <div><p className={styles.eyebrow}>{L('OBDOBJE', 'PERIOD')}</p><h2>{L('Za računovodstvo.', 'For your accountant.')}</h2><p>{L('Izberi obdobje — Flow sam pobere račune, stroške in priloge. Vidiš, kaj pošiljaš, in odkljukaš, kar nočeš. Vsak paket ostane v evidenci spodaj.', 'Pick a period — Flow gathers the invoices, expenses and attachments itself. You see what you are sending and untick anything you don’t want. Every package stays in the log below.')}</p>
         <Image className={styles.accountingPupa} src="/flow-pupa-racuni.png" alt="" width={622} height={662} sizes="280px" priority={false} /></div>
       <div className={styles.accountingForm}>
         <div className={styles.periodSwitch} aria-label={L('Način izbire obdobja', 'Period selection mode')}><button className={periodMode === 'monthly' ? styles.periodActive : ''} onClick={() => changeFrequency('monthly')}>{L('Vsak mesec', 'Every month')}</button><button className={periodMode === 'quarterly' ? styles.periodActive : ''} onClick={() => changeFrequency('quarterly')}>{L('Na 3 mesece', 'Every 3 months')}</button><button className={periodMode === 'custom' ? styles.periodActive : ''} onClick={() => setPeriodMode('custom')}>{L('Po meri', 'Custom')}</button></div>
@@ -325,7 +325,7 @@ export default function AccountingWorkspace() {
         <div><span>{L('Vsebina', 'Contents')}</span><b>{racSel.length} {L('računov', 'invoices')} · {strSel.length} {L('stroškov', 'expenses')} · {statements.length} {L('izpiskov', 'statements')}</b></div>
         {izbraniBrezPriloge.length > 0 && <p role="alert">{izbraniBrezPriloge.length} {L('izbranih stroškov nima priponke. Paket lahko preneseš, pred pošiljanjem pa jih je smiselno dopolniti.', 'selected expenses have no attachment. You can still download the package, but it is worth completing them before sending.')}</p>}
         <div className="akcije">
-          <button className={styles.primaryAction} type="button" disabled={working || nicIzbrano || !email || !obdobjeVeljavno} onClick={() => pripravi('poslji')}>{working ? L('Pripravljam …', 'Preparing …') : L('Pošlji računovodkinji', 'Send to accountant')}</button>
+          <button className={styles.primaryAction} type="button" disabled={working || nicIzbrano || !email || !obdobjeVeljavno} onClick={() => pripravi('poslji')}>{working ? L('Pripravljam …', 'Preparing …') : L('Pošlji računovodstvu', 'Send to accountant')}</button>
           <button className="sekundarni-gumb" type="button" disabled={working || nicIzbrano || !obdobjeVeljavno} onClick={() => pripravi('prenos')}>{L('Prenesi ZIP', 'Download ZIP')}</button>
         </div>
         {!email && <small className="pomoc">{L('Za pošiljanje dodaj e-pošto računovodstva zgoraj.', 'Add the accountant’s e-mail above to send it.')}</small>}

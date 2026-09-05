@@ -76,7 +76,7 @@ async function vprasaj(vprasanje: string, kontekst: string): Promise<{ predlog?:
 /** Prvi predlog iz proste zahteve (»pripravi dobrodošlico za Rokusa«). */
 export function pripraviZaporedje(zahteva: string, kontekst: string) {
   return vprasaj(
-    `Pripravi zaporedje e-poštnih sporočil za stranko. Zahteva uporabnice: "${zahteva}".\n\n${OBLIKA}`,
+    `Pripravi zaporedje e-poštnih sporočil za stranko. Zahteva uporabnika ali uporabnice: "${zahteva}".\n\n${OBLIKA}`,
     kontekst,
   );
 }

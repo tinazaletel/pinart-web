@@ -87,7 +87,7 @@ export default function PitchAgent({ base = '', onSave }: PitchAgentProps) {
       const polja = izlusciJson(String(data.odgovor || data.text || ''));
       if (!polja) throw new Error(String(data.napaka || data.error || 'oblika'));
       setIzid(polja);
-    } catch { setNapaka(L('Pupa trenutno ni dosegljiva — lahko izpolniš sama.', 'Pupa is currently unavailable — you can fill it in yourself.')); setPot('rocno'); setIzid(v => v || { naslov: '', problem: '', resitev: '', zakajMi: '', obseg: '', okvirnaCena: '', naslednjiKorak: '' }); }
+    } catch { setNapaka(L('Pupa trenutno ni dosegljiva — lahko izpolniš brez nje.', 'Pupa is currently unavailable — you can fill it in yourself.')); setPot('rocno'); setIzid(v => v || { naslov: '', problem: '', resitev: '', zakajMi: '', obseg: '', okvirnaCena: '', naslednjiKorak: '' }); }
     finally { setDela(false); }
   };
 
